@@ -1,7 +1,15 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './App.css';
+import ManifestViewer from './components/ManifestViewer';
+
+const queryClient = new QueryClient();
 
 function App() {
-  return <h1 className='m-3 border-2 bg-neutral-500 p-6 text-4xl font-bold'>CorpuSense</h1>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ManifestViewer />
+    </QueryClientProvider>
+  );
 }
 
 export default App;

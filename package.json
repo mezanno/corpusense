@@ -20,15 +20,20 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.475.0",
+    "@iiif/parser": "^2.1.7",
+    "@tanstack/react-query": "^5.66.4",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss-animate": "^1.0.7",
+    "manifesto.js": "^4.2.21",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwind-merge": "^3.0.1",
-    "tailwindcss-animate": "^1.0.7"
+    "react-virtuoso": "^4.12.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
     "@tailwindcss/vite": "^4.0.6",
     "@types/node": "^22.13.4",
+    "@tanstack/eslint-plugin-query": "^5.66.1",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@typescript-eslint/eslint-plugin": "^8.24.0",
