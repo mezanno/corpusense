@@ -1,7 +1,33 @@
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
+import Home from './pages/Home';
+import Layout from './pages/Layout';
+import ManifestViewer from './pages/ManifestViewer';
+import { fetchManifest } from './state/reducers/manifests';
 
 function App() {
-  return <h1 className='m-3 border-2 bg-neutral-500 p-6 text-4xl font-bold'>CorpuSense</h1>;
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const manifestUrl = urlParams.get('manifest');
+    if (manifestUrl != null) {
+      dispatch(fetchManifest(manifestUrl));
+    }
+  }, []);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path='/corpusense' element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path='manifest' element={<ManifestViewer />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
