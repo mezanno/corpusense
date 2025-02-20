@@ -1,6 +1,6 @@
 import { fetchManifest } from '@/state/reducers/manifests';
 import { getHistory } from '@/state/selectors/manifests';
-import { FolderSearch2, Home } from 'lucide-react';
+import { FolderSearch2, Home, List } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, Outlet } from 'react-router-dom';
 import {
@@ -35,6 +35,11 @@ const items = [
     title: 'Manifest Explorer',
     url: 'manifest',
     icon: FolderSearch2,
+  },
+  {
+    title: 'Lists Manager',
+    url: 'lists',
+    icon: List,
   },
 ];
 

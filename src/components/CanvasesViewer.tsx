@@ -1,8 +1,8 @@
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { Canvas } from '@iiif/presentation-3';
 import CloverImage from '@samvera/clover-iiif/image';
 import { FC, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import Selecto from 'react-selecto';
+import Selecto, { OnSelect } from 'react-selecto';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeGrid as Grid, FixedSizeList as List } from 'react-window';
 import { setSelection } from '../state/reducers/selection';
@@ -60,34 +60,29 @@ const Row: FC<RowProps> = ({ index, style, data }) => {
 };
 
 const CanvasesViewer: FC = () => {
-  const { data, error, isLoading } = useSelector((state) => state.manifests);
+  const { data, error, isLoading } = useAppSelector((state) => state.manifests);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
   const [image, setImage] = useState(null);
   const [mode, setMode] = useState('grid');
 
-  const [selected, setSelected] = useState([]);
-
   const containerRef = useRef(null);
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (data) {
       setCanvases(data.items);
-      console.log('set canvases');
     }
   }, [data]);
 
   const handleCardClick = (canvas: Canvas) => {
     //TODO! Vérifications à faire
-    if (canvas.items?.[0]?.items?.[0]?.body) {
+    if (canvas.items?.[0]?.items?.[0]?.body != null) {
       setImage(canvas.items[0].items[0].body);
     }
   };
 
-  const handleSelect = (e) => {
-    console.log('handleSelect: ', e);
-
+  const handleSelect = (e: OnSelect) => {
     dispatch(setSelection(e.selected.map((el) => Number(el.dataset.index))));
   };
 

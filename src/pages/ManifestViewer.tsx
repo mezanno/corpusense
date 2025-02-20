@@ -14,19 +14,19 @@ import {
 } from '../components/ui/drawer';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fetchManifest } from '@/state/reducers/manifests';
 import { getManifestURL } from '@/state/selectors/manifests';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ExternalLink } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
 import { z } from 'zod';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from '../components/ui/form';
 import { Input } from '../components/ui/input';
 
@@ -35,8 +35,8 @@ const formSchema = z.object({
 });
 
 const ManifestURLForm = () => {
-  const dispatch = useDispatch();
-  const currentManifestId = useSelector(getManifestURL) || '';
+  const dispatch = useAppDispatch();
+  const currentManifestId = useAppSelector(getManifestURL) != null || '';
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,7 +62,7 @@ const ManifestURLForm = () => {
               <FormControl>
                 <Input {...field} />
               </FormControl>
-              <FormDescription>The URL of the manifest to open</FormDescription>
+              <FormMessage />
             </FormItem>
           )}
         />
