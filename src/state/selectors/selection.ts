@@ -1,3 +1,3 @@
-import { SelectionState } from '../reducers/selection';
+import { RootState } from '../store';
 
-export const getSelection = (state: SelectionState): number[] => state?.selection?.canvases ?? [];
+export const getSelection = (state: RootState): number[] => state?.selection?.canvases ?? [];
