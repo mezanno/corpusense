@@ -1,14 +1,32 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
-import ManifestViewer from './components/ManifestViewer';
-
-const queryClient = new QueryClient();
+import Home from './pages/Home';
+import Layout from './pages/Layout';
+import ManifestViewer from './pages/ManifestViewer';
+import { fetchManifest } from './state/reducers/manifests';
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const manifestUrl = urlParams.get('manifest');
+    if (manifestUrl != null) {
+      dispatch(fetchManifest(manifestUrl));
+    }
+  }, []);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <ManifestViewer />
-    </QueryClientProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/corpusense' element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path='manifest' element={<ManifestViewer />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
