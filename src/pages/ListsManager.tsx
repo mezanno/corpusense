@@ -1,0 +1,120 @@
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { List } from '@/data/models/list';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { addListRequest, removeListRequest } from '@/state/reducers/lists';
+import { getLists } from '@/state/selectors/lists';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
+const formSchema = z.object({
+  name: z.string().min(4, {
+    message: 'Le nom de la liste doit contenir au moins 4 caractères',
+  }),
+});
+
+const NewListForm = () => {
+  // const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
+    dispatch(addListRequest(values.name));
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className='w-full space-y-4'>
+        <FormField
+          control={form.control}
+          name='name'
+          label='Nom de la liste'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nom de la liste</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type='submit'>Créer</Button>
+      </form>
+    </Form>
+  );
+};
+
+const ListsManager = () => {
+  const lists: List[] = useAppSelector(getLists);
+  const dispatch = useAppDispatch();
+
+  const handleDelete = (id: string) => {
+    dispatch(removeListRequest(id));
+  };
+
+  return (
+    <div className='flex h-full w-full flex-col items-center space-y-4'>
+      <div className='w-1/2 border-b-2 border-gray-200 p-2'>
+        <NewListForm />
+      </div>
+      {lists.length > 0 ? (
+        <div className='flex h-full w-1/2 flex-col items-center space-y-1'>
+          <div className='text-2xl'>Vous avez {lists.length} liste(s)</div>
+          <Table>
+            {/* <TableCaption>Vos Listes</TableCaption> */}
+            <TableHeader>
+              <TableRow>
+                <TableHead>Id</TableHead>
+                <TableHead>Nom de la liste</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {lists.map((list) => (
+                <TableRow key={list.id}>
+                  <TableCell>{list.id}</TableCell>
+                  <TableCell>{list.name}</TableCell>
+                  <TableCell className='space-x-2'>
+                    {/* <Button>Modifier</Button> */}
+                    <Button variant='destructive' onClick={() => handleDelete(list.id)}>
+                      Supprimer
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      ) : (
+        <div className='text-2xl'>Vous n&apos;avez aucune liste actuellement</div>
+      )}
+    </div>
+  );
+};
+
+export default ListsManager;

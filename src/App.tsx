@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
 import Home from './pages/Home';
 import Layout from './pages/Layout';
+import ListsManager from './pages/ListsManager';
 import ManifestViewer from './pages/ManifestViewer';
 import { fetchManifest } from './state/reducers/manifests';
 
@@ -24,6 +25,7 @@ function App() {
         <Route path='/corpusense' element={<Layout />}>
           <Route index element={<Home />} />
           <Route path='manifest' element={<ManifestViewer />} />
+          <Route path='lists' element={<ListsManager />} />
         </Route>
       </Routes>
     </BrowserRouter>
