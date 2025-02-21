@@ -1,7 +1,9 @@
+import { History } from '@/data/models/history';
+import { useAppSelector } from '@/hooks/hooks';
 import { fetchManifest } from '@/state/reducers/manifests';
 import { getHistory } from '@/state/selectors/manifests';
 import { FolderSearch2, Home, List } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Link, Outlet } from 'react-router-dom';
 import {
   Breadcrumb,
@@ -44,7 +46,7 @@ const items = [
 ];
 
 const AppSideBar = () => {
-  const history: string[] = useSelector(getHistory);
+  const history: History[] = useAppSelector(getHistory);
   const dispatch = useDispatch();
 
   return (
@@ -69,8 +71,8 @@ const AppSideBar = () => {
           <SidebarGroupLabel>History</SidebarGroupLabel>
           <SidebarGroupContent>
             {history.map((item) => (
-              <div key={item} onClick={() => dispatch(fetchManifest(item))}>
-                {item}
+              <div key={item.url} onClick={() => dispatch(fetchManifest(item.url))}>
+                {item.url}
                 <Separator />
               </div>
             ))}

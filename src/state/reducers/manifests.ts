@@ -1,3 +1,4 @@
+import { History } from '@/data/models/history';
 import { ManifestNormalized } from '@iiif/presentation-3-normalized';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -5,7 +6,7 @@ export interface ManifestState {
   isLoading: boolean;
   error: string | null;
   data: ManifestNormalized | null;
-  history: string[];
+  history: History[];
 }
 
 const initialState: ManifestState = {
@@ -30,12 +31,23 @@ export const manifestsSlice = createSlice({
     fetchManifestSuccess: (state, action: PayloadAction<ManifestNormalized>) => {
       state.isLoading = false;
       state.data = action.payload;
+    },
+    historyUpdated: (state, action: PayloadAction<History>) => {
       //add the manifest id to the history and remove the duplicates
-      state.history = state.history.filter((id) => id !== action.payload.id);
-      state.history.unshift(action.payload.id);
+      // state.history = state.history.filter((id) => id !== action.payload.id);
+      state.history.unshift(action.payload);
+    },
+    setHistory: (state, action: PayloadAction<History[]>) => {
+      state.history = action.payload;
     },
   },
 });
 
-export const { fetchManifest, fetchManifestError, fetchManifestSuccess } = manifestsSlice.actions;
+export const {
+  fetchManifest,
+  fetchManifestError,
+  fetchManifestSuccess,
+  setHistory,
+  historyUpdated,
+} = manifestsSlice.actions;
 export default manifestsSlice.reducer;

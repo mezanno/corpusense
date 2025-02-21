@@ -14,7 +14,6 @@ import {
   setLists,
 } from '../reducers/lists';
 
-// Saga pour charger les bookmarks depuis localStorage
 function* loadListsSaga() {
   try {
     const lists: List[] = yield db.lists.toArray();
