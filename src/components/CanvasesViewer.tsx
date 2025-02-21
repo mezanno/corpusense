@@ -5,8 +5,9 @@ import CloverImage from '@samvera/clover-iiif/image';
 import { FC, useEffect, useRef, useState } from 'react';
 import Selecto, { OnSelect } from 'react-selecto';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { FixedSizeGrid as Grid, FixedSizeList as List } from 'react-window';
+import { FixedSizeGrid as Grid } from 'react-window';
 import CanvasCard from './CanvasCard';
+import CanvasesListViewer from './CanvasesListViewer';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './ui/resizable';
 
 interface GridCellProps {
@@ -36,24 +37,6 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
       }`}
       style={style}
     >
-      <CanvasCard canvas={canvas} onClick={data.handleCardClick} index={index} />
-    </div>
-  );
-};
-
-interface RowProps {
-  index: number;
-  style: React.CSSProperties;
-  data: {
-    canvases: Canvas[];
-    handleCardClick: (canvas: Canvas) => void;
-  };
-}
-
-const Row: FC<RowProps> = ({ index, style, data }) => {
-  const canvas = data.canvases[index];
-  return (
-    <div style={style}>
       <CanvasCard canvas={canvas} onClick={data.handleCardClick} index={index} />
     </div>
   );
@@ -119,15 +102,14 @@ const CanvasesViewer: FC = () => {
                     {GridCell}
                   </Grid>
                 ) : (
-                  <List
+                  <CanvasesListViewer
                     height={height}
-                    width={150}
-                    itemSize={height / 6}
-                    itemCount={canvases.length}
-                    itemData={{ canvases, handleCardClick }}
-                  >
-                    {Row}
-                  </List>
+                    width={width}
+                    size={4}
+                    layout='vertical'
+                    canvases={canvases}
+                    handleCardClick={handleCardClick}
+                  />
                 )
               }
             </AutoSizer>
