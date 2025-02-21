@@ -1,11 +1,11 @@
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { setSelection } from '@/state/reducers/selection';
 import { Canvas } from '@iiif/presentation-3';
 import CloverImage from '@samvera/clover-iiif/image';
 import { FC, useEffect, useRef, useState } from 'react';
 import Selecto, { OnSelect } from 'react-selecto';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeGrid as Grid, FixedSizeList as List } from 'react-window';
-import { setSelection } from '../state/reducers/selection';
 import CanvasCard from './CanvasCard';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './ui/resizable';
 
@@ -83,7 +83,11 @@ const CanvasesViewer: FC = () => {
   };
 
   const handleSelect = (e: OnSelect) => {
-    dispatch(setSelection(e.selected.map((el) => Number(el.dataset.index))));
+    dispatch(
+      setSelection(
+        e.selected.map((el) => ({ index: el.dataset.index, canvasId: el.dataset.canvasId })),
+      ),
+    );
   };
 
   return (

@@ -1,4 +1,5 @@
 import { List } from '@/data/models/list';
+import { selection } from '@/data/models/selection';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface ListsState {
@@ -34,17 +35,16 @@ export const listsSlice = createSlice({
     setLists: (state, action: PayloadAction<List[]>) => {
       state.values = action.payload;
     },
-    // addSelectionToList: (state, action) => {
-    //   const selection = action.payload.selection;
-    //   const listId = action.payload.listId;
-    //   const list = state.values.find((elt) => elt.id === listId);
-    //   if (list) {
-    //     if (!list.content) {
-    //       list.content = [];
-    //     }
-    //     list.content.push(...selection);
-    //   }
-    // },
+    addSelectionToListRequest: (
+      _state,
+      _action: PayloadAction<{ selection: selection[]; listId: string }>,
+    ) => {},
+    addSelectionToListSuccess: (state, action: PayloadAction<List>) => {
+      const list: List = state.values.find((elt) => elt.id === action.payload.id);
+      if (list) {
+        list.content = action.payload.content;
+      }
+    },
     // removeSelectionFromList: (state, action) => {
     //   const idsToRemove = action.payload.idsToRemove;
     //   const listId = action.payload.listId;
@@ -64,6 +64,8 @@ export const {
   // updateList,
   setLists,
   // addSelectionToList,
+  addSelectionToListRequest,
+  addSelectionToListSuccess,
   // removeSelectionFromList,
 } = listsSlice.actions;
 export default listsSlice.reducer;

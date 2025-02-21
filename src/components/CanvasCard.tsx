@@ -1,16 +1,22 @@
 import { Canvas } from '@iiif/presentation-3';
 import { Label, Thumbnail } from '@samvera/clover-iiif/primitives';
-import { useDispatch, useSelector } from 'react-redux';
 import { Card, CardContent, CardHeader } from './ui/card';
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from './ui/context-menu';
 
+import { List } from '@/data/models/list';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { addSelectionToListRequest } from '@/state/reducers/lists';
+import { getLists } from '@/state/selectors/lists';
 import { setSelectionEnd, setSelectionStart } from '../state/reducers/selection';
-import { getSelection } from '../state/selectors/selection';
+import { getSelection, isSelected } from '../state/selectors/selection';
 
 interface CanvasCardProps {
   index: number;
@@ -19,9 +25,11 @@ interface CanvasCardProps {
 }
 
 const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
-  const selection = useSelector(getSelection);
+  const selection = useAppSelector(getSelection);
+  const lists: List[] = useAppSelector(getLists);
+  const selected: boolean = useAppSelector(isSelected(index, canvas.id));
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   //! mieux gérer le cas où canvas est undefined
   if (canvas === undefined) {
@@ -29,11 +37,15 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
   }
 
   const handleSetSelectionStart = () => {
-    dispatch(setSelectionStart(index));
+    dispatch(setSelectionStart({ index, canvasId: canvas.id }));
   };
 
   const handleSetSelectionEnd = () => {
-    dispatch(setSelectionEnd(index));
+    dispatch(setSelectionEnd({ index, canvasId: canvas.id }));
+  };
+
+  const handleAddSelectionToList = (listId: string) => {
+    dispatch(addSelectionToListRequest({ selection, listId }));
   };
 
   return (
@@ -42,8 +54,9 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
         <ContextMenuTrigger>
           <Card
             onClick={() => onClick(canvas)}
-            className={`selectable-item h-fit w-fit ${selection.includes(index) ? 'bg-blue-300' : 'bg-white'}`}
+            className={`selectable-item h-fit w-fit ${selected ? 'bg-blue-300' : 'bg-white'}`}
             data-index={index}
+            data-canvas-id={canvas.id}
           >
             <CardHeader>
               <Label className='text-center' label={canvas.label} />
@@ -61,7 +74,17 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
 
       <ContextMenuContent>
         {selection.length > 0 && (
-          <ContextMenuItem>Ajouter la sélection à une liste</ContextMenuItem>
+          <ContextMenuSub>
+            <ContextMenuSubTrigger> Ajouter la sélection à une liste</ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              {lists?.length > 0 &&
+                lists.map((list: List) => (
+                  <ContextMenuItem key={list.id} onClick={() => handleAddSelectionToList(list.id)}>
+                    {list.name}
+                  </ContextMenuItem>
+                ))}
+            </ContextMenuSubContent>
+          </ContextMenuSub>
         )}
         <ContextMenuItem onClick={handleSetSelectionStart}>
           Définir le début de sélection ici

@@ -1,5 +1,5 @@
 export interface List {
   id?: string;
   name: string;
-  content?: string;
+  content: [];
 }

@@ -1,4 +1,5 @@
 import { List } from '@/data/models/list';
+import { selection } from '@/data/models/selection';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { put, takeEvery } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
@@ -6,6 +7,8 @@ import { db } from '../../data/db';
 import {
   addListRequest,
   addListSuccess,
+  addSelectionToListRequest,
+  addSelectionToListSuccess,
   removeListRequest,
   removeListSuccess,
   setLists,
@@ -44,6 +47,26 @@ function* removeListSaga(action: PayloadAction<string>) {
   }
 }
 
+function* addSelectionToListSaga(
+  action: PayloadAction<{ selection: selection[]; listId: string }>,
+) {
+  const { payload } = action;
+  const selectionToAdd = action.payload.selection.map((elt) => elt.canvasId);
+  try {
+    const list: List = yield db.lists.get(payload.listId);
+    if (list) {
+      if (list.content === null || list.content === undefined) {
+        list.content = [];
+      }
+      list.content = [...list.content, ...selectionToAdd];
+      yield db.lists.put(list);
+      yield put(addSelectionToListSuccess(list));
+    }
+  } catch (e) {
+    console.log('error', e);
+  }
+}
+
 // Saga pour sauvegarder les bookmarks dans localStorage
 // function* saveListsSaga(action) {
 // else if (type == addSelectionToList.type) {
@@ -63,6 +86,7 @@ function* removeListSaga(action: PayloadAction<string>) {
 export default function* listsSaga() {
   yield takeEvery(addListRequest.type, addListSaga);
   yield takeEvery(removeListRequest.type, removeListSaga);
+  yield takeEvery(addSelectionToListRequest, addSelectionToListSaga);
   // yield takeEvery(addSelectionToList.type, saveListsSaga);
   // yield takeEvery(removeSelectionFromList.type, saveListsSaga);
   // yield takeEvery(updateList.type, saveListsSaga);
