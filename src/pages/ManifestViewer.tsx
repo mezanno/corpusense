@@ -14,6 +14,7 @@ import {
 } from '../components/ui/drawer';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
+import CanvasImageViewer from '@/components/CanvasImageViewer';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fetchManifest } from '@/state/reducers/manifests';
 import { getManifestURL } from '@/state/selectors/manifests';
@@ -109,9 +110,22 @@ const ManifestViewer = () => {
             <CanvasesViewer />
           </div>
         </ResizablePanel>
+        <ResizableHandle />
+        <ResizablePanel>
+          <div className='h-full w-full bg-amber-200'>
+            <CanvasImageViewer />
+          </div>
+        </ResizablePanel>
       </ResizablePanelGroup>
     </div>
   );
 };
 
 export default ManifestViewer;
+
+/*
+On est obligé de séparer CanvasesViewer et CanvasImageViewer à cause de Selecto. Si les deux sont dans le même composant, 
+Selecto empêche le fonctionnement correct de Annotorious.
+*/
+
+//TODO il va falloir attribuer un uuid aux composants qui veulent afficher un CanvasImageViewer (à transmettre dans le store)

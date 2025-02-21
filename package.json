@@ -17,6 +17,8 @@
     "format-src-fix": "prettier src --write"
   },
   "dependencies": {
+    "@annotorious/openseadragon": "^3.1.3",
+    "@annotorious/react": "^3.1.3",
     "@hookform/resolvers": "^4.1.0",
     "@iiif/helpers": "^1.3.1",
     "@iiif/parser": "^2.1.7",
@@ -43,6 +45,7 @@
     "dexie-react-hooks": "^1.1.7",
     "lucide-react": "^0.475.0",
     "next-themes": "^0.4.4",
+    "openseadragon": "^5.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
@@ -56,6 +59,7 @@
     "sonner": "^2.0.1",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
+    "tesseract.js": "^6.0.0",
     "uuid": "^11.1.0",
     "vaul": "^1.1.2",
     "zod": "^3.24.2"

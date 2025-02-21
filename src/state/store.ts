@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
+import canvasReducer from './reducers/canvas';
 import listReducer from './reducers/lists';
 import manifestsReducer from './reducers/manifests';
 import selectionReducer from './reducers/selection';
@@ -12,6 +13,7 @@ const store = configureStore({
     manifests: manifestsReducer,
     selection: selectionReducer,
     lists: listReducer,
+    canvases: canvasReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ thunk: false }).concat(sagaMiddleware),

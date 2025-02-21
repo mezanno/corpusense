@@ -1,14 +1,13 @@
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import { setSelection } from '@/state/reducers/selection';
 import { Canvas } from '@iiif/presentation-3';
-import CloverImage from '@samvera/clover-iiif/image';
 import { FC, useEffect, useRef, useState } from 'react';
 import Selecto, { OnSelect } from 'react-selecto';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeGrid as Grid } from 'react-window';
 import CanvasCard from './CanvasCard';
 import CanvasesListViewer from './CanvasesListViewer';
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './ui/resizable';
 
 interface GridCellProps {
   columnIndex: number;
@@ -43,14 +42,13 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
 };
 
 const CanvasesViewer: FC = () => {
+  const dispatch = useAppDispatch();
   const { data, error, isLoading } = useAppSelector((state) => state.manifests);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
   const [image, setImage] = useState(null);
   const [mode, setMode] = useState('grid');
 
   const containerRef = useRef(null);
-
-  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (data) {
@@ -61,7 +59,12 @@ const CanvasesViewer: FC = () => {
   const handleCardClick = (canvas: Canvas) => {
     //TODO! Vérifications à faire
     if (canvas.items?.[0]?.items?.[0]?.body != null) {
-      setImage(canvas.items[0].items[0].body);
+      console.log(canvas.items[0].items[0].body);
+
+      // setImage(canvas.items[0].items[0].body);
+      dispatch(
+        setCanvasFromComponent({ componentId: 'test', canvas: canvas.items[0].items[0].body }),
+      );
     }
   };
 
@@ -84,54 +87,36 @@ const CanvasesViewer: FC = () => {
         hitRate={0}
         onSelect={handleSelect}
       />
-      <ResizablePanelGroup direction='horizontal'>
-        <ResizablePanel>
-          {canvases && canvases.length > 0 ? (
-            <AutoSizer ref={containerRef}>
-              {({ height, width }) =>
-                mode === 'grid' ? (
-                  <Grid
-                    columnCount={4}
-                    columnWidth={width / 4}
-                    height={height}
-                    rowCount={Math.ceil(canvases.length / 4)}
-                    rowHeight={200}
-                    width={width}
-                    itemData={{ canvases, handleCardClick }}
-                  >
-                    {GridCell}
-                  </Grid>
-                ) : (
-                  <CanvasesListViewer
-                    height={height}
-                    width={width}
-                    size={4}
-                    layout='vertical'
-                    canvases={canvases}
-                    handleCardClick={handleCardClick}
-                  />
-                )
-              }
-            </AutoSizer>
-          ) : (
-            <div>Rien</div>
-          )}
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel>
-          {/* {image && ( */}
-          <div className='h-full w-full bg-amber-200'>
-            <CloverImage
-              body={image}
-              isTiledImage={true}
-              openSeadragonConfig={{
-                loadTilesWithAjax: false,
-              }}
-            />
-          </div>
-          {/* )} */}
-        </ResizablePanel>
-      </ResizablePanelGroup>
+      {canvases && canvases.length > 0 ? (
+        <AutoSizer ref={containerRef}>
+          {({ height, width }) =>
+            mode === 'grid' ? (
+              <Grid
+                columnCount={4}
+                columnWidth={width / 4}
+                height={height}
+                rowCount={Math.ceil(canvases.length / 4)}
+                rowHeight={200}
+                width={width}
+                itemData={{ canvases, handleCardClick }}
+              >
+                {GridCell}
+              </Grid>
+            ) : (
+              <CanvasesListViewer
+                height={height}
+                width={width}
+                size={4}
+                layout='vertical'
+                canvases={canvases}
+                handleCardClick={handleCardClick}
+              />
+            )
+          }
+        </AutoSizer>
+      ) : (
+        <div>Rien</div>
+      )}
     </div>
   );
 };
