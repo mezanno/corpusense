@@ -121,7 +121,13 @@ const CanvasesViewer: FC = () => {
         <ResizablePanel>
           {/* {image && ( */}
           <div className='h-full w-full bg-amber-200'>
-            <CloverImage body={image} isTiledImage={true} />
+            <CloverImage
+              body={image}
+              isTiledImage={true}
+              openSeadragonConfig={{
+                loadTilesWithAjax: false,
+              }}
+            />
           </div>
           {/* )} */}
         </ResizablePanel>
@@ -131,3 +137,10 @@ const CanvasesViewer: FC = () => {
 };
 
 export default CanvasesViewer;
+
+/*
+  openSeadragonConfig={{
+    loadTilesWithAjax: false,
+  }}
+  si true, charge les images avec XHR ce qui empêche de mettre en cache, il faut donc mettre false pour utiliser fetch
+*/
