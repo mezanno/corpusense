@@ -1,7 +1,7 @@
-import { selection } from '@/data/models/selection';
+import { SelectedCanvas } from '@/data/models/selectedCanvas';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export type SelectionState = selection[];
+export type SelectionState = SelectedCanvas[];
 
 const initialState: SelectionState = [];
 
@@ -11,10 +11,10 @@ export const selectionSlice = createSlice({
     canvases: initialState,
   },
   reducers: {
-    setSelection: (state, action: PayloadAction<selection[]>) => {
+    setSelection: (state, action: PayloadAction<SelectedCanvas[]>) => {
       state.canvases = action.payload;
     },
-    setSelectionStart: (state, action: PayloadAction<selection>) => {
+    setSelectionStart: (state, action: PayloadAction<SelectedCanvas>) => {
       console.log('setSelectionStart', action.payload);
 
       //if there is an element lower to the new start, we set the start to the new start
@@ -31,7 +31,7 @@ export const selectionSlice = createSlice({
 
       state.canvases.push(action.payload);
     },
-    setSelectionEnd: (state, action: PayloadAction<selection>) => {
+    setSelectionEnd: (state, action: PayloadAction<SelectedCanvas>) => {
       //if there is an element upper to the new end, we set the end to the new end
       state.canvases = state.canvases.filter((el) => el.index < action.payload.index);
 

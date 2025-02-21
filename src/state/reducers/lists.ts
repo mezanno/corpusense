@@ -1,5 +1,5 @@
 import { List } from '@/data/models/list';
-import { selection } from '@/data/models/selection';
+import { SelectedCanvas } from '@/data/models/selectedCanvas';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface ListsState {
@@ -37,13 +37,17 @@ export const listsSlice = createSlice({
     },
     addSelectionToListRequest: (
       _state,
-      _action: PayloadAction<{ selection: selection[]; listId: string }>,
+      _action: PayloadAction<{ selection: SelectedCanvas[]; listId: string }>,
     ) => {},
     addSelectionToListSuccess: (state, action: PayloadAction<List>) => {
       const list: List = state.values.find((elt) => elt.id === action.payload.id);
       if (list) {
         list.content = action.payload.content;
       }
+    },
+    fetchCanvasesOfListRequest: (_state, _action: PayloadAction<string>) => {},
+    fetchCanvasesOfListSuccess: (state, action: PayloadAction<List>) => {
+      const list: List = state.values.find((elt) => elt.id === action.payload.id);
     },
     // removeSelectionFromList: (state, action) => {
     //   const idsToRemove = action.payload.idsToRemove;

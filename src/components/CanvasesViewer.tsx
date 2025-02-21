@@ -85,7 +85,7 @@ const CanvasesViewer: FC = () => {
   const handleSelect = (e: OnSelect) => {
     dispatch(
       setSelection(
-        e.selected.map((el) => ({ index: el.dataset.index, canvasId: el.dataset.canvasId })),
+        e.selected.map((el) => ({ index: el.dataset.index, canvas: canvases[el.dataset.index] })),
       ),
     );
   };

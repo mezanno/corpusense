@@ -21,7 +21,7 @@ import {
 import { List } from '@/data/models/list';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { addListRequest, removeListRequest } from '@/state/reducers/lists';
-import { getLists } from '@/state/selectors/lists';
+import { getCanvasesOfList, getLists } from '@/state/selectors/lists';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -73,6 +73,9 @@ const NewListForm = () => {
 };
 
 const ListHoverCard = ({ list }: { list: List }) => {
+  const canvases = useAppSelector(getCanvasesOfList(list.id));
+  console.log(canvases);
+
   return (
     <div className='flex flex-col justify-between space-x-4'>
       <h4>{list.name}</h4>

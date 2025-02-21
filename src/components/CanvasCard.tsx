@@ -37,11 +37,11 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
   }
 
   const handleSetSelectionStart = () => {
-    dispatch(setSelectionStart({ index, canvasId: canvas.id }));
+    dispatch(setSelectionStart({ index, canvas }));
   };
 
   const handleSetSelectionEnd = () => {
-    dispatch(setSelectionEnd({ index, canvasId: canvas.id }));
+    dispatch(setSelectionEnd({ index, canvas }));
   };
 
   const handleAddSelectionToList = (listId: string) => {
