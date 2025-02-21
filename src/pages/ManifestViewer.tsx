@@ -36,8 +36,8 @@ const formSchema = z.object({
 
 const ManifestURLForm = () => {
   const dispatch = useAppDispatch();
-  const currentManifestId = useAppSelector(getManifestURL) != null || '';
-
+  //currentManifestId is the current manifest URL or '' is null
+  const currentManifestId = useAppSelector(getManifestURL) ?? '';
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
