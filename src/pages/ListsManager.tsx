@@ -1,3 +1,4 @@
+import CanvasesListViewer from '@/components/CanvasesListViewer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -74,7 +75,6 @@ const NewListForm = () => {
 
 const ListHoverCard = ({ list }: { list: List }) => {
   const canvases = useAppSelector(getCanvasesOfList(list.id));
-  console.log(canvases);
 
   return (
     <div className='flex flex-col justify-between space-x-4'>
@@ -82,7 +82,19 @@ const ListHoverCard = ({ list }: { list: List }) => {
       {list.content === undefined || list.content.length === 0 ? (
         <div>Cette liste ne contient aucun élément</div>
       ) : (
-        <div>Contient {list.content.length} éléments</div>
+        <div>
+          <div>Contient {list.content.length} éléments</div>
+          <div>
+            <CanvasesListViewer
+              width={500}
+              height={150}
+              size={4}
+              layout='horizontal'
+              canvases={canvases.map((canvas) => canvas.canvas)}
+              handleCardClick={() => console.log('click')}
+            />{' '}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -141,7 +153,7 @@ const ListsManager = () => {
                       </TableCell>
                     </TableRow>
                   </HoverCardTrigger>
-                  <HoverCardContent>
+                  <HoverCardContent className='w-full'>
                     <ListHoverCard list={list} />
                   </HoverCardContent>
                 </HoverCard>
