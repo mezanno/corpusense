@@ -7,6 +7,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -21,6 +22,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { addListRequest, removeListRequest } from '@/state/reducers/lists';
 import { getLists } from '@/state/selectors/lists';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -69,6 +71,15 @@ const NewListForm = () => {
   );
 };
 
+const ListHoverCard = ({ list }: { list: List }) => {
+  return (
+    <div className='flex flex-col justify-between space-x-4'>
+      <h4>{list.name}</h4>
+      <div>Contient {list.content.length} éléments</div>
+    </div>
+  );
+};
+
 const ListsManager = () => {
   const lists: List[] = useAppSelector(getLists);
   const dispatch = useAppDispatch();
@@ -96,16 +107,24 @@ const ListsManager = () => {
             </TableHeader>
             <TableBody>
               {lists.map((list) => (
-                <TableRow key={list.id}>
-                  <TableCell>{list.id}</TableCell>
-                  <TableCell>{list.name}</TableCell>
-                  <TableCell className='space-x-2'>
-                    {/* <Button>Modifier</Button> */}
-                    <Button variant='destructive' onClick={() => handleDelete(list.id)}>
-                      Supprimer
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                <HoverCard key={list.id}>
+                  <HoverCardTrigger asChild>
+                    <TableRow>
+                      <TableCell>{list.id}</TableCell>
+                      <TableCell>{list.name}</TableCell>
+
+                      <TableCell className='space-x-2'>
+                        <Button variant='destructive' onClick={() => handleDelete(list.id)}>
+                          <Trash2 />
+                          Supprimer
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  </HoverCardTrigger>
+                  <HoverCardContent>
+                    <ListHoverCard list={list} />
+                  </HoverCardContent>
+                </HoverCard>
               ))}
             </TableBody>
           </Table>
