@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -75,7 +76,11 @@ const ListHoverCard = ({ list }: { list: List }) => {
   return (
     <div className='flex flex-col justify-between space-x-4'>
       <h4>{list.name}</h4>
-      <div>Contient {list.content.length} éléments</div>
+      {list.content === undefined || list.content.length === 0 ? (
+        <div>Cette liste ne contient aucun élément</div>
+      ) : (
+        <div>Contient {list.content.length} éléments</div>
+      )}
     </div>
   );
 };
@@ -94,7 +99,7 @@ const ListsManager = () => {
         <NewListForm />
       </div>
       {lists.length > 0 ? (
-        <div className='flex h-full w-1/2 flex-col items-center space-y-1'>
+        <div className='flex h-full w-2/3 flex-col items-center space-y-1'>
           <div className='text-2xl'>Vous avez {lists.length} liste(s)</div>
           <Table>
             {/* <TableCaption>Vos Listes</TableCaption> */}
@@ -103,6 +108,7 @@ const ListsManager = () => {
                 <TableHead>Id</TableHead>
                 <TableHead>Nom de la liste</TableHead>
                 <TableHead>Actions</TableHead>
+                <TableHead>Informations</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -112,12 +118,23 @@ const ListsManager = () => {
                     <TableRow>
                       <TableCell>{list.id}</TableCell>
                       <TableCell>{list.name}</TableCell>
-
                       <TableCell className='space-x-2'>
                         <Button variant='destructive' onClick={() => handleDelete(list.id)}>
                           <Trash2 />
                           Supprimer
                         </Button>
+                      </TableCell>
+                      <TableCell>
+                        {list.content === undefined || list.content.length === 0 ? (
+                          <Badge variant='secondary' className='text-sm'>
+                            Liste vide
+                          </Badge>
+                        ) : (
+                          <Badge className='text-sm'>
+                            <span className='text-md font-bold'>{list.content.length}</span>{' '}
+                            élément(s)
+                          </Badge>
+                        )}
                       </TableCell>
                     </TableRow>
                   </HoverCardTrigger>
