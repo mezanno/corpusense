@@ -5,6 +5,7 @@ import {
   OpenSeadragonAnnotationPopup,
   OpenSeadragonAnnotator,
   OpenSeadragonViewer,
+  PopupProps,
 } from '@annotorious/react';
 import '@annotorious/react/annotorious-react.css';
 
@@ -32,11 +33,15 @@ const CanvasImageViewer = () => {
               type: 'image',
               url: canvasImage.id,
             },
+            loadTilesWithAjax: true,
+            // showNavigator: true,
+            showSequenceControl: true,
+            showHomeControl: true,
+            showFullPageControl: true,
           }}
         />
-
         <OpenSeadragonAnnotationPopup
-          popup={(props) => <div className='annotorious-popup'>Hello World</div>}
+          popup={(props: PopupProps) => <div className='annotorious-popup'>Hello World</div>}
         />
       </OpenSeadragonAnnotator>
     </Annotorious>
