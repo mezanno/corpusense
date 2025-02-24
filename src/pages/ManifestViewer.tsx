@@ -15,11 +15,15 @@ import {
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
 import CanvasImageViewer from '@/components/CanvasImageViewer';
+import { Progress } from '@/components/ui/progress';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fetchManifest } from '@/state/reducers/manifests';
+import { getCanvasForCanvas } from '@/state/selectors/canvas';
 import { getManifestURL } from '@/state/selectors/manifests';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { createWorker } from 'tesseract.js';
 import { z } from 'zod';
 import {
   Form,
@@ -74,6 +78,29 @@ const ManifestURLForm = () => {
 };
 
 const ManifestViewer = () => {
+  const canvasImage = useAppSelector(getCanvasForCanvas('test'));
+  const [progress, setProgress] = useState(0);
+  const [working, setWorking] = useState(false);
+
+  const handleGetOcr = async () => {
+    if (!canvasImage) return;
+
+    setWorking(true);
+    const worker = await createWorker('fra', 1, {
+      logger: (m) => {
+        console.log(m);
+        setProgress(m.progress * 100);
+      },
+    });
+    console.log('OCR ', canvasImage);
+    const {
+      data: { text },
+    } = await worker.recognize(canvasImage.id);
+    console.log(text);
+    await worker.terminate();
+    setWorking(false);
+  };
+
   return (
     <div className='relative h-full w-full'>
       <Drawer>
@@ -112,8 +139,19 @@ const ManifestViewer = () => {
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel>
-          <div className='h-full w-full bg-amber-200'>
+          <div className='relative h-full w-full bg-amber-200'>
             <CanvasImageViewer />
+            <button
+              className='absolute top-0 right-0 m-4 rounded-md bg-white p-2 shadow-md'
+              onClick={handleGetOcr}
+            >
+              OCR
+            </button>
+            {working && (
+              <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center'>
+                <Progress value={progress} className='w-[60%]' />
+              </div>
+            )}
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
