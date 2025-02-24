@@ -1,6 +1,6 @@
 import { Canvas } from '@iiif/presentation-3';
 
 export interface StoredCanvas {
-  id: string;
+  id: string; //url du canvas
   content: Canvas;
 }
