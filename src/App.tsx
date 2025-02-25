@@ -26,6 +26,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path='manifest' element={<ManifestViewer />} />
           <Route path='lists' element={<ListsManager />} />
+          <Route path='*' element={<Home />} />
         </Route>
       </Routes>
     </BrowserRouter>
