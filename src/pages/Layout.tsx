@@ -1,9 +1,9 @@
 import { History } from '@/data/models/history';
-import { useAppSelector } from '@/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fetchManifestRequest } from '@/state/reducers/manifests';
 import { getHistory } from '@/state/selectors/manifests';
 import { FolderSearch2, Home, List } from 'lucide-react';
-import { useDispatch } from 'react-redux';
+import { useCallback, useMemo } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import {
   Breadcrumb,
@@ -47,7 +47,23 @@ const items = [
 
 const AppSideBar = () => {
   const history: History[] = useAppSelector(getHistory);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
+
+  const handleHistoryClick = useCallback(
+    (url: string) => dispatch(fetchManifestRequest(url)),
+    [dispatch],
+  );
+
+  const historyItems = useMemo(
+    () =>
+      history.map((item) => (
+        <div key={item.url} onClick={() => handleHistoryClick(item.url)} className='cursor-pointer'>
+          {item.url}
+          <Separator />
+        </div>
+      )),
+    [history, handleHistoryClick],
+  );
 
   return (
     <Sidebar>
@@ -67,16 +83,9 @@ const AppSideBar = () => {
             ))}
           </SidebarMenu>
         </SidebarGroup>
-        <SidebarGroup>
+        <SidebarGroup id='history'>
           <SidebarGroupLabel>History</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {history.map((item) => (
-              <div key={item.url} onClick={() => dispatch(fetchManifestRequest(item.url))}>
-                {item.url}
-                <Separator />
-              </div>
-            ))}
-          </SidebarGroupContent>
+          <SidebarGroupContent>{historyItems}</SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
@@ -109,5 +118,7 @@ const Layout = () => {
     </SidebarProvider>
   );
 };
+
+export { AppSideBar };
 
 export default Layout;
