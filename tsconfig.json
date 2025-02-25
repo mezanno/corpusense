@@ -13,6 +13,7 @@
     "strictFunctionTypes": true,
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
-    "alwaysStrict": true
+    "alwaysStrict": true,
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]
   }
 }

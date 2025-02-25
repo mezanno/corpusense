@@ -1,0 +1,17 @@
+import '@testing-library/jest-dom/vitest';
+import { cleanup } from '@testing-library/react';
+import { afterEach } from 'vitest';
+
+// runs a clean after each test case (e.g. clearing jsdom)
+afterEach(() => {
+  cleanup();
+});
+
+//Nécessaire pour que le hook use-mobile.ts (généré par shadcn ui) fonctionne correctement dans les tests
+globalThis.matchMedia =
+  globalThis.matchMedia ||
+  (() => ({
+    matches: false,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }));

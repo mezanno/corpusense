@@ -2,8 +2,9 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { defineConfig, PluginOption } from 'vite';
+import { PluginOption } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { defineConfig } from 'vitest/config'; //au lieu de { defineConfig } from 'vitest/config' pour pouvoir configurer test
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -49,6 +50,16 @@ export default defineConfig({
           clover: ['@samvera/clover-iiif'],
         },
       },
+    },
+  },
+  test: {
+    globals: true, // Activer les fonctions globales comme 'describe', 'it', etc.
+    environment: 'jsdom', // Utiliser jsdom pour simuler un environnement de navigateur
+    setupFiles: './vitest.setup.ts',
+    // include: ['**/*.test.ts', '**/*.test.tsx'],
+    // exclude: [...configDefaults.exclude, 'node_modules'],
+    coverage: {
+      provider: 'v8',
     },
   },
 });
