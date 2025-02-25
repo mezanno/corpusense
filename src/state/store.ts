@@ -1,4 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
 import canvasReducer from './reducers/canvas';
 import listReducer from './reducers/lists';
@@ -8,13 +8,15 @@ import getRootSaga from './sagas';
 
 const sagaMiddleware = createSagaMiddleware();
 
+export const rootReducer = combineReducers({
+  manifests: manifestsReducer,
+  selection: selectionReducer,
+  lists: listReducer,
+  canvases: canvasReducer,
+});
+
 const store = configureStore({
-  reducer: {
-    manifests: manifestsReducer,
-    selection: selectionReducer,
-    lists: listReducer,
-    canvases: canvasReducer,
-  },
+  reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ thunk: false }).concat(sagaMiddleware),
 });
