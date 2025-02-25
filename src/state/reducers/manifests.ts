@@ -1,11 +1,11 @@
 import { History } from '@/data/models/history';
-import { ManifestNormalized } from '@iiif/presentation-3-normalized';
+import { Manifest } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface ManifestState {
   isLoading: boolean;
   error: string | null;
-  data: ManifestNormalized | null;
+  data: Manifest | null;
   history: History[];
 }
 
@@ -17,10 +17,10 @@ const initialState: ManifestState = {
 };
 
 export const manifestsSlice = createSlice({
-  name: 'viewer',
+  name: 'manifests',
   initialState,
   reducers: {
-    fetchManifest: (state, _action: PayloadAction<string>) => {
+    fetchManifestRequest: (state, _action: PayloadAction<string>) => {
       state.isLoading = true;
       state.error = null;
     },
@@ -28,7 +28,11 @@ export const manifestsSlice = createSlice({
       state.isLoading = false;
       state.error = action.payload;
     },
-    fetchManifestSuccess: (state, action: PayloadAction<ManifestNormalized>) => {
+    fetchManifestSuccess: (state, action: PayloadAction<Manifest>) => {
+      console.log('fetchManifestSuccess', action.payload);
+      const m: Manifest = action.payload;
+      console.log(m.items);
+
       state.isLoading = false;
       state.data = action.payload;
     },
@@ -44,7 +48,7 @@ export const manifestsSlice = createSlice({
 });
 
 export const {
-  fetchManifest,
+  fetchManifestRequest,
   fetchManifestError,
   fetchManifestSuccess,
   setHistory,

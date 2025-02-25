@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import CanvasesListViewer from '@/components/CanvasesListViewer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -56,7 +57,6 @@ const NewListForm = () => {
         <FormField
           control={form.control}
           name='name'
-          label='Nom de la liste'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nom de la liste</FormLabel>
@@ -74,7 +74,7 @@ const NewListForm = () => {
 };
 
 const ListHoverCard = ({ list }: { list: List }) => {
-  const canvases = useAppSelector(getCanvasesOfList(list.id));
+  const canvases = useAppSelector(getCanvasesOfList(list.id as string));
 
   return (
     <div className='flex flex-col justify-between space-x-4'>
@@ -134,7 +134,10 @@ const ListsManager = () => {
                       <TableCell>{list.id}</TableCell>
                       <TableCell>{list.name}</TableCell>
                       <TableCell className='space-x-2'>
-                        <Button variant='destructive' onClick={() => handleDelete(list.id)}>
+                        <Button
+                          variant='destructive'
+                          onClick={() => handleDelete(list.id as string)}
+                        >
                           <Trash2 />
                           Supprimer
                         </Button>

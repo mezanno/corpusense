@@ -40,14 +40,18 @@ export const listsSlice = createSlice({
       _action: PayloadAction<{ selection: SelectedCanvas[]; listId: string }>,
     ) => {},
     addSelectionToListSuccess: (state, action: PayloadAction<List>) => {
-      const list: List = state.values.find((elt) => elt.id === action.payload.id);
-      if (list) {
+      const list: List | undefined = state.values.find((elt) => elt.id === action.payload.id);
+      if (list !== undefined) {
         list.content = action.payload.content;
       }
     },
     fetchCanvasesOfListRequest: (_state, _action: PayloadAction<string>) => {},
     fetchCanvasesOfListSuccess: (state, action: PayloadAction<List>) => {
-      const list: List = state.values.find((elt) => elt.id === action.payload.id);
+      // const list: List = state.values.find((elt) => elt.id === action.payload.id);
+      console.log(
+        'fetchCanvasesOfListSuccess: ',
+        state.values.find((elt) => elt.id === action.payload.id),
+      );
     },
     // removeSelectionFromList: (state, action) => {
     //   const idsToRemove = action.payload.idsToRemove;

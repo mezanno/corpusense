@@ -1,13 +1,16 @@
+import { SelectedCanvas } from '@/data/models/selectedCanvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import { setSelection } from '@/state/reducers/selection';
-import { Canvas } from '@iiif/presentation-3';
+import { getManifest } from '@/state/selectors/manifests';
+import { Canvas, ContentResource } from '@iiif/presentation-3';
 import { FC, useEffect, useRef, useState } from 'react';
 import Selecto, { OnSelect } from 'react-selecto';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeGrid as Grid } from 'react-window';
 import CanvasCard from './CanvasCard';
 import CanvasesListViewer from './CanvasesListViewer';
+import { Spinner } from './ui/spinner';
 
 interface GridCellProps {
   columnIndex: number;
@@ -43,10 +46,9 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
 
 const CanvasesViewer: FC = () => {
   const dispatch = useAppDispatch();
-  const { data, error, isLoading } = useAppSelector((state) => state.manifests);
+  const { data, isLoading } = useAppSelector(getManifest);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
-  const [image, setImage] = useState(null);
-  const [mode, setMode] = useState('grid');
+  const [mode] = useState('grid');
 
   const containerRef = useRef(null);
 
@@ -61,61 +63,73 @@ const CanvasesViewer: FC = () => {
     if (canvas.items?.[0]?.items?.[0]?.body != null) {
       console.log(canvas.items[0].items[0].body);
 
-      // setImage(canvas.items[0].items[0].body);
       dispatch(
-        setCanvasFromComponent({ componentId: 'test', canvas: canvas.items[0].items[0].body }),
+        setCanvasFromComponent({
+          componentId: 'test',
+          canvas: canvas.items[0].items[0].body as ContentResource,
+        }),
       );
     }
   };
 
   const handleSelect = (e: OnSelect) => {
-    dispatch(
-      setSelection(
-        e.selected.map((el) => ({ index: el.dataset.index, canvas: canvases[el.dataset.index] })),
-      ),
-    );
+    const selection: SelectedCanvas[] = [];
+    e.selected.forEach((el) => {
+      if (el?.dataset?.index !== undefined) {
+        selection.push({ index: +el.dataset.index, canvas: canvases[+el.dataset.index] });
+      }
+    });
+    dispatch(setSelection(selection));
   };
 
   return (
     <div className='flex h-full p-4'>
-      <Selecto
-        container={containerRef.current}
-        selectableTargets={['.selectable-item']}
-        selectByClick={true}
-        selectFromInside={true}
-        toggleContinueSelect={['shift']}
-        hitRate={0}
-        onSelect={handleSelect}
-      />
-      {canvases && canvases.length > 0 ? (
-        <AutoSizer ref={containerRef}>
-          {({ height, width }) =>
-            mode === 'grid' ? (
-              <Grid
-                columnCount={4}
-                columnWidth={width / 4}
-                height={height}
-                rowCount={Math.ceil(canvases.length / 4)}
-                rowHeight={200}
-                width={width}
-                itemData={{ canvases, handleCardClick }}
-              >
-                {GridCell}
-              </Grid>
-            ) : (
-              <CanvasesListViewer
-                height={height}
-                width={width}
-                size={4}
-                layout='vertical'
-                canvases={canvases}
-                handleCardClick={handleCardClick}
-              />
-            )
-          }
-        </AutoSizer>
+      {!isLoading ? (
+        <>
+          <Selecto
+            container={containerRef.current}
+            selectableTargets={['.selectable-item']}
+            selectByClick={true}
+            selectFromInside={true}
+            toggleContinueSelect={['shift']}
+            hitRate={0}
+            onSelect={handleSelect}
+          />
+          {canvases?.length > 0 ? (
+            <AutoSizer ref={containerRef}>
+              {({ height, width }) =>
+                mode === 'grid' ? (
+                  <Grid
+                    columnCount={4}
+                    columnWidth={width / 4}
+                    height={height}
+                    rowCount={Math.ceil(canvases.length / 4)}
+                    rowHeight={200}
+                    width={width}
+                    itemData={{ canvases, handleCardClick }}
+                  >
+                    {GridCell}
+                  </Grid>
+                ) : (
+                  <CanvasesListViewer
+                    height={height}
+                    width={width}
+                    size={4}
+                    layout='vertical'
+                    canvases={canvases}
+                    handleCardClick={handleCardClick}
+                  />
+                )
+              }
+            </AutoSizer>
+          ) : (
+            <div>Rien</div>
+          )}
+        </>
       ) : (
-        <div>Rien</div>
+        <div className='flex h-full w-full items-center justify-center'>
+          <Spinner size={'large'} />
+        </div>
       )}
     </div>
   );

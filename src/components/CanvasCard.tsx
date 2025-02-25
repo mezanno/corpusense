@@ -1,4 +1,4 @@
-import { Canvas } from '@iiif/presentation-3';
+import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Label, Thumbnail } from '@samvera/clover-iiif/primitives';
 import { Card, CardContent, CardHeader } from './ui/card';
 import {
@@ -29,6 +29,9 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
   const lists: List[] = useAppSelector(getLists);
   const selected: boolean = useAppSelector(isSelected(index, canvas.id));
 
+  //TODO : gérer le cas où canvas.thumbnail est undefined
+  const thumbnail = canvas.thumbnail as IIIFExternalWebResource[];
+
   const dispatch = useAppDispatch();
 
   //! mieux gérer le cas où canvas est undefined
@@ -44,7 +47,8 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
     dispatch(setSelectionEnd({ index, canvas }));
   };
 
-  const handleAddSelectionToList = (listId: string) => {
+  const handleAddSelectionToList = (listId: string | undefined) => {
+    if (listId === undefined) return;
     dispatch(addSelectionToListRequest({ selection, listId }));
   };
 
@@ -59,11 +63,11 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
             data-canvas-id={canvas.id}
           >
             <CardHeader>
-              <Label className='text-center' label={canvas.label} />
+              <Label className='text-center' label={canvas.label ? canvas.label : {}} />
             </CardHeader>
             <CardContent>
               <Thumbnail
-                thumbnail={canvas.thumbnail}
+                thumbnail={thumbnail}
                 style={{ width: 'auto', height: '100px' }}
                 className='w-fit'
               />

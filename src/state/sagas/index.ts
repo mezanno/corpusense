@@ -2,7 +2,7 @@ import { all, call, fork, spawn } from 'redux-saga/effects';
 import listsSaga, { loadListsSaga } from './lists';
 import manifestsSaga, { loadHistorySaga } from './manifests';
 
-function* launchSaga(saga) {
+function* launchSaga(saga: () => Generator) {
   while (true) {
     try {
       yield call(saga);

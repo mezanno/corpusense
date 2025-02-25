@@ -2,41 +2,45 @@ import { db } from '@/data/db';
 import { History } from '@/data/models/history';
 import { convertJsonToManifest } from '@/utils/manifest';
 import { getErrorMessage } from '@/utils/utils';
-import { ManifestNormalized } from '@iiif/presentation-3-normalized';
-import { put, takeLatest } from 'redux-saga/effects';
+import { Manifest } from '@iiif/presentation-3';
+import { call, Effect, put, takeLatest } from 'redux-saga/effects';
 import {
-  fetchManifest,
   fetchManifestError,
+  fetchManifestRequest,
   fetchManifestSuccess,
   historyUpdated,
   setHistory,
 } from '../reducers/manifests';
 
-const fetchJson = async (url: string): Promise<ManifestNormalized> => {
-  const response = await fetch(url);
+const fetchJson = async (url: string): Promise<Manifest> => {
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/json',
+    },
+  });
   if (!response.ok) {
-    //TODO: handle message
-    throw new Error('URL not found');
+    throw new Error(`Failed to fetch manifest ${response.statusText}`);
   }
+  //TODO! gérer cas où ce n'est pas un objet (unknown)
   const data: object = (await response.json()) as object;
 
-  if (data['@context'] && data['@context'] === 'http://iiif.io/api/presentation/3/context.json') {
-    return data as ManifestNormalized;
+  if ('@context' in data && data['@context'] === 'http://iiif.io/api/presentation/3/context.json') {
+    return data as Manifest;
   }
 
   return convertJsonToManifest(data);
 };
 
-function* handleFetchManifest(action: { payload: string }) {
+function* handleFetchManifest(action: { payload: string }): Generator<Effect, void, Manifest> {
   const manifestUrl = action.payload;
   try {
-    const data: ManifestNormalized = yield fetchJson(manifestUrl);
+    const data: Manifest = yield call(fetchJson, manifestUrl);
 
     yield put(fetchManifestSuccess(data));
 
     try {
       const addedHistory: History = { url: manifestUrl };
-      yield db.history.add(addedHistory);
+      yield call(() => db.history.add(addedHistory));
       yield put(historyUpdated(addedHistory));
     } catch (error) {
       console.warn('Error saving history to indexedDB', error);
@@ -47,9 +51,9 @@ function* handleFetchManifest(action: { payload: string }) {
 }
 
 // Saga pour charger les bookmarks depuis localStorage
-function* loadHistorySaga() {
+function* loadHistorySaga(): Generator<Effect, void, History[]> {
   try {
-    const history: History[] = yield db.history.toArray();
+    const history: History[] = yield call(() => db.history.toArray());
 
     yield put({ type: setHistory.type, payload: history });
   } catch (e) {
@@ -58,7 +62,7 @@ function* loadHistorySaga() {
 }
 
 export default function* viewerSaga() {
-  yield takeLatest(fetchManifest, handleFetchManifest);
+  yield takeLatest(fetchManifestRequest, handleFetchManifest);
 }
 
 export { loadHistorySaga };

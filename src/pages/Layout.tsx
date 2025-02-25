@@ -1,6 +1,6 @@
 import { History } from '@/data/models/history';
 import { useAppSelector } from '@/hooks/hooks';
-import { fetchManifest } from '@/state/reducers/manifests';
+import { fetchManifestRequest } from '@/state/reducers/manifests';
 import { getHistory } from '@/state/selectors/manifests';
 import { FolderSearch2, Home, List } from 'lucide-react';
 import { useDispatch } from 'react-redux';
@@ -71,7 +71,7 @@ const AppSideBar = () => {
           <SidebarGroupLabel>History</SidebarGroupLabel>
           <SidebarGroupContent>
             {history.map((item) => (
-              <div key={item.url} onClick={() => dispatch(fetchManifest(item.url))}>
+              <div key={item.url} onClick={() => dispatch(fetchManifestRequest(item.url))}>
                 {item.url}
                 <Separator />
               </div>

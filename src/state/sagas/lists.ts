@@ -1,7 +1,7 @@
 import { List } from '@/data/models/list';
 import { SelectedCanvas } from '@/data/models/selectedCanvas';
 import { PayloadAction } from '@reduxjs/toolkit';
-import { put, takeEvery } from 'redux-saga/effects';
+import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
 import { db } from '../../data/db';
 import {
@@ -14,9 +14,9 @@ import {
   setLists,
 } from '../reducers/lists';
 
-function* loadListsSaga() {
+function* loadListsSaga(): Generator<CallEffect<List[]> | PutEffect, void, List[]> {
   try {
-    const lists: List[] = yield db.lists.toArray();
+    const lists: List[] = yield call(() => db.lists.toArray());
 
     yield put({ type: setLists.type, payload: lists });
   } catch (e) {
@@ -48,12 +48,12 @@ function* removeListSaga(action: PayloadAction<string>) {
 
 function* addSelectionToListSaga(
   action: PayloadAction<{ selection: SelectedCanvas[]; listId: string }>,
-) {
+): Generator<Effect, void, List | undefined> {
   const { payload } = action;
   // const selectionToAdd = action.payload.selection.map((elt) => elt.canvas.id);
   try {
-    const list: List = yield db.lists.get(payload.listId);
-    if (list) {
+    const list: List | undefined = yield call(() => db.lists.get(payload.listId));
+    if (list && list !== undefined) {
       if (list.content === null || list.content === undefined) {
         list.content = [];
       }
@@ -61,15 +61,18 @@ function* addSelectionToListSaga(
       list.content = [...list.content, ...payload.selection];
 
       //TODO! vérifier si la jonction oneToMany est bien gérée
-      yield db.transaction('rw', db.storedCanvases, db.lists, function* () {
-        //add the canvas ids to the list and add the canvases
-        const canvasesToAdd = action.payload.selection.map((elt) => ({
-          id: elt.canvas.id,
-          content: elt.canvas,
-        }));
-        yield db.storedCanvases.bulkPut(canvasesToAdd);
-        yield db.lists.put(list);
-      });
+      yield call(() =>
+        db.transaction('rw', db.storedCanvases, db.lists, async () => {
+          //add the canvas ids to the list and add the canvases
+          const canvasesToAdd = action.payload.selection.map((elt) => ({
+            id: elt.canvas.id,
+            content: elt.canvas,
+          }));
+          //on utilie bulkPut pour éviter les doublons et éviter une erreur si un doublon existe (avec bulkAdd, une erreur est levée au premier doublon rencontré)
+          await db.storedCanvases.bulkPut(canvasesToAdd);
+          await db.lists.put(list);
+        }),
+      );
 
       yield put(addSelectionToListSuccess(list));
     }

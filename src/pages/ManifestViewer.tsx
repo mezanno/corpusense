@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import { useForm } from 'react-hook-form';
 import CanvasesViewer from '../components/CanvasesViewer';
 import ManifestInfos from '../components/ManifestInfos';
@@ -17,7 +18,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../compone
 import CanvasImageViewer from '@/components/CanvasImageViewer';
 import { Progress } from '@/components/ui/progress';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { fetchManifest } from '@/state/reducers/manifests';
+import { fetchManifestRequest } from '@/state/reducers/manifests';
 import { getCanvasForCanvas } from '@/state/selectors/canvas';
 import { getManifestURL } from '@/state/selectors/manifests';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,7 +37,7 @@ import {
 import { Input } from '../components/ui/input';
 
 const formSchema = z.object({
-  url: z.string().url(),
+  url: z.string().url("This doesn't look like a valid URL"),
 });
 
 const ManifestURLForm = () => {
@@ -51,7 +52,9 @@ const ManifestURLForm = () => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    dispatch(fetchManifest(values.url));
+    console.log('onSubmit: ', values);
+
+    dispatch(fetchManifestRequest(values.url));
   }
 
   return (
@@ -60,7 +63,6 @@ const ManifestURLForm = () => {
         <FormField
           control={form.control}
           name='url'
-          label='Manifest URL'
           render={({ field }) => (
             <FormItem>
               <FormLabel>Manifest URL</FormLabel>
@@ -95,7 +97,7 @@ const ManifestViewer = () => {
     console.log('OCR ', canvasImage);
     const {
       data: { text },
-    } = await worker.recognize(canvasImage.id);
+    } = await worker.recognize(canvasImage.id as string);
     console.log(text);
     await worker.terminate();
     setWorking(false);

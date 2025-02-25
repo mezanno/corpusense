@@ -5,14 +5,14 @@ import {
   OpenSeadragonAnnotationPopup,
   OpenSeadragonAnnotator,
   OpenSeadragonViewer,
-  PopupProps,
 } from '@annotorious/react';
 import '@annotorious/react/annotorious-react.css';
 
 const CanvasImageViewer = () => {
   const canvasImage = useAppSelector(getCanvasForCanvas('test'));
 
-  if (!canvasImage) return <div>Nothing to display</div>;
+  if (canvasImage === undefined)
+    return <div className='flex h-full w-full items-center justify-center'>Nothing to show...</div>;
 
   return (
     <Annotorious>
@@ -41,7 +41,7 @@ const CanvasImageViewer = () => {
           }}
         />
         <OpenSeadragonAnnotationPopup
-          popup={(props: PopupProps) => <div className='annotorious-popup'>Hello World</div>}
+          popup={() => <div className='annotorious-popup'>Hello World</div>}
         />
       </OpenSeadragonAnnotator>
     </Annotorious>

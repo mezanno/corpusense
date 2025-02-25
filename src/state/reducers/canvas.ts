@@ -1,7 +1,8 @@
+import { ContentResource } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface CanvasesState {
-  values: { [key: string]: object };
+  values: { [key: string]: ContentResource };
 }
 const initialState: CanvasesState = {
   values: {},
@@ -13,7 +14,7 @@ export const canvasesSlice = createSlice({
   reducers: {
     setCanvasFromComponent: (
       state,
-      action: PayloadAction<{ componentId: string; canvas: object }>,
+      action: PayloadAction<{ componentId: string; canvas: ContentResource }>,
     ) => {
       const { componentId, canvas } = action.payload;
       state.values[componentId] = canvas;

@@ -6,7 +6,7 @@ import Home from './pages/Home';
 import Layout from './pages/Layout';
 import ListsManager from './pages/ListsManager';
 import ManifestViewer from './pages/ManifestViewer';
-import { fetchManifest } from './state/reducers/manifests';
+import { fetchManifestRequest } from './state/reducers/manifests';
 
 function App() {
   const dispatch = useDispatch();
@@ -15,7 +15,7 @@ function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const manifestUrl = urlParams.get('manifest');
     if (manifestUrl != null) {
-      dispatch(fetchManifest(manifestUrl));
+      dispatch(fetchManifestRequest(manifestUrl));
     }
   }, []);
 
