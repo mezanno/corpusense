@@ -114,5 +114,9 @@
     "vitest": "^3.0.7",
     "workbox-cli": "^7.3.0",
     "workbox-window": "^7.3.0"
+  },
+  "overrides": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }
