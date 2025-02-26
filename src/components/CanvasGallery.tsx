@@ -9,8 +9,8 @@ import Selecto, { OnSelect } from 'react-selecto';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeGrid as Grid } from 'react-window';
 import CanvasCard from './CanvasCard';
-import CanvasesListViewer from './CanvasesListViewer';
-import { Spinner } from './ui/spinner';
+import Loading from './Loading';
+import { NoManifestToShow } from './NothingToShow';
 
 interface GridCellProps {
   columnIndex: number;
@@ -44,11 +44,10 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
   );
 };
 
-const CanvasesViewer: FC = () => {
+const CanvasGallery = () => {
   const dispatch = useAppDispatch();
   const { data, isLoading } = useAppSelector(getManifest);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
-  const [mode] = useState('grid');
 
   const containerRef = useRef(null);
 
@@ -83,59 +82,49 @@ const CanvasesViewer: FC = () => {
   };
 
   return (
-    <div className='flex h-full p-4'>
+    <section
+      className='h-full w-full items-center justify-center p-4'
+      aria-labelledby='canvas-gallery'
+    >
       {!isLoading ? (
-        <>
-          <Selecto
-            container={containerRef.current}
-            selectableTargets={['.selectable-item']}
-            selectByClick={true}
-            selectFromInside={true}
-            toggleContinueSelect={['shift']}
-            hitRate={0}
-            onSelect={handleSelect}
-          />
-          {canvases?.length > 0 ? (
+        canvases.length === 0 ? (
+          <NoManifestToShow />
+        ) : (
+          <>
+            <Selecto
+              container={containerRef.current}
+              selectableTargets={['.selectable-item']}
+              selectByClick={true}
+              selectFromInside={true}
+              toggleContinueSelect={['shift']}
+              hitRate={0}
+              onSelect={handleSelect}
+            />
             <AutoSizer ref={containerRef}>
-              {({ height, width }) =>
-                mode === 'grid' ? (
-                  <Grid
-                    columnCount={4}
-                    columnWidth={width / 4}
-                    height={height}
-                    rowCount={Math.ceil(canvases.length / 4)}
-                    rowHeight={200}
-                    width={width}
-                    itemData={{ canvases, handleCardClick }}
-                  >
-                    {GridCell}
-                  </Grid>
-                ) : (
-                  <CanvasesListViewer
-                    height={height}
-                    width={width}
-                    size={4}
-                    layout='vertical'
-                    canvases={canvases}
-                    handleCardClick={handleCardClick}
-                  />
-                )
-              }
+              {({ height, width }) => (
+                <Grid
+                  columnCount={4}
+                  columnWidth={width / 4}
+                  height={height}
+                  rowCount={Math.ceil(canvases.length / 4)}
+                  rowHeight={200}
+                  width={width}
+                  itemData={{ canvases, handleCardClick }}
+                >
+                  {GridCell}
+                </Grid>
+              )}
             </AutoSizer>
-          ) : (
-            <div>Rien</div>
-          )}
-        </>
+          </>
+        )
       ) : (
-        <div className='flex h-full w-full items-center justify-center'>
-          <Spinner size={'large'} />
-        </div>
+        <Loading />
       )}
-    </div>
+    </section>
   );
 };
 
-export default CanvasesViewer;
+export default CanvasGallery;
 
 /*
   openSeadragonConfig={{

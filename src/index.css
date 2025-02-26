@@ -6,8 +6,17 @@
 
 /* @import 'tailwindcss/preflight'; */
 
+@theme {
+  --color-mezanno-1: #dec464;
+  --color-mezanno-2: #8064de;
+  --color-mezanno-3: #6496de;
+  --color-mezanno-4: #5e5b50;
+  --color-mezanno-5: #53505e;
+  --color-mezanno-6: #50565e;
+}
+
 :root {
-  --background: hsl(0 0% 100%);
+  --background: #dec464;
 
   --foreground: hsl(0 0% 3.9%);
 

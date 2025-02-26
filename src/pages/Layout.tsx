@@ -1,9 +1,5 @@
-import { History } from '@/data/models/history';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { fetchManifestRequest } from '@/state/reducers/manifests';
-import { getHistory } from '@/state/selectors/manifests';
+import HistoryNav from '@/components/HistoryNav';
 import { FolderSearch2, Home, List } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import {
   Breadcrumb,
@@ -45,26 +41,7 @@ const items = [
   },
 ];
 
-const AppSideBar = () => {
-  const history: History[] = useAppSelector(getHistory);
-  const dispatch = useAppDispatch();
-
-  const handleHistoryClick = useCallback(
-    (url: string) => dispatch(fetchManifestRequest(url)),
-    [dispatch],
-  );
-
-  const historyItems = useMemo(
-    () =>
-      history.map((item) => (
-        <div key={item.url} onClick={() => handleHistoryClick(item.url)} className='cursor-pointer'>
-          {item.url}
-          <Separator />
-        </div>
-      )),
-    [history, handleHistoryClick],
-  );
-
+const LayoutSideBar = () => {
   return (
     <Sidebar>
       <SidebarContent>
@@ -85,7 +62,9 @@ const AppSideBar = () => {
         </SidebarGroup>
         <SidebarGroup id='history'>
           <SidebarGroupLabel>History</SidebarGroupLabel>
-          <SidebarGroupContent>{historyItems}</SidebarGroupContent>
+          <SidebarGroupContent>
+            <HistoryNav />
+          </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
@@ -95,7 +74,7 @@ const AppSideBar = () => {
 const Layout = () => {
   return (
     <SidebarProvider>
-      <AppSideBar />
+      <LayoutSideBar />
       <SidebarInset>
         <header className='flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
           <div className='flex items-center gap-2 px-4'>
@@ -118,7 +97,5 @@ const Layout = () => {
     </SidebarProvider>
   );
 };
-
-export { AppSideBar };
 
 export default Layout;

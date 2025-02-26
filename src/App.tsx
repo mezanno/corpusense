@@ -2,11 +2,11 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
-import Home from './pages/Home';
+import HomePAge from './pages/HomePage';
 import Layout from './pages/Layout';
-import ListsManager from './pages/ListsManager';
-import ManifestViewer from './pages/ManifestViewer';
-import { fetchManifestRequest } from './state/reducers/manifests';
+import ListsManagerPage from './pages/ListsManagerPage';
+import ManifestExplorerPage from './pages/ManifestExplorerPage';
+import { fetchManifestFromUrlRequest } from './state/reducers/manifests';
 
 function App() {
   const dispatch = useDispatch();
@@ -15,7 +15,7 @@ function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const manifestUrl = urlParams.get('manifest');
     if (manifestUrl != null) {
-      dispatch(fetchManifestRequest(manifestUrl));
+      dispatch(fetchManifestFromUrlRequest(manifestUrl));
     }
   }, []);
 
@@ -23,10 +23,10 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path='/corpusense' element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path='manifest' element={<ManifestViewer />} />
-          <Route path='lists' element={<ListsManager />} />
-          <Route path='*' element={<Home />} />
+          <Route index element={<HomePAge />} />
+          <Route path='manifest' element={<ManifestExplorerPage />} />
+          <Route path='lists' element={<ListsManagerPage />} />
+          <Route path='*' element={<HomePAge />} />
         </Route>
       </Routes>
     </BrowserRouter>

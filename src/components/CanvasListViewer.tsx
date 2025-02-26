@@ -21,7 +21,7 @@ const Row: FC<RowProps> = ({ index, style, data }) => {
   );
 };
 
-const CanvasesListViewer = ({
+const CanvasListViewer = ({
   width,
   height,
   size,
@@ -50,4 +50,4 @@ const CanvasesListViewer = ({
   );
 };
 
-export default CanvasesListViewer;
+export default CanvasListViewer;

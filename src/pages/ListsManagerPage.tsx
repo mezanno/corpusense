@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import CanvasesListViewer from '@/components/CanvasesListViewer';
+import CanvasListViewer from '@/components/CanvasListViewer';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,7 +42,6 @@ const formSchema = z.object({
 });
 
 const NewListForm = () => {
-  // const dispatch = useDispatch();
   const dispatch = useAppDispatch();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -47,7 +52,6 @@ const NewListForm = () => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     dispatch(addListRequest(values.name));
   }
 
@@ -85,7 +89,7 @@ const ListHoverCard = ({ list }: { list: List }) => {
         <div>
           <div>Contient {list.content.length} éléments</div>
           <div>
-            <CanvasesListViewer
+            <CanvasListViewer
               width={500}
               height={150}
               size={4}
@@ -100,7 +104,7 @@ const ListHoverCard = ({ list }: { list: List }) => {
   );
 };
 
-const ListsManager = () => {
+const ListsManagerPage = () => {
   const lists: List[] = useAppSelector(getLists);
   const dispatch = useAppDispatch();
 
@@ -109,18 +113,28 @@ const ListsManager = () => {
   };
 
   return (
-    <div className='flex h-full w-full flex-col items-center space-y-4'>
-      <div className='w-1/2 border-b-2 border-gray-200 p-2'>
-        <NewListForm />
-      </div>
+    <main className='flex h-full w-full flex-col items-center space-y-4 rounded-2xl border-1 bg-white'>
+      <Accordion type='single' collapsible className='w-1/4'>
+        <AccordionItem value='new-list'>
+          <AccordionTrigger>Créer une nouvelle liste</AccordionTrigger>
+          <AccordionContent>
+            <div className='rounded-2xl border-2 border-gray-200 p-2'>
+              <NewListForm />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
       {lists.length > 0 ? (
-        <div className='flex h-full w-2/3 flex-col items-center space-y-1'>
-          <div className='text-2xl'>Vous avez {lists.length} liste(s)</div>
+        <section
+          className='flex h-full w-2/3 flex-col items-center space-y-1'
+          aria-labelledby='lists'
+        >
+          <div className='text-xl'>Vous avez {lists.length} liste(s)</div>
           <Table>
             {/* <TableCaption>Vos Listes</TableCaption> */}
             <TableHeader>
               <TableRow>
-                <TableHead>Id</TableHead>
                 <TableHead>Nom de la liste</TableHead>
                 <TableHead>Actions</TableHead>
                 <TableHead>Informations</TableHead>
@@ -131,7 +145,6 @@ const ListsManager = () => {
                 <HoverCard key={list.id}>
                   <HoverCardTrigger asChild>
                     <TableRow>
-                      <TableCell>{list.id}</TableCell>
                       <TableCell>{list.name}</TableCell>
                       <TableCell className='space-x-2'>
                         <Button
@@ -163,12 +176,12 @@ const ListsManager = () => {
               ))}
             </TableBody>
           </Table>
-        </div>
+        </section>
       ) : (
         <div className='text-2xl'>Vous n&apos;avez aucune liste actuellement</div>
       )}
-    </div>
+    </main>
   );
 };
 
-export default ListsManager;
+export default ListsManagerPage;
