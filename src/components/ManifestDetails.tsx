@@ -43,7 +43,7 @@ const ManifestDetails = () => {
         <NoManifestToShow />
       ) : (
         <div className='flex h-full w-full flex-col items-center space-y-2'>
-          <Thumbnail thumbnail={thumbnail} style={{ aspectRatio: 'auto' }} />
+          <Thumbnail thumbnail={thumbnail} style={{ objectFit: 'contain' }} />
           <Summary
             className='text-center text-lg font-bold text-mezanno-4'
             summary={manifest?.summary as InternationalString}
