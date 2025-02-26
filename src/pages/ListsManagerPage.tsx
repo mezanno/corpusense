@@ -126,10 +126,7 @@ const ListsManagerPage = () => {
       </Accordion>
 
       {lists.length > 0 ? (
-        <section
-          className='flex h-full w-2/3 flex-col items-center space-y-1'
-          aria-labelledby='lists'
-        >
+        <section className='flex h-full w-2/3 flex-col items-center space-y-1'>
           <div className='text-xl'>Vous avez {lists.length} liste(s)</div>
           <Table>
             {/* <TableCaption>Vos Listes</TableCaption> */}

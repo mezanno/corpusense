@@ -13,10 +13,7 @@ const CanvasViewer = () => {
   const canvasImage = useAppSelector(getCanvasForCanvas('test'));
 
   return (
-    <section
-      className='flex h-full w-full items-center justify-center'
-      aria-labelledby='canvas-viewer'
-    >
+    <section className='flex h-full w-full items-center justify-center' aria-label='canvas viewer'>
       {canvasImage === undefined ? (
         <NothingToShow />
       ) : (

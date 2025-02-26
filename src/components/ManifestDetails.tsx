@@ -31,7 +31,7 @@ const ManifestDetails = () => {
   return (
     <section
       className='flex h-full w-full flex-col items-center justify-center space-y-2 p-2'
-      aria-labelledby='manifest-details'
+      aria-label='manifest details'
     >
       {error != null && error !== '' && (
         <>

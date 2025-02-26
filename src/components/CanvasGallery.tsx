@@ -82,10 +82,7 @@ const CanvasGallery = () => {
   };
 
   return (
-    <section
-      className='h-full w-full items-center justify-center p-4'
-      aria-labelledby='canvas-gallery'
-    >
+    <section className='h-full w-full items-center justify-center p-4' aria-label='canvas gallery'>
       {!isLoading ? (
         canvases.length === 0 ? (
           <NoManifestToShow />
