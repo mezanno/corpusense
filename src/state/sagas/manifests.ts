@@ -4,42 +4,61 @@ import { convertJsonToManifest } from '@/utils/manifest';
 import { getErrorMessage } from '@/utils/utils';
 import { Manifest } from '@iiif/presentation-3';
 import { call, Effect, put, takeLatest } from 'redux-saga/effects';
+import { reset } from '../reducers/canvas';
 import {
   fetchManifestError,
-  fetchManifestRequest,
+  fetchManifestFromContentRequest,
+  fetchManifestFromUrlRequest,
   fetchManifestSuccess,
   historyUpdated,
   setHistory,
 } from '../reducers/manifests';
 
-const fetchJson = async (url: string): Promise<Manifest> => {
+const fetchJson = async (url: string): Promise<object> => {
   const response = await fetch(url, {
     headers: {
       Accept: 'application/json',
     },
   });
   if (!response.ok) {
+    console.log(response);
+
     throw new Error(`Failed to fetch manifest ${response.statusText}`);
   }
   //TODO! gérer cas où ce n'est pas un objet (unknown)
   const data: object = (await response.json()) as object;
 
-  if ('@context' in data && data['@context'] === 'http://iiif.io/api/presentation/3/context.json') {
-    return data as Manifest;
-  }
-
-  return convertJsonToManifest(data);
+  return data;
 };
 
-function* handleFetchManifest(action: { payload: string }): Generator<Effect, void, Manifest> {
-  const manifestUrl = action.payload;
-  try {
-    const data: Manifest = yield call(fetchJson, manifestUrl);
+function* handleFetchManifestFromURL(action: { payload: string }) {
+  yield handleFetchManifest(() => fetchJson(action.payload));
+}
 
-    yield put(fetchManifestSuccess(data));
+function* handleFetchManifestFromContent(action: { payload: string }) {
+  yield handleFetchManifest(() => JSON.parse(action.payload) as object);
+}
+
+function* handleFetchManifest(
+  fetchFunction: () => Promise<object> | object,
+): Generator<Effect, void, Manifest> {
+  try {
+    const data = yield call(fetchFunction);
+    let manifest: Manifest;
+    if (
+      '@context' in data &&
+      data['@context'] === 'http://iiif.io/api/presentation/3/context.json'
+    ) {
+      manifest = data;
+    } else {
+      manifest = convertJsonToManifest(data);
+    }
+
+    yield put(fetchManifestSuccess(manifest));
+    yield put(reset());
 
     try {
-      const addedHistory: History = { url: manifestUrl };
+      const addedHistory: History = { url: manifest.id };
       yield call(() => db.history.add(addedHistory));
       yield put(historyUpdated(addedHistory));
     } catch (error) {
@@ -50,7 +69,7 @@ function* handleFetchManifest(action: { payload: string }): Generator<Effect, vo
   }
 }
 
-// Saga pour charger les bookmarks depuis localStorage
+// Saga pour charger les bookmarks depuis indexedDB
 function* loadHistorySaga(): Generator<Effect, void, History[]> {
   try {
     const history: History[] = yield call(() => db.history.toArray());
@@ -62,7 +81,8 @@ function* loadHistorySaga(): Generator<Effect, void, History[]> {
 }
 
 export default function* viewerSaga() {
-  yield takeLatest(fetchManifestRequest, handleFetchManifest);
+  yield takeLatest(fetchManifestFromContentRequest, handleFetchManifestFromContent);
+  yield takeLatest(fetchManifestFromUrlRequest, handleFetchManifestFromURL);
 }
 
 export { loadHistorySaga };

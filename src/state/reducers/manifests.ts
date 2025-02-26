@@ -20,7 +20,11 @@ export const manifestsSlice = createSlice({
   name: 'manifests',
   initialState,
   reducers: {
-    fetchManifestRequest: (state, _action: PayloadAction<string>) => {
+    fetchManifestFromUrlRequest: (state, _action: PayloadAction<string>) => {
+      state.isLoading = true;
+      state.error = null;
+    },
+    fetchManifestFromContentRequest: (state, _action: PayloadAction<string>) => {
       state.isLoading = true;
       state.error = null;
     },
@@ -48,7 +52,8 @@ export const manifestsSlice = createSlice({
 });
 
 export const {
-  fetchManifestRequest,
+  fetchManifestFromUrlRequest,
+  fetchManifestFromContentRequest,
   fetchManifestError,
   fetchManifestSuccess,
   setHistory,
