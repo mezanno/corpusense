@@ -56,7 +56,6 @@ const ManifestDetails = () => {
           </ScrollArea>
         </div>
       )}
-      )
     </section>
   );
 };
