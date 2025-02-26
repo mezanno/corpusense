@@ -68,7 +68,7 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
             <CardContent>
               <Thumbnail
                 thumbnail={thumbnail}
-                style={{ width: 'auto', height: '100px' }}
+                style={{ width: 'auto', height: '100px', objectFit: 'contain' }}
                 className='w-fit'
               />
             </CardContent>

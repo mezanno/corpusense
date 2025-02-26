@@ -104,7 +104,7 @@ const CanvasGallery = () => {
                   columnWidth={width / 4}
                   height={height}
                   rowCount={Math.ceil(canvases.length / 4)}
-                  rowHeight={200}
+                  rowHeight={150}
                   width={width}
                   itemData={{ canvases, handleCardClick }}
                 >
