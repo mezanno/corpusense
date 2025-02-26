@@ -58,6 +58,12 @@ function* handleFetchManifest(
     yield put(reset());
 
     try {
+      yield call(() => db.storedManifests.add({ id: manifest.id, content: manifest }));
+    } catch (error) {
+      console.warn('Error saving manifest to indexedDB', error);
+    }
+
+    try {
       const addedHistory: History = { url: manifest.id };
       yield call(() => db.history.add(addedHistory));
       yield put(historyUpdated(addedHistory));
