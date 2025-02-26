@@ -19,8 +19,13 @@ export const canvasesSlice = createSlice({
       const { componentId, canvas } = action.payload;
       state.values[componentId] = canvas;
     },
+    reset: (state) => {
+      console.log('reset canvases');
+
+      state.values = {};
+    },
   },
 });
 
-export const { setCanvasFromComponent } = canvasesSlice.actions;
+export const { setCanvasFromComponent, reset } = canvasesSlice.actions;
 export default canvasesSlice.reducer;
