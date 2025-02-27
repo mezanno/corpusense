@@ -34,10 +34,7 @@ const ManifestDetails = () => {
       aria-label='manifest details'
     >
       {error != null && error !== '' && (
-        <>
-          <div className='text-center text-red-500'>Error while loading manifest: {error}</div>
-          <NoManifestToShow />
-        </>
+        <div className='text-center text-red-500'>Error while loading manifest: {error}</div>
       )}
       {manifest === null ? (
         <NoManifestToShow />
@@ -45,6 +42,7 @@ const ManifestDetails = () => {
         <div className='flex h-full w-full flex-col items-center space-y-2'>
           <Thumbnail thumbnail={thumbnail} style={{ objectFit: 'contain' }} />
           <Summary
+            as='h2'
             className='text-center text-lg font-bold text-mezanno-4'
             summary={manifest?.summary as InternationalString}
           />
