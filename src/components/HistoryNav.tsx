@@ -6,6 +6,7 @@ import { getHistory } from '@/state/selectors/manifests';
 import { IIIFExternalWebResource, InternationalString } from '@iiif/presentation-3';
 import { Summary, Thumbnail } from '@samvera/clover-iiif/primitives';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 const Item = ({ url }: { url: string }) => {
   const { manifest } = useManifest(url);
@@ -24,20 +25,27 @@ const Item = ({ url }: { url: string }) => {
   );
 
   return (
-    <div
-      key={url}
-      onClick={() => handleHistoryClick(url)}
-      className='text-wrapping flex cursor-pointer items-center space-x-2 border-b border-gray-200 p-2'
-    >
-      <Thumbnail
-        thumbnail={thumbnail}
-        style={{ width: '48px', height: '48px', objectFit: 'contain' }}
-      />
-      <Summary
-        className='text-xs font-bold text-mezanno-4'
-        summary={manifest?.summary as InternationalString}
-      />
-    </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <div
+            key={url}
+            onClick={() => handleHistoryClick(url)}
+            className='text-wrapping flex cursor-pointer items-center space-x-2 border-b border-gray-200 p-2'
+          >
+            <Thumbnail
+              thumbnail={thumbnail}
+              style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+            />
+            <Summary
+              className='text-xs font-bold text-mezanno-4'
+              summary={manifest?.summary as InternationalString}
+            />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>{url}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 
@@ -49,7 +57,7 @@ const HistoryNav = () => {
     [history],
   );
 
-  return historyItems;
+  return <nav aria-label='historique'>{historyItems}</nav>;
 };
 
 export default HistoryNav;
