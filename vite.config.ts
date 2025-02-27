@@ -60,6 +60,7 @@ export default defineConfig({
     // exclude: [...configDefaults.exclude, 'node_modules'],
     coverage: {
       provider: 'v8',
+      reporter: ['text', 'json', 'html'],
     },
   },
 });
