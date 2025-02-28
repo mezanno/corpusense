@@ -6,7 +6,9 @@ const NothingToShow = ({ children }: { children?: ReactNode }) => {
   return (
     <div className='flex w-full flex-col items-center space-y-2 text-mezanno-4'>
       <CircleSlash2 size={64} />
-      <div className='text-2xl'>Nothing to show</div>
+      <div role='alert' className='text-2xl'>
+        Nothing to show
+      </div>
       {children}
     </div>
   );
