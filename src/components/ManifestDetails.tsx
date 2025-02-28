@@ -34,7 +34,9 @@ const ManifestDetails = () => {
       aria-label='manifest details'
     >
       {error != null && error !== '' && (
-        <div className='text-center text-red-500'>Error while loading manifest: {error}</div>
+        <h3 className='text-center text-red-500' role='alert'>
+          Error while loading manifest: {error}
+        </h3>
       )}
       {manifest === null ? (
         <NoManifestToShow />
