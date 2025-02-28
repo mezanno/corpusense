@@ -20,6 +20,7 @@ const CanvasViewer = () => {
         <Annotorious>
           <OpenSeadragonAnnotator drawingEnabled={true} drawingMode='click'>
             <OpenSeadragonViewer
+              aria-label='canvas viewer'
               className='h-full w-full bg-amber-50'
               options={{
                 prefixUrl: '/corpusense/images/',

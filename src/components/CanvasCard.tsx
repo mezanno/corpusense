@@ -36,7 +36,7 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
 
   //! mieux gérer le cas où canvas est undefined
   if (canvas === undefined) {
-    return <div>Erreur</div>;
+    return <div aria-errormessage='Error while loading canvas'>Error while loading canvas</div>;
   }
 
   const handleSetSelectionStart = () => {
@@ -61,6 +61,7 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
             className={`selectable-item h-fit w-fit ${selected ? 'bg-blue-300' : 'bg-white'}`}
             data-index={index}
             data-canvas-id={canvas.id}
+            role='listitem'
           >
             <CardHeader>
               <Label className='text-center' label={canvas.label ? canvas.label : {}} />

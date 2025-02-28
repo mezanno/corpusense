@@ -175,7 +175,9 @@ const ListsManagerPage = () => {
           </Table>
         </section>
       ) : (
-        <div className='text-2xl'>Vous n&apos;avez aucune liste actuellement</div>
+        <div role='alert' className='text-2xl'>
+          Vous n&apos;avez aucune liste actuellement
+        </div>
       )}
     </main>
   );
