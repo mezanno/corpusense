@@ -56,8 +56,6 @@ export default defineConfig({
     globals: true, // Activer les fonctions globales comme 'describe', 'it', etc.
     environment: 'jsdom', // Utiliser jsdom pour simuler un environnement de navigateur
     setupFiles: './vitest.setup.ts',
-    // include: ['**/*.test.ts', '**/*.test.tsx'],
-    // exclude: [...configDefaults.exclude, 'node_modules'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

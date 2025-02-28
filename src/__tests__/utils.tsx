@@ -22,7 +22,7 @@ export function renderWithProviders(
   );
 }
 
-function createMockStore(preloadedState: Partial<RootState> = {}) {
+export function createMockStore(preloadedState: Partial<RootState> = {}) {
   const sagaMiddleware = createSagaMiddleware(); //create the sage middleware but don't run it
   return configureStore({
     reducer: rootReducer,
