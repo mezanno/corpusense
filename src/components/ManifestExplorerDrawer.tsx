@@ -26,7 +26,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from './ui/input';
 
 const urlFormSchema = z.object({
-  url: z.string().url("This doesn't look like a valid URL"),
+  url: z.string(), //.url("This doesn't look like a valid URL"),
 });
 
 const ManifestURLForm = () => {
@@ -39,10 +39,7 @@ const ManifestURLForm = () => {
       url: currentManifestId,
     },
   });
-
   function onSubmit(values: z.infer<typeof urlFormSchema>) {
-    console.log('onSubmit: ', values);
-
     dispatch(fetchManifestFromUrlRequest(values.url));
   }
 
@@ -92,6 +89,7 @@ const ManifestPastForm = () => {
             name='json'
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Manifest content</FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
@@ -110,10 +108,30 @@ const ManifestPastForm = () => {
   );
 };
 
+const DrawerTabs = () => {
+  return (
+    <Tabs className='w-1/2 items-center' defaultValue='url'>
+      <TabsList>
+        <TabsTrigger value='url'>I&apos;ve got an URL</TabsTrigger>
+        <TabsTrigger value='paste'>I want to paste the content</TabsTrigger>
+      </TabsList>
+      <TabsContent value='url' className='w-full'>
+        <ManifestURLForm />
+      </TabsContent>
+      <TabsContent value='paste' className='w-full'>
+        <ManifestPastForm />
+      </TabsContent>
+    </Tabs>
+  );
+};
+
 const ManifestExplorerDrawer = () => {
   return (
     <Drawer>
-      <DrawerTrigger className='shadow- absolute top-2 left-2 cursor-pointer rounded-full border-1 border-slate-300 bg-white p-3 shadow-md'>
+      <DrawerTrigger
+        className='shadow- absolute top-2 left-2 cursor-pointer rounded-full border-1 border-slate-300 bg-white p-3 shadow-md'
+        aria-label='Open manifest dialog'
+      >
         <ExternalLink />
       </DrawerTrigger>
       <DrawerContent className='flex items-center bg-white'>
@@ -122,18 +140,7 @@ const ManifestExplorerDrawer = () => {
           <DrawerDescription>Set a URL or paste the content of a manifest</DrawerDescription>
         </DrawerHeader>
 
-        <Tabs className='w-1/2 items-center' defaultValue='url'>
-          <TabsList>
-            <TabsTrigger value='url'>I&apos;ve got an URL</TabsTrigger>
-            <TabsTrigger value='paste'>I want to paste the content</TabsTrigger>
-          </TabsList>
-          <TabsContent value='url' className='w-full'>
-            <ManifestURLForm />
-          </TabsContent>
-          <TabsContent value='paste' className='w-full'>
-            <ManifestPastForm />
-          </TabsContent>
-        </Tabs>
+        <DrawerTabs />
 
         <DrawerFooter>
           <DrawerClose>
@@ -145,4 +152,5 @@ const ManifestExplorerDrawer = () => {
   );
 };
 
+export { DrawerTabs, ManifestExplorerDrawer };
 export default ManifestExplorerDrawer;
