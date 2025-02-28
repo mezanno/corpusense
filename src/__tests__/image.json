@@ -1,0 +1,14 @@
+{
+  "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f16/full/full/0/native.jpg",
+  "type": "Image",
+  "height": 5781,
+  "width": 4469,
+  "format": "image/jpeg",
+  "service": [
+    {
+      "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f16",
+      "@type": "ImageService1",
+      "profile": "level2"
+    }
+  ]
+}
