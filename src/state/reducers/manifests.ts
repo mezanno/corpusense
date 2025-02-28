@@ -33,9 +33,8 @@ export const manifestsSlice = createSlice({
       state.error = action.payload;
     },
     fetchManifestSuccess: (state, action: PayloadAction<Manifest>) => {
-      console.log('fetchManifestSuccess', action.payload);
       const m: Manifest = action.payload;
-      console.log(m.items);
+      console.log(m);
 
       state.isLoading = false;
       state.data = action.payload;
