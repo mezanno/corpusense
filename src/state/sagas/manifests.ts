@@ -58,7 +58,7 @@ function* handleFetchManifest(
     yield put(reset());
 
     try {
-      yield call(() => db.storedManifests.add({ id: manifest.id, content: manifest }));
+      yield call(() => db.storedElements.add({ id: manifest.id, content: manifest }));
     } catch (error) {
       console.warn('Error saving manifest to indexedDB', error);
     }

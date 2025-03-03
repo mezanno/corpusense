@@ -62,14 +62,14 @@ function* addSelectionToListSaga(
 
       //TODO! vérifier si la jonction oneToMany est bien gérée
       yield call(() =>
-        db.transaction('rw', db.storedCanvases, db.lists, async () => {
+        db.transaction('rw', db.storedElements, db.lists, async () => {
           //add the canvas ids to the list and add the canvases
           const canvasesToAdd = action.payload.selection.map((elt) => ({
             id: elt.canvas.id,
             content: elt.canvas,
           }));
           //on utilie bulkPut pour éviter les doublons et éviter une erreur si un doublon existe (avec bulkAdd, une erreur est levée au premier doublon rencontré)
-          await db.storedCanvases.bulkPut(canvasesToAdd);
+          await db.storedElements.bulkPut(canvasesToAdd);
           await db.lists.put(list);
         }),
       );
