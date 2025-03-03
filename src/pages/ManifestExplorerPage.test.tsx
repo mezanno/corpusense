@@ -60,7 +60,11 @@ describe('ManifestExplorerPage', () => {
 
     //one of the element with role alert should contain the text 'Manifest invalide'
     expect(
-      screen.getAllByRole('alert').some((alert) => alert.textContent.includes('Manifest invalide')),
+      screen
+        .getAllByRole('alert')
+        .some(
+          (alert) => alert.textContent !== null && alert?.textContent.includes('Manifest invalide'),
+        ),
     ).toBeTruthy();
 
     expect(screen.getByRole('navigation', { name: 'historique' })).toBeInTheDocument();

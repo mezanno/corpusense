@@ -3,7 +3,7 @@ import { renderWithProviders } from '@/__tests__/utils';
 import * as useManifest from '@/hooks/useManifest';
 import { RootState } from '@/state/store';
 import { screen } from '@testing-library/dom';
-import { expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import Layout from './Layout';
 
 vi.mock('@/hooks/useManifest', async (original) => {
