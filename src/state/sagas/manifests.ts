@@ -13,6 +13,7 @@ import {
   historyUpdated,
   setHistory,
 } from '../reducers/manifests';
+import { navigateTo } from '../reducers/navigation';
 
 const fetchJson = async (url: string): Promise<object> => {
   const response = await fetch(url, {
@@ -56,7 +57,7 @@ function* handleFetchManifest(
 
     yield put(fetchManifestSuccess(manifest));
     yield put(reset());
-
+    yield put(navigateTo('/corpusense/manifest'));
     try {
       yield call(() => db.storedElements.add({ id: manifest.id, content: manifest }));
     } catch (error) {
