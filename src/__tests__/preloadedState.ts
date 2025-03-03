@@ -20,6 +20,9 @@ const emptyPreloadedState: RootState = {
   storedElements: {
     values: [],
   },
+  navigation: {
+    redirectTo: '',
+  },
 };
 
 export const getPreloadedState = (partialState: Partial<RootState> = {}): RootState => {

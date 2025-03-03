@@ -3,6 +3,7 @@ import createSagaMiddleware from 'redux-saga';
 import canvasReducer from './reducers/canvas';
 import listReducer from './reducers/lists';
 import manifestsReducer from './reducers/manifests';
+import navigationReducer from './reducers/navigation';
 import selectionReducer from './reducers/selection';
 import storedElementsReducer from './reducers/storedElements';
 import getRootSaga from './sagas';
@@ -15,6 +16,7 @@ export const rootReducer = combineReducers({
   lists: listReducer,
   canvases: canvasReducer,
   storedElements: storedElementsReducer,
+  navigation: navigationReducer,
 });
 
 const store = configureStore({
