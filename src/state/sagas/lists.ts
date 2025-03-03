@@ -12,8 +12,10 @@ import {
   addSelectionToListSuccess,
   removeListRequest,
   removeListSuccess,
+  setActiveList,
   setLists,
 } from '../reducers/lists';
+import { navigateTo } from '../reducers/navigation';
 import { setStoredElements } from '../reducers/storedElements';
 
 function* loadListsSaga(): Generator<CallEffect<List[]> | PutEffect, void, List[]> {
@@ -101,6 +103,10 @@ function* loadStoredElements(): Generator<Effect, void, StoredElement[]> {
   }
 }
 
+function* handleSetActiveList(action: PayloadAction<string>): Generator<Effect, void, void> {
+  yield put(navigateTo('/corpusense/list-inspector'));
+}
+
 // Saga pour sauvegarder les bookmarks dans localStorage
 // function* saveListsSaga(action) {
 // else if (type == addSelectionToList.type) {
@@ -121,6 +127,7 @@ export default function* listsSaga() {
   yield takeEvery(addListRequest.type, addListSaga);
   yield takeEvery(removeListRequest.type, removeListSaga);
   yield takeEvery(addSelectionToListRequest, addSelectionToListSaga);
+  yield takeEvery(setActiveList, handleSetActiveList);
   // yield takeEvery(addSelectionToList.type, saveListsSaga);
   // yield takeEvery(removeSelectionFromList.type, saveListsSaga);
   // yield takeEvery(updateList.type, saveListsSaga);

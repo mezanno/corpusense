@@ -5,6 +5,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 interface ListsState {
   values: List[];
   error: string;
+  activeListId?: string;
 }
 
 const initialState: ListsState = {
@@ -35,6 +36,9 @@ export const listsSlice = createSlice({
     setLists: (state, action: PayloadAction<List[]>) => {
       state.values = action.payload;
     },
+    setActiveList: (state, action: PayloadAction<string>) => {
+      state.activeListId = action.payload;
+    },
     addSelectionToListRequest: (
       _state,
       _action: PayloadAction<{ selection: SelectedCanvas[]; listId: string }>,
@@ -53,6 +57,7 @@ export const listsSlice = createSlice({
         state.values.find((elt) => elt.id === action.payload.id),
       );
     },
+
     // removeSelectionFromList: (state, action) => {
     //   const idsToRemove = action.payload.idsToRemove;
     //   const listId = action.payload.listId;
@@ -71,6 +76,7 @@ export const {
   removeListRequest,
   // updateList,
   setLists,
+  setActiveList,
   // addSelectionToList,
   addSelectionToListRequest,
   addSelectionToListSuccess,

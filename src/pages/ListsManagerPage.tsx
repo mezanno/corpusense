@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/table';
 import { List } from '@/data/models/list';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { addListRequest, removeListRequest } from '@/state/reducers/lists';
+import { addListRequest, removeListRequest, setActiveList } from '@/state/reducers/lists';
 import { getCanvasesOfList, getLists } from '@/state/selectors/lists';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas } from '@iiif/presentation-3';
@@ -114,6 +114,10 @@ const ListsManagerPage = () => {
     dispatch(removeListRequest(id));
   };
 
+  const handleOnClick = (id: string) => {
+    dispatch(setActiveList(id));
+  };
+
   return (
     <main className='flex h-full w-full flex-col items-center space-y-4 rounded-2xl border-1 bg-white'>
       <Accordion type='single' collapsible className='w-1/4'>
@@ -143,7 +147,7 @@ const ListsManagerPage = () => {
               {lists.map((list) => (
                 <HoverCard key={list.id}>
                   <HoverCardTrigger asChild>
-                    <TableRow>
+                    <TableRow onClick={() => handleOnClick(list.id as string)}>
                       <TableCell>{list.name}</TableCell>
                       <TableCell className='space-x-2'>
                         <Button
