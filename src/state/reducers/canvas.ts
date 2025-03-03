@@ -20,8 +20,6 @@ export const canvasesSlice = createSlice({
       state.values[componentId] = canvas;
     },
     reset: (state) => {
-      console.log('reset canvases');
-
       state.values = {};
     },
   },
