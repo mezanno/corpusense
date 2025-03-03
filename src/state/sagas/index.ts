@@ -1,5 +1,5 @@
 import { all, call, fork, spawn } from 'redux-saga/effects';
-import listsSaga, { loadListsSaga } from './lists';
+import listsSaga, { loadListsSaga, loadStoredElements } from './lists';
 import manifestsSaga, { loadHistorySaga } from './manifests';
 
 function* launchSaga(saga: () => Generator) {
@@ -19,6 +19,7 @@ function getRootSaga() {
     yield all(sagas.map((saga) => spawn(launchSaga, saga)));
     yield fork(loadListsSaga); //load lists at startup
     yield fork(loadHistorySaga); //load history at startup
+    yield fork(loadStoredElements); //load stored elements at startup
   };
 }
 

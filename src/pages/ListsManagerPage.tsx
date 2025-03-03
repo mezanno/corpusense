@@ -31,6 +31,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { addListRequest, removeListRequest } from '@/state/reducers/lists';
 import { getCanvasesOfList, getLists } from '@/state/selectors/lists';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Canvas } from '@iiif/presentation-3';
 import { Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -78,6 +79,7 @@ const NewListForm = () => {
 };
 
 const ListHoverCard = ({ list }: { list: List }) => {
+  // const elements = useAppSelector(getElemntsOfList(list.id as string));
   const canvases = useAppSelector(getCanvasesOfList(list.id as string));
 
   return (
@@ -94,7 +96,7 @@ const ListHoverCard = ({ list }: { list: List }) => {
               height={150}
               size={4}
               layout='horizontal'
-              canvases={canvases.map((canvas) => canvas.canvas)}
+              canvases={canvases.map((canvas) => canvas.content as Canvas)}
               handleCardClick={() => console.log('click')}
             />{' '}
           </div>

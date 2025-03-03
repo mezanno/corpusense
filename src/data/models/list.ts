@@ -1,7 +1,7 @@
-import { SelectedCanvas } from './selectedCanvas';
+import { ListElement } from './listElement';
 
 export interface List {
   id?: string;
   name: string;
-  content?: SelectedCanvas[];
+  content?: ListElement[];
 }

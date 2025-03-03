@@ -1,10 +1,8 @@
-import canvasContent from '@/__tests__/canvas.json';
 import { getPreloadedState } from '@/__tests__/preloadedState';
 import { renderWithProviders } from '@/__tests__/utils';
 import { useAppDispatch } from '@/hooks/hooks';
 import { addListRequest } from '@/state/reducers/lists';
 import { RootState } from '@/state/store';
-import { Canvas } from '@iiif/presentation-3';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -26,14 +24,17 @@ describe('ListsManagerPage', () => {
   });
 
   it('la page affiche un tableau de 2 listes', () => {
-    const canvas = canvasContent as Canvas;
     const preloadedState: RootState = {
       ...getPreloadedState(),
       lists: {
         ...getPreloadedState().lists,
         values: [
           { id: '1', name: 'List 1', content: [] },
-          { id: '2', name: 'List 2', content: [{ index: 0, canvas }] },
+          {
+            id: '2',
+            name: 'List 2',
+            content: [{ canvasId: 'canvasId', listId: 'listId', position: 0 }],
+          },
         ],
       },
     };

@@ -1,5 +1,6 @@
 import { List } from '@/data/models/list';
 import { SelectedCanvas } from '@/data/models/selectedCanvas';
+import { StoredElement } from '@/data/models/StoredElement';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
@@ -13,6 +14,7 @@ import {
   removeListSuccess,
   setLists,
 } from '../reducers/lists';
+import { setStoredElements } from '../reducers/storedElements';
 
 function* loadListsSaga(): Generator<CallEffect<List[]> | PutEffect, void, List[]> {
   try {
@@ -58,18 +60,25 @@ function* addSelectionToListSaga(
         list.content = [];
       }
       //TODO! Vérifier si les éléments ne sont pas déjà dans la liste
-      list.content = [...list.content, ...payload.selection];
+      let lastPosition = list.content.length - 1;
+      const newContent = payload.selection.map((elt) => ({
+        canvasId: elt.canvas.id,
+        listId: payload.listId,
+        position: ++lastPosition,
+      }));
+      console.log(newContent);
 
-      //TODO! vérifier si la jonction oneToMany est bien gérée
+      list.content = [...list.content, ...newContent];
+
       yield call(() =>
-        db.transaction('rw', db.storedElements, db.lists, async () => {
-          //add the canvas ids to the list and add the canvases
-          const canvasesToAdd = action.payload.selection.map((elt) => ({
+        db.transaction('rw', db.storedElements, db.lists, db.listElements, async () => {
+          await db.listElements.bulkAdd(newContent);
+          const canvasesToStore = action.payload.selection.map((elt) => ({
             id: elt.canvas.id,
             content: elt.canvas,
           }));
-          //on utilie bulkPut pour éviter les doublons et éviter une erreur si un doublon existe (avec bulkAdd, une erreur est levée au premier doublon rencontré)
-          await db.storedElements.bulkPut(canvasesToAdd);
+          //     //on utilie bulkPut pour éviter les doublons et éviter une erreur si un doublon existe (avec bulkAdd, une erreur est levée au premier doublon rencontré)
+          await db.storedElements.bulkPut(canvasesToStore);
           await db.lists.put(list);
         }),
       );
@@ -78,6 +87,17 @@ function* addSelectionToListSaga(
     }
   } catch (e) {
     console.log('error', e);
+  }
+}
+
+// Saga pour charger les bookmarks depuis indexedDB
+function* loadStoredElements(): Generator<Effect, void, StoredElement[]> {
+  try {
+    const storedElements: StoredElement[] = yield call(() => db.storedElements.toArray());
+
+    yield put({ type: setStoredElements.type, payload: storedElements });
+  } catch (e) {
+    console.warn('Error loading storedElements from indexedDB', e);
   }
 }
 
@@ -106,4 +126,4 @@ export default function* listsSaga() {
   // yield takeEvery(updateList.type, saveListsSaga);
 }
 
-export { loadListsSaga };
+export { loadListsSaga, loadStoredElements };

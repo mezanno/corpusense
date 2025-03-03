@@ -17,6 +17,9 @@ const emptyPreloadedState: RootState = {
   selection: {
     canvases: [],
   },
+  storedElements: {
+    values: [],
+  },
 };
 
 export const getPreloadedState = (partialState: Partial<RootState> = {}): RootState => {

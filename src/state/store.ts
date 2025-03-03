@@ -4,6 +4,7 @@ import canvasReducer from './reducers/canvas';
 import listReducer from './reducers/lists';
 import manifestsReducer from './reducers/manifests';
 import selectionReducer from './reducers/selection';
+import storedElementsReducer from './reducers/storedElements';
 import getRootSaga from './sagas';
 
 const sagaMiddleware = createSagaMiddleware();
@@ -13,6 +14,7 @@ export const rootReducer = combineReducers({
   selection: selectionReducer,
   lists: listReducer,
   canvases: canvasReducer,
+  storedElements: storedElementsReducer,
 });
 
 const store = configureStore({
