@@ -15,6 +15,7 @@
     "noImplicitThis": true,
     "alwaysStrict": true,
     "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"],
-    "jsxImportSource": "react"
+    "jsxImportSource": "react",
+    "skipLibCheck": true
   }
 }
