@@ -15,10 +15,14 @@ import {
 } from '../reducers/manifests';
 import { navigateTo } from '../reducers/navigation';
 
+//localhost:5173/corpusense?manifest=
+
 const fetchJson = async (url: string): Promise<object> => {
-  const response = await fetch(url, {
+  const response = await fetch(`http://localhost:3001/proxy?url=${encodeURIComponent(url)}`, {
     headers: {
       Accept: 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      // AccessControlAllowOrigin: '*',
     },
   });
   if (!response.ok) {
