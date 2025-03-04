@@ -1,8 +1,10 @@
 import CanvasViewer from '@/components/CanvasViewer';
 import { Progress } from '@/components/ui/progress';
-import { useAppSelector } from '@/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { fetchManifestFromUrlRequest } from '@/state/reducers/manifests';
 import { getCanvasForCanvas } from '@/state/selectors/canvas';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { createWorker } from 'tesseract.js';
 import CanvasGallery from '../components/CanvasGallery';
 import ManifestDetails from '../components/ManifestDetails';
@@ -14,6 +16,18 @@ const ManifestExplorerPage = () => {
   const [progress, setProgress] = useState(0);
   const [working, setWorking] = useState(false);
   const { data, isLoading } = useAppSelector((state) => state.manifests);
+
+  const dispatch = useAppDispatch();
+
+  const [searchParams] = useSearchParams();
+  console.log('manifestId ', searchParams.get('manifestId'));
+
+  useEffect(() => {
+    const id = searchParams.get('manifestId');
+    if (id != null) {
+      dispatch(fetchManifestFromUrlRequest(id));
+    }
+  }, [searchParams]);
 
   const handleGetOcr = async () => {
     if (!canvasImage) return;
