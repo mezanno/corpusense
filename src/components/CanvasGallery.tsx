@@ -1,8 +1,8 @@
-import { SelectedCanvas } from '@/data/models/selectedCanvas';
+import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import { setSelection } from '@/state/reducers/selection';
-import { getManifest } from '@/state/selectors/manifests';
+import { getLoadedManifest } from '@/state/selectors/manifests';
 import { Canvas, ContentResource } from '@iiif/presentation-3';
 import { FC, useEffect, useRef, useState } from 'react';
 import Selecto, { OnSelect } from 'react-selecto';
@@ -46,16 +46,16 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
 
 const CanvasGallery = () => {
   const dispatch = useAppDispatch();
-  const { data, isLoading } = useAppSelector(getManifest);
+  const loadedData = useAppSelector(getLoadedManifest);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
 
   const containerRef = useRef(null);
 
   useEffect(() => {
-    if (data) {
-      setCanvases(data.items);
+    if (loadedData) {
+      setCanvases(loadedData.content.items);
     }
-  }, [data]);
+  }, [loadedData]);
 
   const handleCardClick = (canvas: Canvas) => {
     //TODO! Vérifications à faire
@@ -83,7 +83,7 @@ const CanvasGallery = () => {
 
   return (
     <section className='h-full w-full items-center justify-center p-4' aria-label='canvas gallery'>
-      {!isLoading ? (
+      {loadedData !== null ? (
         canvases.length === 0 ? (
           <NoManifestToShow />
         ) : (

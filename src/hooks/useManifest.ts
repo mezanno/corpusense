@@ -8,7 +8,7 @@ const useManifest = (manifestUrl: string) => {
   useEffect(() => {
     const fetchManifest = async () => {
       try {
-        const result = await db.storedElements.get(manifestUrl);
+        const result = await db.storedItems.get(manifestUrl);
         if (result) {
           setManifest(result.content as Manifest);
         }

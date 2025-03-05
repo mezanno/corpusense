@@ -1,19 +1,25 @@
-import { History } from '@/data/models/history';
+import { History } from '@/data/models/History';
+import { ItemMetadata } from '@/data/models/Metadata';
 import { Manifest } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface ManifestState {
   isLoading: boolean;
   error: string | null;
-  data: Manifest | null;
+  loadedData: {
+    content: Manifest;
+    metadata: ItemMetadata[];
+  } | null;
+  isLoaded: boolean;
   history: History[];
 }
 
 const initialState: ManifestState = {
   isLoading: false,
   error: '',
-  data: null,
+  loadedData: null,
   history: [],
+  isLoaded: false,
 };
 
 export const manifestsSlice = createSlice({
@@ -36,9 +42,13 @@ export const manifestsSlice = createSlice({
       state.isLoading = false;
       state.error = action.payload;
     },
-    fetchManifestSuccess: (state, action: PayloadAction<Manifest>) => {
+    fetchManifestSuccess: (
+      state,
+      action: PayloadAction<{ content: Manifest; metadata: ItemMetadata[] }>,
+    ) => {
       state.isLoading = false;
-      state.data = action.payload;
+      state.isLoaded = true;
+      state.loadedData = action.payload;
     },
     historyUpdated: (state, action: PayloadAction<History>) => {
       //add the manifest id to the history and remove the duplicates

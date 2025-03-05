@@ -1,5 +1,5 @@
-import { List } from '@/data/models/list';
-import { SelectedCanvas } from '@/data/models/selectedCanvas';
+import { List } from '@/data/models/List';
+import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface ListsState {

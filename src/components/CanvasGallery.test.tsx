@@ -44,7 +44,7 @@ describe('CanvasGallery', () => {
       ...getPreloadedState(),
       manifests: {
         ...getPreloadedState().manifests,
-        data,
+        loadedData: { content: data, metadata: [] },
       },
     };
 

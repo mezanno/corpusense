@@ -15,12 +15,11 @@ const ManifestExplorerPage = () => {
   const canvasImage = useAppSelector(getCanvasForCanvas('test'));
   const [progress, setProgress] = useState(0);
   const [working, setWorking] = useState(false);
-  const { data, isLoading } = useAppSelector((state) => state.manifests);
+  const { isLoading, isLoaded } = useAppSelector((state) => state.manifests);
 
   const dispatch = useAppDispatch();
 
   const [searchParams] = useSearchParams();
-  console.log('manifestId ', searchParams.get('manifestId'));
 
   useEffect(() => {
     const id = searchParams.get('manifestId');
@@ -54,7 +53,7 @@ const ManifestExplorerPage = () => {
         <ResizablePanel className='h-full rounded-lg bg-white'>
           <ManifestDetails />
         </ResizablePanel>
-        {!isLoading && data !== null && (
+        {!isLoading && isLoaded && (
           <>
             <ResizableHandle />
             <ResizablePanel className='h-full rounded-lg bg-white'>

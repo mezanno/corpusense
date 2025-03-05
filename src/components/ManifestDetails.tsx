@@ -1,5 +1,4 @@
 import { useAppSelector } from '@/hooks/hooks';
-import { getManifest } from '@/state/selectors/manifests';
 import {
   IIIFExternalWebResource,
   InternationalString,
@@ -9,20 +8,21 @@ import {
 import { Label, Metadata, Summary, Thumbnail } from '@samvera/clover-iiif/primitives';
 import { useEffect, useState } from 'react';
 import Loading from './Loading';
+import './metadata.css';
 import { NoManifestToShow } from './NothingToShow';
 import { ScrollArea, ScrollBar } from './ui/scroll-area';
 
 const ManifestDetails = () => {
-  const { data, error, isLoading } = useAppSelector(getManifest);
+  const { isLoading, error, loadedData } = useAppSelector((state) => state.manifests);
   const [manifest, setManifest] = useState<Manifest | null>(null);
   const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[]>([]);
 
   useEffect(() => {
-    if (data !== null) {
-      setThumbnail(data.thumbnail as IIIFExternalWebResource[]);
-      setManifest(data);
+    if (loadedData !== null) {
+      setThumbnail(loadedData.content.thumbnail as IIIFExternalWebResource[]);
+      setManifest(loadedData.content);
     }
-  }, [data]);
+  }, [loadedData]);
 
   if (isLoading) {
     return <Loading />;

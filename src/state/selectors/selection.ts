@@ -1,4 +1,4 @@
-import { SelectedCanvas } from '@/data/models/selectedCanvas';
+import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { RootState } from '../store';
 
 export const getSelection = (state: RootState): SelectedCanvas[] =>

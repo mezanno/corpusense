@@ -5,7 +5,8 @@ const emptyPreloadedState: RootState = {
     history: [],
     isLoading: false,
     error: '',
-    data: null,
+    loadedData: null,
+    isLoaded: false,
   },
   canvases: {
     values: {},
@@ -17,11 +18,14 @@ const emptyPreloadedState: RootState = {
   selection: {
     canvases: [],
   },
-  storedElements: {
-    values: [],
+  storedItems: {
+    items: [],
   },
   navigation: {
     redirectTo: '',
+  },
+  tags: {
+    values: [],
   },
 };
 

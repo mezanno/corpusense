@@ -1,4 +1,4 @@
-import { SelectedCanvas } from '@/data/models/selectedCanvas';
+import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export type SelectionState = SelectedCanvas[];

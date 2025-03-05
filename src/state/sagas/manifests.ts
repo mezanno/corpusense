@@ -1,5 +1,7 @@
 import { db } from '@/data/db';
-import { History } from '@/data/models/history';
+import { History } from '@/data/models/History';
+import { ItemMetadata } from '@/data/models/Metadata';
+import { StoredItem } from '@/data/models/StoredItem';
 import { convertJsonToManifest } from '@/utils/manifest';
 import { getErrorMessage } from '@/utils/utils';
 import { Manifest } from '@iiif/presentation-3';
@@ -37,39 +39,59 @@ const fetchJson = async (url: string): Promise<object> => {
   return data;
 };
 
-function* handleFetchManifestFromURL(action: { payload: string }) {
-  yield handleFetchManifest(() => fetchJson(action.payload));
+function* handleFetchManifestFromURL(action: {
+  payload: string;
+}): Generator<Effect, void, StoredItem | undefined> {
+  const url = action.payload;
+  const item = yield call(() => db.storedItems.get(url));
+
+  if (item === undefined) {
+    yield call(() => handleFetchManifest({ fetchFunction: () => fetchJson(url) }));
+  } else {
+    yield call(() => handleFetchManifest({ storedManifest: item.content as Manifest }));
+  }
 }
 
 function* handleFetchManifestFromArk(action: { payload: string }) {
   const url = `https://gallica.bnf.fr/iiif/ark:/12148/${action.payload}/manifest.json`;
-  yield handleFetchManifest(() => fetchJson(url));
+  yield handleFetchManifest({ fetchFunction: () => fetchJson(url) });
 }
 
 function* handleFetchManifestFromContent(action: { payload: string }) {
-  yield handleFetchManifest(() => JSON.parse(action.payload) as object);
+  yield handleFetchManifest({ fetchFunction: () => JSON.parse(action.payload) as object });
 }
 
-function* handleFetchManifest(
-  fetchFunction: () => Promise<object> | object,
-): Generator<Effect, void, Manifest> {
+function* handleFetchManifest({
+  fetchFunction,
+  storedManifest,
+}: {
+  fetchFunction?: () => Promise<object> | object;
+  storedManifest?: Manifest;
+}): Generator<Effect, void, Manifest> {
   try {
-    const data = yield call(fetchFunction);
     let manifest: Manifest;
-    if (
-      '@context' in data &&
-      data['@context'] === 'http://iiif.io/api/presentation/3/context.json'
-    ) {
-      manifest = data;
+    if (fetchFunction) {
+      const data = yield call(fetchFunction);
+      if (
+        '@context' in data &&
+        data['@context'] === 'http://iiif.io/api/presentation/3/context.json'
+      ) {
+        manifest = data;
+      } else {
+        manifest = convertJsonToManifest(data);
+      }
     } else {
-      manifest = convertJsonToManifest(data);
+      manifest = storedManifest as Manifest;
     }
 
-    yield put(fetchManifestSuccess(manifest));
+    //load the metadata
+    const metadata: ItemMetadata[] = (yield call(() => db.itemMetadata.get(manifest.id))) ?? [];
+
+    yield put(fetchManifestSuccess({ content: manifest, metadata }));
     yield put(reset());
     yield put(navigateTo('/corpusense/manifest'));
     try {
-      yield call(() => db.storedElements.add({ id: manifest.id, content: manifest }));
+      yield call(() => db.storedItems.add({ id: manifest.id, content: manifest }));
     } catch (error) {
       console.warn('Error saving manifest to indexedDB', error);
     }
@@ -79,7 +101,7 @@ function* handleFetchManifest(
       yield call(() => db.history.add(addedHistory));
       yield put(historyUpdated(addedHistory));
     } catch (error) {
-      console.warn('Error saving history to indexedDB', error);
+      console.warn('Error adding url to indexedDB history: ', error);
     }
   } catch (error) {
     yield put(fetchManifestError(getErrorMessage(error)));

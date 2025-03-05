@@ -1,6 +1,5 @@
-import { List } from '@/data/models/list';
-import { SelectedCanvas } from '@/data/models/selectedCanvas';
-import { StoredElement } from '@/data/models/StoredElement';
+import { List } from '@/data/models/List';
+import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
@@ -16,7 +15,6 @@ import {
   setLists,
 } from '../reducers/lists';
 import { navigateTo } from '../reducers/navigation';
-import { setStoredElements } from '../reducers/storedElements';
 
 function* loadListsSaga(): Generator<CallEffect<List[]> | PutEffect, void, List[]> {
   try {
@@ -73,14 +71,14 @@ function* addSelectionToListSaga(
       list.content = [...list.content, ...newContent];
 
       yield call(() =>
-        db.transaction('rw', db.storedElements, db.lists, db.listElements, async () => {
+        db.transaction('rw', db.storedItems, db.lists, db.listElements, async () => {
           await db.listElements.bulkAdd(newContent);
           const canvasesToStore = action.payload.selection.map((elt) => ({
             id: elt.canvas.id,
             content: elt.canvas,
           }));
           //     //on utilie bulkPut pour éviter les doublons et éviter une erreur si un doublon existe (avec bulkAdd, une erreur est levée au premier doublon rencontré)
-          await db.storedElements.bulkPut(canvasesToStore);
+          await db.storedItems.bulkPut(canvasesToStore);
           await db.lists.put(list);
         }),
       );
@@ -89,17 +87,6 @@ function* addSelectionToListSaga(
     }
   } catch (e) {
     console.log('error', e);
-  }
-}
-
-// Saga pour charger les bookmarks depuis indexedDB
-function* loadStoredElements(): Generator<Effect, void, StoredElement[]> {
-  try {
-    const storedElements: StoredElement[] = yield call(() => db.storedElements.toArray());
-
-    yield put({ type: setStoredElements.type, payload: storedElements });
-  } catch (e) {
-    console.warn('Error loading storedElements from indexedDB', e);
   }
 }
 
@@ -133,4 +120,4 @@ export default function* listsSaga() {
   // yield takeEvery(updateList.type, saveListsSaga);
 }
 
-export { loadListsSaga, loadStoredElements };
+export { loadListsSaga };

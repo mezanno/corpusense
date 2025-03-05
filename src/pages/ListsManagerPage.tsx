@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { List } from '@/data/models/list';
+import { List } from '@/data/models/List';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { addListRequest, removeListRequest, setActiveList } from '@/state/reducers/lists';
 import { getCanvasesOfList, getLists } from '@/state/selectors/lists';
