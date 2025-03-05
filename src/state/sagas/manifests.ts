@@ -7,6 +7,7 @@ import { call, Effect, put, takeLatest } from 'redux-saga/effects';
 import { reset } from '../reducers/canvas';
 import {
   fetchManifestError,
+  fetchManifestFromArkRequest,
   fetchManifestFromContentRequest,
   fetchManifestFromUrlRequest,
   fetchManifestSuccess,
@@ -38,6 +39,11 @@ const fetchJson = async (url: string): Promise<object> => {
 
 function* handleFetchManifestFromURL(action: { payload: string }) {
   yield handleFetchManifest(() => fetchJson(action.payload));
+}
+
+function* handleFetchManifestFromArk(action: { payload: string }) {
+  const url = `https://gallica.bnf.fr/iiif/ark:/12148/${action.payload}/manifest.json`;
+  yield handleFetchManifest(() => fetchJson(url));
 }
 
 function* handleFetchManifestFromContent(action: { payload: string }) {
@@ -94,6 +100,7 @@ function* loadHistorySaga(): Generator<Effect, void, History[]> {
 export default function* viewerSaga() {
   yield takeLatest(fetchManifestFromContentRequest, handleFetchManifestFromContent);
   yield takeLatest(fetchManifestFromUrlRequest, handleFetchManifestFromURL);
+  yield takeLatest(fetchManifestFromArkRequest, handleFetchManifestFromArk);
 }
 
 export { loadHistorySaga };

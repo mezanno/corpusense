@@ -28,6 +28,10 @@ export const manifestsSlice = createSlice({
       state.isLoading = true;
       state.error = null;
     },
+    fetchManifestFromArkRequest: (state, _action: PayloadAction<string>) => {
+      state.isLoading = true;
+      state.error = null;
+    },
     fetchManifestError: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
       state.error = action.payload;
@@ -50,6 +54,7 @@ export const manifestsSlice = createSlice({
 export const {
   fetchManifestFromUrlRequest,
   fetchManifestFromContentRequest,
+  fetchManifestFromArkRequest,
   fetchManifestError,
   fetchManifestSuccess,
   setHistory,

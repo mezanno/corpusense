@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import {
+  fetchManifestFromArkRequest,
   fetchManifestFromContentRequest,
   fetchManifestFromUrlRequest,
 } from '@/state/reducers/manifests';
@@ -108,18 +109,61 @@ const ManifestPastForm = () => {
   );
 };
 
+const arkFormSchema = z.object({
+  ark: z.string().length(13, { message: 'This doesn’t look like a valid ARK identifier' }),
+});
+
+const ManifestArkForm = () => {
+  const dispatch = useAppDispatch();
+
+  const form = useForm<z.infer<typeof arkFormSchema>>({
+    resolver: zodResolver(arkFormSchema),
+  });
+
+  function onSubmit(values: z.infer<typeof arkFormSchema>) {
+    dispatch(fetchManifestFromArkRequest(values.ark));
+  }
+
+  return (
+    <div className='grid gap-2'>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className='w-full space-y-4'>
+          <FormField
+            control={form.control}
+            name='ark'
+            render={({ field }) => (
+              <FormItem className='flex w-full items-center justify-center'>
+                <FormLabel className='w-auto text-right'>ARK identifier - ark:/1248/</FormLabel>
+                <FormControl className='w-1/2'>
+                  <Input {...field} placeholder='xxx1234567890' />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type='submit'>Open</Button>
+        </form>
+      </Form>
+    </div>
+  );
+};
+
 const DrawerTabs = () => {
   return (
     <Tabs className='w-1/2 items-center' defaultValue='url'>
       <TabsList>
         <TabsTrigger value='url'>I&apos;ve got an URL</TabsTrigger>
         <TabsTrigger value='paste'>I want to paste the content</TabsTrigger>
+        <TabsTrigger value='ark'>I&apos;ve got an ARK identifier</TabsTrigger>
       </TabsList>
       <TabsContent value='url' className='w-full'>
         <ManifestURLForm />
       </TabsContent>
       <TabsContent value='paste' className='w-full'>
         <ManifestPastForm />
+      </TabsContent>
+      <TabsContent value='ark' className='w-full'>
+        <ManifestArkForm />
       </TabsContent>
     </Tabs>
   );
