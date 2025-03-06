@@ -5,5 +5,5 @@ export interface ItemMetadataAttribute {
 
 export interface ItemMetadata {
   id: string;
-  attributes: ItemMetadataAttribute[];
+  attribute: ItemMetadataAttribute;
 }

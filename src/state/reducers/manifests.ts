@@ -1,5 +1,5 @@
 import { History } from '@/data/models/History';
-import { ItemMetadata } from '@/data/models/Metadata';
+import { ItemMetadataAttribute } from '@/data/models/Metadata';
 import { Manifest } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -8,7 +8,7 @@ export interface ManifestState {
   error: string | null;
   loadedData: {
     content: Manifest;
-    metadata: ItemMetadata[];
+    metadata: ItemMetadataAttribute[];
   } | null;
   isLoaded: boolean;
   history: History[];
@@ -44,7 +44,7 @@ export const manifestsSlice = createSlice({
     },
     fetchManifestSuccess: (
       state,
-      action: PayloadAction<{ content: Manifest; metadata: ItemMetadata[] }>,
+      action: PayloadAction<{ content: Manifest; metadata: ItemMetadataAttribute[] }>,
     ) => {
       state.isLoading = false;
       state.isLoaded = true;
@@ -58,6 +58,11 @@ export const manifestsSlice = createSlice({
     setHistory: (state, action: PayloadAction<History[]>) => {
       state.history = action.payload;
     },
+    saveMetadaRequest: (_state, _action: PayloadAction<ItemMetadataAttribute[]>) => {},
+    saveMetadaSuccess: (state, action: PayloadAction<ItemMetadataAttribute[]>) => {
+      if (state.loadedData === null) return;
+      state.loadedData.metadata = action.payload;
+    },
   },
 });
 
@@ -69,5 +74,7 @@ export const {
   fetchManifestSuccess,
   setHistory,
   historyUpdated,
+  saveMetadaRequest,
+  saveMetadaSuccess,
 } = manifestsSlice.actions;
 export default manifestsSlice.reducer;

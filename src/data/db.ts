@@ -21,7 +21,7 @@ db.version(1).stores({
   storedItems: '&id',
   listElements: '++id, canvasId, listId',
   typesList: '&label',
-  itemMetadata: '&id',
+  itemMetadata: '[id+attribute.label]',
   tags: '&id',
 });
 

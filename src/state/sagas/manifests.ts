@@ -1,11 +1,11 @@
 import { db } from '@/data/db';
 import { History } from '@/data/models/History';
-import { ItemMetadata } from '@/data/models/Metadata';
+import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { StoredItem } from '@/data/models/StoredItem';
 import { convertJsonToManifest } from '@/utils/manifest';
 import { getErrorMessage } from '@/utils/utils';
 import { Manifest } from '@iiif/presentation-3';
-import { call, Effect, put, takeLatest } from 'redux-saga/effects';
+import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import { reset } from '../reducers/canvas';
 import {
   fetchManifestError,
@@ -14,9 +14,12 @@ import {
   fetchManifestFromUrlRequest,
   fetchManifestSuccess,
   historyUpdated,
+  saveMetadaRequest,
+  saveMetadaSuccess,
   setHistory,
 } from '../reducers/manifests';
 import { navigateTo } from '../reducers/navigation';
+import { getManifestURL } from '../selectors/manifests';
 
 //localhost:5173/corpusense?manifest=
 
@@ -67,7 +70,7 @@ function* handleFetchManifest({
 }: {
   fetchFunction?: () => Promise<object> | object;
   storedManifest?: Manifest;
-}): Generator<Effect, void, Manifest> {
+}): Generator<Effect, void, Manifest | ItemMetadata[]> {
   try {
     let manifest: Manifest;
     if (fetchFunction) {
@@ -85,15 +88,24 @@ function* handleFetchManifest({
     }
 
     //load the metadata
-    const metadata: ItemMetadata[] = (yield call(() => db.itemMetadata.get(manifest.id))) ?? [];
+    const fetchedMetadata = yield call(() => db.itemMetadata.where({ id: manifest.id }).toArray());
+    const itemMetadata = (fetchedMetadata as ItemMetadata[]) ?? [];
 
-    yield put(fetchManifestSuccess({ content: manifest, metadata }));
+    yield put(
+      fetchManifestSuccess({
+        content: manifest,
+        metadata: itemMetadata?.map((item) => item.attribute) ?? [],
+      }),
+    );
     yield put(reset());
     yield put(navigateTo('/corpusense/manifest'));
-    try {
-      yield call(() => db.storedItems.add({ id: manifest.id, content: manifest }));
-    } catch (error) {
-      console.warn('Error saving manifest to indexedDB', error);
+
+    if (storedManifest === undefined) {
+      try {
+        yield call(() => db.storedItems.add({ id: manifest.id, content: manifest }));
+      } catch (error) {
+        console.warn('Error saving manifest to indexedDB', error);
+      }
     }
 
     try {
@@ -119,10 +131,28 @@ function* loadHistorySaga(): Generator<Effect, void, History[]> {
   }
 }
 
+function* saveMetadaHandler({
+  payload,
+}: {
+  payload: ItemMetadataAttribute[];
+}): Generator<Effect, void, string | null> {
+  const manifestId = yield select(getManifestURL);
+
+  if (manifestId !== null) {
+    const manifestMetadata: ItemMetadata[] = payload.map((item) => ({
+      id: manifestId,
+      attribute: item,
+    }));
+    yield call(() => db.itemMetadata.bulkPut(manifestMetadata));
+    yield put(saveMetadaSuccess(payload));
+  }
+}
+
 export default function* viewerSaga() {
   yield takeLatest(fetchManifestFromContentRequest, handleFetchManifestFromContent);
   yield takeLatest(fetchManifestFromUrlRequest, handleFetchManifestFromURL);
   yield takeLatest(fetchManifestFromArkRequest, handleFetchManifestFromArk);
+  yield takeEvery(saveMetadaRequest, saveMetadaHandler);
 }
 
 export { loadHistorySaga };

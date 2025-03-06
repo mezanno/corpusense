@@ -9,6 +9,7 @@ import { Label, Metadata, Summary, Thumbnail } from '@samvera/clover-iiif/primit
 import { useEffect, useState } from 'react';
 import Loading from './Loading';
 import './metadata.css';
+import MetadataTable from './MetadataTable';
 import { NoManifestToShow } from './NothingToShow';
 import { ScrollArea, ScrollBar } from './ui/scroll-area';
 
@@ -50,10 +51,23 @@ const ManifestDetails = () => {
           />
           <Label label={manifest?.label} as='h3' className='text-center text-mezanno-4' />
           <h4 className='w-full text-sm font-bold break-words text-mezanno-4'>{manifest?.id}</h4>
-          <ScrollArea className='h-72 w-full rounded-md border p-2 whitespace-nowrap'>
-            <Metadata metadata={manifest?.metadata as MetadataItem[]} className='overflow-hidden' />
-            <ScrollBar orientation='horizontal' />
-          </ScrollArea>
+          <div className='w-full rounded-md border p-2'>
+            <h3 className='text-xl'>Metadata Gallica</h3>
+            <ScrollArea className='h-72 w-full whitespace-nowrap'>
+              <Metadata
+                metadata={manifest?.metadata as MetadataItem[]}
+                className='overflow-hidden'
+              />
+              <ScrollBar orientation='horizontal' />
+            </ScrollArea>
+          </div>
+          <div className='w-full rounded-md border p-2'>
+            <h3 className='text-xl'>Metadata Corpusense</h3>
+            <ScrollArea className='h-72 w-full whitespace-nowrap'>
+              <MetadataTable />
+              <ScrollBar orientation='horizontal' />
+            </ScrollArea>
+          </div>
         </div>
       )}
     </section>
