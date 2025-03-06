@@ -16,13 +16,13 @@ const db = new Dexie('mezanno') as Dexie & {
 };
 
 db.version(1).stores({
-  lists: '&id, name',
+  lists: '&id, name, *tags.id',
   history: '&url',
   storedItems: '&id',
   listElements: '++id, canvasId, listId',
   typesList: '&label',
   itemMetadata: '&id',
-  tags: '++id',
+  tags: '&id',
 });
 
 export { db };

@@ -26,13 +26,15 @@ export const listsSlice = createSlice({
       const listId: string = action.payload;
       state.values = state.values.filter((elt) => elt.id !== listId);
     },
-    // updateList: (state, action) => {
-    //   const updatedList = action.payload.updatedList;
-    //   const list = state.values.find((elt) => elt.id === updatedList.id);
-    //   if (list) {
-    //     list.name = updatedList.name;
-    //   }
-    // },
+    updateListRequest: (_state, _action) => {},
+    updateListSucess: (state, action: PayloadAction<List>) => {
+      const list: List | undefined = state.values.find((elt) => elt.id === action.payload.id);
+      if (list !== undefined) {
+        list.name = action.payload.name;
+        list.about = action.payload.about;
+        list.tags = action.payload.tags;
+      }
+    },
     setLists: (state, action: PayloadAction<List[]>) => {
       state.values = action.payload;
     },
@@ -74,7 +76,8 @@ export const {
   addListSuccess,
   removeListSuccess,
   removeListRequest,
-  // updateList,
+  updateListRequest,
+  updateListSucess,
   setLists,
   setActiveList,
   // addSelectionToList,

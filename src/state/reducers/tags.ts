@@ -13,7 +13,7 @@ export const tagSlice = createSlice({
   name: 'typeList',
   initialState,
   reducers: {
-    addNewTag: (_state, _action: PayloadAction<string>) => {},
+    addNewTag: (_state, _action: PayloadAction<Tag>) => {},
     setTags: (state, action: PayloadAction<Tag[]>) => {
       state.values = action.payload;
     },

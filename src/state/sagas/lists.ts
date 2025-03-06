@@ -13,6 +13,8 @@ import {
   removeListSuccess,
   setActiveList,
   setLists,
+  updateListRequest,
+  updateListSucess,
 } from '../reducers/lists';
 import { navigateTo } from '../reducers/navigation';
 
@@ -33,6 +35,16 @@ function* addListSaga(action: PayloadAction<string>) {
   try {
     yield db.lists.add(newList);
     yield put(addListSuccess(newList));
+  } catch (e) {
+    console.log('error', e);
+  }
+}
+
+function* upadteListSaga(action: PayloadAction<List>) {
+  const { payload } = action;
+  try {
+    yield db.lists.update(payload.id, payload);
+    yield put(updateListSucess(payload));
   } catch (e) {
     console.log('error', e);
   }
@@ -117,7 +129,7 @@ export default function* listsSaga() {
   yield takeEvery(setActiveList, handleSetActiveList);
   // yield takeEvery(addSelectionToList.type, saveListsSaga);
   // yield takeEvery(removeSelectionFromList.type, saveListsSaga);
-  // yield takeEvery(updateList.type, saveListsSaga);
+  yield takeEvery(updateListRequest, upadteListSaga);
 }
 
 export { loadListsSaga };

@@ -14,11 +14,12 @@ function* loadTagsSaga(): Generator<CallEffect<Tag[]> | PutEffect, void, Tag[]> 
   }
 }
 
-function* handleAddNewTag(action: PayloadAction<string>): Generator<Effect, void, number> {
+function* handleAddNewTag(action: PayloadAction<Tag>): Generator<Effect, void, number> {
   try {
-    const id = yield call(() => db.tags.add({ label: action.payload }));
-
-    yield put(newTagAdded({ id, label: action.payload }));
+    // const newTag = { id: uuid(), label: action.payload };
+    const newTag = action.payload;
+    yield call(() => db.tags.add(newTag));
+    yield put(newTagAdded(newTag));
   } catch (error) {
     console.error(error);
   }
