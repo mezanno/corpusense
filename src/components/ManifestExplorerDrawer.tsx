@@ -110,7 +110,7 @@ const ManifestPastForm = () => {
 };
 
 const arkFormSchema = z.object({
-  ark: z.string().length(13, { message: 'This doesn’t look like a valid ARK identifier' }),
+  ark: z.string(), //.length(10, { message: 'This doesn’t look like a valid ARK identifier' }),
 });
 
 const ManifestArkForm = () => {
