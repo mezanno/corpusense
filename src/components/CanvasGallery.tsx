@@ -2,15 +2,13 @@ import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import { setSelection } from '@/state/reducers/selection';
-import { getLoadedManifest } from '@/state/selectors/manifests';
+import { getCanvases } from '@/state/selectors/manifests';
 import { Canvas, ContentResource } from '@iiif/presentation-3';
-import { FC, useEffect, useRef, useState } from 'react';
+import { FC, useRef } from 'react';
 import Selecto, { OnSelect } from 'react-selecto';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeGrid as Grid } from 'react-window';
 import CanvasCard from './CanvasCard';
-import Loading from './Loading';
-import { NoManifestToShow } from './NothingToShow';
 
 interface GridCellProps {
   columnIndex: number;
@@ -46,16 +44,8 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
 
 const CanvasGallery = () => {
   const dispatch = useAppDispatch();
-  const loadedData = useAppSelector(getLoadedManifest);
-  const [canvases, setCanvases] = useState<Canvas[]>([]);
-
+  const canvases = useAppSelector(getCanvases);
   const containerRef = useRef(null);
-
-  useEffect(() => {
-    if (loadedData) {
-      setCanvases(loadedData.content.items);
-    }
-  }, [loadedData]);
 
   const handleCardClick = (canvas: Canvas) => {
     //TODO! Vérifications à faire
@@ -73,49 +63,53 @@ const CanvasGallery = () => {
 
   const handleSelect = (e: OnSelect) => {
     const selection: SelectedCanvas[] = [];
+    let start = Number.MAX_VALUE;
+    let end = -1;
     e.selected.forEach((el) => {
       if (el?.dataset?.index !== undefined) {
         selection.push({ index: +el.dataset.index, canvas: canvases[+el.dataset.index] });
+        if (+el.dataset.index < start) {
+          start = +el.dataset.index;
+        }
+        if (+el.dataset.index > end) {
+          end = +el.dataset.index;
+        }
       }
     });
-    dispatch(setSelection(selection));
+    dispatch(setSelection({ selection, start, end }));
   };
 
   return (
     <section className='h-full w-full items-center justify-center p-4' aria-label='canvas gallery'>
-      {loadedData !== null ? (
-        canvases.length === 0 ? (
-          <NoManifestToShow />
-        ) : (
-          <>
-            <Selecto
-              container={containerRef.current}
-              selectableTargets={['.selectable-item']}
-              selectByClick={true}
-              selectFromInside={true}
-              toggleContinueSelect={['shift']}
-              hitRate={0}
-              onSelect={handleSelect}
-            />
-            <AutoSizer ref={containerRef}>
-              {({ height, width }) => (
-                <Grid
-                  columnCount={4}
-                  columnWidth={width / 4}
-                  height={height}
-                  rowCount={Math.ceil(canvases.length / 4)}
-                  rowHeight={150}
-                  width={width}
-                  itemData={{ canvases, handleCardClick }}
-                >
-                  {GridCell}
-                </Grid>
-              )}
-            </AutoSizer>
-          </>
-        )
+      {canvases.length == 0 ? (
+        <div>Le manifest ne contient aucun canvas</div>
       ) : (
-        <Loading />
+        <>
+          <Selecto
+            container={containerRef.current}
+            selectableTargets={['.selectable-item']}
+            selectByClick={true}
+            selectFromInside={true}
+            toggleContinueSelect={['shift']}
+            hitRate={0}
+            onSelect={handleSelect}
+          />
+          <AutoSizer ref={containerRef}>
+            {({ height, width }) => (
+              <Grid
+                columnCount={4}
+                columnWidth={width / 4}
+                height={height}
+                rowCount={Math.ceil(canvases.length / 4)}
+                rowHeight={150}
+                width={width}
+                itemData={{ canvases, handleCardClick }}
+              >
+                {GridCell}
+              </Grid>
+            )}
+          </AutoSizer>
+        </>
       )}
     </section>
   );
