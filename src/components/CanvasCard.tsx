@@ -101,6 +101,11 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
         <ContextMenuItem onClick={handleSetSelectionEnd}>
           Définir la fin de sélection ici
         </ContextMenuItem>
+        <ContextMenuItem
+          onClick={() => void navigator.clipboard.writeText(canvas.items[0].items[0].body.id)}
+        >
+          Copier l&apos;URL de la ressource dans le presse-papier
+        </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
   );
