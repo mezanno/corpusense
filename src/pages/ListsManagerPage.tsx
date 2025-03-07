@@ -28,11 +28,12 @@ import {
 } from '@/components/ui/table';
 import { List } from '@/data/models/List';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { exportRequest } from '@/state/reducers/export';
 import { addListRequest, removeListRequest, setActiveList } from '@/state/reducers/lists';
 import { getCanvasesOfList, getLists } from '@/state/selectors/lists';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas } from '@iiif/presentation-3';
-import { Trash2 } from 'lucide-react';
+import { Download, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -118,6 +119,14 @@ const ListsManagerPage = () => {
     dispatch(setActiveList(id));
   };
 
+  const handleExport = (event: Event, id: string) => {
+    console.log(event);
+    event.stopPropagation();
+    event.preventDefault();
+
+    dispatch(exportRequest(id));
+  };
+
   return (
     <main className='flex h-full w-full flex-col items-center space-y-4 rounded-2xl border-1 bg-white'>
       <Accordion type='single' collapsible className='w-1/4'>
@@ -149,15 +158,7 @@ const ListsManagerPage = () => {
                   <HoverCardTrigger asChild>
                     <TableRow onClick={() => handleOnClick(list.id as string)}>
                       <TableCell>{list.name}</TableCell>
-                      <TableCell className='space-x-2'>
-                        <Button
-                          variant='destructive'
-                          onClick={() => handleDelete(list.id as string)}
-                        >
-                          <Trash2 />
-                          Supprimer
-                        </Button>
-                      </TableCell>
+
                       <TableCell>
                         {list.content === undefined || list.content.length === 0 ? (
                           <Badge variant='secondary' className='text-sm'>
@@ -170,10 +171,22 @@ const ListsManagerPage = () => {
                           </Badge>
                         )}
                       </TableCell>
+                      <TableCell className='space-x-2'>
+                        <Button onClick={(e) => handleExport(e, list.id as string)}>
+                          <Download /> Exporter
+                        </Button>
+                        <Button
+                          variant='destructive'
+                          onClick={() => handleDelete(list.id as string)}
+                        >
+                          <Trash2 />
+                          Supprimer
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   </HoverCardTrigger>
                   <HoverCardContent className='w-full'>
-                    <ListHoverCard list={list} />
+                    {/* <ListHoverCard list={list} /> */}
                   </HoverCardContent>
                 </HoverCard>
               ))}

@@ -1,6 +1,7 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
 import canvasReducer from './reducers/canvas';
+import exportReducer from './reducers/export';
 import listReducer from './reducers/lists';
 import manifestsReducer from './reducers/manifests';
 import navigationReducer from './reducers/navigation';
@@ -19,6 +20,7 @@ export const rootReducer = combineReducers({
   storedItems: storedItemsReducer,
   navigation: navigationReducer,
   tags: tagsReducer,
+  export: exportReducer,
 });
 
 const store = configureStore({

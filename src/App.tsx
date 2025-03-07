@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
 import NavigationHandler from './hooks/NavigationHandler';
+import ExportPage from './pages/ExportPage';
 import HomePAge from './pages/HomePage';
 import Layout from './pages/Layout';
 import ListInspectorPage from './pages/ListInspectorPage';
@@ -17,6 +18,7 @@ function App() {
           <Route path='manifest' element={<ManifestExplorerPage />} />
           <Route path='lists' element={<ListsManagerPage />} />
           <Route path='list-inspector' element={<ListInspectorPage />} />
+          <Route path='export' element={<ExportPage />} />
           <Route path='*' element={<HomePAge />} />
         </Route>
       </Routes>
