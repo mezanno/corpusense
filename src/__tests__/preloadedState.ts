@@ -17,6 +17,8 @@ const emptyPreloadedState: RootState = {
   },
   selection: {
     canvases: [],
+    indexStart: -1,
+    indexEnd: -1,
   },
   storedItems: {
     items: [],
