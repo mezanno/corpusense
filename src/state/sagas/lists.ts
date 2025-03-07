@@ -102,7 +102,7 @@ function* addSelectionToListSaga(
   }
 }
 
-function* handleSetActiveList(action: PayloadAction<string>): Generator<Effect, void, void> {
+function* handleSetActiveList(_action: PayloadAction<string>): Generator<Effect, void, void> {
   yield put(navigateTo('/corpusense/list-inspector'));
 }
 

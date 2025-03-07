@@ -14,8 +14,8 @@ import {
 import { List } from '@/data/models/List';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { addSelectionToListRequest } from '@/state/reducers/lists';
+import { setSelectionEndRequest, setSelectionStartRequest } from '@/state/reducers/selection';
 import { getLists } from '@/state/selectors/lists';
-import { setSelectionEnd, setSelectionStart } from '../state/reducers/selection';
 import { getSelection, isSelected } from '../state/selectors/selection';
 
 interface CanvasCardProps {
@@ -40,11 +40,11 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
   }
 
   const handleSetSelectionStart = () => {
-    dispatch(setSelectionStart({ index, canvas }));
+    dispatch(setSelectionStartRequest(index));
   };
 
   const handleSetSelectionEnd = () => {
-    dispatch(setSelectionEnd({ index, canvas }));
+    dispatch(setSelectionEndRequest(index));
   };
 
   const handleAddSelectionToList = (listId: string | undefined) => {

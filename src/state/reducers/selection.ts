@@ -1,55 +1,33 @@
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export type SelectionState = SelectedCanvas[];
-
-const initialState: SelectionState = [];
+export type SelectionState = {
+  canvases: SelectedCanvas[] | [];
+  indexStart: number;
+  indexEnd: number;
+};
 
 export const selectionSlice = createSlice({
   name: 'selection',
   initialState: {
-    canvases: initialState,
+    canvases: [] as SelectedCanvas[],
+    indexStart: -1,
+    indexEnd: -1,
   },
   reducers: {
-    setSelection: (state, action: PayloadAction<SelectedCanvas[]>) => {
-      state.canvases = action.payload;
+    setSelection: (
+      state,
+      action: PayloadAction<{ selection: SelectedCanvas[]; start: number; end: number }>,
+    ) => {
+      state.canvases = action.payload.selection;
+      state.indexStart = action.payload.start;
+      state.indexEnd = action.payload.end;
     },
-    setSelectionStart: (state, action: PayloadAction<SelectedCanvas>) => {
-      console.log('setSelectionStart', action.payload);
-
-      //if there is an element lower to the new start, we set the start to the new start
-      state.canvases = state.canvases.filter((el) => el.index > action.payload.index);
-
-      //TODO ajouter les éléments entre le start et le end
-      // const indexMax: number = state.canvases.reduce(
-      //   (acc, el) => (el.index > acc ? el.index : acc),
-      //   action.payload.index,
-      // );
-      // for (let i: number = action.payload; i <= indexMax; i++) {
-      //   state.canvases.push(i);
-      // }
-
-      state.canvases.push(action.payload);
-    },
-    setSelectionEnd: (state, action: PayloadAction<SelectedCanvas>) => {
-      //if there is an element upper to the new end, we set the end to the new end
-      state.canvases = state.canvases.filter((el) => el.index < action.payload.index);
-
-      //TODO ajouter les éléments entre le start et le end
-      // const indexMin: number = state.canvases.reduce(
-      //   (acc, el) => (el.index < acc ? el.index : acc),
-      //   action.payload,
-      // );
-
-      //add all the elements between the start and the end
-      // for (let i = indexMin; i <= action.payload.index; i++) {
-      //   state.canvases.push(i);
-      // }
-
-      state.canvases.push(action.payload);
-    },
+    setSelectionStartRequest: (_state, _action: PayloadAction<number>) => {},
+    setSelectionEndRequest: (_state, _action: PayloadAction<number>) => {},
   },
 });
 
-export const { setSelection, setSelectionStart, setSelectionEnd } = selectionSlice.actions;
+export const { setSelection, setSelectionStartRequest, setSelectionEndRequest } =
+  selectionSlice.actions;
 export default selectionSlice.reducer;

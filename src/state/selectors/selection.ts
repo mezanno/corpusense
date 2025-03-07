@@ -9,3 +9,6 @@ export const isSelected =
   (state: RootState): boolean => {
     return state.selection.canvases.some((el) => el.index == index && el.canvas.id == canvasId);
   };
+
+export const getSelectionEnd = (state: RootState): number => state.selection.indexEnd;
+export const getSelectionStart = (state: RootState): number => state.selection.indexStart;
