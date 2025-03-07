@@ -4,7 +4,7 @@ import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import { setSelection } from '@/state/reducers/selection';
 import { getCanvases } from '@/state/selectors/manifests';
 import { Canvas, ContentResource } from '@iiif/presentation-3';
-import { FC, useRef } from 'react';
+import { FC, useRef, useState } from 'react';
 import Selecto, { OnSelect } from 'react-selecto';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeGrid as Grid } from 'react-window';
@@ -16,7 +16,7 @@ interface GridCellProps {
   style: React.CSSProperties;
   data: {
     canvases: Canvas[];
-    handleCardClick: (canvas: Canvas) => void;
+    handleCardClick: (target: EventTarget, canvas: Canvas) => void;
   };
 }
 
@@ -26,7 +26,7 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
 
   return (
     <div
-      className={` ${
+      className={`${
         columnIndex % 2
           ? rowIndex % 2 === 0
             ? 'GridItemOdd'
@@ -46,8 +46,20 @@ const CanvasGallery = () => {
   const dispatch = useAppDispatch();
   const canvases = useAppSelector(getCanvases);
   const containerRef = useRef(null);
+  const [focused, setFocused] = useState<EventTarget | null>(null);
 
-  const handleCardClick = (canvas: Canvas) => {
+  const handleCardClick = (target: EventTarget, canvas: Canvas) => {
+    setFocused((prev) => {
+      if (prev !== null) {
+        console.log('prev', prev);
+        (prev as HTMLElement).classList.remove('border-red-500');
+        (prev as HTMLElement).classList.remove('border-2');
+      }
+      (target as HTMLElement).classList.add('border-red-500');
+      (target as HTMLElement).classList.add('border-2');
+      return target;
+    });
+
     //TODO! Vérifications à faire
     if (canvas.items?.[0]?.items?.[0]?.body != null) {
       console.log(canvas.items[0].items[0].body);
@@ -62,6 +74,8 @@ const CanvasGallery = () => {
   };
 
   const handleSelect = (e: OnSelect) => {
+    console.log('handleSelect', e);
+
     const selection: SelectedCanvas[] = [];
     let start = Number.MAX_VALUE;
     let end = -1;
@@ -88,7 +102,7 @@ const CanvasGallery = () => {
           <Selecto
             container={containerRef.current}
             selectableTargets={['.selectable-item']}
-            selectByClick={true}
+            selectByClick={false}
             selectFromInside={true}
             toggleContinueSelect={['shift']}
             hitRate={0}

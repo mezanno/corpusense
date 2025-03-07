@@ -21,7 +21,7 @@ import { getSelection, isSelected } from '../state/selectors/selection';
 interface CanvasCardProps {
   index: number;
   canvas: Canvas;
-  onClick: (canvas: Canvas) => void;
+  onClick: (target: EventTarget, canvas: Canvas) => void;
 }
 
 const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
@@ -52,12 +52,16 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
     dispatch(addSelectionToListRequest({ selection, listId }));
   };
 
+  const handleClick = (target: EventTarget) => {
+    onClick(target, canvas);
+  };
+
   return (
     <ContextMenu>
       <div className='flex h-full w-full justify-center'>
         <ContextMenuTrigger>
           <Card
-            onClick={() => onClick(canvas)}
+            onClick={(e) => handleClick(e.target)}
             className={`selectable-item h-fit w-fit ${selected ? 'bg-blue-300' : 'bg-white'}`}
             data-index={index}
             data-canvas-id={canvas.id}
