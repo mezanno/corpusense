@@ -29,6 +29,12 @@ const emptyPreloadedState: RootState = {
   tags: {
     values: [],
   },
+  export: {
+    lastExportContent: [],
+    lastExportDate: new Date(),
+    lastExportStatus: 'UNKNOWN',
+    lastExportError: '',
+  },
 };
 
 export const getPreloadedState = (partialState: Partial<RootState> = {}): RootState => {

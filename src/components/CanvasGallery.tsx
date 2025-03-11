@@ -46,7 +46,7 @@ const CanvasGallery = () => {
   const dispatch = useAppDispatch();
   const canvases = useAppSelector(getCanvases);
   const containerRef = useRef(null);
-  const [focused, setFocused] = useState<EventTarget | null>(null);
+  const [_focused, setFocused] = useState<EventTarget | null>(null);
 
   const handleCardClick = (target: EventTarget, canvas: Canvas) => {
     setFocused((prev) => {

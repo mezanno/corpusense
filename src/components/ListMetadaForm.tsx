@@ -58,6 +58,8 @@ const ListMetadaForm = ({ list }: { list: List }) => {
   }
   const [tags, setTags] = useState<FormTag[]>(listTagsDefaultValue);
 
+  const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -82,6 +84,8 @@ const ListMetadaForm = ({ list }: { list: List }) => {
   }
 
   const handleTagAdded = (newTags: FormTag[]) => {
+    console.log('handleTagAdded: ', newTags);
+
     //on récupère les tags qui ne sont pas déjà dans la liste (state tags)
     const diff = newTags.filter((tag) => !tags.some((t) => t.id === tag.id));
     if (diff.length > 0) {
@@ -156,10 +160,12 @@ const ListMetadaForm = ({ list }: { list: List }) => {
                       setTags={(newTags) => {
                         setTags(newTags);
                         setValue('tags', newTags as [FormTag, ...FormTag[]]);
-                        handleTagAdded(newTags);
+                        handleTagAdded(newTags as FormTag[]);
                       }}
                       generateTagId={() => uuid()}
                       styleClasses={{ inlineTagsContainer: 'tagInputInlineContainer' }}
+                      activeTagIndex={activeTagIndex}
+                      setActiveTagIndex={setActiveTagIndex}
                     />
                   </FormControl>
                   <FormDescription>Tags associated to this list</FormDescription>

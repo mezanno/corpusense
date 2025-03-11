@@ -81,7 +81,7 @@ const NewListForm = () => {
 
 const ListHoverCard = ({ list }: { list: List }) => {
   // const elements = useAppSelector(getElemntsOfList(list.id as string));
-  const canvases = useAppSelector(getCanvasesOfList(list.id as string));
+  const canvases = useAppSelector((state) => getCanvasesOfList(state, list.id as string));
 
   return (
     <div className='flex flex-col justify-between space-x-4'>
@@ -99,7 +99,7 @@ const ListHoverCard = ({ list }: { list: List }) => {
               layout='horizontal'
               canvases={canvases.map((canvas) => canvas.content as Canvas)}
               handleCardClick={() => console.log('click')}
-            />{' '}
+            />
           </div>
         </div>
       )}
@@ -119,7 +119,7 @@ const ListsManagerPage = () => {
     dispatch(setActiveList(id));
   };
 
-  const handleExport = (event: Event, id: string) => {
+  const handleExport = (event: React.MouseEvent<HTMLButtonElement | MouseEvent>, id: string) => {
     console.log(event);
     event.stopPropagation();
     event.preventDefault();
@@ -186,7 +186,7 @@ const ListsManagerPage = () => {
                     </TableRow>
                   </HoverCardTrigger>
                   <HoverCardContent className='w-full'>
-                    {/* <ListHoverCard list={list} /> */}
+                    <ListHoverCard list={list} />
                   </HoverCardContent>
                 </HoverCard>
               ))}

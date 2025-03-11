@@ -1,5 +1,5 @@
 import ListMetadaForm from '@/components/ListMetadaForm';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useAppSelector } from '@/hooks/hooks';
 import { getActiveList } from '@/state/selectors/lists';
 import { getCanvasById } from '@/state/selectors/storedItems';
 import { IIIFExternalWebResource } from '@iiif/presentation-3';
@@ -9,7 +9,7 @@ import 'gridstack/dist/gridstack.min.css';
 import { createRef, useEffect, useRef } from 'react';
 
 const GridThumb = ({ canvasId }: { canvasId: string }) => {
-  const canvas = useAppSelector(getCanvasById(canvasId));
+  const canvas = useAppSelector((state) => getCanvasById(state, canvasId));
 
   if (canvas === undefined) {
     return <div aria-errormessage='Error while loading canvas'>Error while loading canvas</div>;
@@ -26,7 +26,6 @@ const GridThumb = ({ canvasId }: { canvasId: string }) => {
 };
 
 const ListInspectorPage = () => {
-  const dispatch = useAppDispatch();
   const activeList = useAppSelector(getActiveList);
   const gridRef = useRef(null);
   const refs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
@@ -44,7 +43,7 @@ const ListInspectorPage = () => {
   useEffect(() => {
     if (activeList?.content && gridRef.current !== null) {
       const grid = GridStack.init({ float: false, disableResize: true }, gridRef.current);
-      grid.on('change', (event, items) => {
+      grid.on('change', (_event, _items) => {
         grid.compact();
       });
       grid.batchUpdate(); //afin d'éviter les rendus tant qu'on n'a pas terminé les makeWidgets

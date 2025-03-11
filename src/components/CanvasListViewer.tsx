@@ -8,7 +8,7 @@ interface RowProps {
   style: React.CSSProperties;
   data: {
     canvases: Canvas[];
-    handleCardClick: (canvas: Canvas) => void;
+    handleCardClick: (target: EventTarget, canvas: Canvas) => void;
   };
 }
 
@@ -34,7 +34,7 @@ const CanvasListViewer = ({
   size: number;
   layout: 'horizontal' | 'vertical';
   canvases: Canvas[];
-  handleCardClick: (canvas: Canvas) => void;
+  handleCardClick: (target: EventTarget, canvas: Canvas) => void;
 }) => {
   return (
     <List
