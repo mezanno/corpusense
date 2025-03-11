@@ -7,11 +7,38 @@ import {
   OpenSeadragonViewer,
 } from '@annotorious/react';
 import '@annotorious/react/annotorious-react.css';
-import { IIIFExternalWebResource } from '@iiif/presentation-3';
+import { IIIFExternalWebResource, ImageService } from '@iiif/presentation-3';
+import { TileSource } from 'openseadragon';
+import { useEffect, useState } from 'react';
 import { NothingToShow } from './NothingToShow';
 
 const CanvasViewer = () => {
   const canvasImage = useAppSelector(getCanvasForCanvas('test')) as IIIFExternalWebResource;
+  const [source, setSource] = useState<TileSource>();
+
+  useEffect(() => {
+    if (canvasImage?.service?.length != null) {
+      const service = canvasImage.service[0] as ImageService;
+      if (service !== undefined) {
+        const id = service['@id'];
+
+        if (id !== undefined) {
+          setSource({
+            '@context': 'http://library.stanford.edu/iiif/image-api/1.1/context.json',
+            // '@id': `http://localhost:3001/proxy?url=${encodeURIComponent('https://gallica.bnf.fr/iiif/ark:/12148/bpt6k14267837/f6')}`,
+            // '@id': canvasImage.service[0]['@id'].replace(
+            //   'https://gallica.bnf.fr/iiif',
+            //   '/gallica/iiif/image/v3',
+            // ),
+            '@id': id.replace('https://gallica.bnf.fr/iiif', '/gallica/iiif/image/v3'),
+            height: canvasImage.height,
+            width: canvasImage.width,
+            profile: ['http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2'],
+          } as unknown as TileSource);
+        }
+      }
+    }
+  }, [canvasImage]);
 
   return (
     <section className='flex h-full w-full items-center justify-center' aria-label='canvas viewer'>
@@ -26,18 +53,7 @@ const CanvasViewer = () => {
               options={{
                 prefixUrl: '/corpusense/images/',
                 defaultZoomLevel: 0.5,
-                tileSources: [
-                  {
-                    '@context': 'http://library.stanford.edu/iiif/image-api/1.1/context.json',
-                    // '@id': `http://localhost:3001/proxy?url=${encodeURIComponent('https://gallica.bnf.fr/iiif/ark:/12148/bpt6k14267837/f6')}`,
-                    '@id': canvasImage.service[0]['@id'],
-                    height: canvasImage.height,
-                    width: canvasImage.width,
-                    profile: [
-                      'http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2',
-                    ],
-                  },
-                ],
+                tileSources: source,
                 loadTilesWithAjax: true,
                 crossOriginPolicy: 'Anonymous',
                 showSequenceControl: true,
