@@ -56,6 +56,15 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
     onClick(target, canvas);
   };
 
+  const handleCopyToClipboard = () => {
+    if (canvas.items !== undefined) {
+      const body = canvas.items?.[0]?.items?.[0]?.body;
+      if (body !== undefined && typeof body !== 'string' && 'id' in body && body.id !== undefined) {
+        void navigator.clipboard.writeText(body.id);
+      }
+    }
+  };
+
   return (
     <ContextMenu>
       <div className='flex h-full w-full justify-center'>
@@ -101,9 +110,7 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
         <ContextMenuItem onClick={handleSetSelectionEnd}>
           Définir la fin de sélection ici
         </ContextMenuItem>
-        <ContextMenuItem
-          onClick={() => void navigator.clipboard.writeText(canvas.items[0].items[0].body.id)}
-        >
+        <ContextMenuItem onClick={handleCopyToClipboard}>
           Copier l&apos;URL de la ressource dans le presse-papier
         </ContextMenuItem>
       </ContextMenuContent>
