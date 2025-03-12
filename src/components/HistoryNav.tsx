@@ -5,18 +5,35 @@ import { fetchManifestFromUrlRequest } from '@/state/reducers/manifests';
 import { getHistory } from '@/state/selectors/manifests';
 import { IIIFExternalWebResource, InternationalString } from '@iiif/presentation-3';
 import { Summary, Thumbnail } from '@samvera/clover-iiif/primitives';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { FileImage } from 'lucide-react';
+import { useCallback, useMemo } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 const Item = ({ url }: { url: string }) => {
   const { manifest } = useManifest(url);
-  const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[]>([]);
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    if (manifest !== null) {
-      setThumbnail(manifest.thumbnail as IIIFExternalWebResource[]);
+  const thumbnail = useMemo(() => {
+    if (manifest !== null && manifest.thumbnail !== undefined) {
+      return (
+        <Thumbnail
+          thumbnail={manifest.thumbnail as IIIFExternalWebResource[]}
+          style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+        />
+      );
     }
+    return <FileImage size={48} />;
+  }, [manifest]);
+
+  const label = useMemo(() => {
+    const text: InternationalString | undefined = manifest?.summary || manifest?.label;
+
+    return (
+      <Summary
+        className='text-left text-xs font-bold text-mezanno-4'
+        summary={text as InternationalString}
+      />
+    );
   }, [manifest]);
 
   const handleHistoryClick = useCallback(
@@ -33,14 +50,8 @@ const Item = ({ url }: { url: string }) => {
             onClick={() => handleHistoryClick(url)}
             className='text-wrapping flex cursor-pointer items-center space-x-2 border-b border-gray-200 p-2'
           >
-            <Thumbnail
-              thumbnail={thumbnail}
-              style={{ width: '48px', height: '48px', objectFit: 'contain' }}
-            />
-            <Summary
-              className='text-xs font-bold text-mezanno-4'
-              summary={manifest?.summary as InternationalString}
-            />
+            {thumbnail}
+            {label}
           </div>
         </TooltipTrigger>
         <TooltipContent>{url}</TooltipContent>
