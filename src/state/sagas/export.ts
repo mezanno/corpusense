@@ -1,6 +1,6 @@
 import { db } from '@/data/db';
 import { List } from '@/data/models/List';
-import { ItemMetadata } from '@/data/models/Metadata';
+import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
 import { PayloadAction } from '@reduxjs/toolkit';
@@ -17,6 +17,7 @@ function* handleExportRequest(
 
   const exportData = [];
 
+  //TODO! ne fonctionne que s'il y a des tags
   if (listToExport !== undefined && listToExport.content) {
     if (listToExport.tags) {
       result = yield call(() =>
@@ -27,10 +28,13 @@ function* handleExportRequest(
       for (let i = 0; i < listToExport.content.length; i++) {
         const element = listToExport.content[i];
 
-        const newData = { element: element.canvasId, tags: tags.map((tag) => tag.label) };
+        const newData: { element: string; tags: string[]; metadata?: ItemMetadataAttribute[] } = {
+          element: element.canvasId,
+          tags: tags.map((tag) => tag.label),
+        };
 
         //retrieve manifest information
-        const match = element.canvasId.match(/ark:\/\d+\/([^\/]+)/);
+        const match = element.canvasId.match(/ark:\/\d+\/([^\\/]+)/);
         const manifestArk = match ? match[1] : null;
         if (manifestArk !== null) {
           //   result = yield call(() =>
