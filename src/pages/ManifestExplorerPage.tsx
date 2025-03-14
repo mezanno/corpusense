@@ -1,9 +1,11 @@
 import CanvasViewer from '@/components/CanvasViewer';
 import { Progress } from '@/components/ui/progress';
+import { Toggle } from '@/components/ui/toggle';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fetchManifestFromUrlRequest } from '@/state/reducers/manifests';
 import { getCanvasForCanvas } from '@/state/selectors/canvas';
 import { Annotorious } from '@annotorious/react';
+import { PanelTopClose, PanelTopOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { createWorker } from 'tesseract.js';
@@ -16,6 +18,8 @@ const ManifestExplorerPage = () => {
   const [progress, setProgress] = useState(0);
   const [working, setWorking] = useState(false);
   const { isLoading, isLoaded } = useAppSelector((state) => state.manifests);
+  const [isMetadataOpen, setIsMetadataOpen] = useState(true);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(true);
 
   const dispatch = useAppDispatch();
 
@@ -48,16 +52,52 @@ const ManifestExplorerPage = () => {
 
   return (
     <main className='relative h-full w-full'>
+      <div className='mb-2 flex space-x-2'>
+        <Toggle onPressedChange={setIsMetadataOpen} pressed={isMetadataOpen} variant='outline'>
+          {isMetadataOpen ? (
+            <>
+              <PanelTopClose />
+              Close Metadata
+            </>
+          ) : (
+            <>
+              <PanelTopOpen />
+              Open Metadata
+            </>
+          )}
+        </Toggle>
+        <Toggle onPressedChange={setIsGalleryOpen} pressed={isGalleryOpen} variant='outline'>
+          {isGalleryOpen ? (
+            <>
+              <PanelTopClose />
+              Close Gallery
+            </>
+          ) : (
+            <>
+              <PanelTopOpen />
+              Open Gallery
+            </>
+          )}
+        </Toggle>
+      </div>
       <ResizablePanelGroup direction='horizontal' className='h-full w-full space-x-2'>
-        <ResizablePanel className='flex h-full w-full justify-center rounded-lg bg-white'>
-          <ManifestDetails />
-        </ResizablePanel>
+        {isMetadataOpen && (
+          <ResizablePanel className='flex h-full w-full justify-center rounded-lg bg-white'>
+            <ManifestDetails />
+          </ResizablePanel>
+        )}
         {!isLoading && isLoaded && (
           <>
-            <ResizableHandle />
-            <ResizablePanel className='h-full rounded-lg bg-white'>
-              <CanvasGallery />
-            </ResizablePanel>
+            {isGalleryOpen && (
+              <>
+                <ResizableHandle />
+
+                <ResizablePanel className='h-full rounded-lg bg-white'>
+                  <CanvasGallery />
+                </ResizablePanel>
+              </>
+            )}
+
             <ResizableHandle />
             <ResizablePanel className='relative h-full w-full rounded-lg bg-white'>
               <Annotorious>
