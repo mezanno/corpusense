@@ -1,7 +1,7 @@
-import { ContentResource } from '@iiif/presentation-3';
+import { Canvas } from '@iiif/presentation-3';
 import { RootState } from '../store';
 
 export const getCanvasForCanvas =
   (componentId: string) =>
-  (state: RootState): ContentResource | undefined =>
+  (state: RootState): Canvas | undefined =>
     state.canvases.values[componentId];

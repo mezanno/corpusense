@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import { setSelection } from '@/state/reducers/selection';
 import { getCanvases } from '@/state/selectors/manifests';
-import { Canvas, ContentResource } from '@iiif/presentation-3';
+import { Canvas } from '@iiif/presentation-3';
 import { FC, useRef, useState } from 'react';
 import Selecto, { OnSelect } from 'react-selecto';
 import AutoSizer from 'react-virtualized-auto-sizer';
@@ -61,13 +61,11 @@ const CanvasGallery = () => {
     });
 
     //TODO! Vérifications à faire
-    if (canvas.items?.[0]?.items?.[0]?.body != null) {
-      console.log(canvas.items[0].items[0].body);
-
+    if (canvas != null) {
       dispatch(
         setCanvasFromComponent({
           componentId: 'test',
-          canvas: canvas.items[0].items[0].body as ContentResource,
+          canvas,
         }),
       );
     }
