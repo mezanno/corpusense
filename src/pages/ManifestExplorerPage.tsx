@@ -9,7 +9,6 @@ import { useSearchParams } from 'react-router-dom';
 import { createWorker } from 'tesseract.js';
 import CanvasGallery from '../components/CanvasGallery';
 import ManifestDetails from '../components/ManifestDetails';
-import ManifestExplorerDrawer from '../components/ManifestExplorerDrawer';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
 const ManifestExplorerPage = () => {
@@ -49,9 +48,8 @@ const ManifestExplorerPage = () => {
 
   return (
     <main className='relative h-full w-full'>
-      <ManifestExplorerDrawer />
       <ResizablePanelGroup direction='horizontal' className='h-full w-full space-x-2'>
-        <ResizablePanel className='h-full rounded-lg bg-white'>
+        <ResizablePanel className='flex h-full w-full justify-center rounded-lg bg-white'>
           <ManifestDetails />
         </ResizablePanel>
         {!isLoading && isLoaded && (

@@ -173,7 +173,7 @@ const ManifestExplorerDrawer = () => {
   return (
     <Drawer>
       <DrawerTrigger
-        className='shadow- absolute top-2 left-2 cursor-pointer rounded-full border-1 border-slate-300 bg-white p-3 shadow-md'
+        className='cursor-pointer rounded-full border-1 border-slate-300 bg-white p-3 shadow-md'
         aria-label='Open manifest dialog'
       >
         <ExternalLink />
