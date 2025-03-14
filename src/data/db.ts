@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
+import { Annotation } from './models/Annotation';
 import { History } from './models/History';
 import { List } from './models/List';
 import { ListElement } from './models/ListElement';
@@ -13,6 +14,7 @@ const db = new Dexie('mezanno') as Dexie & {
   listElements: EntityTable<ListElement, 'id'>;
   itemMetadata: EntityTable<ItemMetadata, 'id'>;
   tags: EntityTable<Tag, 'id'>;
+  annotations: EntityTable<Annotation, 'id'>;
 };
 
 db.version(1).stores({
@@ -23,6 +25,7 @@ db.version(1).stores({
   typesList: '&label',
   itemMetadata: '[id+attribute.label]',
   tags: '&id',
+  annotations: '&id, canvasId',
 });
 
 export { db };

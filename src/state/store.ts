@@ -1,5 +1,6 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
+import annotationsReducer from './reducers/annotations';
 import canvasReducer from './reducers/canvas';
 import exportReducer from './reducers/export';
 import listReducer from './reducers/lists';
@@ -21,6 +22,7 @@ export const rootReducer = combineReducers({
   navigation: navigationReducer,
   tags: tagsReducer,
   export: exportReducer,
+  annotations: annotationsReducer,
 });
 
 const store = configureStore({
