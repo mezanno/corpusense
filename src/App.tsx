@@ -7,6 +7,7 @@ import Layout from './pages/Layout';
 import ListInspectorPage from './pages/ListInspectorPage';
 import ListsManagerPage from './pages/ListsManagerPage';
 import ManifestExplorerPage from './pages/ManifestExplorerPage';
+import TagsPage from './pages/TagsPage';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path='manifest' element={<ManifestExplorerPage />} />
           <Route path='lists' element={<ListsManagerPage />} />
           <Route path='list-inspector' element={<ListInspectorPage />} />
+          <Route path='tags' element={<TagsPage />} />
           <Route path='export' element={<ExportPage />} />
           <Route path='*' element={<HomePAge />} />
         </Route>

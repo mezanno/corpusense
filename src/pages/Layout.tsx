@@ -1,5 +1,5 @@
 import HistoryNav from '@/components/HistoryNav';
-import { Download, FolderSearch2, Home, List, ScrollText } from 'lucide-react';
+import { Download, FolderSearch2, Home, List, ScrollText, Tags } from 'lucide-react';
 import { Link, Outlet } from 'react-router-dom';
 import {
   Breadcrumb,
@@ -43,6 +43,11 @@ const items = [
     title: 'List Inspector',
     url: 'list-inspector',
     icon: ScrollText,
+  },
+  {
+    title: 'Tags',
+    url: 'tags',
+    icon: Tags,
   },
   {
     title: 'Export',
