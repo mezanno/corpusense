@@ -3,6 +3,7 @@ import { Progress } from '@/components/ui/progress';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fetchManifestFromUrlRequest } from '@/state/reducers/manifests';
 import { getCanvasForCanvas } from '@/state/selectors/canvas';
+import { Annotorious } from '@annotorious/react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { createWorker } from 'tesseract.js';
@@ -40,7 +41,7 @@ const ManifestExplorerPage = () => {
     console.log('OCR ', canvasImage);
     const {
       data: { text },
-    } = await worker.recognize(canvasImage.id as string);
+    } = await worker.recognize(canvasImage.id);
     console.log(text);
     await worker.terminate();
     setWorking(false);
@@ -61,7 +62,9 @@ const ManifestExplorerPage = () => {
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel className='relative h-full w-full rounded-lg bg-white'>
-              <CanvasViewer />
+              <Annotorious>
+                <CanvasViewer />
+              </Annotorious>
               <button
                 className='absolute top-0 right-0 m-4 rounded-md bg-white p-2 shadow-md'
                 // eslint-disable-next-line @typescript-eslint/no-misused-promises
