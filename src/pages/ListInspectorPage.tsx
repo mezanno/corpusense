@@ -1,15 +1,23 @@
 import ListMetadaForm from '@/components/ListMetadaForm';
-import { useAppSelector } from '@/hooks/hooks';
-import { getActiveList } from '@/state/selectors/lists';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { removeElementFromList } from '@/state/reducers/lists';
+import { getActiveList, getElemntsOfList } from '@/state/selectors/lists';
 import { getCanvasById } from '@/state/selectors/storedItems';
 import { IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
-import { createRef, useEffect, useRef } from 'react';
+import { CircleX } from 'lucide-react';
+import { createRef, useCallback, useEffect, useRef } from 'react';
 
-const GridThumb = ({ canvasId }: { canvasId: string }) => {
+const GridThumb = ({ canvasId, listId }: { canvasId: string; listId: string }) => {
   const canvas = useAppSelector((state) => getCanvasById(state, canvasId));
+  const dispatch = useAppDispatch();
+
+  const handleDelete = useCallback(() => {
+    console.log('Delete', canvasId);
+    dispatch(removeElementFromList({ listId, canvasId }));
+  }, [canvasId]);
 
   if (canvas === undefined) {
     return <div aria-errormessage='Error while loading canvas'>Error while loading canvas</div>;
@@ -17,16 +25,24 @@ const GridThumb = ({ canvasId }: { canvasId: string }) => {
   const thumbnail = canvas.thumbnail as IIIFExternalWebResource[];
 
   return (
-    <Thumbnail
-      thumbnail={thumbnail}
-      style={{ width: '100px', height: '100px', objectFit: 'contain' }}
-      className='w-fit'
-    />
+    <div className='group relative'>
+      <Thumbnail
+        thumbnail={thumbnail}
+        style={{ width: '100px', height: '100px', objectFit: 'contain' }}
+        className='w-fit'
+      />
+      <div className='absolute top-0 right-0 flex items-center justify-center opacity-0 group-hover:opacity-100'>
+        <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
+      </div>
+    </div>
   );
 };
 
 const ListInspectorPage = () => {
   const activeList = useAppSelector(getActiveList);
+  const elts = useAppSelector((state) => getElemntsOfList(state, activeList?.id as string));
+  console.log('elts', elts);
+
   const gridRef = useRef(null);
   const refs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
 
@@ -76,7 +92,7 @@ const ListInspectorPage = () => {
                     className='grid-stack-item'
                   >
                     <div className='grid-stack-item-content flex items-center justify-center'>
-                      <GridThumb canvasId={item.canvasId} />
+                      <GridThumb canvasId={item.canvasId} listId={activeList.id as string} />
                     </div>
                   </div>
                 ))}
