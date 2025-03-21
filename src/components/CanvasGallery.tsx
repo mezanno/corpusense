@@ -72,8 +72,6 @@ const CanvasGallery = () => {
   };
 
   const handleSelect = (e: OnSelect) => {
-    console.log('handleSelect', e);
-
     const selection: SelectedCanvas[] = [];
     let start = Number.MAX_VALUE;
     let end = -1;
