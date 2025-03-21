@@ -177,7 +177,10 @@ const ListsManagerPage = () => {
                         </Button>
                         <Button
                           variant='destructive'
-                          onClick={() => handleDelete(list.id as string)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleDelete(list.id as string);
+                          }}
                         >
                           <Trash2 />
                           Supprimer
