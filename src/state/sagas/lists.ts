@@ -18,6 +18,7 @@ import {
   updateListSucess,
 } from '../reducers/lists';
 import { navigateTo } from '../reducers/navigation';
+import { loadStoredElements } from './storedItems';
 
 function* loadListsSaga(): Generator<CallEffect<List[]> | PutEffect, void, List[]> {
   try {
@@ -101,7 +102,7 @@ function* addSelectionToListSaga(
           await db.lists.put(list);
         }),
       );
-
+      yield call(loadStoredElements);
       yield put(addSelectionToListSuccess(list));
     }
   } catch (e) {
@@ -140,6 +141,7 @@ function* handleCreateListWithSelection(
       }),
     );
 
+    yield call(loadStoredElements); //il faut appeler le saga pour mettre à jour le state
     yield put(addListSuccess(newList));
   } catch (e) {
     console.log('error', e);
