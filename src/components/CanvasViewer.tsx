@@ -2,37 +2,54 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { getCanvasForCanvas } from '@/state/selectors/canvas';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import {
-  AnnotationBody,
   AnnotationState,
-  AnnotoriousOpenSeadragonAnnotator,
   ImageAnnotation,
-  OpenSeadragonAnnotationPopup,
   OpenSeadragonAnnotator,
   OpenSeadragonViewer,
+  useAnnotator,
+  useHover,
   useSelection,
 } from '@annotorious/react';
 // import '@annotorious/react/annotorious-react.css';
-import { Annotation, convertToElementTypeEnum, ElementType } from '@/data/models/Annotation';
-import { addAnnotationRequest } from '@/state/reducers/annotations';
+import {
+  Annotation,
+  convertToElementTypeEnum,
+  ElementType,
+  getBodies,
+} from '@/data/models/Annotation';
+import { useUpdateAnnotation } from '@/hooks/useSaveAnnotation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentation-3';
-import { Move, SquarePen } from 'lucide-react';
-import OpenSeadragon, { TileSource } from 'openseadragon';
-import { useEffect, useRef, useState } from 'react';
+import { ReactFlowProvider } from '@xyflow/react';
+import { Move, Network, Save, SquarePen, TextSearch, Trash2 } from 'lucide-react';
+import { TileSource } from 'openseadragon';
+import { createContext, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { v4 as uuid } from 'uuid';
+// import { createWorker } from 'tesseract.js';
+// import { v4 as uuid } from 'uuid';
+import { useAnnotoriousStoreSync } from '@/hooks/useAnnotoriousStoreSync';
+import { useOcr } from '@/hooks/useOcr';
 import { z } from 'zod';
+import AnnotationsFlow from './AnnotationsFlow';
 import { NothingToShow } from './NothingToShow';
 import { Button } from './ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
-import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Progress } from './ui/progress';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './ui/resizable';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Switch } from './ui/switch';
+import { Textarea } from './ui/textarea';
+import { Toggle } from './ui/toggle';
 
-import data from './annotorious.json';
+// import data from './annotorious.json';
 
 const color = {
   [ElementType.TAG]: '#00ff00',
   [ElementType.ENTRY]: '#ff0000',
+  [ElementType.COLUMN]: '#0000ff',
+  [ElementType.LINE]: '#000000',
+  [ElementType.PAGE]: '#ff00ff',
 };
 
 const annotationFormSchema = z.object({
@@ -40,36 +57,20 @@ const annotationFormSchema = z.object({
   value: z.string({ required_error: 'Type is required' }).optional(),
 });
 
-const CanvasViewer = () => {
-  const dispatch = useAppDispatch();
-
-  const annoRef = useRef<AnnotoriousOpenSeadragonAnnotator<ImageAnnotation>>(null);
-  const viewerRef = useRef<OpenSeadragon.Viewer>(null);
-  const [mode, setMode] = useState<'move' | 'draw'>('move');
-  const { selected } = useSelection();
-  const canvas = useAppSelector(getCanvasForCanvas('test')) as Canvas;
-  const { values: annotations, isLoading } = useAppSelector((state) => state.annotations);
-  // console.log('CanvasViewer - annotations', annotations, ' | ', isLoading);
-
-  const [source, setSource] = useState<TileSource[]>([]);
-  const [annotationPath, setAnnotationPath] = useState<string | null>(null);
-  const [currentAnnotation, setCurrentAnnotation] = useState<Annotation | null>(null);
-
-  // useEffect(() => {
-  //   if (canvas !== undefined) {
-  //     dispatch(fetchAnnotationsByCanvasId(canvas.id));
-  //   }
-  // }, [canvas]);
-
-  // useEffect(() => {
-  //   if (annotations.length > 0) {
-  //     annoRef.current?.setAnnotations(annotations);
-  //   }
-  // }, [annotations]);
-
-  useEffect(() => {
-    annoRef.current?.setAnnotations(data);
-  }, [annoRef?.current]);
+const AnnotationForm = ({
+  selected,
+  canvas,
+  handleDelete,
+}: {
+  selected: {
+    annotation: ImageAnnotation;
+    editable?: boolean;
+  }[];
+  canvas: Canvas;
+  handleDelete: (id: string) => void;
+}) => {
+  const updateAnnotation = useUpdateAnnotation();
+  const { computeTextWithOcr, progress, working } = useOcr();
 
   const form = useForm<z.infer<typeof annotationFormSchema>>({
     resolver: zodResolver(annotationFormSchema),
@@ -80,43 +81,193 @@ const CanvasViewer = () => {
   });
 
   function onSubmit(values: z.infer<typeof annotationFormSchema>) {
-    //target.created is not serializable so we remove it to persist it (dexie) (created: undefined)
-    const bodies: AnnotationBody[] = [
-      {
-        purpose: 'classifying',
-        value: values.type,
-        annotation: '',
-        id: uuid(),
-      },
-    ];
-    if (values?.value !== '') {
-      bodies.push({
-        purpose: 'tagging',
-        value: values.value,
-        annotation: '',
-        id: uuid(),
-      });
-    }
-    const annotationWithoutDate: Annotation = {
-      ...selected[0].annotation,
-      target: {
-        ...selected[0].annotation.target,
-        created: undefined,
-      },
-      bodies,
-      canvasId: canvas.id,
-    };
+    console.log('onSubmit', values);
 
-    dispatch(addAnnotationRequest(annotationWithoutDate));
+    updateAnnotation(selected[0].annotation as Annotation, values.type, values.value ?? '');
   }
 
   useEffect(() => {
-    if (canvas?.annotations?.length != null) {
-      const annotationsPath = canvas.annotations[0]?.id;
-      if (annotationsPath != null) {
-        setAnnotationPath(annotationsPath);
-      }
+    if (selected.length > 0) {
+      const { type, value } = getBodies(selected[0].annotation as Annotation);
+      form.setValue('type', type);
+      form.setValue('value', value);
     }
+  }, [selected]);
+
+  const handleOcr = async (event: MouseEvent) => {
+    event.preventDefault();
+    const rect = selected[0].annotation.target.selector.geometry;
+
+    const text = await computeTextWithOcr(canvas, {
+      left: rect.x,
+      top: rect.y,
+      width: rect.w,
+      height: rect.h,
+    });
+    // form.setValue('value', text?.trim());
+    form.setValue('value', text);
+  };
+
+  return (
+    <div className='m-2 flex-col'>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className='relative mx-auto w-full flex-col space-y-2'
+        >
+          <div className='flex flex-col gap-2'>
+            <FormField
+              control={form.control}
+              name='type'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type*</FormLabel>
+                  <Select
+                    key={field.value}
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl className='bg-white'>
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select a type' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.keys(ElementType).map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='value'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Valeur</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      className='bg-white'
+                      placeholder='valeur'
+                      value={field.value}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <Button type='submit' variant='outline' className='cursor-pointer'>
+            <Save /> Enregistrer
+          </Button>
+
+          <div className='absolute top-0 right-0 flex justify-end space-x-2'>
+            {working ? (
+              <div className='flex-row items-center space-x-2'>
+                OCR
+                <Progress value={progress} className='w-[60%]' />
+              </div>
+            ) : (
+              <Button variant='secondary' className='cursor-pointer' onClick={(e) => handleOcr(e)}>
+                <TextSearch />
+              </Button>
+            )}
+            <Button
+              variant='destructive'
+              className='cursor-pointer'
+              onClick={(event) => {
+                event.preventDefault(); //pour éviter de soumettre le formulaire
+                handleDelete(selected[0].annotation.id);
+              }}
+            >
+              <Trash2 />
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
+  );
+};
+
+//we create a context to share the hovered annotation between the flow and the viewer
+export const HoverContext = createContext<{ hoveredElement: string | null }>({
+  hoveredElement: null,
+});
+export const HoverSetterContext = createContext<{
+  setHoveredElement: React.Dispatch<React.SetStateAction<string | null>>;
+}>({ setHoveredElement: () => {} });
+
+const CanvasViewer = () => {
+  const dispatch = useAppDispatch();
+
+  // const annoRef = useRef<AnnotoriousOpenSeadragonAnnotator<ImageAnnotation>>(null);
+  const anno = useAnnotator(); //useRef perd la référence lors des opérations de suppression...
+
+  const { selected } = useSelection();
+
+  //get the canvas to display from redux
+  const canvas = useAppSelector(getCanvasForCanvas('test')) as Canvas;
+  //the source of tiles for the viewer from the canvas
+  const [source, setSource] = useState<TileSource[]>([]);
+
+  //get annotations from redux
+  // const annotations = useSelector((state) => getAnnotations(state, canvas?.id));
+
+  const [mode, setMode] = useState<'move' | 'draw'>('move');
+
+  // const [annotationPath, setAnnotationPath] = useState<string | null>(null);
+  const [treePanelOpen, setTreePanelOpen] = useState(false);
+
+  //Tesseract worker states
+  const { computeAnnotationsWithOcr, progress, working } = useOcr();
+
+  const [hoveredElement, setHoveredElement] = useState<string | null>(null);
+  const hover = useHover();
+
+  useAnnotoriousStoreSync(anno, canvas?.id);
+
+  // useEffect(() => {
+  //   console.log('useEffect - annotations', annotations);
+  //   console.log('useEffect - annootation - anno ', anno);
+
+  //   if (annotations.length > 0 && anno !== undefined) {
+  //     //add them to annotorious
+  //     // annoRef.current?.setAnnotations(annotations);
+  //     // anno.setAnnotations(annotations);
+  //   }
+  // }, [annotations]);
+
+  useEffect(() => {
+    setHoveredElement(hover?.id);
+  }, [hover]);
+
+  // useEffect(() => {
+  //   if (selected.length > 0) {
+  //     const exists = annotations.find((a) => a.id === selected[0]?.annotation.id) !== undefined;
+  //     if (!exists) {
+  //       console.log('useEffect - addAnnotation ', selected[0].annotation);
+
+  //       //si l'annotation n'existe pas dans le store, on la rajoute
+  //       addAnnotation(selected[0].annotation, canvas.id);
+  //     }
+  //   }
+  // }, [selected]);
+
+  useEffect(() => {
+    // if (canvas?.annotations?.length != null) {
+    //   const annotationsPath = canvas.annotations[0]?.id;
+    //   if (annotationsPath != null) {
+    //     setAnnotationPath(annotationsPath);
+    //   }
+    // }
 
     if (canvas?.items?.[0]?.items?.[0]?.body != null) {
       const image = canvas.items[0].items[0].body as IIIFExternalWebResource;
@@ -128,11 +279,6 @@ const CanvasViewer = () => {
             const newSource = [
               {
                 '@context': 'http://library.stanford.edu/iiif/image-api/1.1/context.json',
-                // '@id': `http://localhost:3001/proxy?url=${encodeURIComponent('https://gallica.bnf.fr/iiif/ark:/12148/bpt6k14267837/f6')}`,
-                // '@id': canvasImage.service[0]['@id'].replace(
-                //   'https://gallica.bnf.fr/iiif',
-                //   '/gallica/iiif/image/v3',
-                // ),
                 '@id': id.replace('https://gallica.bnf.fr/iiif', '/gallica/iiif/image/v3'),
                 height: image.height,
                 width: image.width,
@@ -146,146 +292,150 @@ const CanvasViewer = () => {
     }
   }, [canvas]);
 
-  useEffect(() => {
-    if (annoRef?.current) {
-      annoRef.current.setDrawingEnabled(mode === 'draw');
+  const handleDeleteAnnotation = (id: string) => {
+    // console.log('handleDeleteAnnotation ', id);
+    // console.log('annoRef.current', anno);
+    // // if (annoRef.current) {
+    // //   annoRef.current.removeAnnotation(id);
+    // // }
+    // dispatch(removeAnnotationRequest(id));
+    if (anno !== undefined) {
+      anno.removeAnnotation(id);
     }
-  }, [mode]);
+  };
 
-  useEffect(() => {
-    if (selected?.length > 0) {
-      const annotation = selected[0].annotation;
-      if (annotation.bodies.length > 0) {
-        const { type, value } = annotation.bodies.reduce(
-          (acc, body) => {
-            if (body.purpose === 'classifying') {
-              acc.type = convertToElementTypeEnum(body.value);
-            } else {
-              acc.value = body.value ?? '';
-            }
-            return acc;
-          },
-          { type: undefined, value: '' } as { type: ElementType | undefined; value: string },
-        );
-
-        if (type !== undefined) {
-          form.setValue('type', type);
-        }
-        form.setValue('value', value);
-      }
+  const handleOcr = async () => {
+    const annotations = await computeAnnotationsWithOcr(canvas);
+    console.log('annotations', annotations);
+    if (anno !== undefined) {
+      anno.setAnnotations(annotations);
     }
-  }, [selected]);
+  };
 
-  const style = (annotation: ImageAnnotation, state: AnnotationState) => {
+  const style = (annotation: Annotation, state: AnnotationState) => {
+    const colors = {
+      ENTRY: '#ff0000',
+      TAG: '#00ff00',
+      LINE: '#0000ff',
+    };
+
     return {
-      stroke: annotation.bodies[0]?.value === 'ENTRY' ? '#ff0000' : '#00ff00',
-      fill: annotation.bodies[0]?.value === 'ENTRY' ? '#ff0000' : '#00ff00',
-      fillOpacity: (state?.hovered ?? false) ? 0.3 : 0.1,
+      stroke: colors[annotation.bodies[0]?.value] || '#000000',
+      fill: colors[annotation.bodies[0]?.value] || '#000000',
+      fillOpacity: (state?.hovered ?? false) || hoveredElement === annotation.id ? 0.3 : 0.1,
     };
   };
 
+  const flow = useMemo(
+    () => (
+      <ReactFlowProvider>
+        <AnnotationsFlow canvasId={canvas?.id} selectedNodeId={selected[0]?.annotation?.id} />
+      </ReactFlowProvider>
+    ),
+    [canvas, selected],
+  );
+
   return (
     <section className='flex h-full w-full items-center justify-center' aria-label='canvas viewer'>
-      {source === null ? (
+      {canvas === undefined ? (
         <NothingToShow />
       ) : (
-        <div className='flex h-full w-full flex-col bg-amber-500'>
-          <div className='w-full grow'>
-            <OpenSeadragonAnnotator
-              ref={annoRef}
-              drawingMode='click'
-              // adapter={W3CImageFormat('https://gallica.bnf.fr/iiif/ark:/12148/bpt6k6429210k/p72')}
-              style={style}
+        <div className='flex h-full w-full flex-col'>
+          <h4 className='w-full border-b-1 text-center text-sm italic'>{canvas?.id}</h4>
+          <div className='m-1 flex h-auto w-full gap-2 space-x-2'>
+            <Toggle
+              pressed={treePanelOpen}
+              onPressedChange={setTreePanelOpen}
+              aria-label='Toggle annotation tree panel'
             >
-              <OpenSeadragonViewer
-                ref={viewerRef}
-                aria-label='canvas viewer'
-                className='h-full w-full bg-amber-50'
-                options={{
-                  prefixUrl: '/corpusense/images/',
-                  defaultZoomLevel: 0.5,
-                  tileSources: source,
-                  loadTilesWithAjax: true,
-                  crossOriginPolicy: 'Anonymous',
-                  showSequenceControl: true,
-                  showHomeControl: true,
-                  showFullPageControl: true,
-                  gestureSettingsMouse: {
-                    clickToZoom: false,
-                  },
-                }}
+              <Network />
+            </Toggle>
+            <Button onClick={handleOcr}>
+              <TextSearch />
+            </Button>
+            <div className='flex items-center space-x-1 align-middle'>
+              <Switch
+                id='viewer-mode'
+                onCheckedChange={() => setMode((prev) => (prev === 'draw' ? 'move' : 'draw'))}
               />
-              <OpenSeadragonAnnotationPopup
-                popup={() => <div>{selected[0]?.annotation.bodies[1]?.value}</div>}
-              />
-            </OpenSeadragonAnnotator>
-          </div>
-          <div className='min-h-80 w-full flex-col'>
-            <div>
-              <Button onClick={() => setMode((prev) => (prev === 'draw' ? 'move' : 'draw'))}>
-                {mode === 'draw' ? <SquarePen /> : <Move />}
-              </Button>
+              <Label htmlFor='viewer-mode' className='flex items-center'>
+                <span>{mode === 'draw' ? 'Mode Annotation' : 'Mode Déplacement'}</span>
+                <span className='ml-1'>
+                  {mode === 'draw' ? <SquarePen size={16} /> : <Move size={16} />}
+                </span>
+              </Label>
             </div>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className='mx-auto w-full flex-col space-y-2 p-2 md:p-5'
-              >
-                <div className='flex gap-2'>
-                  <FormField
-                    control={form.control}
-                    name='type'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Type*</FormLabel>
-                        <Select
-                          key={field.value}
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder='Select a type' />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {Object.keys(ElementType).map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name='value'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Valeur</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder='valeur'
-                            type={'text'}
-                            value={field.value}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              field.onChange(val);
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <Button type='submit'>Enregistrer</Button>
-              </form>
-            </Form>
           </div>
+          <ResizablePanelGroup direction='horizontal' className='flex w-full grow space-x-2'>
+            {treePanelOpen && (
+              <>
+                <ResizablePanel className='h-full w-1/2'>
+                  <HoverContext.Provider value={{ hoveredElement }}>
+                    <HoverSetterContext.Provider value={{ setHoveredElement }}>
+                      {flow}
+                    </HoverSetterContext.Provider>
+                  </HoverContext.Provider>
+                </ResizablePanel>
+                <ResizableHandle />
+              </>
+            )}
+            <ResizablePanel className='relative h-full w-1/2'>
+              <OpenSeadragonAnnotator
+                // ref={annoRef}
+                autoSave={true}
+                drawingMode='click'
+                drawingEnabled={mode === 'draw'}
+                // adapter={W3CImageFormat('https://gallica.bnf.fr/iiif/ark:/12148/bpt6k6429210k/p72')}
+                style={style}
+              >
+                <div className='relative h-full w-full'>
+                  <OpenSeadragonViewer
+                    aria-label='canvas viewer'
+                    className='h-full w-full bg-amber-50'
+                    options={{
+                      prefixUrl: '/corpusense/images/',
+                      defaultZoomLevel: 0.5,
+                      minZoomLevel: 0.1,
+                      tileSources: source,
+                      loadTilesWithAjax: true,
+                      crossOriginPolicy: 'Anonymous',
+                      showSequenceControl: true,
+                      showHomeControl: true,
+                      showFullPageControl: true,
+                      gestureSettingsMouse: {
+                        clickToZoom: false,
+                      },
+                    }}
+                  />
+                  {selected?.length > 0 && (
+                    <div className='absolute bottom-0 left-0 w-full bg-amber-100'>
+                      <AnnotationForm
+                        canvas={canvas}
+                        selected={selected}
+                        handleDelete={handleDeleteAnnotation}
+                      />
+                    </div>
+                  )}
+                </div>
+                {/* <OpenSeadragonAnnotationPopup
+                  popup={() => (
+                    <HoverCard open={selected.length > 0}>
+                      <HoverCardContent>
+                        <div>{selected[0]?.annotation.bodies[1]?.value}</div>
+                      </HoverCardContent>
+                    </HoverCard>
+                  )}
+                  // popup={() => <AnnotationForm canvas={canvas} selected={selected} />}
+                /> */}
+              </OpenSeadragonAnnotator>
+
+              {working && (
+                <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center'>
+                  <Progress value={progress} className='w-[60%]' />
+                </div>
+              )}
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
       )}
     </section>
