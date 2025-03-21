@@ -3,6 +3,8 @@ import { ImageAnnotation } from '@annotorious/annotorious';
 export interface Annotation extends ImageAnnotation {
   partfOf?: string;
   canvasId: string;
+  previous?: string;
+  next?: string;
 }
 
 export enum ElementType {
