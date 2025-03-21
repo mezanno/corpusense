@@ -10,12 +10,14 @@ import {
   addSelectionToListRequest,
   addSelectionToListSuccess,
   createListWithSelectionRequest,
+  removeElementFromList,
+  removeElementFromListSuccess,
   removeListRequest,
   removeListSuccess,
   setActiveList,
   setLists,
   updateListRequest,
-  updateListSucess,
+  updateListSuccess,
 } from '../reducers/lists';
 import { navigateTo } from '../reducers/navigation';
 import { loadStoredElements } from './storedItems';
@@ -46,7 +48,7 @@ function* upadteListSaga(action: PayloadAction<List>) {
   const { payload } = action;
   try {
     yield db.lists.update(payload.id, payload);
-    yield put(updateListSucess(payload));
+    yield put(updateListSuccess(payload));
   } catch (e) {
     console.log('error', e);
   }
@@ -56,9 +58,9 @@ function* removeListSaga(action: PayloadAction<string>) {
   const { payload } = action;
   try {
     yield call(() =>
-      db.transaction('rw', db.lists, db.listElements, async () => {
+      db.transaction('rw', db.lists, async () => {
         await db.lists.delete(payload);
-        await db.listElements.where('listId').equals(payload).delete();
+        // await db.listElements.where('listId').equals(payload).delete();
         //TODO il faudrait supprimer les storedItems qui ne sont plus utilisés
       }),
     );
@@ -91,8 +93,8 @@ function* addSelectionToListSaga(
       list.content = [...list.content, ...newContent];
 
       yield call(() =>
-        db.transaction('rw', db.storedItems, db.lists, db.listElements, async () => {
-          await db.listElements.bulkAdd(newContent);
+        db.transaction('rw', db.storedItems, db.lists, async () => {
+          // await db.listElements.bulkAdd(newContent);
           const canvasesToStore = action.payload.selection.map((elt) => ({
             id: elt.canvas.id,
             content: elt.canvas,
@@ -129,8 +131,8 @@ function* handleCreateListWithSelection(
     yield call(() => db.lists.add(newList));
 
     yield call(() =>
-      db.transaction('rw', db.storedItems, db.lists, db.listElements, async () => {
-        await db.listElements.bulkAdd(newContent);
+      db.transaction('rw', db.storedItems, db.lists, async () => {
+        // await db.listElements.bulkAdd(newContent);
         const canvasesToStore = action.payload.selection.map((elt) => ({
           id: elt.canvas.id,
           content: elt.canvas,
@@ -143,6 +145,35 @@ function* handleCreateListWithSelection(
 
     yield call(loadStoredElements); //il faut appeler le saga pour mettre à jour le state
     yield put(addListSuccess(newList));
+  } catch (e) {
+    console.log('error', e);
+  }
+}
+
+function* handleRemoveElementFromList(
+  action: PayloadAction<{ listId: string; canvasId: string }>,
+): Generator<Effect, void, List | undefined> {
+  const { listId, canvasId } = action.payload;
+  try {
+    yield call(() =>
+      db.transaction('rw', db.storedItems, db.lists, async () => {
+        // await db.listElements
+        //   .where({ listId: listId, canvasId: canvasId })
+        //   .delete()
+        //   .then(() => console.log('deleted'));
+        //supprimer le storedItem si il n'est plus utilisé
+        const list = await db.lists.get(listId);
+        if (list !== undefined) {
+          const savedElements = list.content?.filter((elt) => elt.canvasId !== canvasId);
+          list.content = savedElements;
+          await db.lists.put(list);
+        }
+      }),
+    );
+    const updatedList = yield call(() => db.lists.get(listId));
+    if (updatedList !== undefined) {
+      yield put(removeElementFromListSuccess(updatedList));
+    }
   } catch (e) {
     console.log('error', e);
   }
@@ -173,6 +204,7 @@ export default function* listsSaga() {
   yield takeEvery(removeListRequest.type, removeListSaga);
   yield takeEvery(createListWithSelectionRequest, handleCreateListWithSelection);
   yield takeEvery(addSelectionToListRequest, addSelectionToListSaga);
+  yield takeEvery(removeElementFromList, handleRemoveElementFromList);
   yield takeEvery(setActiveList, handleSetActiveList);
   // yield takeEvery(addSelectionToList.type, saveListsSaga);
   // yield takeEvery(removeSelectionFromList.type, saveListsSaga);

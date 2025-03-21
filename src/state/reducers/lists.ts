@@ -28,7 +28,7 @@ export const listsSlice = createSlice({
       state.values = state.values.filter((elt) => elt.id !== listId);
     },
     updateListRequest: (_state, _action) => {},
-    updateListSucess: (state, action: PayloadAction<List>) => {
+    updateListSuccess: (state, action: PayloadAction<List>) => {
       const list: List | undefined = state.values.find((elt) => elt.id === action.payload.id);
       if (list !== undefined) {
         list.name = action.payload.name;
@@ -64,15 +64,16 @@ export const listsSlice = createSlice({
         state.values.find((elt) => elt.id === action.payload.id),
       );
     },
-
-    // removeSelectionFromList: (state, action) => {
-    //   const idsToRemove = action.payload.idsToRemove;
-    //   const listId = action.payload.listId;
-    //   const list = state.values.find((elt) => elt.id === listId);
-    //   if (list) {
-    //     list.content = list.content.filter((item) => !idsToRemove.includes(item.id));
-    //   }
-    // },
+    removeElementFromList: (
+      _state,
+      _action: PayloadAction<{ listId: string; canvasId: string }>,
+    ) => {},
+    removeElementFromListSuccess: (state, action: PayloadAction<List>) => {
+      const list: List | undefined = state.values.find((elt) => elt.id === action.payload.id);
+      if (list && list.content !== undefined) {
+        list.content = action.payload.content;
+      }
+    },
   },
 });
 
@@ -82,12 +83,14 @@ export const {
   removeListSuccess,
   removeListRequest,
   updateListRequest,
-  updateListSucess,
+  updateListSuccess,
   setLists,
   setActiveList,
   addSelectionToListRequest,
   addSelectionToListSuccess,
   createListWithSelectionRequest,
+  removeElementFromList,
+  removeElementFromListSuccess,
   // removeSelectionFromList,
 } = listsSlice.actions;
 export default listsSlice.reducer;
