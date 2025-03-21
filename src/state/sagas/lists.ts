@@ -9,6 +9,7 @@ import {
   addListSuccess,
   addSelectionToListRequest,
   addSelectionToListSuccess,
+  createListWithSelectionRequest,
   removeListRequest,
   removeListSuccess,
   setActiveList,
@@ -53,7 +54,13 @@ function* upadteListSaga(action: PayloadAction<List>) {
 function* removeListSaga(action: PayloadAction<string>) {
   const { payload } = action;
   try {
-    yield db.lists.delete(payload);
+    yield call(() =>
+      db.transaction('rw', db.lists, db.listElements, async () => {
+        await db.lists.delete(payload);
+        await db.listElements.where('listId').equals(payload).delete();
+        //TODO il faudrait supprimer les storedItems qui ne sont plus utilisés
+      }),
+    );
     yield put(removeListSuccess(payload));
   } catch (e) {
     console.log('error', e);
@@ -71,7 +78,7 @@ function* addSelectionToListSaga(
       if (list.content === null || list.content === undefined) {
         list.content = [];
       }
-      //TODO! Vérifier si les éléments ne sont pas déjà dans la liste
+      //TODO! A faire : vérifier si les éléments ne sont pas déjà dans la liste
       let lastPosition = list.content.length - 1;
       const newContent = payload.selection.map((elt) => ({
         canvasId: elt.canvas.id,
@@ -102,6 +109,43 @@ function* addSelectionToListSaga(
   }
 }
 
+function* handleCreateListWithSelection(
+  action: PayloadAction<{ selection: SelectedCanvas[]; name: string }>,
+): Generator<Effect, void, List | undefined> {
+  const { payload } = action;
+  const listId = uuid();
+  const newList: List = { id: listId, name: payload.name };
+
+  let lastPosition = 0;
+  const newContent = payload.selection.map((elt) => ({
+    canvasId: elt.canvas.id,
+    listId: listId,
+    position: ++lastPosition,
+  }));
+  newList.content = newContent;
+
+  try {
+    yield call(() => db.lists.add(newList));
+
+    yield call(() =>
+      db.transaction('rw', db.storedItems, db.lists, db.listElements, async () => {
+        await db.listElements.bulkAdd(newContent);
+        const canvasesToStore = action.payload.selection.map((elt) => ({
+          id: elt.canvas.id,
+          content: elt.canvas,
+        }));
+        //on utilie bulkPut pour éviter les doublons et éviter une erreur si un doublon existe (avec bulkAdd, une erreur est levée au premier doublon rencontré)
+        await db.storedItems.bulkPut(canvasesToStore);
+        await db.lists.put(newList);
+      }),
+    );
+
+    yield put(addListSuccess(newList));
+  } catch (e) {
+    console.log('error', e);
+  }
+}
+
 function* handleSetActiveList(_action: PayloadAction<string>): Generator<Effect, void, void> {
   yield put(navigateTo('/corpusense/list-inspector'));
 }
@@ -125,6 +169,7 @@ function* handleSetActiveList(_action: PayloadAction<string>): Generator<Effect,
 export default function* listsSaga() {
   yield takeEvery(addListRequest.type, addListSaga);
   yield takeEvery(removeListRequest.type, removeListSaga);
+  yield takeEvery(createListWithSelectionRequest, handleCreateListWithSelection);
   yield takeEvery(addSelectionToListRequest, addSelectionToListSaga);
   yield takeEvery(setActiveList, handleSetActiveList);
   // yield takeEvery(addSelectionToList.type, saveListsSaga);

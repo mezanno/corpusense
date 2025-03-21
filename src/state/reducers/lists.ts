@@ -20,6 +20,7 @@ export const listsSlice = createSlice({
     addListRequest: (_state, _action: PayloadAction<string>) => {},
     addListSuccess: (state, action: PayloadAction<List>) => {
       state.values.push(action.payload);
+      state.activeListId = action.payload.id;
     },
     removeListRequest: (_state, _action: PayloadAction<string>) => {},
     removeListSuccess: (state, action: PayloadAction<string>) => {
@@ -51,6 +52,10 @@ export const listsSlice = createSlice({
         list.content = action.payload.content;
       }
     },
+    createListWithSelectionRequest: (
+      _state,
+      _action: PayloadAction<{ selection: SelectedCanvas[]; name: string }>,
+    ) => {},
     fetchCanvasesOfListRequest: (_state, _action: PayloadAction<string>) => {},
     fetchCanvasesOfListSuccess: (state, action: PayloadAction<List>) => {
       // const list: List = state.values.find((elt) => elt.id === action.payload.id);
@@ -80,9 +85,9 @@ export const {
   updateListSucess,
   setLists,
   setActiveList,
-  // addSelectionToList,
   addSelectionToListRequest,
   addSelectionToListSuccess,
+  createListWithSelectionRequest,
   // removeSelectionFromList,
 } = listsSlice.actions;
 export default listsSlice.reducer;

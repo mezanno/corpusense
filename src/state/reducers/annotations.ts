@@ -5,6 +5,8 @@ type AnnotationState = {
   values: Annotation[];
   error?: string;
   isLoading: boolean;
+  deleted: Annotation;
+  updated: Annotation;
 };
 
 const initialState: AnnotationState = {
@@ -16,9 +18,15 @@ const annotationsSlice = createSlice({
   name: 'annotations',
   initialState,
   reducers: {
-    addAnnotationRequest(_state, _action: PayloadAction<Annotation>) {},
-    addAnnotationSuccess(state, action: PayloadAction<Annotation>) {
+    saveAnnotationRequest(_state, _action: PayloadAction<Annotation>) {},
+    saveAnnotationSuccess(state, action: PayloadAction<Annotation>) {
       state.values.push(action.payload);
+    },
+    removeAnnotationRequest(_state, _action: PayloadAction<string>) {},
+    removeAnnotationSuccess(state, action: PayloadAction<string>) {
+      console.log('removeAnnotationSuccess ', action.payload);
+
+      state.values = state.values.filter((a) => a.id !== action.payload);
     },
     fetchAnnotationsByCanvasId(state, _action: PayloadAction<string>) {
       state.isLoading = true;
@@ -28,13 +36,73 @@ const annotationsSlice = createSlice({
       state.isLoading = false;
       state.values = action.payload;
     },
+
+    addLinkBetweenAnnotationsRequest(
+      _state,
+      _action: PayloadAction<{ source: string; target: string }>,
+    ) {},
+    addLinkBetweenAnnotationsSuccess(
+      state,
+      action: PayloadAction<{ source: string; target: string }>,
+    ) {
+      const fromAnnotation = state.values.find((a) => a.id === action.payload.source);
+      const toAnnotation = state.values.find((a) => a.id === action.payload.target);
+      if (fromAnnotation && toAnnotation) {
+        fromAnnotation.next = action.payload.target;
+        toAnnotation.previous = action.payload.source;
+      }
+    },
+    removeLinkBetweenAnnotationsRequest(
+      _state,
+      _action: PayloadAction<{ source: string; target: string }>,
+    ) {},
+    removeLinkBetweenAnnotationsSuccess(
+      state,
+      action: PayloadAction<{ source: string; target: string }>,
+    ) {
+      const fromAnnotation = state.values.find((a) => a.id === action.payload.source);
+      const toAnnotation = state.values.find((a) => a.id === action.payload.target);
+      if (fromAnnotation && toAnnotation) {
+        fromAnnotation.next = undefined;
+        toAnnotation.previous = undefined;
+      }
+    },
+    updateAnnotationValueRequest(_state, _action: PayloadAction<{ id: string; value: string }>) {},
+    updateAnnotationValueSuccess(state, action: PayloadAction<{ id: string; value: string }>) {
+      const annotation = state.values.find((a) => a.id === action.payload.id);
+      if (annotation) {
+        if (annotation.bodies[0].purpose === 'classifying') {
+          annotation.bodies[1] = {
+            purpose: 'tagging',
+            value: action.payload.value,
+          };
+        } else {
+          annotation.bodies[0] = {
+            purpose: 'tagging',
+            value: action.payload.value,
+          };
+        }
+      }
+    },
+    linkAnnotationsFailure(state, action: PayloadAction<string>) {
+      state.error = action.payload;
+    },
   },
 });
 
 export const {
-  addAnnotationRequest,
-  addAnnotationSuccess,
+  saveAnnotationRequest,
+  saveAnnotationSuccess,
+  removeAnnotationRequest,
+  removeAnnotationSuccess,
   fetchAnnotationsByCanvasId,
   fetchAnnotationsSuccess,
+  addLinkBetweenAnnotationsRequest,
+  addLinkBetweenAnnotationsSuccess,
+  removeLinkBetweenAnnotationsRequest,
+  removeLinkBetweenAnnotationsSuccess,
+  updateAnnotationValueRequest,
+  updateAnnotationValueSuccess,
+  linkAnnotationsFailure,
 } = annotationsSlice.actions;
 export default annotationsSlice.reducer;
