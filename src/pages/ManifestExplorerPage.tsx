@@ -58,24 +58,34 @@ const ManifestExplorerPage = () => {
       </div>
       <ResizablePanelGroup direction='horizontal' className='h-full w-full space-x-2'>
         {isMetadataOpen && (
-          <ResizablePanel className='flex h-full w-full justify-center rounded-lg bg-white'>
-            <ManifestDetails />
-          </ResizablePanel>
+          <>
+            <ResizablePanel
+              order={1}
+              id='metadata-panel'
+              className='flex h-full w-full justify-center rounded-lg bg-white'
+            >
+              <ManifestDetails />
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+          </>
         )}
+
         {!isLoading && isLoaded && (
           <>
             {isGalleryOpen && (
               <>
-                <ResizableHandle />
-
-                <ResizablePanel className='h-full rounded-lg bg-white'>
+                <ResizablePanel order={2} id='gallery-panel' className='h-full rounded-lg bg-white'>
                   <CanvasGallery />
                 </ResizablePanel>
+                <ResizableHandle withHandle />
               </>
             )}
 
-            <ResizableHandle />
-            <ResizablePanel className='relative h-full w-full rounded-lg bg-white'>
+            <ResizablePanel
+              id='canvas-panel'
+              order={3}
+              className='relative h-full w-full rounded-lg bg-white'
+            >
               <Annotorious>
                 <CanvasViewer />
               </Annotorious>
