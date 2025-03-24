@@ -28,12 +28,13 @@ import {
 } from '@/components/ui/table';
 import { List } from '@/data/models/List';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { exportRequest } from '@/state/reducers/export';
+import { exportRequest, resetAlert } from '@/state/reducers/export';
 import { addListRequest, removeListRequest, setActiveList } from '@/state/reducers/lists';
 import { getCanvasesOfList, getLists } from '@/state/selectors/lists';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas } from '@iiif/presentation-3';
-import { Download, Trash2 } from 'lucide-react';
+import { DownloadIcon, PenLine, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -110,6 +111,21 @@ const ListHoverCard = ({ list }: { list: List }) => {
 const ListsManagerPage = () => {
   const lists: List[] = useAppSelector(getLists);
   const dispatch = useAppDispatch();
+  const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
+    (state) => state.export,
+  );
+
+  const [downloadLink, setDownloadLink] = useState<string>('');
+
+  useEffect(() => {
+    if (lastExportDate !== null) {
+      const blob = new Blob([lastExportContent as string], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      setDownloadLink(url);
+
+      dispatch(resetAlert());
+    }
+  }, [lastExportContent]);
 
   const handleDelete = (id: string) => {
     dispatch(removeListRequest(id));
@@ -125,6 +141,14 @@ const ListsManagerPage = () => {
     event.preventDefault();
 
     dispatch(exportRequest(id));
+  };
+
+  const handleDownload = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    event.stopPropagation();
+    const link = document.createElement('a');
+    link.href = downloadLink;
+    link.download = 'export.csv';
+    link.click();
   };
 
   return (
@@ -148,8 +172,8 @@ const ListsManagerPage = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Nom de la liste</TableHead>
-                <TableHead>Actions</TableHead>
                 <TableHead>Informations</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -171,10 +195,7 @@ const ListsManagerPage = () => {
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className='space-x-2'>
-                        <Button onClick={(e) => handleExport(e, list.id as string)}>
-                          <Download /> Exporter
-                        </Button>
+                      <TableCell className='space-x-2 align-middle'>
                         <Button
                           variant='destructive'
                           onClick={(event) => {
@@ -185,6 +206,20 @@ const ListsManagerPage = () => {
                           <Trash2 />
                           Supprimer
                         </Button>
+                        <Button onClick={(e) => handleExport(e, list.id as string)}>
+                          <PenLine />
+                          Générer un export
+                        </Button>
+
+                        {lastExportStatus === 'OK' && (
+                          <Button
+                            className='rounded bg-cyan-400 px-4 py-2 text-slate-900 transition hover:bg-cyan-600 hover:text-white'
+                            onClick={(e) => handleDownload(e)}
+                          >
+                            <DownloadIcon />
+                            Télécharger l'export
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   </HoverCardTrigger>

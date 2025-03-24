@@ -1,59 +1,94 @@
 import { db } from '@/data/db';
 import { List } from '@/data/models/List';
-import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
+import { ItemMetadata } from '@/data/models/Metadata';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
 import { PayloadAction } from '@reduxjs/toolkit';
-import { call, Effect, takeLatest } from 'redux-saga/effects';
-import { exportRequest } from '../reducers/export';
+import { call, Effect, put, takeLatest } from 'redux-saga/effects';
+import { exportRequest, exportSuccess } from '../reducers/export';
 
 function* handleExportRequest(
   action: PayloadAction<string>,
 ): Generator<Effect, void, List | StoredItem | Tag[] | ItemMetadata[]> {
   const listId = action.payload;
 
-  let result = yield call(() => db.lists.get(listId));
+  const result = yield call(() => db.lists.get(listId));
   const listToExport = result as List;
+  console.log('List to export', listToExport);
 
-  const exportData = [];
+  let exportLines = '';
+  let header = 'nom_liste\turl\tnum_page\ttags';
 
-  //TODO! ne fonctionne que s'il y a des tags
+  let firstTimeHeader = true;
   if (listToExport !== undefined && listToExport.content) {
-    if (listToExport.tags) {
-      result = yield call(() =>
-        db.tags.filter((tag) => listToExport.tags!.includes(tag.id)).toArray(),
-      );
-      const tags = result as Tag[];
+    for (let i = 0; i < listToExport.content.length; i++) {
+      let csvLine = listToExport.name;
+      const canvas = listToExport.content[i];
+      const storedCanvas = yield db.storedItems.get(canvas.canvasId);
+      // console.log(storedCanvas);
 
-      for (let i = 0; i < listToExport.content.length; i++) {
-        const element = listToExport.content[i];
+      const url = storedCanvas.content.items[0].items[0].body.id;
+      csvLine = csvLine.concat('\t').concat(url);
 
-        const newData: { element: string; tags: string[]; metadata?: ItemMetadataAttribute[] } = {
-          element: element.canvasId,
-          tags: tags.map((tag) => tag.label),
-        };
+      const label = storedCanvas.content.label.none[0];
+      csvLine = csvLine.concat('\t').concat(label);
 
-        //retrieve manifest information
-        const match = element.canvasId.match(/ark:\/\d+\/([^\\/]+)/);
-        const manifestArk = match ? match[1] : null;
-        if (manifestArk !== null) {
-          //   result = yield call(() =>
-          //     db.storedItems.filter((m) => m.id.includes(manifestArk)).first(),
-          //   );
-          //   const manifest = result as StoredItem;
-          //   console.log(manifest);
-          //   if (manifest) {
-          result = yield call(() =>
-            db.itemMetadata.filter((itemMD) => itemMD.id.includes(manifestArk)).toArray(),
-          );
-          const metadata = result as ItemMetadata[];
-          newData.metadata = metadata.map((md) => md.attribute);
-        }
-
-        exportData.push(newData);
+      if (listToExport.tags) {
+        const result = yield call(() =>
+          db.tags.filter((tag) => listToExport.tags!.includes(tag.id)).toArray(),
+        );
+        const tags = result as Tag[];
+        const tagLabels = tags.reduce((acc, tag) => acc.concat(tag.label).concat(','), '');
+        csvLine = csvLine.concat('\t').concat(tagLabels);
       }
+
+      const match = canvas.canvasId.match(/ark:\/\d+\/([^\\/]+)/);
+      const manifestArk = match ? match[1] : null;
+      if (manifestArk !== null) {
+        const result = yield call(() =>
+          db.itemMetadata.filter((itemMD) => itemMD.id.includes(manifestArk)).toArray(),
+        );
+        const metadata = result as ItemMetadata[];
+        for (let i = 0; i < metadata.length; i++) {
+          console.log();
+
+          csvLine = csvLine.concat('\t').concat(metadata[i].attribute.value);
+          if (firstTimeHeader) {
+            header = header.concat('\t').concat(metadata[i].attribute.label);
+          }
+        }
+        firstTimeHeader = false;
+      }
+
+      // if(listToExport.)
+
+      csvLine = csvLine.concat('\n');
+      exportLines = exportLines.concat(csvLine);
     }
-    console.log('Export data', exportData);
+
+    //   for (let i = 0; i < listToExport.content.length; i++) {
+    //     const element = listToExport.content[i];
+
+    //     const newData: { element: string; tags: string[]; metadata?: ItemMetadataAttribute[] } = {
+    //       element: element.canvasId,
+    //       tags: tags.map((tag) => tag.label),
+    //     };
+
+    //     //retrieve manifest information
+
+    //       //   result = yield call(() =>
+    //       //     db.storedItems.filter((m) => m.id.includes(manifestArk)).first(),
+    //       //   );
+    //       //   const manifest = result as StoredItem;
+    //       //   console.log(manifest);
+    //       //   if (manifest) {
+
+    //     }
+
+    //     exportData.push(newData);
+    //   }
+    // }
+    yield put(exportSuccess(header.concat('\n').concat(exportLines)));
   }
 }
 

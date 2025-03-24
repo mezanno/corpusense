@@ -1,14 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface ExportState {
-  lastExportContent: object;
+  lastExportContent: object | string | null;
   lastExportDate: Date | null;
   lastExportError: string;
   lastExportStatus: 'OK' | 'ERROR' | 'UNKNOWN' | 'IN_PROGRESS';
 }
 
 const initialState: ExportState = {
-  lastExportContent: {},
+  lastExportContent: null,
   lastExportDate: null,
   lastExportError: '',
   lastExportStatus: 'UNKNOWN',
@@ -19,7 +19,7 @@ export const exportSlice = createSlice({
   initialState,
   reducers: {
     exportRequest: (_state, _action: PayloadAction<string>) => {},
-    exportSuccess: (state, action: PayloadAction<object>) => {
+    exportSuccess: (state, action: PayloadAction<object | string>) => {
       state.lastExportContent = action.payload;
       state.lastExportDate = new Date();
       state.lastExportStatus = 'OK';
@@ -28,8 +28,11 @@ export const exportSlice = createSlice({
       state.lastExportError = action.payload;
       state.lastExportStatus = 'ERROR';
     },
+    resetAlert: (state) => {
+      state.lastExportDate = null;
+    },
   },
 });
 
-export const { exportRequest, exportSuccess, exportError } = exportSlice.actions;
+export const { exportRequest, exportSuccess, exportError, resetAlert } = exportSlice.actions;
 export default exportSlice.reducer;
