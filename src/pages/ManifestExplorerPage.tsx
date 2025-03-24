@@ -63,6 +63,7 @@ const ManifestExplorerPage = () => {
               order={1}
               id='metadata-panel'
               className='flex h-full w-full justify-center rounded-lg bg-white'
+              minSize={25}
             >
               <ManifestDetails />
             </ResizablePanel>
@@ -74,7 +75,12 @@ const ManifestExplorerPage = () => {
           <>
             {isGalleryOpen && (
               <>
-                <ResizablePanel order={2} id='gallery-panel' className='h-full rounded-lg bg-white'>
+                <ResizablePanel
+                  order={2}
+                  id='gallery-panel'
+                  className='h-full rounded-lg bg-white'
+                  minSize={25}
+                >
                   <CanvasGallery />
                 </ResizablePanel>
                 <ResizableHandle withHandle />
@@ -84,6 +90,7 @@ const ManifestExplorerPage = () => {
             <ResizablePanel
               id='canvas-panel'
               order={3}
+              minSize={30}
               className='relative h-full w-full rounded-lg bg-white'
             >
               <Annotorious>
