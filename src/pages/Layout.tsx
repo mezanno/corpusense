@@ -1,5 +1,5 @@
 import HistoryNav from '@/components/HistoryNav';
-import { Download, FolderSearch2, Home, List, ScrollText, Tags } from 'lucide-react';
+import { FolderSearch2, List, ScrollText } from 'lucide-react';
 import { Link, Outlet } from 'react-router-dom';
 // import {
 //   Breadcrumb,
@@ -10,6 +10,11 @@ import { Link, Outlet } from 'react-router-dom';
 // } from '../components/ui/breadcrumb';
 // import { Separator } from '../components/ui/separator';
 import ManifestExplorerDrawer from '@/components/ManifestExplorerDrawer';
+import { Toaster } from '@/components/ui/sonner';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { reset } from '@/state/reducers/lists';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 import {
   Sidebar,
   SidebarContent,
@@ -25,11 +30,11 @@ import {
 } from '../components/ui/sidebar';
 
 const items = [
-  {
-    title: 'Home',
-    url: '/corpusense',
-    icon: Home,
-  },
+  // {
+  //   title: 'Home',
+  //   url: '/corpusense',
+  //   icon: Home,
+  // },
   {
     title: 'Manifest Explorer',
     url: 'manifest',
@@ -45,16 +50,16 @@ const items = [
     url: 'list-inspector',
     icon: ScrollText,
   },
-  {
-    title: 'Tags',
-    url: 'tags',
-    icon: Tags,
-  },
-  {
-    title: 'Export',
-    url: 'export',
-    icon: Download,
-  },
+  // {
+  //   title: 'Tags',
+  //   url: 'tags',
+  //   icon: Tags,
+  // },
+  // {
+  //   title: 'Export',
+  //   url: 'export',
+  //   icon: Download,
+  // },
 ];
 
 const LayoutSideBar = () => {
@@ -88,6 +93,16 @@ const LayoutSideBar = () => {
 };
 
 const Layout = () => {
+  const { newListEvent } = useAppSelector((state) => state.lists);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (newListEvent) {
+      toast.success('New list created');
+      dispatch(reset());
+    }
+  }, [newListEvent]);
+
   return (
     <SidebarProvider>
       <LayoutSideBar />
@@ -109,6 +124,7 @@ const Layout = () => {
         </header>
         <div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
           <Outlet />
+          <Toaster />
         </div>
       </SidebarInset>
     </SidebarProvider>

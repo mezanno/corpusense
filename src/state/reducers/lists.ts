@@ -6,21 +6,26 @@ interface ListsState {
   values: List[];
   error: string;
   activeListId?: string;
+  newListEvent: boolean;
 }
 
 const initialState: ListsState = {
   values: [],
   error: '',
+  newListEvent: false,
 };
 
 export const listsSlice = createSlice({
   name: 'lists',
   initialState,
   reducers: {
-    addListRequest: (_state, _action: PayloadAction<string>) => {},
+    addListRequest: (state, _action: PayloadAction<string>) => {
+      state.newListEvent = false;
+    },
     addListSuccess: (state, action: PayloadAction<List>) => {
       state.values.push(action.payload);
       state.activeListId = action.payload.id;
+      state.newListEvent = true;
     },
     removeListRequest: (_state, _action: PayloadAction<string>) => {},
     removeListSuccess: (state, action: PayloadAction<string>) => {
@@ -74,6 +79,9 @@ export const listsSlice = createSlice({
         list.content = action.payload.content;
       }
     },
+    reset: (state) => {
+      state.newListEvent = false;
+    },
   },
 });
 
@@ -92,5 +100,6 @@ export const {
   removeElementFromList,
   removeElementFromListSuccess,
   // removeSelectionFromList,
+  reset,
 } = listsSlice.actions;
 export default listsSlice.reducer;
