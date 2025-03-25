@@ -83,7 +83,10 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
   };
 
   const handleCreateList = () => {
-    const listName: string = inputListName?.current?.value;
+    const input: HTMLInputElement | null = inputListName.current;
+    //TODO! : gérer le cas où input est null
+    if (input === null) return;
+    const listName = (input as HTMLInputElement).value;
     dispatch(createListWithSelectionRequest({ selection, name: listName }));
   };
 

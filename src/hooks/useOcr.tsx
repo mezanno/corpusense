@@ -1,4 +1,6 @@
 import { Annotation } from '@/data/models/Annotation';
+import { ShapeType } from '@annotorious/annotorious';
+import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { useCallback, useState } from 'react';
 import { createWorker } from 'tesseract.js';
 import { v4 as uuid } from 'uuid';
@@ -9,7 +11,7 @@ export const useOcr = () => {
 
   const computeAnnotationsWithOcr = useCallback(
     async (
-      canvas: HTMLCanvasElement,
+      canvas: Canvas,
       region?: { left: number; top: number; width: number; height: number },
     ) => {
       if (canvas === undefined) {
@@ -27,8 +29,13 @@ export const useOcr = () => {
       let ocr_annotations: Annotation[] = [];
 
       try {
+        const image = canvas.items?.[0].items?.[0].body as IIIFExternalWebResource;
+        if (image === undefined || image.id === undefined) {
+          setWorking(false);
+          return;
+        }
         const { data } = await worker.recognize(
-          canvas.items[0].items[0].body.id,
+          image.id,
           { rectangle: region },
           {
             blocks: true,
@@ -41,12 +48,13 @@ export const useOcr = () => {
         console.log(data);
         if (data?.blocks && data.blocks.length > 0) {
           const paragraphs = data.blocks[0].paragraphs;
+          const id = uuid();
           ocr_annotations = paragraphs.map((paragraph) => {
             return {
-              id: uuid(),
+              id: id,
               target: {
                 selector: {
-                  type: 'RECTANGLE',
+                  type: ShapeType.RECTANGLE,
                   geometry: {
                     bounds: {
                       minX: paragraph.bbox.x0,
@@ -60,15 +68,20 @@ export const useOcr = () => {
                     h: paragraph.bbox.y1 - paragraph.bbox.y0,
                   },
                 },
+                annotation: id,
               },
               bodies: [
                 {
                   purpose: 'classifying',
                   value: 'LINE',
+                  annotation: id,
+                  id: id + '-c',
                 },
                 {
                   purpose: 'tagging',
                   value: paragraph.text,
+                  annotation: id,
+                  id: id + '-t',
                 },
               ],
               canvasId: canvas.id,
@@ -93,7 +106,7 @@ export const useOcr = () => {
 
   const computeTextWithOcr = useCallback(
     async (
-      canvas: HTMLCanvasElement,
+      canvas: Canvas,
       region?: { left: number; top: number; width: number; height: number },
     ) => {
       if (canvas === undefined) {
@@ -111,8 +124,13 @@ export const useOcr = () => {
       let result = '';
 
       try {
+        const image = canvas.items?.[0].items?.[0].body as IIIFExternalWebResource;
+        if (image === undefined || image.id === undefined) {
+          setWorking(false);
+          return;
+        }
         const { data } = await worker.recognize(
-          canvas.items[0].items[0].body.id,
+          image.id,
           { rectangle: region },
           {
             text: true,

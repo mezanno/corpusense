@@ -3,6 +3,7 @@ import { List } from '@/data/models/List';
 import { ItemMetadata } from '@/data/models/Metadata';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
+import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, Effect, put, takeLatest } from 'redux-saga/effects';
 import { exportRequest, exportSuccess } from '../reducers/export';
@@ -23,71 +24,54 @@ function* handleExportRequest(
   if (listToExport !== undefined && listToExport.content) {
     for (let i = 0; i < listToExport.content.length; i++) {
       let csvLine = listToExport.name;
-      const canvas = listToExport.content[i];
-      const storedCanvas = yield db.storedItems.get(canvas.canvasId);
-      // console.log(storedCanvas);
+      const listElement = listToExport.content[i];
+      const storedCanvas = (yield call(() => db.storedItems.get(listElement.canvasId))) as
+        | StoredItem
+        | undefined;
 
-      const url = storedCanvas.content.items[0].items[0].body.id;
-      csvLine = csvLine.concat('\t').concat(url);
+      const canvas = storedCanvas?.content as Canvas;
+      if (canvas !== undefined) {
+        const image = canvas.items?.[0]?.items?.[0].body as IIIFExternalWebResource;
+        const url = image.id;
 
-      const label = storedCanvas.content.label.none[0];
-      csvLine = csvLine.concat('\t').concat(label);
+        if (url !== undefined) {
+          csvLine = csvLine.concat('\t').concat(url);
 
-      if (listToExport.tags) {
-        const result = yield call(() =>
-          db.tags.filter((tag) => listToExport.tags!.includes(tag.id)).toArray(),
-        );
-        const tags = result as Tag[];
-        const tagLabels = tags.reduce((acc, tag) => acc.concat(tag.label).concat(','), '');
-        csvLine = csvLine.concat('\t').concat(tagLabels);
-      }
+          const label = canvas.label?.none?.[0] ?? '';
+          csvLine = csvLine.concat('\t').concat(label);
 
-      const match = canvas.canvasId.match(/ark:\/\d+\/([^\\/]+)/);
-      const manifestArk = match ? match[1] : null;
-      if (manifestArk !== null) {
-        const result = yield call(() =>
-          db.itemMetadata.filter((itemMD) => itemMD.id.includes(manifestArk)).toArray(),
-        );
-        const metadata = result as ItemMetadata[];
-        for (let i = 0; i < metadata.length; i++) {
-          console.log();
-
-          csvLine = csvLine.concat('\t').concat(metadata[i].attribute.value);
-          if (firstTimeHeader) {
-            header = header.concat('\t').concat(metadata[i].attribute.label);
+          if (listToExport.tags) {
+            const resultTags = yield call(() =>
+              db.tags.filter((tag) => listToExport.tags!.includes(tag.id)).toArray(),
+            );
+            const tags = resultTags as Tag[];
+            const tagLabels = tags.reduce((acc, tag) => acc.concat(tag.label).concat(','), '');
+            csvLine = csvLine.concat('\t').concat(tagLabels);
           }
+
+          const match = listElement.canvasId.match(/ark:\/\d+\/([^\\/]+)/);
+          const manifestArk = match ? match[1] : null;
+          if (manifestArk !== null) {
+            const resultMetadata = yield call(() =>
+              db.itemMetadata.filter((itemMD) => itemMD.id.includes(manifestArk)).toArray(),
+            );
+            const metadata = resultMetadata as ItemMetadata[];
+            for (let j = 0; j < metadata.length; j++) {
+              console.log();
+
+              csvLine = csvLine.concat('\t').concat(metadata[j].attribute.value);
+              if (firstTimeHeader) {
+                header = header.concat('\t').concat(metadata[j].attribute.label);
+              }
+            }
+            firstTimeHeader = false;
+          }
+          csvLine = csvLine.concat('\n');
+          exportLines = exportLines.concat(csvLine);
         }
-        firstTimeHeader = false;
       }
-
-      // if(listToExport.)
-
-      csvLine = csvLine.concat('\n');
-      exportLines = exportLines.concat(csvLine);
     }
 
-    //   for (let i = 0; i < listToExport.content.length; i++) {
-    //     const element = listToExport.content[i];
-
-    //     const newData: { element: string; tags: string[]; metadata?: ItemMetadataAttribute[] } = {
-    //       element: element.canvasId,
-    //       tags: tags.map((tag) => tag.label),
-    //     };
-
-    //     //retrieve manifest information
-
-    //       //   result = yield call(() =>
-    //       //     db.storedItems.filter((m) => m.id.includes(manifestArk)).first(),
-    //       //   );
-    //       //   const manifest = result as StoredItem;
-    //       //   console.log(manifest);
-    //       //   if (manifest) {
-
-    //     }
-
-    //     exportData.push(newData);
-    //   }
-    // }
     yield put(exportSuccess(header.concat('\n').concat(exportLines)));
   }
 }

@@ -114,16 +114,16 @@ function* handleUpdateAnnotationValueRequest(
     yield put(linkAnnotationsFailure('Annotation not found'));
     return;
   }
+  const body = {
+    purpose: 'tagging',
+    value: action.payload.value,
+    annotation: annotation.id,
+    id: annotation.id + '-t',
+  };
   if (annotation.bodies[0].purpose === 'classifying') {
-    annotation.bodies[1] = {
-      purpose: 'tagging',
-      value: action.payload.value,
-    };
+    annotation.bodies[1] = body;
   } else {
-    annotation.bodies[0] = {
-      purpose: 'tagging',
-      value: action.payload.value,
-    };
+    annotation.bodies[0] = body;
   }
   try {
     yield call(() => db.annotations.put(annotation));

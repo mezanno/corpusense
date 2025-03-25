@@ -1,3 +1,4 @@
+import { Annotation } from '@/data/models/Annotation';
 import { RootState } from '@/state/store';
 
 const emptyPreloadedState: RootState = {
@@ -14,6 +15,8 @@ const emptyPreloadedState: RootState = {
   lists: {
     values: [],
     error: '',
+    newListEvent: false,
+    activeListId: '',
   },
   selection: {
     canvases: [],
@@ -38,6 +41,8 @@ const emptyPreloadedState: RootState = {
   annotations: {
     values: [],
     isLoading: false,
+    deleted: {} as Annotation,
+    updated: {} as Annotation,
   },
 };
 

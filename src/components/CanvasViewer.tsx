@@ -1,8 +1,18 @@
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import {
+  Annotation,
+  convertToElementTypeEnum,
+  ElementType,
+  getBodies,
+} from '@/data/models/Annotation';
+import { useAppSelector } from '@/hooks/hooks';
+import { useAnnotoriousStoreSync } from '@/hooks/useAnnotoriousStoreSync';
+import { useOcr } from '@/hooks/useOcr';
+import { useUpdateAnnotation } from '@/hooks/useSaveAnnotation';
 import { getCanvasForCanvas } from '@/state/selectors/canvas';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import {
   AnnotationState,
+  AnnotoriousOpenSeadragonAnnotator,
   ImageAnnotation,
   OpenSeadragonAnnotator,
   OpenSeadragonViewer,
@@ -10,14 +20,6 @@ import {
   useHover,
   useSelection,
 } from '@annotorious/react';
-// import '@annotorious/react/annotorious-react.css';
-import {
-  Annotation,
-  convertToElementTypeEnum,
-  ElementType,
-  getBodies,
-} from '@/data/models/Annotation';
-import { useUpdateAnnotation } from '@/hooks/useSaveAnnotation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentation-3';
 import { ReactFlowProvider } from '@xyflow/react';
@@ -25,10 +27,6 @@ import { Move, Network, Save, SquarePen, TextSearch, Trash2 } from 'lucide-react
 import { TileSource } from 'openseadragon';
 import { createContext, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-// import { createWorker } from 'tesseract.js';
-// import { v4 as uuid } from 'uuid';
-import { useAnnotoriousStoreSync } from '@/hooks/useAnnotoriousStoreSync';
-import { useOcr } from '@/hooks/useOcr';
 import { z } from 'zod';
 import AnnotationsFlow from './AnnotationsFlow';
 import { NothingToShow } from './NothingToShow';
@@ -42,14 +40,12 @@ import { Switch } from './ui/switch';
 import { Textarea } from './ui/textarea';
 import { Toggle } from './ui/toggle';
 
-// import data from './annotorious.json';
-
-const color = {
-  [ElementType.TAG]: '#00ff00',
-  [ElementType.ENTRY]: '#ff0000',
-  [ElementType.COLUMN]: '#0000ff',
-  [ElementType.LINE]: '#000000',
-  [ElementType.PAGE]: '#ff00ff',
+const colors = {
+  [ElementType.TAG.toString()]: '#00ff00',
+  [ElementType.ENTRY.toString()]: '#ff0000',
+  [ElementType.COLUMN.toString()]: '#0000ff',
+  [ElementType.LINE.toString()]: '#000000',
+  [ElementType.PAGE.toString()]: '#ff00ff',
 };
 
 const annotationFormSchema = z.object({
@@ -94,24 +90,29 @@ const AnnotationForm = ({
     }
   }, [selected]);
 
-  const handleOcr = async (event: MouseEvent) => {
-    event.preventDefault();
+  const startOcrAsync = async () => {
     const rect = selected[0].annotation.target.selector.geometry;
+    console.log('handleOcr', rect);
 
     const text = await computeTextWithOcr(canvas, {
-      left: rect.x,
-      top: rect.y,
-      width: rect.w,
-      height: rect.h,
+      left: rect.bounds.minX,
+      top: rect.bounds.minY,
+      width: rect.bounds.maxX - rect.bounds.minX,
+      height: rect.bounds.maxY - rect.bounds.minY,
     });
-    // form.setValue('value', text?.trim());
     form.setValue('value', text);
+  };
+
+  const handleOcrClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    void startOcrAsync();
   };
 
   return (
     <div className='m-2 flex-col'>
       <Form {...form}>
         <form
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
           onSubmit={form.handleSubmit(onSubmit)}
           className='relative mx-auto w-full flex-col space-y-2'
         >
@@ -152,7 +153,7 @@ const AnnotationForm = ({
                   <FormLabel>Valeur</FormLabel>
                   <FormControl>
                     <Textarea
-                      className='bg-white'
+                      className='max-h-52 bg-white'
                       placeholder='valeur'
                       value={field.value}
                       onChange={(e) => {
@@ -176,7 +177,11 @@ const AnnotationForm = ({
                 <Progress value={progress} className='w-[60%]' />
               </div>
             ) : (
-              <Button variant='secondary' className='cursor-pointer' onClick={(e) => handleOcr(e)}>
+              <Button
+                variant='secondary'
+                className='cursor-pointer'
+                onClick={(e) => handleOcrClick(e)}
+              >
                 <TextSearch />
               </Button>
             )}
@@ -206,11 +211,7 @@ export const HoverSetterContext = createContext<{
 }>({ setHoveredElement: () => {} });
 
 const CanvasViewer = () => {
-  const dispatch = useAppDispatch();
-
-  // const annoRef = useRef<AnnotoriousOpenSeadragonAnnotator<ImageAnnotation>>(null);
-  const anno = useAnnotator(); //useRef perd la référence lors des opérations de suppression...
-
+  const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
   const { selected } = useSelection();
 
   //get the canvas to display from redux
@@ -218,13 +219,10 @@ const CanvasViewer = () => {
   //the source of tiles for the viewer from the canvas
   const [source, setSource] = useState<TileSource[]>([]);
 
-  //get annotations from redux
-  // const annotations = useSelector((state) => getAnnotations(state, canvas?.id));
-
   const [mode, setMode] = useState<'move' | 'draw'>('move');
+  const [treePanelOpen, setTreePanelOpen] = useState(false);
 
   // const [annotationPath, setAnnotationPath] = useState<string | null>(null);
-  const [treePanelOpen, setTreePanelOpen] = useState(false);
 
   //Tesseract worker states
   const { computeAnnotationsWithOcr, progress, working } = useOcr();
@@ -234,32 +232,9 @@ const CanvasViewer = () => {
 
   useAnnotoriousStoreSync(anno, canvas?.id);
 
-  // useEffect(() => {
-  //   console.log('useEffect - annotations', annotations);
-  //   console.log('useEffect - annootation - anno ', anno);
-
-  //   if (annotations.length > 0 && anno !== undefined) {
-  //     //add them to annotorious
-  //     // annoRef.current?.setAnnotations(annotations);
-  //     // anno.setAnnotations(annotations);
-  //   }
-  // }, [annotations]);
-
   useEffect(() => {
     setHoveredElement(hover?.id);
   }, [hover]);
-
-  // useEffect(() => {
-  //   if (selected.length > 0) {
-  //     const exists = annotations.find((a) => a.id === selected[0]?.annotation.id) !== undefined;
-  //     if (!exists) {
-  //       console.log('useEffect - addAnnotation ', selected[0].annotation);
-
-  //       //si l'annotation n'existe pas dans le store, on la rajoute
-  //       addAnnotation(selected[0].annotation, canvas.id);
-  //     }
-  //   }
-  // }, [selected]);
 
   useEffect(() => {
     // if (canvas?.annotations?.length != null) {
@@ -293,35 +268,28 @@ const CanvasViewer = () => {
   }, [canvas]);
 
   const handleDeleteAnnotation = (id: string) => {
-    // console.log('handleDeleteAnnotation ', id);
-    // console.log('annoRef.current', anno);
-    // // if (annoRef.current) {
-    // //   annoRef.current.removeAnnotation(id);
-    // // }
-    // dispatch(removeAnnotationRequest(id));
+    console.log('handleDeleteAnnotation ', id);
     if (anno !== undefined) {
       anno.removeAnnotation(id);
     }
   };
 
-  const handleOcr = async () => {
+  const startOcrAsync = async () => {
     const annotations = await computeAnnotationsWithOcr(canvas);
-    console.log('annotations', annotations);
-    if (anno !== undefined) {
+    if (anno !== undefined && annotations !== undefined) {
       anno.setAnnotations(annotations);
     }
   };
 
-  const style = (annotation: Annotation, state: AnnotationState) => {
-    const colors = {
-      ENTRY: '#ff0000',
-      TAG: '#00ff00',
-      LINE: '#0000ff',
-    };
+  const handleOcrClick = () => {
+    void startOcrAsync();
+  };
 
+  const style = (annotation: Annotation, state?: AnnotationState) => {
+    const value = annotation.bodies[0]?.value ?? ElementType.TAG;
     return {
-      stroke: colors[annotation.bodies[0]?.value] || '#000000',
-      fill: colors[annotation.bodies[0]?.value] || '#000000',
+      stroke: colors[value] || '#000000',
+      fill: colors[value] || '#000000',
       fillOpacity: (state?.hovered ?? false) || hoveredElement === annotation.id ? 0.3 : 0.1,
     };
   };
@@ -350,7 +318,7 @@ const CanvasViewer = () => {
             >
               <Network />
             </Toggle>
-            <Button onClick={handleOcr}>
+            <Button onClick={handleOcrClick}>
               <TextSearch />
             </Button>
             <div className='flex items-center space-x-1 align-middle'>
@@ -381,11 +349,9 @@ const CanvasViewer = () => {
             )}
             <ResizablePanel className='relative h-full w-1/2'>
               <OpenSeadragonAnnotator
-                // ref={annoRef}
                 autoSave={true}
                 drawingMode='click'
                 drawingEnabled={mode === 'draw'}
-                // adapter={W3CImageFormat('https://gallica.bnf.fr/iiif/ark:/12148/bpt6k6429210k/p72')}
                 style={style}
               >
                 <div className='relative h-full w-full'>

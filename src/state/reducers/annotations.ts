@@ -12,6 +12,8 @@ type AnnotationState = {
 const initialState: AnnotationState = {
   values: [],
   isLoading: false,
+  deleted: {} as Annotation,
+  updated: {} as Annotation,
 };
 
 const annotationsSlice = createSlice({
@@ -71,16 +73,16 @@ const annotationsSlice = createSlice({
     updateAnnotationValueSuccess(state, action: PayloadAction<{ id: string; value: string }>) {
       const annotation = state.values.find((a) => a.id === action.payload.id);
       if (annotation) {
+        const body = {
+          purpose: 'tagging',
+          value: action.payload.value,
+          id: annotation.id + '-t',
+          annotation: annotation.id,
+        };
         if (annotation.bodies[0].purpose === 'classifying') {
-          annotation.bodies[1] = {
-            purpose: 'tagging',
-            value: action.payload.value,
-          };
+          annotation.bodies[1] = body;
         } else {
-          annotation.bodies[0] = {
-            purpose: 'tagging',
-            value: action.payload.value,
-          };
+          annotation.bodies[0] = body;
         }
       }
     },

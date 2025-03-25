@@ -5,6 +5,7 @@ import { getAnnotations } from '@/state/selectors/annotations';
 import {
   addEdge,
   Background,
+  Connection,
   Controls,
   type Edge,
   type Node,
@@ -14,7 +15,7 @@ import {
   useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { useCallback, useContext, useEffect, useRef } from 'react';
+import { MouseEvent, useCallback, useContext, useEffect, useRef } from 'react';
 import { HoverContext, HoverSetterContext } from './CanvasViewer';
 import { AnnotationNode } from './nodes/annotation-node';
 import ButtonEdge from './nodes/button-edge';
@@ -53,8 +54,8 @@ const AnnotationsFlow = ({
   canvasId: string;
   selectedNodeId: string;
 }) => {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { setCenter } = useReactFlow();
 
   const annotations = useAppSelector((state) => getAnnotations(state, canvasId));
@@ -63,7 +64,7 @@ const AnnotationsFlow = ({
   const setHoveredElement = useContext(HoverSetterContext).setHoveredElement;
 
   const onConnect = useCallback(
-    (params) => {
+    (params: Connection) => {
       console.log('onConnect', params);
       dispatch(addLinkBetweenAnnotationsRequest({ source: params.source, target: params.target }));
       setEdges((eds) =>
@@ -91,7 +92,7 @@ const AnnotationsFlow = ({
             },
           };
         } else {
-          if (node.data.hovered) {
+          if (node.data.hovered === true) {
             return {
               ...node,
               data: {
@@ -125,9 +126,13 @@ const AnnotationsFlow = ({
   useEffect(() => {
     if (selectedNodeId !== null) {
       const selectedNode = nodes.filter((node) => node.id === selectedNodeId)[0];
-      if (selectedNode) {
-        const x = selectedNode.position.x + selectedNode.measured.width / 2;
-        const y = selectedNode.position.y + selectedNode.measured.height / 2;
+      if (selectedNode !== undefined) {
+        const x =
+          selectedNode.position.x +
+          (selectedNode.measured?.width != null ? selectedNode.measured.width / 2 : 0);
+        const y =
+          selectedNode.position.y +
+          (selectedNode.measured?.height != null ? selectedNode.measured.height / 2 : 0);
         const zoom = 1;
 
         void setCenter(x, y, { zoom, duration: 1000 });
@@ -135,16 +140,16 @@ const AnnotationsFlow = ({
     }
   }, [selectedNodeId]);
 
-  const dragStartPositions = useRef({});
+  const dragStartPositions = useRef<Record<string, { x: number; y: number }>>({});
 
-  const onNodeDragStart = useCallback((_, node: Node) => {
+  const onNodeDragStart = useCallback((_event: MouseEvent, node: Node) => {
     dragStartPositions.current[node.id] = { ...node.position };
   }, []);
 
   const onNodeDragStop = useCallback(
-    (_, node: Node) => {
+    (_event: MouseEvent, node: Node) => {
       const initialPos = dragStartPositions.current[node.id];
-      if (!initialPos) return;
+      if (initialPos === undefined) return;
 
       const delta = {
         x: node.position.x - initialPos.x,
