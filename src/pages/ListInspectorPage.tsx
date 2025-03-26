@@ -58,15 +58,26 @@ const ListInspectorPage = () => {
 
   useEffect(() => {
     if (activeList?.content && gridRef.current !== null) {
-      const grid = GridStack.init({ float: false, disableResize: true }, gridRef.current);
+      const grid = GridStack.init(
+        { float: false, disableResize: true, disableDrag: true },
+        gridRef.current,
+      );
       grid.on('change', (_event, _items) => {
         grid.compact();
       });
+      console.log('compute grid');
+
       grid.batchUpdate(); //afin d'éviter les rendus tant qu'on n'a pas terminé les makeWidgets
       grid.removeAll();
-      activeList.content.forEach(({ canvasId }) => {
+      activeList.content.forEach(({ canvasId }, index) => {
         const item = refs.current[canvasId].current;
+        const x = index % 12;
+        const y = Math.floor(index / 12);
         if (item !== null) {
+          item.setAttribute('data-gs-x', x.toString());
+          item.setAttribute('data-gs-y', y.toString());
+          item.setAttribute('data-gs-width', '1');
+          item.setAttribute('data-gs-height', '1');
           grid.makeWidget(item);
         }
       });
@@ -83,7 +94,7 @@ const ListInspectorPage = () => {
             <ListMetadaForm list={activeList} />
           </div>
           <div>
-            {activeList?.content ? (
+            {/* {activeList?.content ? (
               <div ref={gridRef} className='grid-stack flex h-max rounded-md border bg-white'>
                 {activeList.content.map((item) => (
                   <div
@@ -94,6 +105,18 @@ const ListInspectorPage = () => {
                     <div className='grid-stack-item-content flex items-center justify-center'>
                       <GridThumb canvasId={item.canvasId} listId={activeList.id as string} />
                     </div>
+                  </div>
+                ))}
+              </div> */}
+            {activeList?.content ? (
+              <div className='grid grid-cols-12'>
+                {activeList.content.map((item) => (
+                  <div
+                    key={item.canvasId}
+                    ref={refs.current[item.canvasId]}
+                    className='flex items-center justify-center'
+                  >
+                    <GridThumb canvasId={item.canvasId} listId={activeList.id as string} />
                   </div>
                 ))}
               </div>
