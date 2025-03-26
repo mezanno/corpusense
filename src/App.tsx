@@ -15,7 +15,7 @@ function App() {
       <NavigationHandler />
       <Routes>
         <Route path='/corpusense' element={<Layout />}>
-          <Route index element={<HomePAge />} />
+          <Route index element={<ManifestExplorerPage />} />
           <Route path='manifest' element={<ManifestExplorerPage />} />
           <Route path='lists' element={<ListsManagerPage />} />
           <Route path='list-inspector' element={<ListInspectorPage />} />

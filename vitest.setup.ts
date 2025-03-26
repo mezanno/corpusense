@@ -13,20 +13,21 @@ afterEach(() => {
 });
 
 //Nécessaire pour que le hook use-mobile.ts (généré par shadcn ui) fonctionne correctement dans les tests
-globalThis.matchMedia =
-  globalThis.matchMedia ||
-  (() => ({
-    matches: false,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-  }));
+// globalThis.matchMedia =
+//   globalThis.matchMedia ??
+//   (() => ({
+//     matches: false,
+//     addEventListener: () => {},
+//     removeEventListener: () => {},
+//   }));
 
 //Nécessaire pour faire fonctionner Annotorious
-global.ResizeObserver = class {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-};
+/* tslint:disable-next-line */
+// global.ResizeObserver = class {
+//   observe() {}
+//   unobserve() {}
+//   disconnect() {}
+// };
 
 // globalThis.HTMLCanvasElement.prototype.getContext = () => ({
 //   // Simule une partie de l'interface WebGLRenderingContext

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+
 import { List } from '@/data/models/List';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { updateListRequest } from '@/state/reducers/lists';
@@ -151,6 +152,7 @@ const ListMetadaForm = ({ list }: { list: List }) => {
                 <FormItem className='flex w-1/2 flex-col items-start'>
                   <FormLabel className='text-left'>Tags</FormLabel>
                   <FormControl id='test'>
+                    {/* @ts-expect-error TagInput */}
                     <TagInput
                       {...field}
                       placeholder='Enter a tag'

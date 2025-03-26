@@ -19,7 +19,6 @@ export default function ButtonEdge({
   sourcePosition,
   targetPosition,
   style = {},
-  markerEnd = MarkerType.Arrow,
   source,
   target,
 }: EdgeProps) {

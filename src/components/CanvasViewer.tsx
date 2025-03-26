@@ -13,6 +13,7 @@ import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import {
   AnnotationState,
   AnnotoriousOpenSeadragonAnnotator,
+  DrawingStyleExpression,
   ImageAnnotation,
   OpenSeadragonAnnotator,
   OpenSeadragonViewer,
@@ -296,7 +297,7 @@ const CanvasViewer = () => {
       stroke: colors[value] || '#000000',
       fill: colors[value] || '#000000',
       fillOpacity: (state?.hovered ?? false) || hoveredElement === annotation.id ? 0.3 : 0.1,
-    };
+    } as DrawingStyleExpression;
   };
 
   const flow = useMemo(

@@ -7,34 +7,7 @@ import { defineConfig } from 'vitest/config'; //au lieu de { defineConfig } from
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-    visualizer() as PluginOption,
-    // VitePWA({
-    //   registerType: 'autoUpdate',
-    //   devOptions: { enabled: process.env.NODE_ENV === 'development' },
-    //   workbox: {
-    //     // cleanupOutdatedCaches: true,
-    //     runtimeCaching: [
-    //       {
-    //         urlPattern: /\.(?:json)$/,
-    //         handler: 'NetworkFirst',
-    //         options: {
-    //           cacheName: 'json-cache',
-    //         },
-    //       },
-    //       {
-    //         urlPattern: /\.(?:png|jpg|jpeg|webp|thumbnail)$/,
-    //         handler: 'CacheFirst',
-    //         options: {
-    //           cacheName: 'images-cache',
-    //         },
-    //       },
-    //     ],
-    //   },
-    // }),
-  ],
+  plugins: [react(), tailwindcss(), visualizer() as PluginOption],
   base: '/corpusense',
   resolve: {
     alias: {
@@ -54,7 +27,8 @@ export default defineConfig({
   test: {
     globals: true, // Activer les fonctions globales comme 'describe', 'it', etc.
     environment: 'jsdom', // Utiliser jsdom pour simuler un environnement de navigateur
-    setupFiles: './vitest.setup.ts',
+    // setupFiles: './vitest.setup.ts',
+    setupFiles: process.env.NODE_ENV === 'production' ? [] : ['./vitest.setup.ts'], // Ne pas charger le fichier de setup en production
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -69,7 +43,6 @@ export default defineConfig({
         // secure: false,
         rewrite(url) {
           console.log('url', url);
-
           return url.replace('native', 'default');
         },
       },
