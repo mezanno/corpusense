@@ -243,23 +243,28 @@ const CanvasViewer = () => {
     //     setAnnotationPath(annotationsPath);
     //   }
     // }
-
     if (canvas?.items?.[0]?.items?.[0]?.body != null) {
       const image = canvas.items[0].items[0].body as IIIFExternalWebResource;
       if (image?.service?.length != null) {
         const service = image.service[0] as ImageService;
         if (service !== undefined) {
-          const id = service['@id'];
+          const id = service['@id'] ?? service.id;
+
           if (id !== undefined) {
-            const newSource = [
-              {
-                '@context': 'http://library.stanford.edu/iiif/image-api/1.1/context.json',
-                '@id': id.replace('https://gallica.bnf.fr/iiif', '/gallica/iiif/image/v3'),
-                height: image.height,
-                width: image.width,
-                profile: ['http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2'],
-              } as unknown as TileSource,
-            ];
+            // const newSource = [
+            //   {
+            //     '@context': 'http://library.stanford.edu/iiif/image-api/1.1/context.json',
+            // '@id': id
+            //   .replace('https://gallica.bnf.fr/iiif', '/gallica/iiif/image/v3')
+            //     '@id': id,
+            //     height: image.height,
+            //     width: image.width,
+            //     profile: ['level2'],
+            //     '@type': 'ImageService3',
+            //     format: 'image/webp',
+            //   } as unknown as TileSource,
+            // ];
+            const newSource = [`${id}/info.json`] as unknown as TileSource[];
             setSource(newSource);
           }
         }

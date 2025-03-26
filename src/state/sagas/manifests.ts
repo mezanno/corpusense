@@ -24,11 +24,29 @@ import { getManifestURL } from '../selectors/manifests';
 //localhost:5173/corpusense?manifest=
 
 const fetchJson = async (url: string): Promise<object> => {
-  const response = await fetch(`http://localhost:3001/proxy?url=${encodeURIComponent(url)}`, {
+  console.log('fetchJson: ', url);
+  let fetchUrl = url;
+  if (url.includes('gallica.bnf.fr')) {
+    console.log('Gallica v1 detected');
+
+    const urlV3 = url.replace('gallica.bnf.fr/iiif', 'openapi.bnf.fr/iiif/presentation/v3');
+    const responseHead = await fetch(urlV3, {
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    });
+    if (responseHead.ok) {
+      console.info('using Gallica API v3: ', urlV3);
+      fetchUrl = urlV3;
+    } else {
+      console.warn('Gallica API v3 not available, using proxy');
+
+      fetchUrl = `http://localhost:3001/proxy?url=${encodeURIComponent(url)}`;
+    }
+  }
+  const response = await fetch(fetchUrl, {
+    // mode: 'no-cors', //ne sert à rien (renvoie 200 mais corps de la réponse vide)
     headers: {
       Accept: 'application/json',
       'Access-Control-Allow-Origin': '*',
-      // AccessControlAllowOrigin: '*',
     },
   });
   if (!response.ok) {
