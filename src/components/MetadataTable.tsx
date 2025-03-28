@@ -4,6 +4,7 @@ import { saveMetadaRequest } from '@/state/reducers/manifests';
 import { getLoadedManifest } from '@/state/selectors/manifests';
 import { CirclePlus, CircleX } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
@@ -11,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 const MetadataTable = () => {
   const metadata = useAppSelector(getLoadedManifest)?.metadata;
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const [formMetadata, setFormMetadata] = useState<ItemMetadataAttribute[]>(metadata ?? []);
 
@@ -39,9 +41,9 @@ const MetadataTable = () => {
         {/* <TableCaption>Metadata Corpusense</TableCaption> */}
         <TableHeader>
           <TableRow>
-            <TableHead>key</TableHead>
-            <TableHead>Value</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead>{t('table_col_title_key')}</TableHead>
+            <TableHead>{t('table_col_title_value')}</TableHead>
+            <TableHead>{t('table_col_title_actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -50,14 +52,14 @@ const MetadataTable = () => {
               <TableCell>
                 <Input
                   value={item.label}
-                  placeholder='new key'
+                  placeholder={t('form_placeholder_key')}
                   onChange={(e) => updateMetadata(index, { label: e.target.value })}
                 />
               </TableCell>
               <TableCell>
                 <Input
                   value={item.value}
-                  placeholder='new value'
+                  placeholder={t('form_placeholder_value')}
                   onChange={(e) => updateMetadata(index, { value: e.target.value })}
                 />
               </TableCell>
@@ -75,9 +77,9 @@ const MetadataTable = () => {
         onClick={handleAddMetadata}
         className='flex items-center justify-center space-x-2 rounded-xl border-2 p-2'
       >
-        <CirclePlus /> <span>Add a new metadata</span>
+        <CirclePlus /> <span>{t('btn_add_metadata')}</span>
       </div>
-      <Button onClick={handleOnSave}>Save metadata</Button>
+      <Button onClick={handleOnSave}>{t('btn_save')}</Button>
     </div>
   );
 };

@@ -7,6 +7,7 @@ import {
 } from '@iiif/presentation-3';
 import { Label, Metadata, Summary, Thumbnail } from '@samvera/clover-iiif/primitives';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Loading from './Loading';
 import './metadata.css';
 import MetadataTable from './MetadataTable';
@@ -17,6 +18,7 @@ const ManifestDetails = () => {
   const { isLoading, error, loadedData } = useAppSelector((state) => state.manifests);
   const [manifest, setManifest] = useState<Manifest | null>(null);
   const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[]>([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (loadedData !== null) {
@@ -36,7 +38,7 @@ const ManifestDetails = () => {
     >
       {error != null && error !== '' && (
         <h3 className='text-center text-red-500' role='alert'>
-          Error while loading manifest: {error}
+          {t('error_loading_manifest')}: {error}
         </h3>
       )}
       {manifest === null ? (
@@ -52,7 +54,7 @@ const ManifestDetails = () => {
           <Label label={manifest?.label} as='h3' className='text-center text-mezanno-4' />
           <h4 className='w-full text-sm font-bold break-words text-mezanno-4'>{manifest?.id}</h4>
           <div className='w-full rounded-md border p-2'>
-            <h3 className='text-xl'>Metadata Gallica</h3>
+            <h3 className='text-xl'>{t('title_metadata_gallica')}</h3>
             <ScrollArea className='h-72 w-full whitespace-nowrap'>
               <Metadata
                 metadata={manifest?.metadata as MetadataItem[]}
@@ -62,7 +64,7 @@ const ManifestDetails = () => {
             </ScrollArea>
           </div>
           <div className='w-full rounded-md border p-2'>
-            <h3 className='text-xl'>Metadata Corpusense</h3>
+            <h3 className='text-xl'>{t('title_metadata_corpusense')}</h3>
             <ScrollArea className='h-72 w-full whitespace-nowrap'>
               <MetadataTable />
               <ScrollBar orientation='horizontal' />

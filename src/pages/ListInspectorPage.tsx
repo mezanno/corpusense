@@ -9,6 +9,7 @@ import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
 import { CircleX } from 'lucide-react';
 import { createRef, useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const GridThumb = ({ canvasId, listId }: { canvasId: string; listId: string }) => {
   const canvas = useAppSelector((state) => getCanvasById(state, canvasId));
@@ -45,6 +46,8 @@ const ListInspectorPage = () => {
 
   const gridRef = useRef(null);
   const refs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
+
+  const { t } = useTranslation();
 
   if (activeList?.content) {
     if (Object.keys(refs.current).length !== activeList.content.length) {
@@ -89,7 +92,7 @@ const ListInspectorPage = () => {
     <div className='flex-col space-y-2'>
       {activeList && (
         <>
-          <h1>List Inspector</h1>
+          <h1>{t('page_title_listinspector')}</h1>
           <div className='rounded-md border bg-white'>
             <ListMetadaForm list={activeList} />
           </div>
@@ -121,7 +124,7 @@ const ListInspectorPage = () => {
                 ))}
               </div>
             ) : (
-              <div>Aucun élément dans la liste</div>
+              <div>{t('info_empty_list')}</div>
             )}
           </div>
         </>

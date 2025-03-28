@@ -28,6 +28,7 @@ import { Move, Network, Save, SquarePen, TextSearch, Trash2 } from 'lucide-react
 import { TileSource } from 'openseadragon';
 import { createContext, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import AnnotationsFlow from './AnnotationsFlow';
 import { NothingToShow } from './NothingToShow';
@@ -68,6 +69,7 @@ const AnnotationForm = ({
 }) => {
   const updateAnnotation = useUpdateAnnotation();
   const { computeTextWithOcr, progress, working } = useOcr();
+  const { t } = useTranslation();
 
   const form = useForm<z.infer<typeof annotationFormSchema>>({
     resolver: zodResolver(annotationFormSchema),
@@ -123,7 +125,7 @@ const AnnotationForm = ({
               name='type'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Type*</FormLabel>
+                  <FormLabel>{t('form_label_type')}*</FormLabel>
                   <Select
                     key={field.value}
                     onValueChange={field.onChange}
@@ -151,11 +153,11 @@ const AnnotationForm = ({
               name='value'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Valeur</FormLabel>
+                  <FormLabel>{t('form_label_value')}</FormLabel>
                   <FormControl>
                     <Textarea
                       className='max-h-52 bg-white'
-                      placeholder='valeur'
+                      placeholder={t('form_placeholder_value')}
                       value={field.value}
                       onChange={(e) => {
                         field.onChange(e.target.value);
@@ -168,7 +170,7 @@ const AnnotationForm = ({
             />
           </div>
           <Button type='submit' variant='outline' className='cursor-pointer'>
-            <Save /> Enregistrer
+            <Save /> {t('btn_save')}
           </Button>
 
           <div className='absolute top-0 right-0 flex justify-end space-x-2'>
@@ -212,6 +214,7 @@ export const HoverSetterContext = createContext<{
 }>({ setHoveredElement: () => {} });
 
 const CanvasViewer = () => {
+  const { t } = useTranslation();
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
   const { selected } = useSelection();
 
@@ -328,14 +331,16 @@ const CanvasViewer = () => {
               <TextSearch />
             </Button>
             <div className='flex items-center space-x-1 align-middle'>
+              <span className='ml-1'>
+                {mode === 'draw' ? <SquarePen size={16} /> : <Move size={16} />}
+              </span>
               <Switch
                 id='viewer-mode'
                 onCheckedChange={() => setMode((prev) => (prev === 'draw' ? 'move' : 'draw'))}
               />
               <Label htmlFor='viewer-mode' className='flex items-center'>
-                <span>{mode === 'draw' ? 'Mode Annotation' : 'Mode Déplacement'}</span>
-                <span className='ml-1'>
-                  {mode === 'draw' ? <SquarePen size={16} /> : <Move size={16} />}
+                <span>
+                  {mode === 'draw' ? t('btn_toggle_mode_view') : t('btn_toggle_mode_annotate')}
                 </span>
               </Label>
             </div>

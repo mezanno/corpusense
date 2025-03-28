@@ -36,6 +36,7 @@ import { Canvas } from '@iiif/presentation-3';
 import { DownloadIcon, PenLine, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 const formSchema = z.object({
@@ -46,6 +47,7 @@ const formSchema = z.object({
 
 const NewListForm = () => {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -66,7 +68,7 @@ const NewListForm = () => {
           name='name'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nom de la liste</FormLabel>
+              <FormLabel>{t('form_label_listname')}</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -74,7 +76,7 @@ const NewListForm = () => {
             </FormItem>
           )}
         />
-        <Button type='submit'>Créer</Button>
+        <Button type='submit'>{t('btn_create')}</Button>
       </form>
     </Form>
   );
@@ -84,14 +86,15 @@ const ListHoverCard = ({ list }: { list: List }) => {
   // const elements = useAppSelector(getElemntsOfList(list.id as string));
   const canvases = useAppSelector((state) => getCanvasesOfList(state, list.id as string));
 
+  const { t } = useTranslation();
   return (
     <div className='flex flex-col justify-between space-x-4'>
       <h4>{list.name}</h4>
       {list.content === undefined || list.content.length === 0 ? (
-        <div>Cette liste ne contient aucun élément</div>
+        <div>{t('info_empty_list')}</div>
       ) : (
         <div>
-          <div>Contient {list.content.length} éléments</div>
+          <div>{t('info_number_of_items', { number: list.content.length })}</div>
           <div>
             <CanvasListViewer
               width={500}
@@ -116,6 +119,8 @@ const ListsManagerPage = () => {
   );
 
   const [downloadLink, setDownloadLink] = useState<string>('');
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (lastExportDate !== null) {
@@ -155,7 +160,7 @@ const ListsManagerPage = () => {
     <main className='flex h-full w-full flex-col items-center space-y-4 rounded-2xl border-1 bg-white'>
       <Accordion type='single' collapsible className='w-1/4'>
         <AccordionItem value='new-list'>
-          <AccordionTrigger>Créer une nouvelle liste</AccordionTrigger>
+          <AccordionTrigger>{t('btn_create_list')}</AccordionTrigger>
           <AccordionContent>
             <div className='rounded-2xl border-2 border-gray-200 p-2'>
               <NewListForm />
@@ -166,14 +171,14 @@ const ListsManagerPage = () => {
 
       {lists.length > 0 ? (
         <section className='flex h-full w-2/3 flex-col items-center space-y-1'>
-          <div className='text-xl'>Vous avez {lists.length} liste(s)</div>
+          <div className='text-xl'>{t('info_number_of_lists', { number: lists.length })}</div>
           <Table>
             {/* <TableCaption>Vos Listes</TableCaption> */}
             <TableHeader>
               <TableRow>
-                <TableHead>Nom de la liste</TableHead>
-                <TableHead>Informations</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>{t('table_col_title_listname')}</TableHead>
+                <TableHead>{t('table_col_title_listinfo')}</TableHead>
+                <TableHead>{t('table_col_title_actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -186,12 +191,13 @@ const ListsManagerPage = () => {
                       <TableCell>
                         {list.content === undefined || list.content.length === 0 ? (
                           <Badge variant='secondary' className='text-sm'>
-                            Liste vide
+                            {t('info_empty_list')}
                           </Badge>
                         ) : (
                           <Badge className='text-sm'>
-                            <span className='text-md font-bold'>{list.content.length}</span>{' '}
-                            élément(s)
+                            <span className='text-md font-bold'>
+                              {t('info_number_of_items', { number: list.content.length })}
+                            </span>
                           </Badge>
                         )}
                       </TableCell>
@@ -204,11 +210,11 @@ const ListsManagerPage = () => {
                           }}
                         >
                           <Trash2 />
-                          Supprimer
+                          {t('btn_delete')}
                         </Button>
                         <Button onClick={(e) => handleExport(e, list.id as string)}>
                           <PenLine />
-                          Générer un export
+                          {t('btn_create_export')}
                         </Button>
 
                         {lastExportStatus === 'OK' && (
@@ -217,7 +223,7 @@ const ListsManagerPage = () => {
                             onClick={(e) => handleDownload(e)}
                           >
                             <DownloadIcon />
-                            Télécharger l'export
+                            {t('btn_download_export')}
                           </Button>
                         )}
                       </TableCell>
@@ -233,7 +239,7 @@ const ListsManagerPage = () => {
         </section>
       ) : (
         <div role='alert' className='text-2xl'>
-          Vous n&apos;avez aucune liste actuellement
+          {t('info_no_list')}
         </div>
       )}
     </main>

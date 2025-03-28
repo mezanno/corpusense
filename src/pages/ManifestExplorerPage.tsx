@@ -5,6 +5,7 @@ import { fetchManifestFromUrlRequest } from '@/state/reducers/manifests';
 import { Annotorious } from '@annotorious/react';
 import { PanelTopClose, PanelTopOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import CanvasGallery from '../components/CanvasGallery';
 import ManifestDetails from '../components/ManifestDetails';
@@ -18,6 +19,8 @@ const ManifestExplorerPage = () => {
   const dispatch = useAppDispatch();
 
   const [searchParams] = useSearchParams();
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     const id = searchParams.get('manifestId');
@@ -33,12 +36,12 @@ const ManifestExplorerPage = () => {
           {isMetadataOpen ? (
             <>
               <PanelTopClose />
-              Close Metadata
+              {t('btn_close_metadata')}
             </>
           ) : (
             <>
               <PanelTopOpen />
-              Open Metadata
+              {t('btn_open_metadata')}
             </>
           )}
         </Toggle>
@@ -46,12 +49,12 @@ const ManifestExplorerPage = () => {
           {isGalleryOpen ? (
             <>
               <PanelTopClose />
-              Close Gallery
+              {t('btn_close_gallery')}
             </>
           ) : (
             <>
               <PanelTopOpen />
-              Open Gallery
+              {t('btn_open_gallery')}
             </>
           )}
         </Toggle>

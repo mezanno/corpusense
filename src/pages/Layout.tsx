@@ -14,6 +14,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { reset } from '@/state/reducers/lists';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import {
   Sidebar,
@@ -29,47 +30,47 @@ import {
   SidebarTrigger,
 } from '../components/ui/sidebar';
 
-const items = [
-  // {
-  //   title: 'Home',
-  //   url: '/corpusense',
-  //   icon: Home,
-  // },
-  {
-    title: 'Manifest Explorer',
-    url: 'manifest',
-    icon: FolderSearch2,
-  },
-  {
-    title: 'Lists Manager',
-    url: 'lists',
-    icon: List,
-  },
-  {
-    title: 'List Inspector',
-    url: 'list-inspector',
-    icon: ScrollText,
-  },
-  // {
-  //   title: 'Tags',
-  //   url: 'tags',
-  //   icon: Tags,
-  // },
-  // {
-  //   title: 'Export',
-  //   url: 'export',
-  //   icon: Download,
-  // },
-];
-
 const LayoutSideBar = () => {
+  const { t } = useTranslation();
+
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('application')}</SidebarGroupLabel>
           <SidebarMenu>
-            {items.map((item) => (
+            {[
+              // {
+              //   title: 'Home',
+              //   url: '/corpusense',
+              //   icon: Home,
+              // },
+              {
+                title: t('page_title_manifexplorer'),
+                url: 'manifest',
+                icon: FolderSearch2,
+              },
+              {
+                title: t('page_title_listmanager'),
+                url: 'lists',
+                icon: List,
+              },
+              {
+                title: t('page_title_listinspector'),
+                url: 'list-inspector',
+                icon: ScrollText,
+              },
+              // {
+              //   title: 'Tags',
+              //   url: 'tags',
+              //   icon: Tags,
+              // },
+              // {
+              //   title: 'Export',
+              //   url: 'export',
+              //   icon: Download,
+              // },
+            ].map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild>
                   <Link to={item.url}>
@@ -82,7 +83,7 @@ const LayoutSideBar = () => {
           </SidebarMenu>
         </SidebarGroup>
         <SidebarGroup id='history'>
-          <SidebarGroupLabel>History</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('history')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <HistoryNav />
           </SidebarGroupContent>

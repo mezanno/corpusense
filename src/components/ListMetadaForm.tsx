@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Tag as FormTag, TagInput } from 'emblor';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import { z } from 'zod';
 import './taginput.css'; //permet d'enlever le background transparent du taginput
@@ -72,6 +73,8 @@ const ListMetadaForm = ({ list }: { list: List }) => {
 
   const { setValue } = form;
 
+  const { t } = useTranslation();
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values.tags);
 
@@ -109,10 +112,10 @@ const ListMetadaForm = ({ list }: { list: List }) => {
                 name='name'
                 render={({ field }) => (
                   <FormItem className='w-full'>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>{t('form_label_listname')}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder='ma liste'
+                        placeholder={t('form_placeholder_listname')}
                         type={'text'}
                         value={field.value}
                         onChange={(e) => {
@@ -131,11 +134,11 @@ const ListMetadaForm = ({ list }: { list: List }) => {
                 name='about'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>About</FormLabel>
+                    <FormLabel>{t('form_label_about')}</FormLabel>
                     <FormControl>
                       <Textarea
                         {...field}
-                        placeholder='A propos de cette liste'
+                        placeholder={t('form_placeholder_about')}
                         className='resize-none'
                       />
                     </FormControl>
@@ -150,12 +153,12 @@ const ListMetadaForm = ({ list }: { list: List }) => {
               name='tags'
               render={({ field }) => (
                 <FormItem className='flex w-1/2 flex-col items-start'>
-                  <FormLabel className='text-left'>Tags</FormLabel>
+                  <FormLabel className='text-left'>{t('form_label_tags')}</FormLabel>
                   <FormControl id='test'>
                     {/* @ts-expect-error TagInput */}
                     <TagInput
                       {...field}
-                      placeholder='Enter a tag'
+                      placeholder={t('form_placeholder_tags')}
                       tags={tags}
                       enableAutocomplete={true}
                       autocompleteOptions={autoCompleteTags}
@@ -170,7 +173,7 @@ const ListMetadaForm = ({ list }: { list: List }) => {
                       setActiveTagIndex={setActiveTagIndex}
                     />
                   </FormControl>
-                  <FormDescription>Tags associated to this list</FormDescription>
+                  <FormDescription>{t('form_description_tags')}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -179,7 +182,7 @@ const ListMetadaForm = ({ list }: { list: List }) => {
           <div className='flex w-full items-center justify-end pt-3'>
             <Button className='rounded-lg' size='sm'>
               {/* {isPending ? 'Submitting...' : 'Submit'} */}
-              Enregistrer
+              {t('btn_save')}
             </Button>
           </div>
         </form>
