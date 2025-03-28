@@ -27,7 +27,7 @@ const ManifestExplorerPage = () => {
   }, [searchParams]);
 
   return (
-    <main className='relative h-full w-full'>
+    <main className='flex h-screen flex-col p-2'>
       <div className='mb-2 flex space-x-2'>
         <Toggle onPressedChange={setIsMetadataOpen} pressed={isMetadataOpen} variant='outline'>
           {isMetadataOpen ? (
@@ -56,7 +56,7 @@ const ManifestExplorerPage = () => {
           )}
         </Toggle>
       </div>
-      <ResizablePanelGroup direction='horizontal' className='h-full w-full space-x-2'>
+      <ResizablePanelGroup direction='horizontal' className='flex-1 space-x-2'>
         {isMetadataOpen && (
           <>
             <ResizablePanel
