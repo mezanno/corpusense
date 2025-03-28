@@ -5,7 +5,7 @@ interface NavigationState {
 }
 
 const initialState: NavigationState = {
-  redirectTo: '/corpusense',
+  redirectTo: '/',
 };
 
 const navigationSlice = createSlice({
