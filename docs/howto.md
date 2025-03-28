@@ -83,13 +83,3 @@ Il est possible d'associer des tags à une liste. Pour ce faire, dans l'encadré
 ### Supprimer un canvas de la liste
 
 Pour supprimer un canvas de la liste, il faut passer la souris par dessus la miniature du canvas et une croix rouge apparaît. En cliquant dessus le canvas est supprimé de la liste.
-
-# TODO
-
-- la miniature dans le panneau est déformée
-- revoir le bouton Ouvrir un Manifest (style + ajouter un tooltip)
-- à l'ouverture d'un manifest :
-  - en cas d'erreur lors de l'ouverture, afficher un message d'erreur.
-  - si l'ouverture a réussi, afficher un message et lors du clic sur ok, fermer le drawer
-- export : il faut ajouter un dictionnaire d'export pour faire correspondre l'export généré à une liste en particulier
-- historique : ajouter la possiblité de supprimer une entrée de l'historique de consultation
