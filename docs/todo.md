@@ -9,3 +9,4 @@
 - historique : ajouter la possiblité de supprimer une entrée de l'historique de consultation
 - bibliothèque de manifests
 - collections de listes
+- manifest explorer : ne pas afficher les boutons fermer/ouvrir si pas de manifest ouvert
