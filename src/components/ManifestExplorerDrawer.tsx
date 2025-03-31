@@ -18,7 +18,6 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
@@ -33,6 +32,7 @@ const urlFormSchema = z.object({
 
 const ManifestURLForm = () => {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   //currentManifestId is the current manifest URL or '' is null
   const currentManifestId = useAppSelector(getManifestURL) ?? '';
   const form = useForm<z.infer<typeof urlFormSchema>>({
@@ -53,7 +53,7 @@ const ManifestURLForm = () => {
           name='url'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Manifest URL</FormLabel>
+              <FormLabel>{t('form_label_manifesturl')}</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -61,7 +61,7 @@ const ManifestURLForm = () => {
             </FormItem>
           )}
         />
-        <Button type='submit'>Open</Button>
+        <Button type='submit'>{t('btn_open')}</Button>
       </form>
     </Form>
   );
@@ -73,6 +73,7 @@ const contentFormSchema = z.object({
 
 const ManifestPastForm = () => {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const form = useForm<z.infer<typeof contentFormSchema>>({
     resolver: zodResolver(contentFormSchema),
@@ -91,19 +92,19 @@ const ManifestPastForm = () => {
             name='json'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Manifest content</FormLabel>
+                <FormLabel>{t('form_label_manifest_content')}</FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     className='max-h-3.5 resize-none'
-                    placeholder='Paste the content of the manifest here'
+                    placeholder={t('form_placeholder_manifest_content')}
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type='submit'>Open</Button>
+          <Button type='submit'>{t('btn_open')}</Button>
         </form>
       </Form>
     </div>
@@ -116,6 +117,7 @@ const arkFormSchema = z.object({
 
 const ManifestArkForm = () => {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const form = useForm<z.infer<typeof arkFormSchema>>({
     resolver: zodResolver(arkFormSchema),
@@ -134,7 +136,7 @@ const ManifestArkForm = () => {
             name='ark'
             render={({ field }) => (
               <FormItem className='flex w-full items-center justify-center'>
-                <FormLabel className='w-auto text-right'>ARK identifier - ark:/1248/</FormLabel>
+                <FormLabel className='w-auto text-right'>{t('form_label_ark')}</FormLabel>
                 <FormControl className='w-1/2'>
                   <Input {...field} placeholder='xxx1234567890' />
                 </FormControl>
@@ -142,7 +144,7 @@ const ManifestArkForm = () => {
               </FormItem>
             )}
           />
-          <Button type='submit'>Open</Button>
+          <Button type='submit'>{t('btn_open')}</Button>
         </form>
       </Form>
     </div>
@@ -150,12 +152,14 @@ const ManifestArkForm = () => {
 };
 
 const DrawerTabs = () => {
+  const { t } = useTranslation();
+
   return (
     <Tabs className='w-1/2 items-center' defaultValue='url'>
       <TabsList>
-        <TabsTrigger value='url'>I&apos;ve got an URL</TabsTrigger>
-        <TabsTrigger value='paste'>I want to paste the content</TabsTrigger>
-        <TabsTrigger value='ark'>I&apos;ve got an ARK identifier</TabsTrigger>
+        <TabsTrigger value='url'>{t('tab_manifest_url')}</TabsTrigger>
+        <TabsTrigger value='paste'>{t('tab_manifest_content')}</TabsTrigger>
+        <TabsTrigger value='ark'>{t('tab_manifest_ark')}</TabsTrigger>
       </TabsList>
       <TabsContent value='url' className='w-full'>
         <ManifestURLForm />
@@ -182,15 +186,14 @@ const ManifestExplorerDrawer = () => {
       </DrawerTrigger>
       <DrawerContent className='flex items-center bg-white'>
         <DrawerHeader>
-          <DrawerTitle>Open a Manifest</DrawerTitle>
-          <DrawerDescription>Set a URL or paste the content of a manifest</DrawerDescription>
+          <DrawerTitle>{t('btn_open_manifest')}</DrawerTitle>
         </DrawerHeader>
 
         <DrawerTabs />
 
         <DrawerFooter>
           <DrawerClose>
-            <div className='rounded-md border border-black p-2'>Cancel</div>
+            <div className='rounded-md border border-black p-2'>{t('btn_cancel')}</div>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>
