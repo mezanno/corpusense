@@ -45,12 +45,12 @@ const ManifestDetails = () => {
         <NoManifestToShow />
       ) : (
         <div className='flex h-full w-full flex-col items-center space-y-2'>
-          <Thumbnail thumbnail={thumbnail} style={{ objectFit: 'contain' }} />
           <Summary
             as='h2'
             className='text-center text-lg font-bold text-mezanno-4'
             summary={manifest?.summary as InternationalString}
           />
+          <Thumbnail thumbnail={thumbnail} />
           <Label label={manifest?.label} as='h3' className='text-center text-mezanno-4' />
           <h4 className='w-full text-sm font-bold break-words text-mezanno-4'>{manifest?.id}</h4>
           <div className='w-full rounded-md border p-2'>
