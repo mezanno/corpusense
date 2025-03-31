@@ -31,34 +31,36 @@ const ManifestExplorerPage = () => {
 
   return (
     <main className='flex h-screen flex-col p-2'>
-      <div className='mb-2 flex space-x-2'>
-        <Toggle onPressedChange={setIsMetadataOpen} pressed={isMetadataOpen} variant='outline'>
-          {isMetadataOpen ? (
-            <>
-              <PanelTopClose />
-              {t('btn_close_metadata')}
-            </>
-          ) : (
-            <>
-              <PanelTopOpen />
-              {t('btn_open_metadata')}
-            </>
-          )}
-        </Toggle>
-        <Toggle onPressedChange={setIsGalleryOpen} pressed={isGalleryOpen} variant='outline'>
-          {isGalleryOpen ? (
-            <>
-              <PanelTopClose />
-              {t('btn_close_gallery')}
-            </>
-          ) : (
-            <>
-              <PanelTopOpen />
-              {t('btn_open_gallery')}
-            </>
-          )}
-        </Toggle>
-      </div>
+      {isLoaded && (
+        <div className='mb-2 flex space-x-2'>
+          <Toggle onPressedChange={setIsMetadataOpen} pressed={isMetadataOpen} variant='outline'>
+            {isMetadataOpen ? (
+              <>
+                <PanelTopClose />
+                {t('btn_close_metadata')}
+              </>
+            ) : (
+              <>
+                <PanelTopOpen />
+                {t('btn_open_metadata')}
+              </>
+            )}
+          </Toggle>
+          <Toggle onPressedChange={setIsGalleryOpen} pressed={isGalleryOpen} variant='outline'>
+            {isGalleryOpen ? (
+              <>
+                <PanelTopClose />
+                {t('btn_close_gallery')}
+              </>
+            ) : (
+              <>
+                <PanelTopOpen />
+                {t('btn_open_gallery')}
+              </>
+            )}
+          </Toggle>
+        </div>
+      )}
       <ResizablePanelGroup direction='horizontal' className='flex-1 space-x-2'>
         {isMetadataOpen && (
           <>
