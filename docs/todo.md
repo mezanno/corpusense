@@ -1,7 +1,6 @@
 # TODO
 
 - la miniature dans le panneau est déformée
-- revoir le bouton Ouvrir un Manifest (style + ajouter un tooltip)
 - à l'ouverture d'un manifest :
   - en cas d'erreur lors de l'ouverture, afficher un message d'erreur.
   - si l'ouverture a réussi, afficher un message et lors du clic sur ok, fermer le drawer

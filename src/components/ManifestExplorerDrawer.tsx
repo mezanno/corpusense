@@ -11,6 +11,7 @@ import { getManifestURL } from '@/state/selectors/manifests';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ExternalLink } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { Button } from './ui/button';
 import {
@@ -170,13 +171,14 @@ const DrawerTabs = () => {
 };
 
 const ManifestExplorerDrawer = () => {
+  const { t } = useTranslation();
   return (
     <Drawer>
-      <DrawerTrigger
-        className='cursor-pointer rounded-full border-1 border-slate-300 bg-white p-3 shadow-md'
-        aria-label='Open manifest dialog'
-      >
-        <ExternalLink />
+      <DrawerTrigger>
+        <Button className='cursor-pointer' aria-label='Open manifest dialog'>
+          <ExternalLink size={16} />
+          {t('btn_open_manifest')}
+        </Button>
       </DrawerTrigger>
       <DrawerContent className='flex items-center bg-white'>
         <DrawerHeader>
