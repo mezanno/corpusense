@@ -10,6 +10,7 @@ import {
 import { getManifestURL } from '@/state/selectors/manifests';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ExternalLink } from 'lucide-react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -30,7 +31,7 @@ const urlFormSchema = z.object({
   url: z.string(), //.url("This doesn't look like a valid URL"),
 });
 
-const ManifestURLForm = () => {
+const ManifestURLForm = ({ handleClose }: handleCloseProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   //currentManifestId is the current manifest URL or '' is null
@@ -43,6 +44,7 @@ const ManifestURLForm = () => {
   });
   function onSubmit(values: z.infer<typeof urlFormSchema>) {
     dispatch(fetchManifestFromUrlRequest(values.url));
+    handleClose();
   }
 
   return (
@@ -71,7 +73,7 @@ const contentFormSchema = z.object({
   json: z.string().min(100, { message: "This doesn't look like a valid manifest" }),
 });
 
-const ManifestPastForm = () => {
+const ManifestPastForm = ({ handleClose }: handleCloseProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -81,6 +83,7 @@ const ManifestPastForm = () => {
 
   function onSubmit(values: z.infer<typeof contentFormSchema>) {
     dispatch(fetchManifestFromContentRequest(values.json));
+    handleClose();
   }
 
   return (
@@ -115,7 +118,11 @@ const arkFormSchema = z.object({
   ark: z.string(), //.length(10, { message: 'This doesn’t look like a valid ARK identifier' }),
 });
 
-const ManifestArkForm = () => {
+interface handleCloseProps {
+  handleClose: () => void;
+}
+
+const ManifestArkForm = ({ handleClose }: handleCloseProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -125,6 +132,7 @@ const ManifestArkForm = () => {
 
   function onSubmit(values: z.infer<typeof arkFormSchema>) {
     dispatch(fetchManifestFromArkRequest(values.ark));
+    handleClose();
   }
 
   return (
@@ -151,8 +159,16 @@ const ManifestArkForm = () => {
   );
 };
 
-const DrawerTabs = () => {
+interface DrawerTabsProps {
+  setIsOpen: (isOpen: boolean) => void;
+}
+
+const DrawerTabs = ({ setIsOpen }: DrawerTabsProps) => {
   const { t } = useTranslation();
+
+  const handleClose = () => {
+    setIsOpen(false);
+  };
 
   return (
     <Tabs className='w-1/2 items-center' defaultValue='url'>
@@ -162,13 +178,13 @@ const DrawerTabs = () => {
         <TabsTrigger value='ark'>{t('tab_manifest_ark')}</TabsTrigger>
       </TabsList>
       <TabsContent value='url' className='w-full'>
-        <ManifestURLForm />
+        <ManifestURLForm handleClose={handleClose} />
       </TabsContent>
       <TabsContent value='paste' className='w-full'>
-        <ManifestPastForm />
+        <ManifestPastForm handleClose={handleClose} />
       </TabsContent>
       <TabsContent value='ark' className='w-full'>
-        <ManifestArkForm />
+        <ManifestArkForm handleClose={handleClose} />
       </TabsContent>
     </Tabs>
   );
@@ -176,8 +192,11 @@ const DrawerTabs = () => {
 
 const ManifestExplorerDrawer = () => {
   const { t } = useTranslation();
+
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <Drawer>
+    <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger>
         <Button className='cursor-pointer' aria-label='Open manifest dialog'>
           <ExternalLink size={16} />
@@ -189,7 +208,7 @@ const ManifestExplorerDrawer = () => {
           <DrawerTitle>{t('btn_open_manifest')}</DrawerTitle>
         </DrawerHeader>
 
-        <DrawerTabs />
+        <DrawerTabs setIsOpen={setIsOpen} />
 
         <DrawerFooter>
           <DrawerClose>
