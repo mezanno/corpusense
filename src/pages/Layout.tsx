@@ -30,6 +30,12 @@ import {
   SidebarTrigger,
 } from '../components/ui/sidebar';
 
+export const CorpusenseRoutes = {
+  MANIFEST: 'manifest',
+  LISTS_MANAGER: 'lists',
+  LIST_INSPECTOR: 'list-inspector',
+};
+
 const LayoutSideBar = () => {
   const { t } = useTranslation();
 
@@ -47,17 +53,17 @@ const LayoutSideBar = () => {
               // },
               {
                 title: t('page_title_manifexplorer'),
-                url: 'manifest',
+                url: CorpusenseRoutes.MANIFEST,
                 icon: FolderSearch2,
               },
               {
                 title: t('page_title_listmanager'),
-                url: 'lists',
+                url: CorpusenseRoutes.LISTS_MANAGER,
                 icon: List,
               },
               {
                 title: t('page_title_listinspector'),
-                url: 'list-inspector',
+                url: CorpusenseRoutes.LIST_INSPECTOR,
                 icon: ScrollText,
               },
               // {

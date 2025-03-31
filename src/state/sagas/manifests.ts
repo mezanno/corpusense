@@ -2,6 +2,7 @@ import { db } from '@/data/db';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { StoredItem } from '@/data/models/StoredItem';
+import { CorpusenseRoutes } from '@/pages/Layout';
 import { convertJsonToManifest } from '@/utils/manifest';
 import { getErrorMessage } from '@/utils/utils';
 import { Manifest } from '@iiif/presentation-3';
@@ -116,7 +117,7 @@ function* handleFetchManifest({
       }),
     );
     yield put(reset());
-    yield put(navigateTo('/corpusense/manifest'));
+    yield put(navigateTo(`/${CorpusenseRoutes.MANIFEST}`));
 
     if (storedManifest === undefined) {
       try {

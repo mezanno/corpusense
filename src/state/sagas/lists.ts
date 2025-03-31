@@ -1,5 +1,6 @@
 import { List } from '@/data/models/List';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
+import { CorpusenseRoutes } from '@/pages/Layout';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
@@ -180,7 +181,7 @@ function* handleRemoveElementFromList(
 }
 
 function* handleSetActiveList(_action: PayloadAction<string>): Generator<Effect, void, void> {
-  yield put(navigateTo('/corpusense/list-inspector'));
+  yield put(navigateTo(`/${CorpusenseRoutes.LIST_INSPECTOR}`));
 }
 
 // Saga pour sauvegarder les bookmarks dans localStorage
