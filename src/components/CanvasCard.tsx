@@ -18,6 +18,7 @@ import { addSelectionToListRequest, createListWithSelectionRequest } from '@/sta
 import { setSelectionEndRequest, setSelectionStartRequest } from '@/state/reducers/selection';
 import { getLists } from '@/state/selectors/lists';
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getSelection, isSelected } from '../state/selectors/selection';
 import { Button } from './ui/button';
 import {
@@ -40,6 +41,7 @@ interface CanvasCardProps {
 }
 
 const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
+  const { t } = useTranslation();
   const selection = useAppSelector(getSelection);
   const lists: List[] = useAppSelector(getLists);
   const selected: boolean = useAppSelector(isSelected(index, canvas.id));
@@ -120,10 +122,10 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
           {selection.length > 0 && (
             <>
               <DialogTrigger asChild>
-                <ContextMenuItem>Créer une liste à partir de la sélection</ContextMenuItem>
+                <ContextMenuItem>{t('menu_create_from_selection')}</ContextMenuItem>
               </DialogTrigger>
               <ContextMenuSub>
-                <ContextMenuSubTrigger> Ajouter la sélection à une liste</ContextMenuSubTrigger>
+                <ContextMenuSubTrigger>{t('menu_add_selection_to_list')}</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                   {lists?.length > 0 &&
                     lists.map((list: List) => (
@@ -141,40 +143,36 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
             </>
           )}
           <ContextMenuItem onClick={handleSetSelectionStart}>
-            Définir le début de sélection ici
+            {t('menu_define_start')}
           </ContextMenuItem>
-          <ContextMenuItem onClick={handleSetSelectionEnd}>
-            Définir la fin de sélection ici
-          </ContextMenuItem>
+          <ContextMenuItem onClick={handleSetSelectionEnd}>{t('menu_define_end')}</ContextMenuItem>
           <ContextMenuSeparator />
           <ContextMenuItem onClick={handleCopyToClipboard}>
-            Copier l&apos;URL de la ressource dans le presse-papier
+            {t('menu_copy_clipboard')}
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Créer une nouvelle liste</DialogTitle>
-          <DialogDescription>
-            Créez une nouvelle liste à partir de la sélection que vous avez effectuée.
-          </DialogDescription>
+          <DialogTitle>{t('btn_create_list')}</DialogTitle>
+          <DialogDescription>{t('form_description_create_list')}</DialogDescription>
         </DialogHeader>
         <div className='grid grid-cols-4 items-center gap-4'>
           <Label htmlFor='name' className='text-right'>
-            Nom de la liste
+            {t('form_label_listname')}
           </Label>
           <Input
             ref={inputListName}
             id='name'
-            placeholder='Une liste pas comme les autres'
+            placeholder={t('form_placeholder_listname')}
             className='col-span-3'
           />
         </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button type='button' onClick={handleCreateList}>
-              Créer la liste
+              {t('btn_create')}
             </Button>
           </DialogClose>
         </DialogFooter>

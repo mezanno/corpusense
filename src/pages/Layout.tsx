@@ -102,10 +102,11 @@ const LayoutSideBar = () => {
 const Layout = () => {
   const { newListEvent } = useAppSelector((state) => state.lists);
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (newListEvent) {
-      toast.success('New list created');
+      toast.success(t('toast_list_created'));
       dispatch(reset());
     }
   }, [newListEvent]);
