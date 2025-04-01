@@ -1,6 +1,6 @@
 import HistoryNav from '@/components/HistoryNav';
-import { FolderSearch2, List, ScrollText } from 'lucide-react';
-import { Link, Outlet } from 'react-router-dom';
+import { FolderSearch2, List, MoreHorizontal, ScrollText } from 'lucide-react';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 // import {
 //   Breadcrumb,
 //   BreadcrumbItem,
@@ -10,9 +10,17 @@ import { Link, Outlet } from 'react-router-dom';
 // } from '../components/ui/breadcrumb';
 // import { Separator } from '../components/ui/separator';
 import ManifestExplorerDrawer from '@/components/ManifestExplorerDrawer';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { reset } from '@/state/reducers/lists';
+import { removeFromOpenedLists, reset } from '@/state/reducers/lists';
+import { getOpenedLists } from '@/state/selectors/lists';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -24,8 +32,12 @@ import {
   SidebarGroupLabel,
   SidebarInset,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarTrigger,
 } from '../components/ui/sidebar';
@@ -38,12 +50,20 @@ export const CorpusenseRoutes = {
 
 const LayoutSideBar = () => {
   const { t } = useTranslation();
+  const openedLists = useAppSelector(getOpenedLists);
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
+  const handleOnClose = (listId: string) => {
+    void navigate('/lists');
+    dispatch(removeFromOpenedLists(listId));
+  };
 
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{t('application')}</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('nav_application')}</SidebarGroupLabel>
           <SidebarMenu>
             {[
               // {
@@ -61,11 +81,11 @@ const LayoutSideBar = () => {
                 url: CorpusenseRoutes.LISTS_MANAGER,
                 icon: List,
               },
-              {
-                title: t('page_title_listinspector'),
-                url: CorpusenseRoutes.LIST_INSPECTOR,
-                icon: ScrollText,
-              },
+              // {
+              //   title: t('page_title_listinspector'),
+              //   url: CorpusenseRoutes.LIST_INSPECTOR,
+              //   icon: ScrollText,
+              // },
               // {
               //   title: 'Tags',
               //   url: 'tags',
@@ -88,8 +108,54 @@ const LayoutSideBar = () => {
             ))}
           </SidebarMenu>
         </SidebarGroup>
+        {openedLists.length > 0 && (
+          <SidebarGroup id='lists'>
+            <SidebarMenu>
+              <Collapsible defaultOpen className='group/collapsible'>
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton>
+                      <ScrollText />
+                      {t('nav_lists')}
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {openedLists.map(
+                        (list) =>
+                          list.id !== undefined && (
+                            <SidebarMenuSubItem key={list.id}>
+                              <SidebarMenuSubButton>
+                                <Link to={`/lists/${list.id}`} className='w-full'>
+                                  {list.name}
+                                </Link>
+                              </SidebarMenuSubButton>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <SidebarMenuAction>
+                                    <MoreHorizontal />
+                                  </SidebarMenuAction>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent side='right' align='start'>
+                                  <DropdownMenuItem
+                                    onClick={() => handleOnClose(list.id as string)}
+                                  >
+                                    {t('btn_close_list')}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </SidebarMenuSubItem>
+                          ),
+                      )}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
         <SidebarGroup id='history'>
-          <SidebarGroupLabel>{t('history')}</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('nav_history')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <HistoryNav />
           </SidebarGroupContent>

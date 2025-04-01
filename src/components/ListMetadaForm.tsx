@@ -7,7 +7,7 @@ import { addNewTag } from '@/state/reducers/tags';
 import { getTags } from '@/state/selectors/tags';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Tag as FormTag, TagInput } from 'emblor';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
@@ -91,12 +91,18 @@ const ListMetadaForm = ({ list }: { list: List }) => {
     console.log('handleTagAdded: ', newTags);
 
     //on récupère les tags qui ne sont pas déjà dans la liste (state tags)
-    const diff = newTags.filter((tag) => !tags.some((t) => t.id === tag.id));
+    const diff = newTags.filter((tag) => !tags.some((elt) => elt.id === tag.id));
     if (diff.length > 0) {
       console.log(diff[0]);
       dispatch(addNewTag({ id: diff[0].id, label: diff[0].text }));
     }
   };
+
+  useEffect(() => {
+    setTags(listTagsDefaultValue);
+    form.setValue('name', list.name);
+    form.setValue('about', list.about);
+  }, [list]);
 
   return (
     <div>

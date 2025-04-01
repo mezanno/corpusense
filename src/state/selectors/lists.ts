@@ -3,10 +3,7 @@ import { RootState } from '../store';
 
 export const getLists = (state: RootState) => state?.lists?.values ?? [];
 
-export const getActiveList = createSelector(
-  [(state: RootState) => state.lists.values, (state: RootState) => state.lists.activeListId],
-  (values, activeListId) => values.find((elt) => elt.id === activeListId),
-);
+export const getOpenedLists = (state: RootState) => state.lists?.openedLists ?? [];
 
 export const getElemntsOfList = createSelector(
   [(state: RootState) => state.lists?.values ?? [], (_: RootState, listId: string) => listId],

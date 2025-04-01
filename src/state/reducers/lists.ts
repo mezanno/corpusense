@@ -5,14 +5,15 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 interface ListsState {
   values: List[];
   error: string;
-  activeListId?: string;
   newListEvent: boolean;
+  openedLists: List[];
 }
 
 const initialState: ListsState = {
   values: [],
   error: '',
   newListEvent: false,
+  openedLists: [],
 };
 
 export const listsSlice = createSlice({
@@ -24,13 +25,19 @@ export const listsSlice = createSlice({
     },
     addListSuccess: (state, action: PayloadAction<List>) => {
       state.values.push(action.payload);
-      state.activeListId = action.payload.id;
+      if (
+        action.payload.id !== undefined &&
+        state.openedLists.find((elt) => elt.id === action.payload.id)
+      ) {
+        state.openedLists.push(action.payload);
+      }
       state.newListEvent = true;
     },
     removeListRequest: (_state, _action: PayloadAction<string>) => {},
     removeListSuccess: (state, action: PayloadAction<string>) => {
       const listId: string = action.payload;
       state.values = state.values.filter((elt) => elt.id !== listId);
+      state.openedLists = state.openedLists.filter((elt) => elt.id !== listId);
     },
     updateListRequest: (_state, _action) => {},
     updateListSuccess: (state, action: PayloadAction<List>) => {
@@ -45,7 +52,9 @@ export const listsSlice = createSlice({
       state.values = action.payload;
     },
     setActiveList: (state, action: PayloadAction<string>) => {
-      state.activeListId = action.payload;
+      if (state.openedLists.find((elt) => elt.id === action.payload) === undefined) {
+        state.openedLists.push(state.values.find((elt) => elt.id === action.payload) as List);
+      }
     },
     addSelectionToListRequest: (
       _state,
@@ -79,6 +88,10 @@ export const listsSlice = createSlice({
         list.content = action.payload.content;
       }
     },
+    removeFromOpenedLists: (state, action: PayloadAction<string>) => {
+      const listId: string = action.payload;
+      state.openedLists = state.openedLists.filter((elt) => elt.id !== listId);
+    },
     reset: (state) => {
       state.newListEvent = false;
     },
@@ -99,6 +112,7 @@ export const {
   createListWithSelectionRequest,
   removeElementFromList,
   removeElementFromListSuccess,
+  removeFromOpenedLists,
   // removeSelectionFromList,
   reset,
 } = listsSlice.actions;

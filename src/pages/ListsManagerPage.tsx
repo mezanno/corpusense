@@ -29,7 +29,7 @@ import {
 import { List } from '@/data/models/List';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { exportRequest, resetAlert } from '@/state/reducers/export';
-import { addListRequest, removeListRequest, setActiveList } from '@/state/reducers/lists';
+import { addListRequest, removeListRequest } from '@/state/reducers/lists';
 import { getCanvasesOfList, getLists } from '@/state/selectors/lists';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas } from '@iiif/presentation-3';
@@ -37,6 +37,7 @@ import { DownloadIcon, PenLine, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
 const formSchema = z.object({
@@ -121,6 +122,7 @@ const ListsManagerPage = () => {
   const [downloadLink, setDownloadLink] = useState<string>('');
 
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (lastExportDate !== null) {
@@ -137,7 +139,7 @@ const ListsManagerPage = () => {
   };
 
   const handleOnClick = (id: string) => {
-    dispatch(setActiveList(id));
+    void navigate(`/lists/${id}`);
   };
 
   const handleExport = (event: React.MouseEvent<HTMLButtonElement | MouseEvent>, id: string) => {
@@ -187,7 +189,6 @@ const ListsManagerPage = () => {
                   <HoverCardTrigger asChild>
                     <TableRow onClick={() => handleOnClick(list.id as string)}>
                       <TableCell>{list.name}</TableCell>
-
                       <TableCell>
                         {list.content === undefined || list.content.length === 0 ? (
                           <Badge variant='secondary' className='text-sm'>

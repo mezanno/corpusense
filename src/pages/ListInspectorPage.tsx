@@ -1,7 +1,6 @@
 import ListMetadaForm from '@/components/ListMetadaForm';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { removeElementFromList } from '@/state/reducers/lists';
-import { getActiveList, getElemntsOfList } from '@/state/selectors/lists';
+import { removeElementFromList, setActiveList } from '@/state/reducers/lists';
 import { getCanvasById } from '@/state/selectors/storedItems';
 import { IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
@@ -10,6 +9,7 @@ import 'gridstack/dist/gridstack.min.css';
 import { CircleX } from 'lucide-react';
 import { createRef, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
 
 const GridThumb = ({ canvasId, listId }: { canvasId: string; listId: string }) => {
   const canvas = useAppSelector((state) => getCanvasById(state, canvasId));
@@ -39,10 +39,13 @@ const GridThumb = ({ canvasId, listId }: { canvasId: string; listId: string }) =
   );
 };
 
-const ListInspectorPage = () => {
-  const activeList = useAppSelector(getActiveList);
-  const elts = useAppSelector((state) => getElemntsOfList(state, activeList?.id as string));
-  console.log('elts', elts);
+const ListInspectorNoContent = () => {
+  return <div>Oups</div>;
+};
+
+const ListInspectorContent = ({ listid }: { listid: string }) => {
+  const activeList = useAppSelector((state) => state.lists.values.find((elt) => elt.id === listid));
+  // const elts = useAppSelector((state) => getElemntsOfList(state, activeList?.id as string));
 
   const gridRef = useRef(null);
   const refs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
@@ -130,6 +133,21 @@ const ListInspectorPage = () => {
         </>
       )}
     </div>
+  );
+};
+
+const ListInspectorPage = () => {
+  const { listid } = useParams();
+  const dispatch = useAppDispatch();
+
+  if (listid !== undefined) {
+    dispatch(setActiveList(listid));
+  }
+
+  return listid === undefined ? (
+    <ListInspectorNoContent />
+  ) : (
+    <ListInspectorContent listid={listid} />
   );
 };
 

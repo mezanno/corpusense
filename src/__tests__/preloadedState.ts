@@ -16,7 +16,7 @@ const emptyPreloadedState: RootState = {
     values: [],
     error: '',
     newListEvent: false,
-    activeListId: '',
+    openedLists: [],
   },
   selection: {
     canvases: [],
