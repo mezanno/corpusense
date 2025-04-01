@@ -213,7 +213,11 @@ export const HoverSetterContext = createContext<{
   setHoveredElement: React.Dispatch<React.SetStateAction<string | null>>;
 }>({ setHoveredElement: () => {} });
 
-const CanvasViewer = () => {
+interface CanvasViewerProps {
+  editable: boolean;
+}
+
+const CanvasViewer = ({ editable = false }: CanvasViewerProps) => {
   const { t } = useTranslation();
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
   const { selected } = useSelection();
@@ -319,32 +323,34 @@ const CanvasViewer = () => {
       ) : (
         <div className='flex h-full w-full flex-col'>
           <h4 className='w-full border-b-1 text-center text-sm italic'>{canvas?.id}</h4>
-          <div className='m-1 flex h-auto w-full gap-2 space-x-2'>
-            <Toggle
-              pressed={treePanelOpen}
-              onPressedChange={setTreePanelOpen}
-              aria-label='Toggle annotation tree panel'
-            >
-              <Network />
-            </Toggle>
-            <Button onClick={handleOcrClick}>
-              <TextSearch />
-            </Button>
-            <div className='flex items-center space-x-1 align-middle'>
-              <span className='ml-1'>
-                {mode === 'draw' ? <SquarePen size={16} /> : <Move size={16} />}
-              </span>
-              <Switch
-                id='viewer-mode'
-                onCheckedChange={() => setMode((prev) => (prev === 'draw' ? 'move' : 'draw'))}
-              />
-              <Label htmlFor='viewer-mode' className='flex items-center'>
-                <span>
-                  {mode === 'draw' ? t('btn_toggle_mode_view') : t('btn_toggle_mode_annotate')}
+          {editable && (
+            <div className='m-1 flex h-auto w-full gap-2 space-x-2'>
+              <Toggle
+                pressed={treePanelOpen}
+                onPressedChange={setTreePanelOpen}
+                aria-label='Toggle annotation tree panel'
+              >
+                <Network />
+              </Toggle>
+              <Button onClick={handleOcrClick}>
+                <TextSearch />
+              </Button>
+              <div className='flex items-center space-x-1 align-middle'>
+                <span className='ml-1'>
+                  {mode === 'draw' ? <SquarePen size={16} /> : <Move size={16} />}
                 </span>
-              </Label>
+                <Switch
+                  id='viewer-mode'
+                  onCheckedChange={() => setMode((prev) => (prev === 'draw' ? 'move' : 'draw'))}
+                />
+                <Label htmlFor='viewer-mode' className='flex items-center'>
+                  <span>
+                    {mode === 'draw' ? t('btn_toggle_mode_view') : t('btn_toggle_mode_annotate')}
+                  </span>
+                </Label>
+              </div>
             </div>
-          </div>
+          )}
           <ResizablePanelGroup direction='horizontal' className='flex w-full grow space-x-2'>
             {treePanelOpen && (
               <>
