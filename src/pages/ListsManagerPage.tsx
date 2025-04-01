@@ -88,7 +88,7 @@ const ListTableRow = ({ list }: { list: List }) => {
   const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
     (state) => state.export,
   );
-  const tags = useAppSelector(getTagsByIds(list.tags));
+  const tags = useAppSelector((state) => getTagsByIds(state, list.tags));
 
   const [downloadLink, setDownloadLink] = useState<string>('');
 

@@ -1,6 +1,9 @@
+import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
 export const getTags = (state: RootState) => state.tags.values;
 
-export const getTagsByIds = (ids: string[]) => (state: RootState) =>
-  ids?.map((id) => state.tags.values.find((t) => t.id === id)).filter(Boolean) ?? [];
+export const getTagsByIds = createSelector(
+  [(state: RootState) => state.tags.values ?? [], (_: RootState, ids: string[]) => ids],
+  (tags, ids) => ids?.map((id) => tags?.find((t) => t.id === id)).filter(Boolean) ?? [],
+);
