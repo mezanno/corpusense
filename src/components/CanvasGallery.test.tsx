@@ -50,7 +50,7 @@ describe('CanvasGallery', () => {
 
     const nbOfItems = data.items.length;
 
-    renderWithProviders(<CanvasGallery />, { preloadedState });
+    renderWithProviders(<CanvasGallery canvasViewerName='' />, { preloadedState });
 
     await waitFor(() => {
       expect(screen.getAllByRole('listitem')).toHaveLength(nbOfItems);
@@ -66,7 +66,7 @@ describe('CanvasGallery', () => {
       },
     };
 
-    renderWithProviders(<CanvasGallery />, { preloadedState });
+    renderWithProviders(<CanvasGallery canvasViewerName='' />, { preloadedState });
 
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true');

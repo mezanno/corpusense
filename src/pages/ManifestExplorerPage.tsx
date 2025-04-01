@@ -11,6 +11,8 @@ import CanvasGallery from '../components/CanvasGallery';
 import ManifestDetails from '../components/ManifestDetails';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
+const CANVASVIEWER_NAME = 'canvas-manifest';
+
 const ManifestExplorerPage = () => {
   const { isLoading, isLoaded } = useAppSelector((state) => state.manifests);
   const [isMetadataOpen, setIsMetadataOpen] = useState(true);
@@ -86,7 +88,7 @@ const ManifestExplorerPage = () => {
                   className='h-full rounded-lg bg-white'
                   minSize={25}
                 >
-                  <CanvasGallery />
+                  <CanvasGallery canvasViewerName={CANVASVIEWER_NAME} />
                 </ResizablePanel>
                 <ResizableHandle withHandle />
               </>
@@ -99,7 +101,7 @@ const ManifestExplorerPage = () => {
               className='relative h-full w-full rounded-lg bg-white'
             >
               <Annotorious>
-                <CanvasViewer />
+                <CanvasViewer name={CANVASVIEWER_NAME} />
               </Annotorious>
             </ResizablePanel>
           </>

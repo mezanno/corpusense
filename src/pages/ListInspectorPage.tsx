@@ -1,4 +1,6 @@
+import CanvasViewer from '@/components/CanvasViewer';
 import ListMetadaForm from '@/components/ListMetadaForm';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { removeElementFromList, setActiveList } from '@/state/reducers/lists';
 import { getCanvasById } from '@/state/selectors/storedItems';
@@ -115,17 +117,25 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
                 ))}
               </div> */}
             {activeList?.content ? (
-              <div className='grid grid-cols-12'>
-                {activeList.content.map((item) => (
-                  <div
-                    key={item.canvasId}
-                    ref={refs.current[item.canvasId]}
-                    className='flex items-center justify-center'
-                  >
-                    <GridThumb canvasId={item.canvasId} listId={activeList.id as string} />
+              <ResizablePanelGroup direction='horizontal' className='flex-1 space-x-2'>
+                <ResizablePanel>
+                  <div className='grid grid-cols-12'>
+                    {activeList.content.map((item) => (
+                      <div
+                        key={item.canvasId}
+                        ref={refs.current[item.canvasId]}
+                        className='flex items-center justify-center'
+                      >
+                        <GridThumb canvasId={item.canvasId} listId={activeList.id as string} />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+                <ResizablePanel>
+                  <CanvasViewer name='list-inspector' />
+                </ResizablePanel>
+              </ResizablePanelGroup>
             ) : (
               <div>{t('info_empty_list')}</div>
             )}

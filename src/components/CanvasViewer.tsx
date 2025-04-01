@@ -214,16 +214,17 @@ export const HoverSetterContext = createContext<{
 }>({ setHoveredElement: () => {} });
 
 interface CanvasViewerProps {
+  name: string;
   editable?: boolean;
 }
 
-const CanvasViewer = ({ editable = false }: CanvasViewerProps) => {
+const CanvasViewer = ({ name, editable = false }: CanvasViewerProps) => {
   const { t } = useTranslation();
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
   const { selected } = useSelection();
 
   //get the canvas to display from redux
-  const canvas = useAppSelector(getCanvasForCanvas('test')) as Canvas;
+  const canvas = useAppSelector(getCanvasForCanvas(name)) as Canvas;
   //the source of tiles for the viewer from the canvas
   const [source, setSource] = useState<TileSource[]>([]);
 

@@ -42,7 +42,7 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
   );
 };
 
-const CanvasGallery = () => {
+const CanvasGallery = ({ canvasViewerName }: { canvasViewerName: string }) => {
   const dispatch = useAppDispatch();
   const canvases = useAppSelector(getCanvases);
   const containerRef = useRef(null);
@@ -64,7 +64,7 @@ const CanvasGallery = () => {
     if (canvas != null) {
       dispatch(
         setCanvasFromComponent({
-          componentId: 'test',
+          componentId: canvasViewerName,
           canvas,
         }),
       );

@@ -16,7 +16,7 @@ describe('CanvasViewer', () => {
     // expect(screen.getByLabelText('canvas viewer')).toBeInTheDocument();
   });
   it('Nothing To show appears if no canvas is set', () => {
-    renderWithProviders(<CanvasViewer />);
+    renderWithProviders(<CanvasViewer name='' />);
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
