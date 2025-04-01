@@ -35,7 +35,7 @@ function* loadListsSaga(): Generator<CallEffect<List[]> | PutEffect, void, List[
 
 function* addListSaga(action: PayloadAction<string>) {
   const { payload } = action;
-  const newList: List = { id: uuid(), name: payload };
+  const newList: List = { id: uuid(), name: payload, tags: [] };
 
   try {
     yield db.lists.add(newList);
@@ -48,7 +48,11 @@ function* addListSaga(action: PayloadAction<string>) {
 function* upadteListSaga(action: PayloadAction<List>) {
   const { payload } = action;
   try {
-    yield db.lists.update(payload.id, payload);
+    yield db.lists.update(payload.id, {
+      name: payload.name,
+      tags: payload.tags,
+      content: payload.content,
+    });
     yield put(updateListSuccess(payload));
   } catch (e) {
     console.log('error', e);
@@ -118,7 +122,7 @@ function* handleCreateListWithSelection(
 ): Generator<Effect, void, List | undefined> {
   const { payload } = action;
   const listId = uuid();
-  const newList: List = { id: listId, name: payload.name };
+  const newList: List = { id: listId, name: payload.name, tags: [] };
 
   let lastPosition = 0;
   const newContent = payload.selection.map((elt) => ({

@@ -5,5 +5,5 @@ export interface List {
   name: string;
   content?: ListElement[];
   about?: string;
-  tags?: string[];
+  tags: string[];
 }
