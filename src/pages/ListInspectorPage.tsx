@@ -1,5 +1,11 @@
 import CanvasViewer from '@/components/CanvasViewer';
 import ListMetadaForm from '@/components/ListMetadaForm';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { setCanvasFromComponent } from '@/state/reducers/canvas';
@@ -110,9 +116,19 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
       {activeList && (
         <>
           <h1>{t('page_title_listinspector')}</h1>
-          <div className='rounded-md border bg-white'>
-            <ListMetadaForm list={activeList} />
-          </div>
+          <Accordion
+            className='rounded-md border bg-white'
+            type='single'
+            collapsible
+            defaultValue='metadata' //this open the metadata by default
+          >
+            <AccordionItem value='metadata'>
+              <AccordionTrigger className='mr-2 ml-2'>{t('title_metadata_list')}</AccordionTrigger>
+              <AccordionContent>
+                <ListMetadaForm list={activeList} />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
           {/* {activeList?.content ? (
               <div ref={gridRef} className='grid-stack flex h-max rounded-md border bg-white'>
                 {activeList.content.map((item) => (
