@@ -115,7 +115,6 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
     <div className='flex h-full w-full flex-col space-y-2'>
       {activeList && (
         <>
-          <h1>{t('page_title_listinspector')}</h1>
           <Accordion
             className='rounded-md border bg-white'
             type='single'

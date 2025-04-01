@@ -19,6 +19,7 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
@@ -197,7 +198,7 @@ const ManifestExplorerDrawer = () => {
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
-      <DrawerTrigger>
+      <DrawerTrigger asChild>
         <Button className='cursor-pointer' aria-label='Open manifest dialog'>
           <ExternalLink size={16} />
           {t('btn_open_manifest')}
@@ -207,9 +208,8 @@ const ManifestExplorerDrawer = () => {
         <DrawerHeader>
           <DrawerTitle>{t('btn_open_manifest')}</DrawerTitle>
         </DrawerHeader>
-
+        <DrawerDescription>{t('info_drawer_description')}</DrawerDescription>
         <DrawerTabs setIsOpen={setIsOpen} />
-
         <DrawerFooter>
           <DrawerClose>
             <div className='rounded-md border border-black p-2'>{t('btn_cancel')}</div>

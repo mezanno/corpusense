@@ -56,6 +56,7 @@
   "info_number_of_lists": "Vous avez {{number}} liste(s)",
   "info_number_of_items": "{{number}} élément(s)",
   "info_loading": "Chargement en cours...",
+  "info_drawer_description": "Choisissez comment ouvrir votre manifest",
   "menu_create_from_selection": "Créer une liste à partir de la sélection",
   "menu_add_selection_to_list": "Ajouter la sélection à une liste",
   "menu_define_start": "Définir le début de sélection ici",

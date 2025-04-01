@@ -115,15 +115,17 @@ const LayoutSideBar = () => {
                         (list) =>
                           list.id !== undefined && (
                             <SidebarMenuSubItem key={list.id}>
-                              <SidebarMenuSubButton className='h-auto'>
-                                <CornerDownRight />
-                                <Link
-                                  to={`/lists/${list.id}`}
-                                  className='h-full w-full'
-                                  title={list.name}
-                                >
-                                  {list.name}
-                                </Link>
+                              <SidebarMenuSubButton className='h-auto' asChild>
+                                <div>
+                                  <CornerDownRight />
+                                  <Link
+                                    to={`/lists/${list.id}`}
+                                    className='h-full w-full'
+                                    title={list.name}
+                                  >
+                                    {list.name}
+                                  </Link>
+                                </div>
                               </SidebarMenuSubButton>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
