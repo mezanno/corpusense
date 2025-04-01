@@ -214,7 +214,7 @@ export const HoverSetterContext = createContext<{
 }>({ setHoveredElement: () => {} });
 
 interface CanvasViewerProps {
-  editable: boolean;
+  editable?: boolean;
 }
 
 const CanvasViewer = ({ editable = false }: CanvasViewerProps) => {

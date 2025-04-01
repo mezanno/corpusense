@@ -160,14 +160,14 @@ const ManifestArkForm = ({ handleClose }: handleCloseProps) => {
 };
 
 interface DrawerTabsProps {
-  setIsOpen: (isOpen: boolean) => void;
+  setIsOpen?: (isOpen: boolean) => void;
 }
 
 const DrawerTabs = ({ setIsOpen }: DrawerTabsProps) => {
   const { t } = useTranslation();
 
   const handleClose = () => {
-    setIsOpen(false);
+    if (setIsOpen) setIsOpen(false);
   };
 
   return (
