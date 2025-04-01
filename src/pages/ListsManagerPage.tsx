@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import CanvasListViewer from '@/components/CanvasListViewer';
 import {
   Accordion,
   AccordionContent,
@@ -16,7 +15,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -30,9 +28,9 @@ import { List } from '@/data/models/List';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { exportRequest, resetAlert } from '@/state/reducers/export';
 import { addListRequest, removeListRequest } from '@/state/reducers/lists';
-import { getCanvasesOfList, getLists } from '@/state/selectors/lists';
+import { getLists } from '@/state/selectors/lists';
+import { getTagsByIds } from '@/state/selectors/tags';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Canvas } from '@iiif/presentation-3';
 import { DownloadIcon, PenLine, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -83,46 +81,16 @@ const NewListForm = () => {
   );
 };
 
-const ListHoverCard = ({ list }: { list: List }) => {
-  // const elements = useAppSelector(getElemntsOfList(list.id as string));
-  const canvases = useAppSelector((state) => getCanvasesOfList(state, list.id as string));
-
+const ListTableRow = ({ list }: { list: List }) => {
   const { t } = useTranslation();
-  return (
-    <div className='flex flex-col justify-between space-x-4'>
-      <h4>{list.name}</h4>
-      {list.content === undefined || list.content.length === 0 ? (
-        <div>{t('info_empty_list')}</div>
-      ) : (
-        <div>
-          <div>{t('info_number_of_items', { number: list.content.length })}</div>
-          <div>
-            <CanvasListViewer
-              width={500}
-              height={150}
-              size={4}
-              layout='horizontal'
-              canvases={canvases.map((canvas) => canvas.content as Canvas)}
-              handleCardClick={() => console.log('click')}
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const ListsManagerPage = () => {
-  const lists: List[] = useAppSelector(getLists);
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
     (state) => state.export,
   );
+  const tags = useAppSelector(getTagsByIds(list.tags));
 
   const [downloadLink, setDownloadLink] = useState<string>('');
-
-  const { t } = useTranslation();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (lastExportDate !== null) {
@@ -159,6 +127,61 @@ const ListsManagerPage = () => {
   };
 
   return (
+    <TableRow onClick={() => handleOnClick(list.id as string)}>
+      <TableCell>{list.name}</TableCell>
+      <TableCell>
+        {list.content === undefined || list.content.length === 0 ? (
+          <Badge variant='secondary' className='text-sm'>
+            {t('info_empty_list')}
+          </Badge>
+        ) : (
+          <Badge className='text-sm'>
+            <span className='text-md font-bold'>
+              {t('info_number_of_items', { number: list.content.length })}
+            </span>
+          </Badge>
+        )}
+      </TableCell>
+      <TableCell className='space-x-1'>
+        {tags.map((tag) => (
+          <Badge key={tag?.id}>{tag?.label}</Badge>
+        ))}
+      </TableCell>
+      <TableCell className='space-x-2 align-middle'>
+        <Button
+          variant='destructive'
+          onClick={(event) => {
+            event.stopPropagation();
+            handleDelete(list.id as string);
+          }}
+        >
+          <Trash2 />
+          {t('btn_delete')}
+        </Button>
+        <Button onClick={(e) => handleExport(e, list.id as string)}>
+          <PenLine />
+          {t('btn_create_export')}
+        </Button>
+
+        {lastExportStatus === 'OK' && (
+          <Button
+            className='rounded bg-cyan-400 px-4 py-2 text-slate-900 transition hover:bg-cyan-600 hover:text-white'
+            onClick={(e) => handleDownload(e)}
+          >
+            <DownloadIcon />
+            {t('btn_download_export')}
+          </Button>
+        )}
+      </TableCell>
+    </TableRow>
+  );
+};
+
+const ListsManagerPage = () => {
+  const lists: List[] = useAppSelector(getLists);
+  const { t } = useTranslation();
+
+  return (
     <main className='flex h-full w-full flex-col items-center space-y-4 rounded-2xl border-1 bg-white'>
       <Accordion type='single' collapsible className='w-1/4'>
         <AccordionItem value='new-list'>
@@ -175,65 +198,17 @@ const ListsManagerPage = () => {
         <section className='flex h-full w-2/3 flex-col items-center space-y-1'>
           <div className='text-xl'>{t('info_number_of_lists', { number: lists.length })}</div>
           <Table>
-            {/* <TableCaption>Vos Listes</TableCaption> */}
             <TableHeader>
               <TableRow>
                 <TableHead>{t('table_col_title_listname')}</TableHead>
                 <TableHead>{t('table_col_title_listinfo')}</TableHead>
+                <TableHead>{t('table_col_title_tags')}</TableHead>
                 <TableHead>{t('table_col_title_actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {lists.map((list) => (
-                <HoverCard key={list.id}>
-                  <HoverCardTrigger asChild>
-                    <TableRow onClick={() => handleOnClick(list.id as string)}>
-                      <TableCell>{list.name}</TableCell>
-                      <TableCell>
-                        {list.content === undefined || list.content.length === 0 ? (
-                          <Badge variant='secondary' className='text-sm'>
-                            {t('info_empty_list')}
-                          </Badge>
-                        ) : (
-                          <Badge className='text-sm'>
-                            <span className='text-md font-bold'>
-                              {t('info_number_of_items', { number: list.content.length })}
-                            </span>
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className='space-x-2 align-middle'>
-                        <Button
-                          variant='destructive'
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleDelete(list.id as string);
-                          }}
-                        >
-                          <Trash2 />
-                          {t('btn_delete')}
-                        </Button>
-                        <Button onClick={(e) => handleExport(e, list.id as string)}>
-                          <PenLine />
-                          {t('btn_create_export')}
-                        </Button>
-
-                        {lastExportStatus === 'OK' && (
-                          <Button
-                            className='rounded bg-cyan-400 px-4 py-2 text-slate-900 transition hover:bg-cyan-600 hover:text-white'
-                            onClick={(e) => handleDownload(e)}
-                          >
-                            <DownloadIcon />
-                            {t('btn_download_export')}
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  </HoverCardTrigger>
-                  <HoverCardContent className='w-full'>
-                    <ListHoverCard list={list} />
-                  </HoverCardContent>
-                </HoverCard>
+                <ListTableRow list={list} key={list.id} />
               ))}
             </TableBody>
           </Table>

@@ -29,11 +29,12 @@ describe('ListsManagerPage', () => {
       lists: {
         ...getPreloadedState().lists,
         values: [
-          { id: '1', name: 'List 1', content: [] },
+          { id: '1', name: 'List 1', content: [], tags: [] },
           {
             id: '2',
             name: 'List 2',
             content: [{ canvasId: 'canvasId', listId: 'listId', position: 0 }],
+            tags: [],
           },
         ],
       },
