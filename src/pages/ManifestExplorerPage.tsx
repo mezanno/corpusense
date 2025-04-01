@@ -2,7 +2,6 @@ import CanvasViewer from '@/components/CanvasViewer';
 import { Toggle } from '@/components/ui/toggle';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fetchManifestFromUrlRequest } from '@/state/reducers/manifests';
-import { Annotorious } from '@annotorious/react';
 import { PanelTopClose, PanelTopOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -100,9 +99,7 @@ const ManifestExplorerPage = () => {
               minSize={30}
               className='relative h-full w-full rounded-lg bg-white'
             >
-              <Annotorious>
-                <CanvasViewer name={CANVASVIEWER_NAME} />
-              </Annotorious>
+              <CanvasViewer name={CANVASVIEWER_NAME} />
             </ResizablePanel>
           </>
         )}

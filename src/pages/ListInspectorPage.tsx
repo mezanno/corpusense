@@ -2,9 +2,10 @@ import CanvasViewer from '@/components/CanvasViewer';
 import ListMetadaForm from '@/components/ListMetadaForm';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import { removeElementFromList, setActiveList } from '@/state/reducers/lists';
 import { getCanvasById } from '@/state/selectors/storedItems';
-import { IIIFExternalWebResource } from '@iiif/presentation-3';
+import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
@@ -13,9 +14,25 @@ import { createRef, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 
-const GridThumb = ({ canvasId, listId }: { canvasId: string; listId: string }) => {
-  const canvas = useAppSelector((state) => getCanvasById(state, canvasId));
+const CANVASVIEWER_NAME = 'list-inspector';
+
+const GridThumb = ({
+  canvasId,
+  listId,
+  canvasViewerName,
+}: {
+  canvasId: string;
+  listId: string;
+  canvasViewerName: string;
+}) => {
+  const canvas = useAppSelector((state) => getCanvasById(state, canvasId)) as Canvas;
   const dispatch = useAppDispatch();
+
+  const handleOnClick = () => {
+    if (canvas !== undefined) {
+      dispatch(setCanvasFromComponent({ componentId: canvasViewerName, canvas }));
+    }
+  };
 
   const handleDelete = useCallback(() => {
     console.log('Delete', canvasId);
@@ -28,7 +45,7 @@ const GridThumb = ({ canvasId, listId }: { canvasId: string; listId: string }) =
   const thumbnail = canvas.thumbnail as IIIFExternalWebResource[];
 
   return (
-    <div className='group relative'>
+    <div className='group relative' onClick={handleOnClick}>
       <Thumbnail
         thumbnail={thumbnail}
         style={{ width: '100px', height: '100px', objectFit: 'contain' }}
@@ -47,7 +64,6 @@ const ListInspectorNoContent = () => {
 
 const ListInspectorContent = ({ listid }: { listid: string }) => {
   const activeList = useAppSelector((state) => state.lists.values.find((elt) => elt.id === listid));
-  // const elts = useAppSelector((state) => getElemntsOfList(state, activeList?.id as string));
 
   const gridRef = useRef(null);
   const refs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
@@ -94,15 +110,14 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
   }, [activeList]);
 
   return (
-    <div className='flex-col space-y-2'>
+    <div className='flex h-full w-full flex-col space-y-2'>
       {activeList && (
         <>
           <h1>{t('page_title_listinspector')}</h1>
           <div className='rounded-md border bg-white'>
             <ListMetadaForm list={activeList} />
           </div>
-          <div>
-            {/* {activeList?.content ? (
+          {/* {activeList?.content ? (
               <div ref={gridRef} className='grid-stack flex h-max rounded-md border bg-white'>
                 {activeList.content.map((item) => (
                   <div
@@ -116,30 +131,36 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
                   </div>
                 ))}
               </div> */}
-            {activeList?.content ? (
-              <ResizablePanelGroup direction='horizontal' className='flex-1 space-x-2'>
-                <ResizablePanel>
-                  <div className='grid grid-cols-12'>
-                    {activeList.content.map((item) => (
-                      <div
-                        key={item.canvasId}
-                        ref={refs.current[item.canvasId]}
-                        className='flex items-center justify-center'
-                      >
-                        <GridThumb canvasId={item.canvasId} listId={activeList.id as string} />
-                      </div>
-                    ))}
-                  </div>
-                </ResizablePanel>
-                <ResizableHandle withHandle />
-                <ResizablePanel>
-                  <CanvasViewer name='list-inspector' />
-                </ResizablePanel>
-              </ResizablePanelGroup>
-            ) : (
-              <div>{t('info_empty_list')}</div>
-            )}
-          </div>
+          {activeList?.content ? (
+            <ResizablePanelGroup
+              direction='horizontal'
+              className='h-fit flex-1 space-x-2 rounded-md border bg-white'
+            >
+              <ResizablePanel className='h-full w-full' minSize={30}>
+                <div className='m-2 grid grid-cols-8'>
+                  {activeList.content.map((item) => (
+                    <div
+                      key={item.canvasId}
+                      ref={refs.current[item.canvasId]}
+                      className='flex items-center justify-center'
+                    >
+                      <GridThumb
+                        canvasId={item.canvasId}
+                        listId={activeList.id as string}
+                        canvasViewerName={CANVASVIEWER_NAME}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </ResizablePanel>
+              <ResizableHandle withHandle />
+              <ResizablePanel className='h-full w-full' minSize={30}>
+                <CanvasViewer name={CANVASVIEWER_NAME} editable={true} />
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          ) : (
+            <div>{t('info_empty_list')}</div>
+          )}
         </>
       )}
     </div>

@@ -12,6 +12,7 @@ import { getCanvasForCanvas } from '@/state/selectors/canvas';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import {
   AnnotationState,
+  Annotorious,
   AnnotoriousOpenSeadragonAnnotator,
   DrawingStyleExpression,
   ImageAnnotation,
@@ -213,18 +214,16 @@ export const HoverSetterContext = createContext<{
   setHoveredElement: React.Dispatch<React.SetStateAction<string | null>>;
 }>({ setHoveredElement: () => {} });
 
-interface CanvasViewerProps {
-  name: string;
+interface CanvasViewerContentProps {
+  canvas: Canvas;
   editable?: boolean;
 }
 
-const CanvasViewer = ({ name, editable = false }: CanvasViewerProps) => {
+const CanvasViewerContent = ({ canvas, editable = false }: CanvasViewerContentProps) => {
   const { t } = useTranslation();
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
   const { selected } = useSelection();
 
-  //get the canvas to display from redux
-  const canvas = useAppSelector(getCanvasForCanvas(name)) as Canvas;
   //the source of tiles for the viewer from the canvas
   const [source, setSource] = useState<TileSource[]>([]);
 
@@ -252,7 +251,7 @@ const CanvasViewer = ({ name, editable = false }: CanvasViewerProps) => {
     //     setAnnotationPath(annotationsPath);
     //   }
     // }
-    if (canvas?.items?.[0]?.items?.[0]?.body != null) {
+    if (canvas.items?.[0]?.items?.[0]?.body != null) {
       const image = canvas.items[0].items[0].body as IIIFExternalWebResource;
       if (image?.service?.length != null) {
         const service = image.service[0] as ImageService;
@@ -316,92 +315,87 @@ const CanvasViewer = ({ name, editable = false }: CanvasViewerProps) => {
     ),
     [canvas, selected],
   );
-
   return (
-    <section className='flex h-full w-full items-center justify-center' aria-label='canvas viewer'>
-      {canvas === undefined ? (
-        <NothingToShow />
-      ) : (
-        <div className='flex h-full w-full flex-col'>
-          <h4 className='w-full border-b-1 text-center text-sm italic'>{canvas?.id}</h4>
-          {editable && (
-            <div className='m-1 flex h-auto w-full gap-2 space-x-2'>
-              <Toggle
-                pressed={treePanelOpen}
-                onPressedChange={setTreePanelOpen}
-                aria-label='Toggle annotation tree panel'
-              >
-                <Network />
-              </Toggle>
-              <Button onClick={handleOcrClick}>
-                <TextSearch />
-              </Button>
-              <div className='flex items-center space-x-1 align-middle'>
-                <span className='ml-1'>
-                  {mode === 'draw' ? <SquarePen size={16} /> : <Move size={16} />}
-                </span>
-                <Switch
-                  id='viewer-mode'
-                  onCheckedChange={() => setMode((prev) => (prev === 'draw' ? 'move' : 'draw'))}
-                />
-                <Label htmlFor='viewer-mode' className='flex items-center'>
-                  <span>
-                    {mode === 'draw' ? t('btn_toggle_mode_view') : t('btn_toggle_mode_annotate')}
-                  </span>
-                </Label>
-              </div>
-            </div>
-          )}
-          <ResizablePanelGroup direction='horizontal' className='flex w-full grow space-x-2'>
-            {treePanelOpen && (
-              <>
-                <ResizablePanel className='h-full w-1/2'>
-                  <HoverContext.Provider value={{ hoveredElement }}>
-                    <HoverSetterContext.Provider value={{ setHoveredElement }}>
-                      {flow}
-                    </HoverSetterContext.Provider>
-                  </HoverContext.Provider>
-                </ResizablePanel>
-                <ResizableHandle />
-              </>
-            )}
-            <ResizablePanel className='relative h-full w-1/2'>
-              <OpenSeadragonAnnotator
-                autoSave={true}
-                drawingMode='click'
-                drawingEnabled={mode === 'draw'}
-                style={style}
-              >
-                <div className='relative h-full w-full'>
-                  <OpenSeadragonViewer
-                    aria-label='canvas viewer'
-                    className='h-full w-full bg-amber-50'
-                    options={{
-                      prefixUrl: '/corpusense/images/',
-                      defaultZoomLevel: 0.5,
-                      minZoomLevel: 0.1,
-                      tileSources: source,
-                      loadTilesWithAjax: true,
-                      crossOriginPolicy: 'Anonymous',
-                      showSequenceControl: true,
-                      showHomeControl: true,
-                      showFullPageControl: true,
-                      gestureSettingsMouse: {
-                        clickToZoom: false,
-                      },
-                    }}
+    <div className='flex h-full w-full flex-col'>
+      <h4 className='w-full border-b-1 text-center text-sm italic'>{canvas?.id}</h4>
+      {editable && (
+        <div className='m-1 flex h-auto w-full gap-2 space-x-2'>
+          <Toggle
+            pressed={treePanelOpen}
+            onPressedChange={setTreePanelOpen}
+            aria-label='Toggle annotation tree panel'
+          >
+            <Network />
+          </Toggle>
+          <Button onClick={handleOcrClick}>
+            <TextSearch />
+          </Button>
+          <div className='flex items-center space-x-1 align-middle'>
+            <span className='ml-1'>
+              {mode === 'draw' ? <SquarePen size={16} /> : <Move size={16} />}
+            </span>
+            <Switch
+              id='viewer-mode'
+              onCheckedChange={() => setMode((prev) => (prev === 'draw' ? 'move' : 'draw'))}
+            />
+            <Label htmlFor='viewer-mode' className='flex items-center'>
+              <span>
+                {mode === 'draw' ? t('btn_toggle_mode_view') : t('btn_toggle_mode_annotate')}
+              </span>
+            </Label>
+          </div>
+        </div>
+      )}
+      <ResizablePanelGroup direction='horizontal' className='flex w-full grow space-x-2'>
+        {treePanelOpen && (
+          <>
+            <ResizablePanel className='h-full w-1/2'>
+              <HoverContext.Provider value={{ hoveredElement }}>
+                <HoverSetterContext.Provider value={{ setHoveredElement }}>
+                  {flow}
+                </HoverSetterContext.Provider>
+              </HoverContext.Provider>
+            </ResizablePanel>
+            <ResizableHandle />
+          </>
+        )}
+        <ResizablePanel className='relative h-full w-1/2'>
+          <OpenSeadragonAnnotator
+            autoSave={true}
+            drawingMode='click'
+            drawingEnabled={mode === 'draw'}
+            style={style}
+          >
+            <div className='relative h-full w-full'>
+              <OpenSeadragonViewer
+                aria-label='canvas viewer'
+                className='h-full w-full bg-amber-50'
+                options={{
+                  prefixUrl: '/corpusense/images/',
+                  defaultZoomLevel: 0.5,
+                  minZoomLevel: 0.1,
+                  tileSources: source,
+                  loadTilesWithAjax: true,
+                  crossOriginPolicy: 'Anonymous',
+                  showSequenceControl: true,
+                  showHomeControl: true,
+                  showFullPageControl: true,
+                  gestureSettingsMouse: {
+                    clickToZoom: false,
+                  },
+                }}
+              />
+              {selected?.length > 0 && (
+                <div className='absolute bottom-0 left-0 w-full bg-amber-100'>
+                  <AnnotationForm
+                    canvas={canvas}
+                    selected={selected}
+                    handleDelete={handleDeleteAnnotation}
                   />
-                  {selected?.length > 0 && (
-                    <div className='absolute bottom-0 left-0 w-full bg-amber-100'>
-                      <AnnotationForm
-                        canvas={canvas}
-                        selected={selected}
-                        handleDelete={handleDeleteAnnotation}
-                      />
-                    </div>
-                  )}
                 </div>
-                {/* <OpenSeadragonAnnotationPopup
+              )}
+            </div>
+            {/* <OpenSeadragonAnnotationPopup
                   popup={() => (
                     <HoverCard open={selected.length > 0}>
                       <HoverCardContent>
@@ -411,16 +405,36 @@ const CanvasViewer = ({ name, editable = false }: CanvasViewerProps) => {
                   )}
                   // popup={() => <AnnotationForm canvas={canvas} selected={selected} />}
                 /> */}
-              </OpenSeadragonAnnotator>
+          </OpenSeadragonAnnotator>
 
-              {working && (
-                <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center'>
-                  <Progress value={progress} className='w-[60%]' />
-                </div>
-              )}
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </div>
+          {working && (
+            <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center'>
+              <Progress value={progress} className='w-[60%]' />
+            </div>
+          )}
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
+  );
+};
+
+interface CanvasViewerProps {
+  name: string;
+  editable?: boolean;
+}
+
+const CanvasViewer = ({ name, editable = false }: CanvasViewerProps) => {
+  //get the canvas to display from redux
+  const canvas = useAppSelector(getCanvasForCanvas(name)) as Canvas;
+
+  return (
+    <section className='flex h-full w-full items-center justify-center' aria-label='canvas viewer'>
+      {canvas === undefined ? (
+        <NothingToShow />
+      ) : (
+        <Annotorious>
+          <CanvasViewerContent canvas={canvas} editable={editable} />
+        </Annotorious>
       )}
     </section>
   );
