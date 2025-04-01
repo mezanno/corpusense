@@ -49,6 +49,7 @@
   "table_col_title_listinfo": "Informations",
   "error_loading_manifest": "Erreur lors du chargement du manifest",
   "error_nothing_toshow": "Rien à afficher",
+  "error_idlist_invalid": "Oups ! L'ID de la liste est invalide !",
   "info_empty_list": "Cette liste est vide",
   "info_no_list": "Vous n'avez aucune liste actuellement",
   "info_number_of_lists": "Vous avez {{number}} liste(s)",

@@ -58,10 +58,6 @@ const GridThumb = ({
   );
 };
 
-const ListInspectorNoContent = () => {
-  return <div>Oups</div>;
-};
-
 const ListInspectorContent = ({ listid }: { listid: string }) => {
   const activeList = useAppSelector((state) => state.lists.values.find((elt) => elt.id === listid));
 
@@ -168,6 +164,7 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
 };
 
 const ListInspectorPage = () => {
+  const { t } = useTranslation();
   const { listid } = useParams();
   const dispatch = useAppDispatch();
 
@@ -176,7 +173,7 @@ const ListInspectorPage = () => {
   }
 
   return listid === undefined ? (
-    <ListInspectorNoContent />
+    <div>{t('error_idlist_invalid')}</div>
   ) : (
     <ListInspectorContent listid={listid} />
   );
