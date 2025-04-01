@@ -10,7 +10,6 @@ import TagsPage from './pages/TagsPage';
 function App() {
   return (
     <BrowserRouter basename='/corpusense'>
-      {/* <NavigationHandler /> */}
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<ManifestExplorerPage />} />
