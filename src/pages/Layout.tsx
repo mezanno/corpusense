@@ -1,5 +1,5 @@
 import HistoryNav from '@/components/HistoryNav';
-import { FolderSearch2, List, MoreHorizontal, ScrollText } from 'lucide-react';
+import { CornerDownRight, FolderSearch2, List, MoreHorizontal, ScrollText } from 'lucide-react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 // import {
 //   Breadcrumb,
@@ -82,19 +82,9 @@ const LayoutSideBar = () => {
                 icon: List,
               },
               // {
-              //   title: t('page_title_listinspector'),
-              //   url: CorpusenseRoutes.LIST_INSPECTOR,
-              //   icon: ScrollText,
-              // },
-              // {
               //   title: 'Tags',
               //   url: 'tags',
               //   icon: Tags,
-              // },
-              // {
-              //   title: 'Export',
-              //   url: 'export',
-              //   icon: Download,
               // },
             ].map((item) => (
               <SidebarMenuItem key={item.title}>
@@ -125,8 +115,13 @@ const LayoutSideBar = () => {
                         (list) =>
                           list.id !== undefined && (
                             <SidebarMenuSubItem key={list.id}>
-                              <SidebarMenuSubButton>
-                                <Link to={`/lists/${list.id}`} className='w-full'>
+                              <SidebarMenuSubButton className='h-auto'>
+                                <CornerDownRight />
+                                <Link
+                                  to={`/lists/${list.id}`}
+                                  className='h-full w-full'
+                                  title={list.name}
+                                >
                                   {list.name}
                                 </Link>
                               </SidebarMenuSubButton>
