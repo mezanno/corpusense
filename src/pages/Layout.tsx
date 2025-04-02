@@ -1,5 +1,12 @@
 import HistoryNav from '@/components/HistoryNav';
-import { CornerDownRight, FolderSearch2, List, MoreHorizontal, ScrollText } from 'lucide-react';
+import {
+  ChevronDown,
+  CornerDownRight,
+  FolderSearch2,
+  List,
+  MoreHorizontal,
+  ScrollText,
+} from 'lucide-react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 // import {
 //   Breadcrumb,
@@ -101,12 +108,13 @@ const LayoutSideBar = () => {
         {openedLists.length > 0 && (
           <SidebarGroup id='lists'>
             <SidebarMenu>
-              <Collapsible defaultOpen className='group/collapsible'>
+              <Collapsible defaultOpen className='group'>
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
                       <ScrollText />
                       {t('nav_lists')}
+                      <ChevronDown className='transition-transform duration-200 group-data-[state=closed]:-rotate-90' />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
