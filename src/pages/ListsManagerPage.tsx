@@ -142,7 +142,7 @@ const ListTableRow = ({ list }: { list: List }) => {
           </Badge>
         )}
       </TableCell>
-      <TableCell className='space-x-1'>
+      <TableCell className='space-y-1 space-x-1'>
         {tags.map((tag) => (
           <Badge key={tag?.id}>{tag?.label}</Badge>
         ))}
@@ -154,13 +154,17 @@ const ListTableRow = ({ list }: { list: List }) => {
             event.stopPropagation();
             handleDelete(list.id as string);
           }}
+          title={t('btn_delete')}
+          aria-label={t('btn_delete')}
         >
           <Trash2 />
-          {t('btn_delete')}
         </Button>
-        <Button onClick={(e) => handleExport(e, list.id as string)}>
-          <PenLine />
-          {t('btn_create_export')}
+        <Button
+          onClick={(e) => handleExport(e, list.id as string)}
+          aria-label={t('btn_create_export')}
+          title={t('btn_create_export')}
+        >
+          <PenLine aria-label={t('btn_create_export')} />
         </Button>
 
         {lastExportStatus === 'OK' && (
@@ -195,7 +199,7 @@ const ListsManagerPage = () => {
       </Accordion>
 
       {lists.length > 0 ? (
-        <section className='flex h-full w-2/3 flex-col items-center space-y-1'>
+        <section className='flex h-full w-4/5 flex-col items-center space-y-1'>
           <div className='text-xl'>{t('info_number_of_lists', { number: lists.length })}</div>
           <Table>
             <TableHeader>
