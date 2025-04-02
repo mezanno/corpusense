@@ -1,18 +1,17 @@
 import { History } from '@/data/models/History';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useAppSelector } from '@/hooks/hooks';
 
 import useManifest from '@/hooks/useManifest';
-import { fetchManifestFromUrlRequest } from '@/state/reducers/manifests';
 import { getHistory } from '@/state/selectors/manifests';
 import { IIIFExternalWebResource, InternationalString } from '@iiif/presentation-3';
 import { Summary, Thumbnail } from '@samvera/clover-iiif/primitives';
 import { FileImage } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 const Item = ({ url }: { url: string }) => {
   const { manifest } = useManifest(url);
-  const dispatch = useAppDispatch();
 
   const thumbnail = useMemo(() => {
     if (manifest !== null && manifest.thumbnail !== undefined) {
@@ -37,23 +36,18 @@ const Item = ({ url }: { url: string }) => {
     );
   }, [manifest]);
 
-  const handleHistoryClick = useCallback(
-    (u: string) => dispatch(fetchManifestFromUrlRequest(u)),
-    [dispatch],
-  );
-
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger>
-          <div
+        <TooltipTrigger asChild>
+          <Link
             key={url}
-            onClick={() => handleHistoryClick(url)}
+            to={`/manifest?manifestId=${url}`}
             className='text-wrapping flex cursor-pointer items-center space-x-2 border-b border-gray-200 p-2'
           >
             {thumbnail}
             {label}
-          </div>
+          </Link>
         </TooltipTrigger>
         <TooltipContent>{url}</TooltipContent>
       </Tooltip>
