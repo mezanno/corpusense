@@ -2,7 +2,7 @@ import { db } from '@/data/db';
 import { Annotation } from '@/data/models/Annotation';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
-import { call, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
+import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
   addLinkBetweenAnnotationsRequest,
   addLinkBetweenAnnotationsSuccess,
@@ -15,10 +15,12 @@ import {
   removeLinkBetweenAnnotationsSuccess,
   saveAnnotationRequest,
   saveAnnotationSuccess,
+  syncWithDB,
   updateAnnotationValueRequest,
   updateAnnotationValueSuccess,
 } from '../reducers/annotations';
 import { setCanvasFromComponent } from '../reducers/canvas';
+import { getAnnotations } from '../selectors/annotations';
 
 function* handleSaveAnnotationRequest(action: PayloadAction<Annotation>) {
   try {
@@ -134,6 +136,18 @@ function* handleUpdateAnnotationValueRequest(
   }
 }
 
+function* handleSyncWithDB(action: PayloadAction<string>): Generator<Effect, void, Annotation[]> {
+  const canvasId = action.payload;
+  try {
+    const annotations = yield select(getAnnotations, canvasId);
+    for (const annotation of annotations) {
+      yield call(() => db.annotations.put(annotation));
+    }
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
 export default function* annotationsSaga() {
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotationRequest);
   yield takeEvery(removeAnnotationRequest, handleRemoveAnnotationRequest);
@@ -144,4 +158,5 @@ export default function* annotationsSaga() {
   yield takeEvery(addLinkBetweenAnnotationsRequest, handleAddLinkBetweenAnnotationsRequest);
   yield takeEvery(removeLinkBetweenAnnotationsRequest, handleRemoveLinkBetweenAnnotationsRequest);
   yield takeLatest(updateAnnotationValueRequest, handleUpdateAnnotationValueRequest);
+  yield takeLatest(syncWithDB, handleSyncWithDB);
 }

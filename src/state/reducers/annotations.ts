@@ -90,6 +90,7 @@ const annotationsSlice = createSlice({
     linkAnnotationsFailure(state, action: PayloadAction<string>) {
       state.error = action.payload;
     },
+    syncWithDB(_state, _action: PayloadAction<string>) {},
   },
 });
 
@@ -107,5 +108,6 @@ export const {
   updateAnnotationValueRequest,
   updateAnnotationValueSuccess,
   linkAnnotationsFailure,
+  syncWithDB,
 } = annotationsSlice.actions;
 export default annotationsSlice.reducer;
