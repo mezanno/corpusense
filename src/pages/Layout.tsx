@@ -185,7 +185,8 @@ const Layout = () => {
   return (
     <SidebarProvider>
       <LayoutSideBar />
-      <SidebarInset>
+      <SidebarInset className='w-100'>
+        {/*TODO: Fix this width : pour une raison inconnue w-100 empêche la fenêtre de déborder*/}
         <header className='flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
           <div className='flex items-center gap-2 px-4'>
             <SidebarTrigger className='-ml-1' />
