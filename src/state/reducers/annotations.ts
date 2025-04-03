@@ -35,10 +35,11 @@ const annotationsSlice = createSlice({
       state.values = [];
     },
     fetchAnnotationsSuccess(state, action: PayloadAction<Annotation[]>) {
-      state.isLoading = false;
-      state.values = action.payload;
-    },
+      console.log('fetchAnnotationsSuccess: ', action);
 
+      state.isLoading = false;
+      state.values = [...state.values, ...action.payload];
+    },
     addLinkBetweenAnnotationsRequest(
       _state,
       _action: PayloadAction<{ source: string; target: string }>,
