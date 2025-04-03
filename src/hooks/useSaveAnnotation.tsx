@@ -41,25 +41,25 @@ const useUpdateAnnotation = () => {
 
   return (annotation: Annotation, type?: ElementType, value?: string) => {
     console.log('useUpdateAnnotation', annotation, type, value);
-    // const updatedAnnotation: Annotation = {
-    //   ...annotation,
-    //   bodies: [
-    //     {
-    //       purpose: 'classifying',
-    //       value: type?.toString() ?? '',
-    //       annotation: '',
-    //       id: annotation.id + '-c',
-    //     },
-    //     {
-    //       purpose: 'tagging',
-    //       value: value,
-    //       annotation: '',
-    //       id: annotation.id + '-t',
-    //     },
-    //   ],
-    // };
+    const updatedAnnotation: Annotation = {
+      ...annotation,
+      bodies: [
+        {
+          purpose: 'classifying',
+          value: type?.toString() ?? '',
+          annotation: '',
+          id: annotation.id + '-c',
+        },
+        {
+          purpose: 'tagging',
+          value: value,
+          annotation: '',
+          id: annotation.id + '-t',
+        },
+      ],
+    };
 
-    dispatch(saveAnnotationRequest(annotation)); //updatedAnnotation
+    dispatch(saveAnnotationRequest(updatedAnnotation));
   };
 };
 

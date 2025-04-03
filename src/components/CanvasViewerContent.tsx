@@ -93,6 +93,12 @@ export const CanvasViewerContent = ({ canvas }: CanvasViewerContentProps) => {
           } catch (e) {
             console.error('Error adding annotation', e);
           }
+        } else {
+          try {
+            anno.updateAnnotation(annotation);
+          } catch (e) {
+            console.error('Error updating annotation', e);
+          }
         }
       });
     }

@@ -22,7 +22,16 @@ const annotationsSlice = createSlice({
   reducers: {
     saveAnnotationRequest(_state, _action: PayloadAction<Annotation>) {},
     saveAnnotationSuccess(state, action: PayloadAction<Annotation>) {
-      state.values.push(action.payload);
+      if (state.values.find((a) => a.id === action.payload.id)) {
+        state.values = state.values.map((a) => {
+          if (a.id === action.payload.id) {
+            return action.payload;
+          }
+          return a;
+        });
+      } else {
+        state.values.push(action.payload);
+      }
     },
     removeAnnotationRequest(_state, _action: PayloadAction<string>) {},
     removeAnnotationSuccess(state, action: PayloadAction<string>) {

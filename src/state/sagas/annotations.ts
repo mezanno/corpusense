@@ -56,6 +56,8 @@ function* handleFetchAnnotationsByCanvasId(
 function* handleSetCanvasFromComponent(
   action: PayloadAction<{ componentId: string; canvas: Canvas }>,
 ): Generator<Effect, void, Annotation[]> {
+  console.log('handleSetCanvasFromComponent - ', action.payload);
+
   try {
     const annotations = yield call(() =>
       db.annotations.where('canvasId').equals(action.payload.canvas.id).toArray(),
