@@ -36,7 +36,7 @@ function* fetchLayout({
     yield put(fetchAnnotationsSuccess(annotations));
   } catch (error) {
     console.error('Error fetching layout:', error);
-    yield put(processError({ url: imageUrl, error: error }));
+    yield put(processError({ url: imageUrl, error: error as string }));
   }
 }
 

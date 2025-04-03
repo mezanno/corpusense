@@ -7,4 +7,7 @@
 - export : il faut ajouter un dictionnaire d'export pour faire correspondre l'export généré à une liste en particulier
 - historique : ajouter la possiblité de supprimer une entrée de l'historique de consultation
 - bibliothèque de manifests
-- collections de listes
+- collections de listes --> utilisation de tags à la place ?
+- reset tous les canvasViewer quand on change de page
+- tags dans le tableau de listes : ajouter un espace vertical
+-
