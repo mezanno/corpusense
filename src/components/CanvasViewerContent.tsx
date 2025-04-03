@@ -1,4 +1,5 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
+import { useAddAnnotation } from '@/hooks/useSaveAnnotation';
 import { getAnnotations } from '@/state/selectors/annotations';
 import { RootState } from '@/state/store';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
@@ -45,12 +46,14 @@ export const CanvasViewerContent = ({ canvas }: CanvasViewerContentProps) => {
   const { cvcState, cvcDispatch } = useContext(ReducerContext);
   const { hoveredElement } = useContext(HoverContext);
 
+  const addAnnotation = useAddAnnotation();
+
   useEffect(() => {
     if (anno === null || anno === undefined) return;
 
     const onCreate = (annotation: ImageAnnotation) => {
       console.log('createAnnotation', annotation);
-      // addAnnotation(annotation, canvasId);
+      addAnnotation(annotation, canvas.id);
       cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: true });
     };
     const onUpdate = (annotation: Annotation) => {

@@ -4,18 +4,20 @@ import {
   ElementType,
   getBodies,
 } from '@/data/models/Annotation';
+import { useExtract } from '@/hooks/useExtract';
 import { useOcr } from '@/hooks/useOcr';
 import { useUpdateAnnotation } from '@/hooks/useSaveAnnotation';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
-import { ImageAnnotation } from '@annotorious/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas } from '@iiif/presentation-3';
-import { Save, TextSearch, Trash2 } from 'lucide-react';
+import { DialogTitle } from '@radix-ui/react-dialog';
+import { Copy, Save, TextSearch, TextSelect, Trash2 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader } from './ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
 import { Progress } from './ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -32,7 +34,7 @@ const AnnotationForm = ({
   handleDelete,
 }: {
   selected: {
-    annotation: ImageAnnotation;
+    annotation: Annotation;
     editable?: boolean;
   }[];
   canvas: Canvas;
@@ -41,6 +43,9 @@ const AnnotationForm = ({
   const updateAnnotation = useUpdateAnnotation();
   const { computeTextWithOcr, progress, working } = useOcr();
   const { t } = useTranslation();
+
+  const extract = useExtract();
+  const [dialogContent, setDialogContent] = React.useState<string>('');
 
   const form = useForm<z.infer<typeof annotationFormSchema>>({
     resolver: zodResolver(annotationFormSchema),
@@ -53,12 +58,12 @@ const AnnotationForm = ({
   function onSubmit(values: z.infer<typeof annotationFormSchema>) {
     console.log('onSubmit', values);
 
-    updateAnnotation(selected[0].annotation as Annotation, values.type, values.value);
+    updateAnnotation(selected[0].annotation, values.type, values.value);
   }
 
   useEffect(() => {
     if (selected.length > 0) {
-      const { type, value } = getBodies(selected[0].annotation as Annotation);
+      const { type, value } = getBodies(selected[0].annotation);
       form.setValue('type', type);
       form.setValue('value', value);
     }
@@ -80,6 +85,12 @@ const AnnotationForm = ({
   const handleOcrClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     void startOcrAsync();
+  };
+
+  const handleExtract = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    const citation = await extract(selected[0].annotation);
+    setDialogContent(citation);
   };
 
   return (
@@ -160,6 +171,13 @@ const AnnotationForm = ({
               </Button>
             )}
             <Button
+              variant='secondary'
+              className='cursor-pointer'
+              onClick={(e) => handleExtract(e)}
+            >
+              <TextSelect />
+            </Button>
+            <Button
               variant='destructive'
               className='cursor-pointer'
               onClick={(event) => {
@@ -172,6 +190,23 @@ const AnnotationForm = ({
           </div>
         </form>
       </Form>
+      <Dialog open={dialogContent !== ''} onOpenChange={() => setDialogContent('')}>
+        <DialogHeader>
+          <DialogTitle>Votre extrait</DialogTitle>
+        </DialogHeader>
+        <DialogContent className='m-2 text-sm'>
+          <DialogDescription className='flex justify-between'>
+            Extrait
+            <Button type='submit' variant='outline' className='cursor-pointer'>
+              <span className='sr-only'>Copier</span>
+              <Copy />
+            </Button>
+          </DialogDescription>
+          <div className='flex flex-col items-end space-x-2'>
+            <div>{dialogContent}</div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
