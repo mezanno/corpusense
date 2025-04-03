@@ -9,6 +9,7 @@ import navigationReducer from './reducers/navigation';
 import selectionReducer from './reducers/selection';
 import storedItemsReducer from './reducers/storedItems';
 import tagsReducer from './reducers/tags';
+import workersReducer from './reducers/workers';
 import getRootSaga from './sagas';
 
 const sagaMiddleware = createSagaMiddleware();
@@ -23,6 +24,7 @@ export const rootReducer = combineReducers({
   tags: tagsReducer,
   export: exportReducer,
   annotations: annotationsReducer,
+  workers: workersReducer,
 });
 
 const store = configureStore({

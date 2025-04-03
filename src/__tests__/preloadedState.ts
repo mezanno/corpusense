@@ -44,6 +44,7 @@ const emptyPreloadedState: RootState = {
     deleted: {} as Annotation,
     updated: {} as Annotation,
   },
+  workers: {},
 };
 
 export const getPreloadedState = (partialState: Partial<RootState> = {}): RootState => {
