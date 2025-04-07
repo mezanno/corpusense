@@ -10,17 +10,19 @@ const useExtract = () => {
     let title = '***';
     try {
       const manifest = await db.storedItems
-        .filter((si) => si.content.items.some((item) => item.id === canvasId))
+        .filter((si) => si.content.items?.some((item) => item.id === canvasId) ?? false)
         .toArray();
       console.log('result', manifest);
       manifestId = manifest[0].id;
       if (manifest.length > 0) {
         const metadata = manifest[0].content.metadata;
-        for (let i = 0; i < metadata.length; i++) {
-          const m = metadata[i];
-          if (m.label.none[0] === 'Title') {
-            title = m.value.none[0];
-            break;
+        if (metadata !== undefined) {
+          for (let i = 0; i < metadata.length; i++) {
+            const m = metadata[i];
+            if (m.label.none?.[0] === 'Title') {
+              title = m.value.none?.[0] ?? '';
+              break;
+            }
           }
         }
       }
@@ -32,7 +34,7 @@ const useExtract = () => {
     try {
       const canvas = await db.storedItems.filter((si) => si.id === canvasId).toArray();
       if (canvas.length > 0) {
-        page = canvas[0].content.label.none[0];
+        page = canvas[0].content?.label?.none?.[0] ?? '***';
       }
     } catch (error) {
       console.error('Error fetching stored items:', error);
