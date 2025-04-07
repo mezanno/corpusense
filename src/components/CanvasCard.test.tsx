@@ -28,7 +28,7 @@ describe('CanvasCard', () => {
     const handleClick = vi.fn();
 
     renderWithProviders(
-      <CanvasCard canvas={canvas as Canvas} index={143} onClick={handleClick} />,
+      <CanvasCard canvas={canvas as Canvas} index={143} onClick={handleClick} manifestId='' />,
       {
         preloadedState,
       },
@@ -62,7 +62,7 @@ describe('CanvasCard', () => {
     const handleClick = vi.fn();
 
     renderWithProviders(
-      <CanvasCard canvas={canvas as Canvas} index={143} onClick={handleClick} />,
+      <CanvasCard canvas={canvas as Canvas} index={143} onClick={handleClick} manifestId='' />,
       {
         preloadedState,
       },

@@ -33,7 +33,9 @@ describe('ListsManagerPage', () => {
           {
             id: '2',
             name: 'List 2',
-            content: [{ canvasId: 'canvasId', listId: 'listId', position: 0 }],
+            content: [
+              { canvasId: 'canvasId', listId: 'listId', position: 0, manifestId: 'manifestId' },
+            ],
             tags: [],
           },
         ],
