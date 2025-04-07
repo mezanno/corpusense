@@ -2,7 +2,7 @@ import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import { setSelection } from '@/state/reducers/selection';
-import { getCanvases } from '@/state/selectors/manifests';
+import { getCanvases, getManifestURL } from '@/state/selectors/manifests';
 import { Canvas } from '@iiif/presentation-3';
 import { FC, useRef, useState } from 'react';
 import Selecto, { OnSelect } from 'react-selecto';
@@ -16,6 +16,7 @@ interface GridCellProps {
   style: React.CSSProperties;
   data: {
     canvases: Canvas[];
+    manifestId: string;
     handleCardClick: (target: EventTarget, canvas: Canvas) => void;
   };
 }
@@ -37,7 +38,12 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
       }`}
       style={style}
     >
-      <CanvasCard canvas={canvas} onClick={data.handleCardClick} index={index} />
+      <CanvasCard
+        canvas={canvas}
+        onClick={data.handleCardClick}
+        index={index}
+        manifestId={data.manifestId}
+      />
     </div>
   );
 };
@@ -45,6 +51,7 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
 const CanvasGallery = ({ canvasViewerName }: { canvasViewerName: string }) => {
   const dispatch = useAppDispatch();
   const canvases = useAppSelector(getCanvases);
+  const manifestId = useAppSelector(getManifestURL);
   const containerRef = useRef(null);
   const [_focused, setFocused] = useState<EventTarget | null>(null);
 
@@ -113,7 +120,7 @@ const CanvasGallery = ({ canvasViewerName }: { canvasViewerName: string }) => {
                 rowCount={Math.ceil(canvases.length / 4)}
                 rowHeight={150}
                 width={width}
-                itemData={{ canvases, handleCardClick }}
+                itemData={{ canvases, manifestId, handleCardClick }}
               >
                 {GridCell}
               </Grid>

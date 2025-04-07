@@ -76,7 +76,7 @@ function* removeListSaga(action: PayloadAction<string>) {
 }
 
 function* addSelectionToListSaga(
-  action: PayloadAction<{ selection: SelectedCanvas[]; listId: string }>,
+  action: PayloadAction<{ selection: SelectedCanvas[]; listId: string; manifestId: string }>,
 ): Generator<Effect, void, List | undefined> {
   const { payload } = action;
   // const selectionToAdd = action.payload.selection.map((elt) => elt.canvas.id);
@@ -92,6 +92,7 @@ function* addSelectionToListSaga(
         canvasId: elt.canvas.id,
         listId: payload.listId,
         position: ++lastPosition,
+        manifestId: payload.manifestId,
       }));
       console.log(newContent);
 
@@ -118,7 +119,7 @@ function* addSelectionToListSaga(
 }
 
 function* handleCreateListWithSelection(
-  action: PayloadAction<{ selection: SelectedCanvas[]; name: string }>,
+  action: PayloadAction<{ selection: SelectedCanvas[]; name: string; manifestId: string }>,
 ): Generator<Effect, void, List | undefined> {
   const { payload } = action;
   const listId = uuid();
@@ -129,6 +130,7 @@ function* handleCreateListWithSelection(
     canvasId: elt.canvas.id,
     listId: listId,
     position: ++lastPosition,
+    manifestId: payload.manifestId,
   }));
   newList.content = newContent;
 

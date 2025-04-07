@@ -58,7 +58,7 @@ export const listsSlice = createSlice({
     },
     addSelectionToListRequest: (
       _state,
-      _action: PayloadAction<{ selection: SelectedCanvas[]; listId: string }>,
+      _action: PayloadAction<{ selection: SelectedCanvas[]; listId: string; manifestId: string }>,
     ) => {},
     addSelectionToListSuccess: (state, action: PayloadAction<List>) => {
       const list: List | undefined = state.values.find((elt) => elt.id === action.payload.id);
@@ -68,7 +68,7 @@ export const listsSlice = createSlice({
     },
     createListWithSelectionRequest: (
       _state,
-      _action: PayloadAction<{ selection: SelectedCanvas[]; name: string }>,
+      _action: PayloadAction<{ selection: SelectedCanvas[]; name: string; manifestId: string }>,
     ) => {},
     fetchCanvasesOfListRequest: (_state, _action: PayloadAction<string>) => {},
     fetchCanvasesOfListSuccess: (state, action: PayloadAction<List>) => {

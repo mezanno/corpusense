@@ -37,10 +37,11 @@ import { Label } from './ui/label';
 interface CanvasCardProps {
   index: number;
   canvas: Canvas;
+  manifestId: string;
   onClick: (target: EventTarget, canvas: Canvas) => void;
 }
 
-const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
+const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => {
   const { t } = useTranslation();
   const selection = useAppSelector(getSelection);
   const lists: List[] = useAppSelector(getLists);
@@ -68,7 +69,7 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
 
   const handleAddSelectionToList = (listId: string | undefined) => {
     if (listId === undefined) return;
-    dispatch(addSelectionToListRequest({ selection, listId }));
+    dispatch(addSelectionToListRequest({ selection, listId, manifestId }));
   };
 
   const handleClick = (target: EventTarget) => {
@@ -89,7 +90,7 @@ const CanvasCard = ({ index, canvas, onClick }: CanvasCardProps) => {
     //TODO! : gérer le cas où input est null
     if (input === null) return;
     const listName = (input as HTMLInputElement).value;
-    dispatch(createListWithSelectionRequest({ selection, name: listName }));
+    dispatch(createListWithSelectionRequest({ selection, name: listName, manifestId }));
   };
 
   return (
