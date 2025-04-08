@@ -11,6 +11,7 @@ import {
   addSelectionToListRequest,
   addSelectionToListSuccess,
   createListWithSelectionRequest,
+  importCollection,
   removeElementFromList,
   removeElementFromListSuccess,
   removeListRequest,
@@ -190,6 +191,10 @@ function* handleSetActiveList(_action: PayloadAction<string>): Generator<Effect,
   yield put(navigateTo(`/${CorpusenseRoutes.LIST_INSPECTOR}`));
 }
 
+function* handleImportCollection(_action: PayloadAction<object>): Generator<Effect, void, void> {
+  yield call(console.log, 'action.payload', _action.payload);
+}
+
 // Saga pour sauvegarder les bookmarks dans localStorage
 // function* saveListsSaga(action) {
 // else if (type == addSelectionToList.type) {
@@ -216,6 +221,7 @@ export default function* listsSaga() {
   // yield takeEvery(addSelectionToList.type, saveListsSaga);
   // yield takeEvery(removeSelectionFromList.type, saveListsSaga);
   yield takeEvery(updateListRequest, upadteListSaga);
+  yield takeEvery(importCollection, handleImportCollection);
 }
 
 export { loadListsSaga };

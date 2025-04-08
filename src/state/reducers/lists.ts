@@ -92,6 +92,7 @@ export const listsSlice = createSlice({
       const listId: string = action.payload;
       state.openedLists = state.openedLists.filter((elt) => elt.id !== listId);
     },
+    importCollection: (_state, _action: PayloadAction<object>) => {},
     reset: (state) => {
       state.newListEvent = false;
     },
@@ -114,6 +115,7 @@ export const {
   removeElementFromListSuccess,
   removeFromOpenedLists,
   // removeSelectionFromList,
+  importCollection,
   reset,
 } = listsSlice.actions;
 export default listsSlice.reducer;

@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -16,23 +17,29 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
 import { List } from '@/data/models/List';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { exportRequest, resetAlert } from '@/state/reducers/export';
-import { addListRequest, removeListRequest } from '@/state/reducers/lists';
+import {
+  exportMultipleCollectionsRequest,
+  exportRequest,
+  resetAlert,
+} from '@/state/reducers/export';
+import { addListRequest, importCollection, removeListRequest } from '@/state/reducers/lists';
 import { getLists } from '@/state/selectors/lists';
 import { getTagsByIds } from '@/state/selectors/tags';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DownloadIcon, PenLine, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -81,7 +88,13 @@ const NewListForm = () => {
   );
 };
 
-const ListTableRow = ({ list }: { list: List }) => {
+const ListTableRow = ({
+  list,
+  addOrRemoveCollection,
+}: {
+  list: List;
+  addOrRemoveCollection: (listId: string, isAdd: boolean) => void;
+}) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -128,6 +141,17 @@ const ListTableRow = ({ list }: { list: List }) => {
 
   return (
     <TableRow onClick={() => handleOnClick(list.id as string)}>
+      <TableCell>
+        <Checkbox
+          onClick={(e) => {
+            e.stopPropagation();
+            addOrRemoveCollection(
+              list.id as string,
+              (e.target as HTMLInputElement).dataset['state'] === 'unchecked',
+            );
+          }}
+        />
+      </TableCell>
       <TableCell>{list.name}</TableCell>
       <TableCell>
         {list.content === undefined || list.content.length === 0 ? (
@@ -181,22 +205,89 @@ const ListTableRow = ({ list }: { list: List }) => {
   );
 };
 
+const UploadFileForm = () => {
+  const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+
+  const [file, setFile] = useState<File | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFile(e.target.files[0]);
+      console.log(e.target.files[0]);
+    }
+  };
+
+  const handleImport = () => {
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result;
+        if (typeof content === 'string') {
+          try {
+            const jsonContent = JSON.parse(content) as object;
+            dispatch(importCollection(jsonContent));
+          } catch (error) {
+            console.error('Error parsing JSON:', error);
+          }
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  return (
+    <div className='flex flex-col items-center gap-1.5 rounded-2xl border-2 border-gray-200 p-2'>
+      <Label htmlFor='collectionFile'>Fichier</Label>
+      <Input id='collectionFile' type='file' onChange={handleFileChange} />
+      {file && <Button onClick={handleImport}>{t('btn_import')}</Button>}
+    </div>
+  );
+};
+
 const ListsManagerPage = () => {
+  const dispatch = useAppDispatch();
   const lists: List[] = useAppSelector(getLists);
   const { t } = useTranslation();
 
+  const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
+
+  const addOrRemoveCollection = (id: string, isAdd: boolean) => {
+    if (isAdd) {
+      if (!selectedCollections.includes(id)) {
+        setSelectedCollections(selectedCollections.concat(id));
+      }
+    } else {
+      setSelectedCollections(selectedCollections.filter((collection) => collection !== id));
+    }
+  };
+
+  const handleExport = () => {
+    dispatch(exportMultipleCollectionsRequest(selectedCollections));
+  };
+
   return (
     <main className='flex h-full w-full flex-col items-center space-y-4 rounded-2xl border-1 bg-white'>
-      <Accordion type='single' collapsible className='w-1/4'>
-        <AccordionItem value='new-list'>
-          <AccordionTrigger>{t('btn_create_list')}</AccordionTrigger>
-          <AccordionContent>
-            <div className='rounded-2xl border-2 border-gray-200 p-2'>
-              <NewListForm />
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+      <div className='flex w-full flex-col items-center justify-center'>
+        <Accordion type='single' collapsible className='w-1/2 lg:w-1/3'>
+          <AccordionItem value='new-list'>
+            <AccordionTrigger>{t('btn_create_list')}</AccordionTrigger>
+            <AccordionContent>
+              <div className='rounded-2xl border-2 border-gray-200 p-2'>
+                <NewListForm />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+        <Accordion type='single' collapsible className='w-1/2 lg:w-1/3'>
+          <AccordionItem value='import-list'>
+            <AccordionTrigger>{t('btn_import_collection')}</AccordionTrigger>
+            <AccordionContent>
+              <UploadFileForm />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
 
       {lists.length > 0 ? (
         <section className='flex h-full w-4/5 flex-col items-center space-y-1'>
@@ -204,6 +295,7 @@ const ListsManagerPage = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead></TableHead>
                 <TableHead>{t('table_col_title_listname')}</TableHead>
                 <TableHead>{t('table_col_title_listinfo')}</TableHead>
                 <TableHead>{t('table_col_title_tags')}</TableHead>
@@ -212,9 +304,33 @@ const ListsManagerPage = () => {
             </TableHeader>
             <TableBody>
               {lists.map((list) => (
-                <ListTableRow list={list} key={list.id} />
+                <ListTableRow
+                  list={list}
+                  key={list.id}
+                  addOrRemoveCollection={addOrRemoveCollection}
+                />
               ))}
             </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={4}>
+                  {t('info_selection')} {selectedCollections.length} / {lists.length}
+                </TableCell>
+                <TableCell>
+                  {selectedCollections.length > 0 ? (
+                    <Button
+                      onClick={handleExport}
+                      aria-label={t('btn_create_export')}
+                      title={t('btn_create_export')}
+                    >
+                      <PenLine aria-label={t('btn_create_export')} />
+                    </Button>
+                  ) : (
+                    <div>-</div>
+                  )}
+                </TableCell>
+              </TableRow>
+            </TableFooter>
           </Table>
         </section>
       ) : (
