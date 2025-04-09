@@ -35,8 +35,6 @@ const annotationsSlice = createSlice({
     },
     removeAnnotationRequest(_state, _action: PayloadAction<string>) {},
     removeAnnotationSuccess(state, action: PayloadAction<string>) {
-      console.log('removeAnnotationSuccess ', action.payload);
-
       state.values = state.values.filter((a) => a.id !== action.payload);
     },
     fetchAnnotationsByCanvasId(state, _action: PayloadAction<string>) {

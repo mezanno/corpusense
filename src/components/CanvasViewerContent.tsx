@@ -1,5 +1,7 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
+import { useAppDispatch } from '@/hooks/hooks';
 import { useAddAnnotation } from '@/hooks/useSaveAnnotation';
+import { removeAnnotationRequest } from '@/state/reducers/annotations';
 import { getAnnotations } from '@/state/selectors/annotations';
 import { RootState } from '@/state/store';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
@@ -36,7 +38,7 @@ export type CanvasViewerContentProps = {
 
 export const CanvasViewerContent = ({ canvas }: CanvasViewerContentProps) => {
   console.log('CanvasViewerContent - render', canvas);
-
+  const appDispatch = useAppDispatch();
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
   // useAnnotoriousStoreSync(anno, canvas?.id);
   const annotationsInStore = useSelector((state: RootState) => getAnnotations(state, canvas.id));
@@ -52,7 +54,6 @@ export const CanvasViewerContent = ({ canvas }: CanvasViewerContentProps) => {
     if (anno === null || anno === undefined) return;
 
     const onCreate = (annotation: ImageAnnotation) => {
-      console.log('createAnnotation', annotation);
       addAnnotation(annotation, canvas.id);
       cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: true });
     };
@@ -62,8 +63,7 @@ export const CanvasViewerContent = ({ canvas }: CanvasViewerContentProps) => {
       cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: true });
     };
     const onDelete = (annotation: ImageAnnotation) => {
-      console.log('deleteAnnotation', annotation);
-      // dispatch(removeAnnotationRequest(annotation.id));
+      appDispatch(removeAnnotationRequest(annotation.id));
       cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: true });
     };
 
@@ -80,7 +80,6 @@ export const CanvasViewerContent = ({ canvas }: CanvasViewerContentProps) => {
   }, [anno]);
 
   const handleDeleteAnnotation = (id: string) => {
-    console.log('handleDeleteAnnotation ', id);
     if (anno !== undefined) {
       anno.removeAnnotation(id);
     }
