@@ -10,14 +10,13 @@ import { useUpdateAnnotation } from '@/hooks/useSaveAnnotation';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas } from '@iiif/presentation-3';
-import { DialogTitle } from '@radix-ui/react-dialog';
 import { Copy, Save, TextSearch, TextSelect, Trash2 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { Button } from './ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader } from './ui/dialog';
+import { Dialog, DialogContent, DialogDescription } from './ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
 import { Progress } from './ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -56,8 +55,6 @@ const AnnotationForm = ({
   });
 
   function onSubmit(values: z.infer<typeof annotationFormSchema>) {
-    console.log('onSubmit', values);
-
     updateAnnotation(selected[0].annotation, values.type, values.value);
   }
 
@@ -173,7 +170,7 @@ const AnnotationForm = ({
             <Button
               variant='secondary'
               className='cursor-pointer'
-              onClick={(e) => handleExtract(e)}
+              onClick={(e) => void handleExtract(e)}
             >
               <TextSelect />
             </Button>
@@ -191,9 +188,6 @@ const AnnotationForm = ({
         </form>
       </Form>
       <Dialog open={dialogContent !== ''} onOpenChange={() => setDialogContent('')}>
-        <DialogHeader>
-          <DialogTitle>Votre extrait</DialogTitle>
-        </DialogHeader>
         <DialogContent className='m-2 text-sm'>
           <DialogDescription className='flex justify-between'>
             Extrait
