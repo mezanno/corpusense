@@ -1,6 +1,6 @@
 import { call, CallEffect, fork, put, PutEffect, takeEvery } from 'redux-saga/effects';
 
-import { convertEdwinResult, EdwinBox } from '@/data/models/Annotation';
+import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { fetchAnnotationsSuccess } from '../reducers/annotations';
 import {
