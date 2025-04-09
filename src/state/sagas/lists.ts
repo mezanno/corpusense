@@ -1,4 +1,4 @@
-import { List } from '@/data/models/List';
+import { ExportedCollection, List } from '@/data/models/List';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { CorpusenseRoutes } from '@/pages/Layout';
 import { PayloadAction } from '@reduxjs/toolkit';
@@ -121,7 +121,8 @@ function* addSelectionToListSaga(
 
 function* handleCreateListWithSelection(
   action: PayloadAction<{ selection: SelectedCanvas[]; name: string; manifestId: string }>,
-): Generator<Effect, void, List | undefined> {
+): Generator<Effect, List, List | undefined> {
+  console.log('start of handleCreateListWithSelection');
   const { payload } = action;
   const listId = uuid();
   const newList: List = { id: listId, name: payload.name, tags: [] };
@@ -152,10 +153,14 @@ function* handleCreateListWithSelection(
     );
 
     yield call(loadStoredElements); //il faut appeler le saga pour mettre à jour le state
+    console.log('end of handleCreateListWithSelection');
+
     yield put(addListSuccess(newList));
   } catch (e) {
     console.log('error', e);
   }
+
+  return newList;
 }
 
 function* handleRemoveElementFromList(
@@ -193,6 +198,61 @@ function* handleSetActiveList(_action: PayloadAction<string>): Generator<Effect,
 
 function* handleImportCollection(_action: PayloadAction<object>): Generator<Effect, void, void> {
   yield call(console.log, 'action.payload', _action.payload);
+  const json = _action.payload;
+  if ('type' in json && json.type !== 'Manifest') {
+    console.log('not a manifest');
+
+    return;
+  }
+  const manifest = json as ExportedCollection;
+
+  const items = manifest.items ?? [];
+  if (items.length === 0) {
+    console.log('no items to import');
+    return;
+  }
+
+  const collectionName = manifest.label?.none?.[0] ?? 'Imported collection'; //TODO change default name
+
+  //add the tags
+  const tags = manifest.tags ?? [];
+  yield call(() => db.tags.bulkPut(tags));
+
+  const selectedCanvas = [];
+  //add the canvas
+  for (let i = 0; i < items.length; i++) {
+    const canvas = items[i];
+    const isCanvasStored = (yield call(() => db.storedItems.get(canvas.id))) !== undefined;
+    if (!isCanvasStored) {
+      yield call(() =>
+        db.storedItems.add({
+          id: canvas.id,
+          content: canvas,
+        }),
+      );
+    }
+    selectedCanvas.push({
+      canvas,
+      index: i,
+    });
+  }
+
+  const result = yield call(handleCreateListWithSelection, {
+    payload: {
+      selection: selectedCanvas,
+      name: collectionName,
+      manifestId: manifest.id,
+    },
+    type: createListWithSelectionRequest.type,
+  });
+  const newList = result as unknown as List;
+
+  yield call(() =>
+    db.lists.update(newList.id, {
+      tags: tags.map((tag) => tag.id),
+    }),
+  );
+  yield put(updateListSuccess({ ...newList, tags: tags.map((tag) => tag.id) }));
 }
 
 // Saga pour sauvegarder les bookmarks dans localStorage
