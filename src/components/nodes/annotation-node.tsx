@@ -1,6 +1,5 @@
 import { Annotation, ElementType, getBodies } from '@/data/models/Annotation';
 import { useAppDispatch } from '@/hooks/hooks';
-import { updateAnnotationValueRequest } from '@/state/reducers/annotations';
 import { Node, NodeProps, Position } from '@xyflow/react';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -59,7 +58,7 @@ export function AnnotationNode({ id, data }: NodeProps<AnnotationNode>) {
 
   const dispatchValue = useCallback(
     (newValue: string) => {
-      dispatch(updateAnnotationValueRequest({ id, value: newValue }));
+      // dispatch(updateAnnotationValueRequest({ id, value: newValue }));
     },
     [dispatch],
   );

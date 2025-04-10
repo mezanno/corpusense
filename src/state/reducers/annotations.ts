@@ -77,7 +77,7 @@ const annotationsSlice = createSlice({
         toAnnotation.previous = undefined;
       }
     },
-    updateAnnotationValueRequest(_state, _action: PayloadAction<{ id: string; value: string }>) {},
+    // updateAnnotationValueRequest(_state, _action: PayloadAction<{ id: string; value: string }>) {},
     updateAnnotationValueSuccess(state, action: PayloadAction<{ id: string; value: string }>) {
       const annotation = state.values.find((a) => a.id === action.payload.id);
       if (annotation) {
@@ -112,7 +112,7 @@ export const {
   addLinkBetweenAnnotationsSuccess,
   removeLinkBetweenAnnotationsRequest,
   removeLinkBetweenAnnotationsSuccess,
-  updateAnnotationValueRequest,
+  // updateAnnotationValueRequest,
   updateAnnotationValueSuccess,
   linkAnnotationsFailure,
   syncWithDB,
