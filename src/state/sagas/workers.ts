@@ -20,7 +20,8 @@ function* fetchLayout({
 
     const response: Response = yield call(
       fetch,
-      `http://localhost:3000/layout?image_url=${imageUrl}`,
+      // `http://localhost:3000/layout?image_url=${imageUrl}`,
+      `https://api.mezanno.xyz/layout?image_url=${imageUrl}`,
     );
     if (!response.ok) {
       throw new Error('Network response was not ok');
