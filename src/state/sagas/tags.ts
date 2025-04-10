@@ -25,8 +25,18 @@ function* handleAddNewTag(action: PayloadAction<Tag>): Generator<Effect, void, n
   }
 }
 
+function* getTagsById(ids: string[]): Generator<CallEffect, Tag[], Tag[] | undefined> {
+  if (ids?.length > 0) {
+    const resultTags = yield call(() => db.tags.filter((tag) => ids.includes(tag.id)).toArray());
+    if (resultTags !== undefined) {
+      return resultTags;
+    }
+  }
+  return [];
+}
+
 export default function* tagsSaga() {
   yield takeEvery(addNewTag.type, handleAddNewTag);
 }
 
-export { loadTagsSaga };
+export { getTagsById, loadTagsSaga };
