@@ -1,19 +1,18 @@
 import { db } from '@/data/db';
 import { Annotation } from '@/data/models/Annotation';
+import { convertW3CAnnotationsToIIIF, IIIF_CONTEXT } from '@/data/models/converters/iiif';
 import { List } from '@/data/models/List';
 import { ItemMetadata } from '@/data/models/Metadata';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
-import {
-  Annotation as AnnotationIIF,
-  AnnotationPage,
-  Canvas,
-  IIIFExternalWebResource,
-  Manifest,
-} from '@iiif/presentation-3';
+import { AnnotationPage, Canvas, IIIFExternalWebResource, Manifest } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
+import FileSaver from 'file-saver';
+import JSZIP from 'jszip';
 import { all, call, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
 import { exportMultipleCollectionsRequest, exportRequest, exportSuccess } from '../reducers/export';
+import { getListById } from './lists';
+import { getTagsById } from './tags';
 
 function* handleExportRequest(
   action: PayloadAction<string>,
@@ -85,47 +84,36 @@ function* handleExportRequest(
 
 function* handleExportMultipleCollectionsRequest(
   action: PayloadAction<string[]>,
-): Generator<Effect, void, Manifest> {
+): Generator<Effect, void, Manifest | List | Blob> {
   const listIds = action.payload;
+  const zip = new JSZIP();
   for (let i = 0; i < listIds.length; i++) {
     const id = listIds[i];
     try {
-      const manifest = yield* generateManifest(id);
+      const list = (yield call(getListById, id)) as List;
+      const manifest = yield call(generateManifestFromCollection, list);
       console.log('Manifest ', manifest);
+      zip.file(list.name + '.json', JSON.stringify(manifest, null, 2));
     } catch (error) {
       console.error('Error generating manifest:', error);
       continue;
     }
   }
+  const zipContent = (yield call(() => zip.generateAsync({ type: 'blob' }))) as Blob;
+  yield call(FileSaver.saveAs, zipContent, 'exported_collections.zip');
 }
 
-const IIIF_CONTEXT = 'http://iiif.io/api/presentation/3/context.json';
-
-function* generateManifest(id: string): Generator<Effect, unknown, unknown> {
-  //List | undefined | Canvas | Tag[]
-  const result = yield call(() => db.lists.get(id));
-  if (result === undefined) {
-    throw new Error(`List with id ${id} not found`);
-  }
-  const list = result as List;
-
+function* generateManifestFromCollection(list: List): Generator<Effect, unknown, Tag[]> {
+  //undefined | Canvas | Tag[]
   if (list.content === undefined || list.content.length === 0) {
-    throw new Error(`List with id ${id} is empty`);
+    throw new Error(`List ${list.name} is empty`);
   }
 
-  const manifestId = 'https://1.rp.mezanno.xyz/toto.json';
+  const manifestId = 'https://1.rp.mezanno.xyz/toto.json'; //TODO: to be changed
   const items = yield all(
     list.content.map((item) => call(generateCanvas, item.canvasId, manifestId)),
   );
-  console.log('Items', items);
-
-  let tags: Tag[] = [];
-  if (list.tags?.length > 0) {
-    const resultTags = yield call(() =>
-      db.tags.filter((tag) => list.tags.includes(tag.id)).toArray(),
-    );
-    tags = resultTags as Tag[];
-  }
+  const tags = yield call(getTagsById, list.tags);
 
   return {
     '@context': IIIF_CONTEXT,
@@ -149,13 +137,12 @@ function* generateCanvas(
     throw new Error(`Canvas with id ${canvasId} not found`);
   }
   const storedItem = result as unknown as StoredItem;
-
   const canvas = storedItem.content as Canvas;
-
   let allAnnotationPages: AnnotationPage[] = [];
-  if (canvas.annotations !== undefined && canvas.annotations.length > 0) {
-    allAnnotationPages = allAnnotationPages.concat(canvas.annotations);
-  }
+  //TODO: il faudra ajouter les annotations déjà existantes
+  // if (canvas.annotations !== undefined && canvas.annotations.length > 0) {
+  //   allAnnotationPages = allAnnotationPages.concat(canvas.annotations);
+  // }
 
   try {
     const canvasAnnotationPage = yield call(generateAnnotationPage, canvasId);
@@ -187,34 +174,7 @@ function* generateAnnotationPage(
     throw new Error(`Annotation with id ${canvasId} not found`);
   }
 
-  const annotationPageId = `${canvasId}/annotationpage/corpusense`;
-  const annotationsIff: AnnotationIIF[] = [];
-  for (let i = 0; i < result.length; i++) {
-    const a = result[i];
-    const bounds = a.target.selector.geometry.bounds;
-    const iifAnnotation = {
-      '@context': IIIF_CONTEXT,
-      type: 'Annotation',
-      id: `${annotationPageId}/${a.id}`,
-      motivation: 'commenting',
-      target: `${canvasId}#xywh=${bounds.minX},${bounds.minY},${bounds.maxX - bounds.minX},${bounds.maxY - bounds.minY}`,
-      body: {
-        type: 'TextualBody',
-        value: 'toto',
-        format: 'text/plain',
-      },
-    };
-
-    //@ts-expect-error annotationsIff
-    annotationsIff.push(iifAnnotation);
-  }
-
-  return {
-    '@context': IIIF_CONTEXT,
-    id: annotationPageId,
-    type: 'AnnotationPage',
-    items: annotationsIff,
-  };
+  return convertW3CAnnotationsToIIIF(result);
 }
 
 export default function* exportSaga() {
