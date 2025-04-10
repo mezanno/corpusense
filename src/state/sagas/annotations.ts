@@ -1,6 +1,7 @@
 import { db } from '@/data/db';
 import { Annotation } from '@/data/models/Annotation';
-import { Canvas } from '@iiif/presentation-3';
+import { convertAnnotationPageToW3CAnnotations } from '@/data/models/converters/iiif';
+import { AnnotationPage, Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
@@ -16,8 +17,6 @@ import {
   saveAnnotationRequest,
   saveAnnotationSuccess,
   syncWithDB,
-  updateAnnotationValueRequest,
-  updateAnnotationValueSuccess,
 } from '../reducers/annotations';
 import { setCanvasFromComponent } from '../reducers/canvas';
 import { getAnnotations } from '../selectors/annotations';
@@ -110,9 +109,11 @@ function* handleRemoveLinkBetweenAnnotationsRequest(
   }
 }
 
-function* handleUpdateAnnotationValueRequest(
+/*function* handleUpdateAnnotationValueRequest(
   action: PayloadAction<{ id: string; value: string }>,
 ): Generator<Effect, void, Annotation> {
+  console.log('handleUpdateAnnotationValueRequest');
+
   const annotation = yield call(() => db.annotations.get(action.payload.id));
   if (annotation === undefined) {
     yield put(linkAnnotationsFailure('Annotation not found'));
@@ -122,7 +123,7 @@ function* handleUpdateAnnotationValueRequest(
     purpose: 'tagging',
     value: action.payload.value,
     annotation: annotation.id,
-    id: annotation.id + '-t',
+    id: annotation.id + '-t', //TODO: revoir format
   };
   if (annotation.bodies[0].purpose === 'classifying') {
     annotation.bodies[1] = body;
@@ -136,7 +137,7 @@ function* handleUpdateAnnotationValueRequest(
     console.warn(e);
     yield put(linkAnnotationsFailure('Failed to update annotation value'));
   }
-}
+}*/
 
 function* handleSyncWithDB(action: PayloadAction<string>): Generator<Effect, void, Annotation[]> {
   const canvasId = action.payload;
@@ -150,6 +151,13 @@ function* handleSyncWithDB(action: PayloadAction<string>): Generator<Effect, voi
   }
 }
 
+function* importAnnotationFromJson(aPage: AnnotationPage) {
+  console.log('importAnnotationFromJson - ', aPage);
+
+  const annotationsW3C = convertAnnotationPageToW3CAnnotations(aPage);
+  yield call(() => db.annotations.bulkPut(annotationsW3C));
+}
+
 export default function* annotationsSaga() {
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotationRequest);
   yield takeEvery(removeAnnotationRequest, handleRemoveAnnotationRequest);
@@ -159,6 +167,8 @@ export default function* annotationsSaga() {
   yield takeLatest(setCanvasFromComponent, handleSetCanvasFromComponent);
   yield takeEvery(addLinkBetweenAnnotationsRequest, handleAddLinkBetweenAnnotationsRequest);
   yield takeEvery(removeLinkBetweenAnnotationsRequest, handleRemoveLinkBetweenAnnotationsRequest);
-  yield takeLatest(updateAnnotationValueRequest, handleUpdateAnnotationValueRequest);
+  // yield takeLatest(updateAnnotationValueRequest, handleUpdateAnnotationValueRequest);
   yield takeLatest(syncWithDB, handleSyncWithDB);
 }
+
+export { importAnnotationFromJson };

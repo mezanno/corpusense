@@ -34,7 +34,12 @@ import {
   exportRequest,
   resetAlert,
 } from '@/state/reducers/export';
-import { addListRequest, importCollection, removeListRequest } from '@/state/reducers/lists';
+import {
+  addListRequest,
+  importMultipleCollections,
+  importOneCollection,
+  removeListRequest,
+} from '@/state/reducers/lists';
 import { getLists } from '@/state/selectors/lists';
 import { getTagsByIds } from '@/state/selectors/tags';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -226,13 +231,21 @@ const UploadFileForm = () => {
         if (typeof content === 'string') {
           try {
             const jsonContent = JSON.parse(content) as object;
-            dispatch(importCollection(jsonContent));
+            dispatch(importOneCollection(jsonContent));
           } catch (error) {
             console.error('Error parsing JSON:', error);
           }
+        } else if (content instanceof ArrayBuffer) {
+          dispatch(importMultipleCollections(content));
+        } else {
+          console.error('Unsupported file type');
         }
       };
-      reader.readAsText(file);
+      if (file.name.endsWith('.zip')) {
+        reader.readAsArrayBuffer(file);
+      } else {
+        reader.readAsText(file);
+      }
     }
   };
 

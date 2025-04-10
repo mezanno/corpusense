@@ -2,6 +2,7 @@ import { ExportedCollection, List } from '@/data/models/List';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { CorpusenseRoutes } from '@/pages/Layout';
 import { PayloadAction } from '@reduxjs/toolkit';
+import JSZip from 'jszip';
 import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
 import { db } from '../../data/db';
@@ -11,7 +12,8 @@ import {
   addSelectionToListRequest,
   addSelectionToListSuccess,
   createListWithSelectionRequest,
-  importCollection,
+  importMultipleCollections,
+  importOneCollection,
   removeElementFromList,
   removeElementFromListSuccess,
   removeListRequest,
@@ -22,6 +24,7 @@ import {
   updateListSuccess,
 } from '../reducers/lists';
 import { navigateTo } from '../reducers/navigation';
+import { importAnnotationFromJson } from './annotations';
 import { loadStoredElements } from './storedItems';
 
 function* loadListsSaga(): Generator<CallEffect<List[]> | PutEffect, void, List[]> {
@@ -32,6 +35,14 @@ function* loadListsSaga(): Generator<CallEffect<List[]> | PutEffect, void, List[
   } catch (e) {
     console.warn('Error loading lists from indexedDB', e);
   }
+}
+
+function* getListById(id: string): Generator<CallEffect, List, List> {
+  const result = yield call(() => db.lists.get(id));
+  if (result === undefined) {
+    throw new Error(`List with id ${id} not found`);
+  }
+  return result;
 }
 
 function* addListSaga(action: PayloadAction<string>) {
@@ -196,7 +207,29 @@ function* handleSetActiveList(_action: PayloadAction<string>): Generator<Effect,
   yield put(navigateTo(`/${CorpusenseRoutes.LIST_INSPECTOR}`));
 }
 
-function* handleImportCollection(_action: PayloadAction<object>): Generator<Effect, void, void> {
+function* handleImportMultipleCollections(
+  action: PayloadAction<ArrayBuffer>,
+): Generator<Effect, void, JSZip | string> {
+  const zip = new JSZip();
+  const zipContent = (yield call(() => zip.loadAsync(action.payload))) as JSZip;
+  for (const fileName in zipContent.files) {
+    const file = zipContent.files[fileName];
+    if (!file.dir) {
+      const fileContent = (yield call(() => file.async('string'))) as string;
+      try {
+        const json = JSON.parse(fileContent) as object;
+        yield call(handleImportOneCollection, {
+          payload: json,
+          type: importOneCollection.type,
+        });
+      } catch (e) {
+        console.log('error', e);
+      }
+    }
+  }
+}
+
+function* handleImportOneCollection(_action: PayloadAction<object>): Generator<Effect, void, void> {
   yield call(console.log, 'action.payload', _action.payload);
   const json = _action.payload;
   if ('type' in json && json.type !== 'Manifest') {
@@ -235,6 +268,18 @@ function* handleImportCollection(_action: PayloadAction<object>): Generator<Effe
       canvas,
       index: i,
     });
+    //import annotations
+    const annotationPages = canvas.annotations;
+    if (annotationPages !== undefined) {
+      for (let j = 0; j < annotationPages.length; j++) {
+        const annotationPage = annotationPages[j];
+        if (annotationPage.id.endsWith('.json')) {
+          continue;
+        } else {
+          yield call(importAnnotationFromJson, annotationPage);
+        }
+      }
+    }
   }
 
   const result = yield call(handleCreateListWithSelection, {
@@ -281,7 +326,8 @@ export default function* listsSaga() {
   // yield takeEvery(addSelectionToList.type, saveListsSaga);
   // yield takeEvery(removeSelectionFromList.type, saveListsSaga);
   yield takeEvery(updateListRequest, upadteListSaga);
-  yield takeEvery(importCollection, handleImportCollection);
+  yield takeEvery(importOneCollection, handleImportOneCollection);
+  yield takeEvery(importMultipleCollections, handleImportMultipleCollections);
 }
 
-export { loadListsSaga };
+export { getListById, loadListsSaga };

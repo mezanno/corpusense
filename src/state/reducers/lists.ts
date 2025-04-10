@@ -92,7 +92,8 @@ export const listsSlice = createSlice({
       const listId: string = action.payload;
       state.openedLists = state.openedLists.filter((elt) => elt.id !== listId);
     },
-    importCollection: (_state, _action: PayloadAction<object>) => {},
+    importOneCollection: (_state, _action: PayloadAction<object>) => {},
+    importMultipleCollections: (_state, _action: PayloadAction<ArrayBuffer>) => {},
     reset: (state) => {
       state.newListEvent = false;
     },
@@ -115,7 +116,8 @@ export const {
   removeElementFromListSuccess,
   removeFromOpenedLists,
   // removeSelectionFromList,
-  importCollection,
+  importOneCollection,
+  importMultipleCollections,
   reset,
 } = listsSlice.actions;
 export default listsSlice.reducer;
