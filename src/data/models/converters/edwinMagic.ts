@@ -9,16 +9,19 @@ export interface EdwinBox {
   box: number[];
 }
 
+const URL_CLASSIFYING = '/class';
+const URL_TAGGING = '/tag';
+
 function convertEdwinToAnnotation(edwinBox: EdwinBox, canvasId: string, originalWidth: number) {
   const multiple = Math.max(originalWidth, 2048) / 2048;
   if (edwinBox.type !== 'ENTRY') {
     return null;
   }
-  const id = uuid();
+  const annotationId = uuid();
   return {
     canvasId,
     // id: edwinBox.id.toString(),
-    id,
+    id: annotationId,
     target: {
       selector: {
         type: ShapeType.RECTANGLE,
@@ -35,14 +38,20 @@ function convertEdwinToAnnotation(edwinBox: EdwinBox, canvasId: string, original
           h: edwinBox.box[3] * multiple,
         },
       },
-      annotation: id,
+      annotation: annotationId,
     },
     bodies: [
       {
         purpose: W3CMotivationEnum.Classifying,
         value: ElementType.ENTRY,
-        annotation: id,
-        id: id + '-c',
+        annotation: annotationId,
+        id: annotationId + URL_CLASSIFYING,
+      },
+      {
+        purpose: W3CMotivationEnum.Tagging,
+        value: ElementType.ENTRY,
+        annotation: annotationId,
+        id: annotationId + URL_TAGGING,
       },
     ],
   } as unknown as Annotation;
