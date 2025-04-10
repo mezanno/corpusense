@@ -1,38 +1,36 @@
-import { Annotation, ElementType } from '@/data/models/Annotation';
+import { Annotation, ElementType, W3CMotivationEnum } from '@/data/models/Annotation';
 import { saveAnnotationRequest } from '@/state/reducers/annotations';
 import { ImageAnnotation } from '@annotorious/annotorious';
 import { useAppDispatch } from './hooks';
-// import { v4 as uuid } from 'uuid';
+
+const URL_CLASSIFYING = '/class';
+const URL_TAGGING = '/tag';
 
 const useAddAnnotation = () => {
   const dispatch = useAppDispatch();
 
   return (annotation: ImageAnnotation, canvasId: string) => {
-    console.log('useAddAnnotation ', annotation.id);
-    const annotationWithoutDate: Annotation = {
+    const newAnnotation: Annotation = {
       ...annotation,
-      target: {
-        ...annotation.target,
-        created: undefined,
-      },
+      // id: annotationId, //on garde l'ID d'origine pour garder la synchro avec Annotorious
       bodies: [
         {
-          purpose: 'classifying',
+          purpose: W3CMotivationEnum.Classifying,
           value: ElementType.TAG,
-          annotation: '',
-          id: annotation.id + '-c',
+          annotation: annotation.id,
+          id: annotation.id + URL_CLASSIFYING,
         },
         {
-          purpose: 'tagging',
+          purpose: W3CMotivationEnum.Tagging,
           value: '',
-          annotation: '',
-          id: annotation.id + '-t',
+          annotation: annotation.id,
+          id: annotation.id + URL_TAGGING,
         },
       ],
       canvasId,
     };
 
-    dispatch(saveAnnotationRequest(annotationWithoutDate));
+    dispatch(saveAnnotationRequest(newAnnotation));
   };
 };
 
@@ -40,21 +38,20 @@ const useUpdateAnnotation = () => {
   const dispatch = useAppDispatch();
 
   return (annotation: Annotation, type?: ElementType, value?: string) => {
-    console.log('useUpdateAnnotation', annotation, type, value);
     const updatedAnnotation: Annotation = {
       ...annotation,
       bodies: [
         {
-          purpose: 'classifying',
+          purpose: W3CMotivationEnum.Classifying,
           value: type?.toString() ?? '',
-          annotation: '',
-          id: annotation.id + '-c',
+          annotation: annotation.id,
+          id: annotation.id + URL_CLASSIFYING,
         },
         {
-          purpose: 'tagging',
+          purpose: W3CMotivationEnum.Tagging,
           value: value,
-          annotation: '',
-          id: annotation.id + '-t',
+          annotation: annotation.id,
+          id: annotation.id + URL_TAGGING,
         },
       ],
     };
