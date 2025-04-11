@@ -23,6 +23,12 @@ interface GridCellProps {
 
 const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => {
   const index = rowIndex * 4 + columnIndex;
+  //we return an empty div if the index is out of bounds
+  //this is to avoid the error "index out of bounds" when using react-window
+  if (index >= data.canvases.length) {
+    return <div style={style} />;
+  }
+
   const canvas = data.canvases[index];
 
   return (
@@ -58,7 +64,6 @@ const CanvasGallery = ({ canvasViewerName }: { canvasViewerName: string }) => {
   const handleCardClick = (target: EventTarget, canvas: Canvas) => {
     setFocused((prev) => {
       if (prev !== null) {
-        console.log('prev', prev);
         (prev as HTMLElement).classList.remove('border-red-500');
         (prev as HTMLElement).classList.remove('border-2');
       }
