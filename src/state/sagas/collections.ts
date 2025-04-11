@@ -1,6 +1,5 @@
 import { Collection, ExportedCollection } from '@/data/models/Collection';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
-import { CorpusenseRoutes } from '@/pages/Layout';
 import { PayloadAction } from '@reduxjs/toolkit';
 import JSZip from 'jszip';
 import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/effects';
@@ -18,12 +17,10 @@ import {
   removeCollectionSuccess,
   removeElementFromCollection,
   removeElementFromCollectionSuccess,
-  setActiveCollection,
   setCollections,
   updateCollectionRequest,
   updateCollectionSuccess,
 } from '../reducers/collections';
-import { navigateTo } from '../reducers/navigation';
 import { importAnnotationFromJson } from './annotations';
 import { loadStoredElements } from './storedItems';
 
@@ -209,10 +206,6 @@ function* handleRemoveElementFromCollection(
   }
 }
 
-function* handleSetActiveCollection(_action: PayloadAction<string>): Generator<Effect, void, void> {
-  yield put(navigateTo(`/${CorpusenseRoutes.COLLECTION_INSPECTOR}`));
-}
-
 function* handleImportMultipleCollections(
   action: PayloadAction<ArrayBuffer>,
 ): Generator<Effect, void, JSZip | string> {
@@ -306,31 +299,12 @@ function* handleImportOneCollection(_action: PayloadAction<object>): Generator<E
   yield put(updateCollectionSuccess({ ...newCollection, tags: tags.map((tag) => tag.id) }));
 }
 
-// Saga pour sauvegarder les bookmarks dans localStorage
-// function* saveListsSaga(action) {
-// else if (type == addSelectionToList.type) {
-//   const list = yield db.lists.get(payload.listId);
-//   list.content = [...list.content, ...payload.selection];
-//   yield db.lists.put(list);
-// } else if (type == removeSelectionFromList.type) {
-//   const list = yield db.lists.get(payload.listId);
-//   list.content = list.content.filter((item) => !payload.idsToRemove.includes(item.id));
-//   yield db.lists.put(list);
-// } else if (type == updateList.type) {
-//   const updatedList = payload.updatedList;
-//   yield db.lists.update(updatedList.id, updatedList);
-// }
-// }
-
 export default function* collectionsSaga() {
   yield takeEvery(addCollectionRequest.type, addCollectionSaga);
   yield takeEvery(removeCollectionRequest.type, removeCollectionSaga);
   yield takeEvery(createCollectionWithSelectionRequest, handleCreateCollectionWithSelection);
   yield takeEvery(addSelectionToCollectionRequest, addSelectionToCollectionSaga);
   yield takeEvery(removeElementFromCollection, handleRemoveElementFromCollection);
-  yield takeEvery(setActiveCollection, handleSetActiveCollection);
-  // yield takeEvery(addSelectionToList.type, saveListsSaga);
-  // yield takeEvery(removeSelectionFromList.type, saveListsSaga);
   yield takeEvery(updateCollectionRequest, upadteCollectionSaga);
   yield takeEvery(importOneCollection, handleImportOneCollection);
   yield takeEvery(importMultipleCollections, handleImportMultipleCollections);
