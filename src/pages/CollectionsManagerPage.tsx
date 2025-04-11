@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
+import NewCollectionForm from '@/components/NewCollectionForm';
 import {
   Accordion,
   AccordionContent,
@@ -9,16 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
   Table,
   TableBody,
   TableCell,
@@ -27,15 +17,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import UploadFileForm from '@/components/UploadFileForm';
 import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation from '@/hooks/useAppNavigation';
-import {
-  addCollectionRequest,
-  importMultipleCollections,
-  importOneCollection,
-  removeCollectionRequest,
-} from '@/state/reducers/collections';
+import { removeCollectionRequest } from '@/state/reducers/collections';
 import {
   exportMultipleCollectionsRequest,
   exportRequest,
@@ -43,55 +29,9 @@ import {
 } from '@/state/reducers/export';
 import { getCollections } from '@/state/selectors/collections';
 import { getTagsByIds } from '@/state/selectors/tags';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { DownloadIcon, PenLine, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
-
-const formSchema = z.object({
-  name: z.string().min(4, {
-    message: 'Le nom de la collection doit contenir au moins 4 caractères', //TODO: add translation
-  }),
-});
-
-const NewCollectionForm = () => {
-  const dispatch = useAppDispatch();
-  const { t } = useTranslation();
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-    },
-  });
-
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    dispatch(addCollectionRequest(values.name));
-  }
-
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className='w-full space-y-4'>
-        <FormField
-          control={form.control}
-          name='name'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('form_label_collection_name')}</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type='submit'>{t('btn_create')}</Button>
-      </form>
-    </Form>
-  );
-};
 
 const CollectionTableRow = ({
   collection,
@@ -145,7 +85,7 @@ const CollectionTableRow = ({
   };
 
   return (
-    <TableRow onClick={() => handleOnClick(collection.id as string)}>
+    <TableRow onClick={() => void handleOnClick(collection.id as string)}>
       <TableCell>
         <Checkbox
           onClick={(e) => {
@@ -207,54 +147,6 @@ const CollectionTableRow = ({
         )}
       </TableCell>
     </TableRow>
-  );
-};
-
-const UploadFileForm = () => {
-  const { t } = useTranslation();
-  const dispatch = useAppDispatch();
-
-  const [file, setFile] = useState<File | null>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFile(e.target.files[0]);
-      console.log(e.target.files[0]);
-    }
-  };
-
-  const handleImport = () => {
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result;
-        if (typeof content === 'string') {
-          try {
-            const jsonContent = JSON.parse(content) as object;
-            dispatch(importOneCollection(jsonContent));
-          } catch (error) {
-            console.error('Error parsing JSON:', error);
-          }
-        } else if (content instanceof ArrayBuffer) {
-          dispatch(importMultipleCollections(content));
-        } else {
-          console.error('Unsupported file type');
-        }
-      };
-      if (file.name.endsWith('.zip')) {
-        reader.readAsArrayBuffer(file);
-      } else {
-        reader.readAsText(file);
-      }
-    }
-  };
-
-  return (
-    <div className='flex flex-col items-center gap-1.5 rounded-2xl border-2 border-gray-200 p-2'>
-      <Label htmlFor='collectionFile'>Fichier</Label>
-      <Input id='collectionFile' type='file' onChange={handleFileChange} />
-      {file && <Button onClick={handleImport}>{t('btn_import')}</Button>}
-    </div>
   );
 };
 

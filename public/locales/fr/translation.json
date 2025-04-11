@@ -54,6 +54,7 @@
   "error_loading_manifest": "Erreur lors du chargement du manifest",
   "error_nothing_toshow": "Rien à afficher",
   "error_id_collection_invalid": "Oups ! L'ID de la collection est invalide !",
+  "error_collection_name_length": "Le nom de la collection doit contenir au moins 4 caractères",
   "info_empty_collection": "Cette collection est vide",
   "info_no_collection": "Vous n'avez aucune collection actuellement",
   "info_number_of_collections": "Vous avez {{number}} collection(s)",
