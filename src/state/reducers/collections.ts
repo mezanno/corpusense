@@ -53,7 +53,7 @@ export const collectionsSlice = createSlice({
     setCollections: (state, action: PayloadAction<Collection[]>) => {
       state.values = action.payload;
     },
-    setActiveCollection: (state, action: PayloadAction<string>) => {
+    addCollectionToHistory: (state, action: PayloadAction<string>) => {
       if (state.openedCollections.find((elt) => elt.id === action.payload) === undefined) {
         state.openedCollections.push(
           state.values.find((elt) => elt.id === action.payload) as Collection,
@@ -120,7 +120,7 @@ export const {
   updateCollectionRequest,
   updateCollectionSuccess,
   setCollections,
-  setActiveCollection,
+  addCollectionToHistory,
   addSelectionToCollectionRequest,
   addSelectionToCollectionSuccess,
   createCollectionWithSelectionRequest,

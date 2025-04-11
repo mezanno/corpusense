@@ -9,7 +9,7 @@ import {
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { setCanvasFromComponent } from '@/state/reducers/canvas';
-import { removeElementFromCollection, setActiveCollection } from '@/state/reducers/collections';
+import { addCollectionToHistory, removeElementFromCollection } from '@/state/reducers/collections';
 import { getCanvasById } from '@/state/selectors/storedItems';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
@@ -188,11 +188,11 @@ const CollectionInspectorPage = () => {
   const dispatch = useAppDispatch();
 
   if (collectionId !== undefined) {
-    dispatch(setActiveCollection(collectionId));
+    dispatch(addCollectionToHistory(collectionId));
   }
 
   return collectionId === undefined ? (
-    <div>{t('error_id_collection_invalid')}</div>
+    <div className='flex justify-center'>{t('error_id_collection_invalid')}</div>
   ) : (
     <CollectionInspectorContent collectionid={collectionId} />
   );
