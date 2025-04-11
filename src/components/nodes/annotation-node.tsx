@@ -57,7 +57,7 @@ export function AnnotationNode({ id, data }: NodeProps<AnnotationNode>) {
   }, [data.hovered, type]);
 
   const dispatchValue = useCallback(
-    (newValue: string) => {
+    (_newValue: string) => {
       // dispatch(updateAnnotationValueRequest({ id, value: newValue }));
     },
     [dispatch],
