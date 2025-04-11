@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/table';
 import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useAppNavigation from '@/hooks/useAppNavigation';
 import {
   addCollectionRequest,
   importMultipleCollections,
@@ -47,7 +48,6 @@ import { DownloadIcon, PenLine, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
 const formSchema = z.object({
@@ -101,7 +101,7 @@ const CollectionTableRow = ({
   addOrRemoveCollection: (collectionId: string, isAdd: boolean) => void;
 }) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const navigation = useAppNavigation();
   const dispatch = useAppDispatch();
   const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
     (state) => state.export,
@@ -124,8 +124,8 @@ const CollectionTableRow = ({
     dispatch(removeCollectionRequest(id));
   };
 
-  const handleOnClick = (id: string) => {
-    void navigate(`/collections/${id}`); //TODO: lien en dur
+  const handleOnClick = async (id: string) => {
+    await navigation.goToCollectionExplorer(id);
   };
 
   const handleExport = (event: React.MouseEvent<HTMLButtonElement | MouseEvent>, id: string) => {

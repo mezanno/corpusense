@@ -26,9 +26,6 @@ const emptyPreloadedState: RootState = {
   storedItems: {
     items: [],
   },
-  navigation: {
-    redirectTo: '',
-  },
   tags: {
     values: [],
   },

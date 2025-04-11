@@ -80,8 +80,6 @@ function* handleFetchManifest({
         metadata: itemMetadata?.map((item) => item.attribute) ?? [],
       }),
     );
-    // yield put(reset());
-    // yield put(navigateTo(`/${CorpusenseRoutes.MANIFEST}`));
 
     if (storedManifest === undefined) {
       try {

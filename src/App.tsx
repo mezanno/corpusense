@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
+import { CorpusenseRoutes } from './hooks/useAppNavigation';
 import CollectionInspectorPage from './pages/CollectionInspectorPage';
 import CollectionsManagerPage from './pages/CollectionsManagerPage';
 import ExportPage from './pages/ExportPage';
@@ -13,9 +14,12 @@ function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<ManifestExplorerPage />} />
-          <Route path='manifest' element={<ManifestExplorerPage />} />
-          <Route path='collections' element={<CollectionsManagerPage />} />
-          <Route path='collections/:collectionid' element={<CollectionInspectorPage />} />
+          <Route path={CorpusenseRoutes.MANIFEST} element={<ManifestExplorerPage />} />
+          <Route path={CorpusenseRoutes.COLLECTIONS} element={<CollectionsManagerPage />} />
+          <Route
+            path={`${CorpusenseRoutes.COLLECTIONS}/:collectionid`}
+            element={<CollectionInspectorPage />}
+          />
           <Route path='tags' element={<TagsPage />} />
           <Route path='export' element={<ExportPage />} />
           <Route path='*' element={<div>Oups...</div>} />

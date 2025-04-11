@@ -5,7 +5,6 @@ import canvasReducer from './reducers/canvas';
 import collectionsReducer from './reducers/collections';
 import exportReducer from './reducers/export';
 import manifestsReducer from './reducers/manifests';
-import navigationReducer from './reducers/navigation';
 import selectionReducer from './reducers/selection';
 import storedItemsReducer from './reducers/storedItems';
 import tagsReducer from './reducers/tags';
@@ -20,7 +19,6 @@ export const rootReducer = combineReducers({
   collections: collectionsReducer,
   canvases: canvasReducer,
   storedItems: storedItemsReducer,
-  navigation: navigationReducer,
   tags: tagsReducer,
   export: exportReducer,
   annotations: annotationsReducer,

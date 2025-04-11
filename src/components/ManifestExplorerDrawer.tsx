@@ -2,10 +2,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useAppNavigation from '@/hooks/useAppNavigation';
 import {
   fetchManifestFromArkRequest,
   fetchManifestFromContentRequest,
-  fetchManifestFromUrlRequest,
 } from '@/state/reducers/manifests';
 import { getManifestURL } from '@/state/selectors/manifests';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,8 +33,9 @@ const urlFormSchema = z.object({
 });
 
 const ManifestURLForm = ({ handleClose }: handleCloseProps) => {
-  const dispatch = useAppDispatch();
   const { t } = useTranslation();
+  const navigation = useAppNavigation();
+
   //currentManifestId is the current manifest URL or '' is null
   const currentManifestId = useAppSelector(getManifestURL) ?? '';
   const form = useForm<z.infer<typeof urlFormSchema>>({
@@ -43,8 +44,8 @@ const ManifestURLForm = ({ handleClose }: handleCloseProps) => {
       url: currentManifestId,
     },
   });
-  function onSubmit(values: z.infer<typeof urlFormSchema>) {
-    dispatch(fetchManifestFromUrlRequest(values.url));
+  async function onSubmit(values: z.infer<typeof urlFormSchema>) {
+    await navigation.goToManifestExplorer(values.url);
     handleClose();
   }
 

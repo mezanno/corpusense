@@ -7,7 +7,7 @@ import {
   MoreHorizontal,
   ScrollText,
 } from 'lucide-react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 // import {
 //   Breadcrumb,
 //   BreadcrumbItem,
@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import { removeFromOpenedCollections, reset } from '@/state/reducers/collections';
 import { getOpenedCollections } from '@/state/selectors/collections';
 import { useEffect } from 'react';
@@ -49,20 +50,14 @@ import {
   SidebarTrigger,
 } from '../components/ui/sidebar';
 
-export const CorpusenseRoutes = {
-  MANIFEST: 'manifest',
-  COLLECTIONS_MANAGER: 'collections',
-  COLLECTION_INSPECTOR: 'collection-inspector',
-};
-
 const LayoutSideBar = () => {
   const { t } = useTranslation();
   const openedCollections = useAppSelector(getOpenedCollections);
-  const navigate = useNavigate();
+  const navigation = useAppNavigation();
   const dispatch = useAppDispatch();
 
-  const handleOnClose = (collectionId: string) => {
-    void navigate(`/${CorpusenseRoutes.COLLECTIONS_MANAGER}`);
+  const handleOnClose = async (collectionId: string) => {
+    await navigation.goToManifestExplorer();
     dispatch(removeFromOpenedCollections(collectionId));
   };
 
@@ -85,7 +80,7 @@ const LayoutSideBar = () => {
               },
               {
                 title: t('page_title_collection_manager'),
-                url: CorpusenseRoutes.COLLECTIONS_MANAGER,
+                url: CorpusenseRoutes.COLLECTIONS,
                 icon: List,
               },
               // {
@@ -127,7 +122,7 @@ const LayoutSideBar = () => {
                                 <div>
                                   <CornerDownRight />
                                   <Link
-                                    to={`/${CorpusenseRoutes.COLLECTIONS_MANAGER}/${col.id}`}
+                                    to={`/${CorpusenseRoutes.COLLECTIONS}/${col.id}`}
                                     className='h-full w-full'
                                     title={col.name}
                                   >
@@ -142,7 +137,9 @@ const LayoutSideBar = () => {
                                   </SidebarMenuAction>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent side='right' align='start'>
-                                  <DropdownMenuItem onClick={() => handleOnClose(col.id as string)}>
+                                  <DropdownMenuItem
+                                    onClick={() => void handleOnClose(col.id as string)}
+                                  >
                                     {t('btn_close_collection')}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
