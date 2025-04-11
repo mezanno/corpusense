@@ -22,7 +22,7 @@ const formSchema = z.object({
   }),
 });
 
-const NewCollectionForm = () => {
+const NewCollectionForm = ({ close }: { close: () => void }) => {
   const dispatch = useAppDispatch();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -34,6 +34,7 @@ const NewCollectionForm = () => {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     dispatch(addCollectionRequest(values.name));
+    close();
   }
 
   return (

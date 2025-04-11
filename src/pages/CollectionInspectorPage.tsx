@@ -132,20 +132,6 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-          {/* {activeList?.content ? (
-              <div ref={gridRef} className='grid-stack flex h-max rounded-md border bg-white'>
-                {activeList.content.map((item) => (
-                  <div
-                    key={item.canvasId}
-                    ref={refs.current[item.canvasId]}
-                    className='grid-stack-item'
-                  >
-                    <div className='grid-stack-item-content flex items-center justify-center'>
-                      <GridThumb canvasId={item.canvasId} listId={activeList.id as string} />
-                    </div>
-                  </div>
-                ))}
-              </div> */}
           {activeCollection?.content ? (
             <ResizablePanelGroup
               direction='horizontal'

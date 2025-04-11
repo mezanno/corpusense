@@ -6,7 +6,7 @@ import { importMultipleCollections, importOneCollection } from '@/state/reducers
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const UploadFileForm = () => {
+const UploadFileForm = ({ close }: { close: () => void }) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
@@ -15,7 +15,6 @@ const UploadFileForm = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setFile(e.target.files[0]);
-      console.log(e.target.files[0]);
     }
   };
 
@@ -43,6 +42,7 @@ const UploadFileForm = () => {
         reader.readAsText(file);
       }
     }
+    close();
   };
 
   return (
