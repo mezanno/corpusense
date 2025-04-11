@@ -121,7 +121,7 @@ const CollectionMetadaForm = ({ collection }: { collection: Collection }) => {
                     <FormLabel>{t('form_label_collection_name')}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder={t('form_placeholder_collection_ame')}
+                        placeholder={t('form_placeholder_collection_name')}
                         type={'text'}
                         value={field.value}
                         onChange={(e) => {
