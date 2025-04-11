@@ -14,6 +14,8 @@ import {
   fetchManifestFromUrlRequest,
   fetchManifestSuccess,
   historyUpdated,
+  removeFromHistory,
+  removeFromHistorySuccess,
   saveMetadaRequest,
   saveMetadaSuccess,
   setHistory,
@@ -101,6 +103,16 @@ function* handleFetchManifest({
   }
 }
 
+function* handleRemoveFromHistory(action: { payload: string }) {
+  const url = action.payload;
+  try {
+    yield call(() => db.history.delete(url));
+    yield put(removeFromHistorySuccess(url));
+  } catch (error) {
+    console.warn('Error removing url from indexedDB history: ', error);
+  }
+}
+
 // Saga pour charger les bookmarks depuis indexedDB
 function* loadHistorySaga(): Generator<Effect, void, History[]> {
   try {
@@ -134,6 +146,7 @@ export default function* viewerSaga() {
   yield takeLatest(fetchManifestFromUrlRequest, handleFetchManifestFromURL);
   yield takeLatest(fetchManifestFromArkRequest, handleFetchManifestFromArk);
   yield takeEvery(saveMetadaRequest, saveMetadaHandler);
+  yield takeEvery(removeFromHistory, handleRemoveFromHistory);
 }
 
 export { loadHistorySaga };

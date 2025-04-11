@@ -58,6 +58,10 @@ export const manifestsSlice = createSlice({
     setHistory: (state, action: PayloadAction<History[]>) => {
       state.history = action.payload;
     },
+    removeFromHistory: (_state, _action: PayloadAction<string>) => {},
+    removeFromHistorySuccess: (state, action: PayloadAction<string>) => {
+      state.history = state.history.filter((item) => item.url !== action.payload);
+    },
     saveMetadaRequest: (_state, _action: PayloadAction<ItemMetadataAttribute[]>) => {},
     saveMetadaSuccess: (state, action: PayloadAction<ItemMetadataAttribute[]>) => {
       if (state.loadedData === null) return;
@@ -73,6 +77,8 @@ export const {
   fetchManifestError,
   fetchManifestSuccess,
   setHistory,
+  removeFromHistory,
+  removeFromHistorySuccess,
   historyUpdated,
   saveMetadaRequest,
   saveMetadaSuccess,

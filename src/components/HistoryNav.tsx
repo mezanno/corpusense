@@ -1,17 +1,18 @@
 import { History } from '@/data/models/History';
-import { useAppSelector } from '@/hooks/hooks';
-
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useManifest from '@/hooks/useManifest';
+import { removeFromHistory } from '@/state/reducers/manifests';
 import { getHistory } from '@/state/selectors/manifests';
 import { IIIFExternalWebResource, InternationalString } from '@iiif/presentation-3';
 import { Summary, Thumbnail } from '@samvera/clover-iiif/primitives';
-import { FileImage } from 'lucide-react';
+import { CircleX, FileImage } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 const Item = ({ url }: { url: string }) => {
   const { manifest } = useManifest(url);
+  const dispatch = useAppDispatch();
 
   const thumbnail = useMemo(() => {
     if (manifest !== null && manifest.thumbnail !== undefined) {
@@ -36,18 +37,27 @@ const Item = ({ url }: { url: string }) => {
     );
   }, [manifest]);
 
+  const handleDelete = () => {
+    dispatch(removeFromHistory(url));
+  };
+
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Link
-            key={url}
-            to={`/manifest?manifestId=${url}`}
-            className='text-wrapping flex cursor-pointer items-center space-x-2 border-b border-gray-200 p-2'
-          >
-            {thumbnail}
-            {label}
-          </Link>
+          <div className='relative'>
+            <Link
+              key={url}
+              to={`/manifest?manifestId=${url}`}
+              className='text-wrapping flex cursor-pointer items-center space-x-2 border-b border-gray-200 p-2'
+            >
+              {thumbnail}
+              {label}
+            </Link>
+            <div className='absolute top-0 right-0 flex items-center justify-center opacity-0 group-hover:opacity-100'>
+              <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
+            </div>
+          </div>
         </TooltipTrigger>
         <TooltipContent>{url}</TooltipContent>
       </Tooltip>
