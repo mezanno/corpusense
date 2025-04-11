@@ -115,12 +115,11 @@ function* addSelectionToCollectionSaga(
 
       yield call(() =>
         db.transaction('rw', db.storedItems, db.collections, async () => {
-          // await db.listElements.bulkAdd(newContent);
           const canvasesToStore = action.payload.selection.map((elt) => ({
             id: elt.canvas.id,
             content: elt.canvas,
           }));
-          //     //on utilie bulkPut pour éviter les doublons et éviter une erreur si un doublon existe (avec bulkAdd, une erreur est levée au premier doublon rencontré)
+          //on utilie bulkPut pour éviter les doublons et éviter une erreur si un doublon existe (avec bulkAdd, une erreur est levée au premier doublon rencontré)
           await db.storedItems.bulkPut(canvasesToStore);
           await db.collections.put(collection);
         }),
@@ -155,7 +154,6 @@ function* handleCreateCollectionWithSelection(
 
     yield call(() =>
       db.transaction('rw', db.storedItems, db.collections, async () => {
-        // await db.listElements.bulkAdd(newContent);
         const canvasesToStore = action.payload.selection.map((elt) => ({
           id: elt.canvas.id,
           content: elt.canvas,
@@ -184,10 +182,6 @@ function* handleRemoveElementFromCollection(
   try {
     yield call(() =>
       db.transaction('rw', db.storedItems, db.collections, async () => {
-        // await db.listElements
-        //   .where({ listId: listId, canvasId: canvasId })
-        //   .delete()
-        //   .then(() => console.log('deleted'));
         //supprimer le storedItem si il n'est plus utilisé
         const collection = await db.collections.get(collectionId);
         if (collection !== undefined) {
@@ -229,11 +223,9 @@ function* handleImportMultipleCollections(
 }
 
 function* handleImportOneCollection(_action: PayloadAction<object>): Generator<Effect, void, void> {
-  yield call(console.log, 'action.payload', _action.payload);
   const json = _action.payload;
   if ('type' in json && json.type !== 'Manifest') {
     console.log('not a manifest');
-
     return;
   }
   const manifest = json as ExportedCollection;

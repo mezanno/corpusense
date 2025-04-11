@@ -1,21 +1,4 @@
 import HistoryNav from '@/components/HistoryNav';
-import {
-  ChevronDown,
-  CornerDownRight,
-  FolderSearch2,
-  List,
-  MoreHorizontal,
-  ScrollText,
-} from 'lucide-react';
-import { Link, Outlet } from 'react-router-dom';
-// import {
-//   Breadcrumb,
-//   BreadcrumbItem,
-//   BreadcrumbLink,
-//   BreadcrumbList,
-//   BreadcrumbSeparator,
-// } from '../components/ui/breadcrumb';
-// import { Separator } from '../components/ui/separator';
 import ManifestExplorerDrawer from '@/components/ManifestExplorerDrawer';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -29,8 +12,17 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import { removeFromOpenedCollections, reset } from '@/state/reducers/collections';
 import { getOpenedCollections } from '@/state/selectors/collections';
+import {
+  ChevronDown,
+  CornerDownRight,
+  FolderSearch2,
+  List,
+  MoreHorizontal,
+  ScrollText,
+} from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link, Outlet } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   Sidebar,
@@ -68,11 +60,6 @@ const LayoutSideBar = () => {
           <SidebarGroupLabel>{t('nav_application')}</SidebarGroupLabel>
           <SidebarMenu>
             {[
-              // {
-              //   title: 'Home',
-              //   url: '/corpusense',
-              //   icon: Home,
-              // },
               {
                 title: t('page_title_manifexplorer'),
                 url: CorpusenseRoutes.MANIFEST,
@@ -83,11 +70,6 @@ const LayoutSideBar = () => {
                 url: CorpusenseRoutes.COLLECTIONS,
                 icon: List,
               },
-              // {
-              //   title: 'Tags',
-              //   url: 'tags',
-              //   icon: Tags,
-              // },
             ].map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild>
@@ -185,15 +167,6 @@ const Layout = () => {
         <header className='flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
           <div className='flex items-center gap-2 px-4'>
             <SidebarTrigger className='-ml-1' />
-            {/* <Separator orientation='vertical' className='mr-2 h-4' /> */}
-            {/* <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className='hidden md:block'>
-                  <BreadcrumbLink href='#'>CorpuSense</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className='hidden md:block' />
-              </BreadcrumbList>
-            </Breadcrumb> */}
             <ManifestExplorerDrawer />
           </div>
         </header>
