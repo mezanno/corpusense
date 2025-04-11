@@ -17,7 +17,7 @@ function App() {
           <Route path={CorpusenseRoutes.MANIFEST} element={<ManifestExplorerPage />} />
           <Route path={CorpusenseRoutes.COLLECTIONS} element={<CollectionsManagerPage />} />
           <Route
-            path={`${CorpusenseRoutes.COLLECTIONS}/:collectionid`}
+            path={`${CorpusenseRoutes.COLLECTIONS}/:collectionId`}
             element={<CollectionInspectorPage />}
           />
           <Route path='tags' element={<TagsPage />} />
