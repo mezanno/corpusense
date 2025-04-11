@@ -22,6 +22,7 @@
   "btn_create_export": "Générer un export",
   "btn_download_export": "Télécharger l'export",
   "btn_import_collection": "Importer une collection",
+  "btn_export_collection": "Exporter la/les collection(s)",
   "btn_import": "Importer",
   "btn_toggle_mode_annotate": "Basculer en mode annotation",
   "btn_toggle_mode_view": "Basculer en mode vue",

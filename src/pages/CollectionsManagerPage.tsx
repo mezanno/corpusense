@@ -273,10 +273,10 @@ const CollectionsManagerPage = () => {
                   {selectedCollections.length > 0 ? (
                     <Button
                       onClick={handleExport}
-                      aria-label={t('btn_create_export')}
-                      title={t('btn_create_export')}
+                      aria-label={t('btn_export_collection')}
+                      title={t('btn_export_collection')}
                     >
-                      <PenLine aria-label={t('btn_create_export')} />
+                      <DownloadIcon aria-label={t('btn_export_collection')} />
                     </Button>
                   ) : (
                     <div>-</div>
