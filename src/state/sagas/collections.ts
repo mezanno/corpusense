@@ -1,4 +1,4 @@
-import { ExportedCollection, List } from '@/data/models/List';
+import { Collection, ExportedCollection } from '@/data/models/Collection';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { CorpusenseRoutes } from '@/pages/Layout';
 import { PayloadAction } from '@reduxjs/toolkit';
@@ -7,111 +7,117 @@ import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/
 import { v4 as uuid } from 'uuid';
 import { db } from '../../data/db';
 import {
-  addListRequest,
-  addListSuccess,
-  addSelectionToListRequest,
-  addSelectionToListSuccess,
-  createListWithSelectionRequest,
+  addCollectionRequest,
+  addCollectionSuccess,
+  addSelectionToCollectionRequest,
+  addSelectionToCollectionSuccess,
+  createCollectionWithSelectionRequest,
   importMultipleCollections,
   importOneCollection,
-  removeElementFromList,
-  removeElementFromListSuccess,
-  removeListRequest,
-  removeListSuccess,
-  setActiveList,
-  setLists,
-  updateListRequest,
-  updateListSuccess,
-} from '../reducers/lists';
+  removeCollectionRequest,
+  removeCollectionSuccess,
+  removeElementFromCollection,
+  removeElementFromCollectionSuccess,
+  setActiveCollection,
+  setCollections,
+  updateCollectionRequest,
+  updateCollectionSuccess,
+} from '../reducers/collections';
 import { navigateTo } from '../reducers/navigation';
 import { importAnnotationFromJson } from './annotations';
 import { loadStoredElements } from './storedItems';
 
-function* loadListsSaga(): Generator<CallEffect<List[]> | PutEffect, void, List[]> {
+function* loadCollectionsSaga(): Generator<
+  CallEffect<Collection[]> | PutEffect,
+  void,
+  Collection[]
+> {
   try {
-    const lists: List[] = yield call(() => db.lists.toArray());
+    const collections: Collection[] = yield call(() => db.collections.toArray());
 
-    yield put({ type: setLists.type, payload: lists });
+    yield put({ type: setCollections.type, payload: collections });
   } catch (e) {
-    console.warn('Error loading lists from indexedDB', e);
+    console.warn('Error loading collections from indexedDB', e);
   }
 }
 
-function* getListById(id: string): Generator<CallEffect, List, List> {
-  const result = yield call(() => db.lists.get(id));
+function* getCollectionById(id: string): Generator<CallEffect, Collection, Collection> {
+  const result = yield call(() => db.collections.get(id));
   if (result === undefined) {
-    throw new Error(`List with id ${id} not found`);
+    throw new Error(`Collection with id ${id} not found`);
   }
   return result;
 }
 
-function* addListSaga(action: PayloadAction<string>) {
+function* addCollectionSaga(action: PayloadAction<string>) {
   const { payload } = action;
-  const newList: List = { id: uuid(), name: payload, tags: [] };
+  const newCollection: Collection = { id: uuid(), name: payload, tags: [] };
 
   try {
-    yield db.lists.add(newList);
-    yield put(addListSuccess(newList));
+    yield db.collections.add(newCollection);
+    yield put(addCollectionSuccess(newCollection));
   } catch (e) {
     console.log('error', e);
   }
 }
 
-function* upadteListSaga(action: PayloadAction<List>) {
+function* upadteCollectionSaga(action: PayloadAction<Collection>) {
   const { payload } = action;
   try {
-    yield db.lists.update(payload.id, {
+    yield db.collections.update(payload.id, {
       name: payload.name,
       tags: payload.tags,
       content: payload.content,
     });
-    yield put(updateListSuccess(payload));
+    yield put(updateCollectionSuccess(payload));
   } catch (e) {
     console.log('error', e);
   }
 }
 
-function* removeListSaga(action: PayloadAction<string>) {
+function* removeCollectionSaga(action: PayloadAction<string>) {
   const { payload } = action;
   try {
     yield call(() =>
-      db.transaction('rw', db.lists, async () => {
-        await db.lists.delete(payload);
+      db.transaction('rw', db.collections, async () => {
+        await db.collections.delete(payload);
         // await db.listElements.where('listId').equals(payload).delete();
         //TODO il faudrait supprimer les storedItems qui ne sont plus utilisés
       }),
     );
-    yield put(removeListSuccess(payload));
+    yield put(removeCollectionSuccess(payload));
   } catch (e) {
     console.log('error', e);
   }
 }
 
-function* addSelectionToListSaga(
-  action: PayloadAction<{ selection: SelectedCanvas[]; listId: string; manifestId: string }>,
-): Generator<Effect, void, List | undefined> {
+function* addSelectionToCollectionSaga(
+  action: PayloadAction<{ selection: SelectedCanvas[]; collectionId: string; manifestId: string }>,
+): Generator<Effect, void, Collection | undefined> {
   const { payload } = action;
   // const selectionToAdd = action.payload.selection.map((elt) => elt.canvas.id);
   try {
-    const list: List | undefined = yield call(() => db.lists.get(payload.listId));
-    if (list && list !== undefined) {
-      if (list.content === null || list.content === undefined) {
-        list.content = [];
+    const collection: Collection | undefined = yield call(() =>
+      db.collections.get(payload.collectionId),
+    );
+    if (collection && collection !== undefined) {
+      if (collection.content === null || collection.content === undefined) {
+        collection.content = [];
       }
-      //TODO! A faire : vérifier si les éléments ne sont pas déjà dans la liste
-      let lastPosition = list.content.length - 1;
+      //TODO! A faire : vérifier si les éléments ne sont pas déjà dans la collection
+      let lastPosition = collection.content.length - 1;
       const newContent = payload.selection.map((elt) => ({
         canvasId: elt.canvas.id,
-        listId: payload.listId,
+        collectionId: payload.collectionId,
         position: ++lastPosition,
         manifestId: payload.manifestId,
       }));
       console.log(newContent);
 
-      list.content = [...list.content, ...newContent];
+      collection.content = [...collection.content, ...newContent];
 
       yield call(() =>
-        db.transaction('rw', db.storedItems, db.lists, async () => {
+        db.transaction('rw', db.storedItems, db.collections, async () => {
           // await db.listElements.bulkAdd(newContent);
           const canvasesToStore = action.payload.selection.map((elt) => ({
             id: elt.canvas.id,
@@ -119,39 +125,39 @@ function* addSelectionToListSaga(
           }));
           //     //on utilie bulkPut pour éviter les doublons et éviter une erreur si un doublon existe (avec bulkAdd, une erreur est levée au premier doublon rencontré)
           await db.storedItems.bulkPut(canvasesToStore);
-          await db.lists.put(list);
+          await db.collections.put(collection);
         }),
       );
       yield call(loadStoredElements);
-      yield put(addSelectionToListSuccess(list));
+      yield put(addSelectionToCollectionSuccess(collection));
     }
   } catch (e) {
     console.log('error', e);
   }
 }
 
-function* handleCreateListWithSelection(
+function* handleCreateCollectionWithSelection(
   action: PayloadAction<{ selection: SelectedCanvas[]; name: string; manifestId: string }>,
-): Generator<Effect, List, List | undefined> {
-  console.log('start of handleCreateListWithSelection');
+): Generator<Effect, Collection, Collection | undefined> {
+  console.log('start of handleCreateCollectionWithSelection');
   const { payload } = action;
-  const listId = uuid();
-  const newList: List = { id: listId, name: payload.name, tags: [] };
+  const collectionId = uuid();
+  const newCollection: Collection = { id: collectionId, name: payload.name, tags: [] };
 
   let lastPosition = 0;
   const newContent = payload.selection.map((elt) => ({
     canvasId: elt.canvas.id,
-    listId: listId,
+    collectionId: collectionId,
     position: ++lastPosition,
     manifestId: payload.manifestId,
   }));
-  newList.content = newContent;
+  newCollection.content = newContent;
 
   try {
-    yield call(() => db.lists.add(newList));
+    yield call(() => db.collections.add(newCollection));
 
     yield call(() =>
-      db.transaction('rw', db.storedItems, db.lists, async () => {
+      db.transaction('rw', db.storedItems, db.collections, async () => {
         // await db.listElements.bulkAdd(newContent);
         const canvasesToStore = action.payload.selection.map((elt) => ({
           id: elt.canvas.id,
@@ -159,52 +165,52 @@ function* handleCreateListWithSelection(
         }));
         //on utilie bulkPut pour éviter les doublons et éviter une erreur si un doublon existe (avec bulkAdd, une erreur est levée au premier doublon rencontré)
         await db.storedItems.bulkPut(canvasesToStore);
-        await db.lists.put(newList);
+        await db.collections.put(newCollection);
       }),
     );
 
     yield call(loadStoredElements); //il faut appeler le saga pour mettre à jour le state
-    console.log('end of handleCreateListWithSelection');
+    console.log('end of handleCreateCollectionWithSelection');
 
-    yield put(addListSuccess(newList));
+    yield put(addCollectionSuccess(newCollection));
   } catch (e) {
     console.log('error', e);
   }
 
-  return newList;
+  return newCollection;
 }
 
-function* handleRemoveElementFromList(
-  action: PayloadAction<{ listId: string; canvasId: string }>,
-): Generator<Effect, void, List | undefined> {
-  const { listId, canvasId } = action.payload;
+function* handleRemoveElementFromCollection(
+  action: PayloadAction<{ collectionId: string; canvasId: string }>,
+): Generator<Effect, void, Collection | undefined> {
+  const { collectionId, canvasId } = action.payload;
   try {
     yield call(() =>
-      db.transaction('rw', db.storedItems, db.lists, async () => {
+      db.transaction('rw', db.storedItems, db.collections, async () => {
         // await db.listElements
         //   .where({ listId: listId, canvasId: canvasId })
         //   .delete()
         //   .then(() => console.log('deleted'));
         //supprimer le storedItem si il n'est plus utilisé
-        const list = await db.lists.get(listId);
-        if (list !== undefined) {
-          const savedElements = list.content?.filter((elt) => elt.canvasId !== canvasId);
-          list.content = savedElements;
-          await db.lists.put(list);
+        const collection = await db.collections.get(collectionId);
+        if (collection !== undefined) {
+          const savedElements = collection.content?.filter((elt) => elt.canvasId !== canvasId);
+          collection.content = savedElements;
+          await db.collections.put(collection);
         }
       }),
     );
-    const updatedList = yield call(() => db.lists.get(listId));
-    if (updatedList !== undefined) {
-      yield put(removeElementFromListSuccess(updatedList));
+    const updatedCollection = yield call(() => db.collections.get(collectionId));
+    if (updatedCollection !== undefined) {
+      yield put(removeElementFromCollectionSuccess(updatedCollection));
     }
   } catch (e) {
     console.log('error', e);
   }
 }
 
-function* handleSetActiveList(_action: PayloadAction<string>): Generator<Effect, void, void> {
-  yield put(navigateTo(`/${CorpusenseRoutes.LIST_INSPECTOR}`));
+function* handleSetActiveCollection(_action: PayloadAction<string>): Generator<Effect, void, void> {
+  yield put(navigateTo(`/${CorpusenseRoutes.COLLECTION_INSPECTOR}`));
 }
 
 function* handleImportMultipleCollections(
@@ -282,22 +288,22 @@ function* handleImportOneCollection(_action: PayloadAction<object>): Generator<E
     }
   }
 
-  const result = yield call(handleCreateListWithSelection, {
+  const result = yield call(handleCreateCollectionWithSelection, {
     payload: {
       selection: selectedCanvas,
       name: collectionName,
       manifestId: manifest.id,
     },
-    type: createListWithSelectionRequest.type,
+    type: createCollectionWithSelectionRequest.type,
   });
-  const newList = result as unknown as List;
+  const newCollection = result as unknown as Collection;
 
   yield call(() =>
-    db.lists.update(newList.id, {
+    db.collections.update(newCollection.id, {
       tags: tags.map((tag) => tag.id),
     }),
   );
-  yield put(updateListSuccess({ ...newList, tags: tags.map((tag) => tag.id) }));
+  yield put(updateCollectionSuccess({ ...newCollection, tags: tags.map((tag) => tag.id) }));
 }
 
 // Saga pour sauvegarder les bookmarks dans localStorage
@@ -316,18 +322,18 @@ function* handleImportOneCollection(_action: PayloadAction<object>): Generator<E
 // }
 // }
 
-export default function* listsSaga() {
-  yield takeEvery(addListRequest.type, addListSaga);
-  yield takeEvery(removeListRequest.type, removeListSaga);
-  yield takeEvery(createListWithSelectionRequest, handleCreateListWithSelection);
-  yield takeEvery(addSelectionToListRequest, addSelectionToListSaga);
-  yield takeEvery(removeElementFromList, handleRemoveElementFromList);
-  yield takeEvery(setActiveList, handleSetActiveList);
+export default function* collectionsSaga() {
+  yield takeEvery(addCollectionRequest.type, addCollectionSaga);
+  yield takeEvery(removeCollectionRequest.type, removeCollectionSaga);
+  yield takeEvery(createCollectionWithSelectionRequest, handleCreateCollectionWithSelection);
+  yield takeEvery(addSelectionToCollectionRequest, addSelectionToCollectionSaga);
+  yield takeEvery(removeElementFromCollection, handleRemoveElementFromCollection);
+  yield takeEvery(setActiveCollection, handleSetActiveCollection);
   // yield takeEvery(addSelectionToList.type, saveListsSaga);
   // yield takeEvery(removeSelectionFromList.type, saveListsSaga);
-  yield takeEvery(updateListRequest, upadteListSaga);
+  yield takeEvery(updateCollectionRequest, upadteCollectionSaga);
   yield takeEvery(importOneCollection, handleImportOneCollection);
   yield takeEvery(importMultipleCollections, handleImportMultipleCollections);
 }
 
-export { getListById, loadListsSaga };
+export { getCollectionById, loadCollectionsSaga };

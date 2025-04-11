@@ -26,8 +26,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { removeFromOpenedLists, reset } from '@/state/reducers/lists';
-import { getOpenedLists } from '@/state/selectors/lists';
+import { removeFromOpenedCollections, reset } from '@/state/reducers/collections';
+import { getOpenedCollections } from '@/state/selectors/collections';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -51,19 +51,19 @@ import {
 
 export const CorpusenseRoutes = {
   MANIFEST: 'manifest',
-  LISTS_MANAGER: 'lists',
-  LIST_INSPECTOR: 'list-inspector',
+  COLLECTIONS_MANAGER: 'collections',
+  COLLECTION_INSPECTOR: 'collection-inspector',
 };
 
 const LayoutSideBar = () => {
   const { t } = useTranslation();
-  const openedLists = useAppSelector(getOpenedLists);
+  const openedCollections = useAppSelector(getOpenedCollections);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const handleOnClose = (listId: string) => {
-    void navigate('/lists');
-    dispatch(removeFromOpenedLists(listId));
+  const handleOnClose = (collectionId: string) => {
+    void navigate(`/${CorpusenseRoutes.COLLECTIONS_MANAGER}`);
+    dispatch(removeFromOpenedCollections(collectionId));
   };
 
   return (
@@ -84,8 +84,8 @@ const LayoutSideBar = () => {
                 icon: FolderSearch2,
               },
               {
-                title: t('page_title_listmanager'),
-                url: CorpusenseRoutes.LISTS_MANAGER,
+                title: t('page_title_collection_manager'),
+                url: CorpusenseRoutes.COLLECTIONS_MANAGER,
                 icon: List,
               },
               // {
@@ -105,33 +105,33 @@ const LayoutSideBar = () => {
             ))}
           </SidebarMenu>
         </SidebarGroup>
-        {openedLists.length > 0 && (
-          <SidebarGroup id='lists'>
+        {openedCollections.length > 0 && (
+          <SidebarGroup id='collections'>
             <SidebarMenu>
               <Collapsible defaultOpen className='group'>
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
                       <ScrollText />
-                      {t('nav_lists')}
+                      {t('nav_collections')}
                       <ChevronDown className='transition-transform duration-200 group-data-[state=closed]:-rotate-90' />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>
-                      {openedLists.map(
-                        (list) =>
-                          list.id !== undefined && (
-                            <SidebarMenuSubItem key={list.id}>
+                      {openedCollections.map(
+                        (col) =>
+                          col.id !== undefined && (
+                            <SidebarMenuSubItem key={col.id}>
                               <SidebarMenuSubButton className='h-auto' asChild>
                                 <div>
                                   <CornerDownRight />
                                   <Link
-                                    to={`/lists/${list.id}`}
+                                    to={`/${CorpusenseRoutes.COLLECTIONS_MANAGER}/${col.id}`}
                                     className='h-full w-full'
-                                    title={list.name}
+                                    title={col.name}
                                   >
-                                    {list.name}
+                                    {col.name}
                                   </Link>
                                 </div>
                               </SidebarMenuSubButton>
@@ -142,10 +142,8 @@ const LayoutSideBar = () => {
                                   </SidebarMenuAction>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent side='right' align='start'>
-                                  <DropdownMenuItem
-                                    onClick={() => handleOnClose(list.id as string)}
-                                  >
-                                    {t('btn_close_list')}
+                                  <DropdownMenuItem onClick={() => handleOnClose(col.id as string)}>
+                                    {t('btn_close_collection')}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -171,16 +169,16 @@ const LayoutSideBar = () => {
 };
 
 const Layout = () => {
-  const { newListEvent } = useAppSelector((state) => state.lists);
+  const { newCollectionEvent } = useAppSelector((state) => state.collections);
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (newListEvent) {
-      toast.success(t('toast_list_created'));
+    if (newCollectionEvent) {
+      toast.success(t('toast_collection_created'));
       dispatch(reset());
     }
-  }, [newListEvent]);
+  }, [newCollectionEvent]);
 
   return (
     <SidebarProvider>

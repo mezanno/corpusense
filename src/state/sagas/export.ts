@@ -1,7 +1,7 @@
 import { db } from '@/data/db';
 import { Annotation } from '@/data/models/Annotation';
+import { Collection } from '@/data/models/Collection';
 import { convertW3CAnnotationsToIIIF, IIIF_CONTEXT } from '@/data/models/converters/iiif';
-import { List } from '@/data/models/List';
 import { ItemMetadata } from '@/data/models/Metadata';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
@@ -11,27 +11,27 @@ import FileSaver from 'file-saver';
 import JSZIP from 'jszip';
 import { all, call, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
 import { exportMultipleCollectionsRequest, exportRequest, exportSuccess } from '../reducers/export';
-import { getListById } from './lists';
+import { getCollectionById } from './collections';
 import { getTagsById } from './tags';
 
 function* handleExportRequest(
   action: PayloadAction<string>,
-): Generator<Effect, void, List | StoredItem | Tag[] | ItemMetadata[]> {
-  const listId = action.payload;
+): Generator<Effect, void, Collection | StoredItem | Tag[] | ItemMetadata[]> {
+  const collectionId = action.payload;
 
-  const result = yield call(() => db.lists.get(listId));
-  const listToExport = result as List;
-  console.log('List to export', listToExport);
+  const result = yield call(() => db.collections.get(collectionId));
+  const collectionToExport = result as Collection;
+  console.log('Collection to export', collectionToExport);
 
   let exportLines = '';
-  let header = 'nom_liste\turl\tnum_page\ttags';
+  let header = 'nom_collection\turl\tnum_page\ttags';
 
   let firstTimeHeader = true;
-  if (listToExport !== undefined && listToExport.content) {
-    for (let i = 0; i < listToExport.content.length; i++) {
-      let csvLine = listToExport.name;
-      const listElement = listToExport.content[i];
-      const storedCanvas = (yield call(() => db.storedItems.get(listElement.canvasId))) as
+  if (collectionToExport !== undefined && collectionToExport.content) {
+    for (let i = 0; i < collectionToExport.content.length; i++) {
+      let csvLine = collectionToExport.name;
+      const collectionElement = collectionToExport.content[i];
+      const storedCanvas = (yield call(() => db.storedItems.get(collectionElement.canvasId))) as
         | StoredItem
         | undefined;
 
@@ -46,16 +46,16 @@ function* handleExportRequest(
           const label = canvas.label?.none?.[0] ?? '';
           csvLine = csvLine.concat('\t').concat(label);
 
-          if (listToExport.tags?.length > 0) {
+          if (collectionToExport.tags?.length > 0) {
             const resultTags = yield call(() =>
-              db.tags.filter((tag) => listToExport.tags.includes(tag.id)).toArray(),
+              db.tags.filter((tag) => collectionToExport.tags.includes(tag.id)).toArray(),
             );
             const tags = resultTags as Tag[];
             const tagLabels = tags.reduce((acc, tag) => acc.concat(tag.label).concat(','), '');
             csvLine = csvLine.concat('\t').concat(tagLabels);
           }
 
-          const match = listElement.canvasId.match(/ark:\/\d+\/([^\\/]+)/);
+          const match = collectionElement.canvasId.match(/ark:\/\d+\/([^\\/]+)/);
           const manifestArk = match ? match[1] : null;
           if (manifestArk !== null) {
             const resultMetadata = yield call(() =>
@@ -84,16 +84,16 @@ function* handleExportRequest(
 
 function* handleExportMultipleCollectionsRequest(
   action: PayloadAction<string[]>,
-): Generator<Effect, void, Manifest | List | Blob> {
-  const listIds = action.payload;
+): Generator<Effect, void, Manifest | Collection | Blob> {
+  const collectionIds = action.payload;
   const zip = new JSZIP();
-  for (let i = 0; i < listIds.length; i++) {
-    const id = listIds[i];
+  for (let i = 0; i < collectionIds.length; i++) {
+    const id = collectionIds[i];
     try {
-      const list = (yield call(getListById, id)) as List;
-      const manifest = yield call(generateManifestFromCollection, list);
+      const collection = (yield call(getCollectionById, id)) as Collection;
+      const manifest = yield call(generateManifestFromCollection, collection);
       console.log('Manifest ', manifest);
-      zip.file(list.name + '.json', JSON.stringify(manifest, null, 2));
+      zip.file(collection.name + '.json', JSON.stringify(manifest, null, 2));
     } catch (error) {
       console.error('Error generating manifest:', error);
       continue;
@@ -103,17 +103,19 @@ function* handleExportMultipleCollectionsRequest(
   yield call(FileSaver.saveAs, zipContent, 'exported_collections.zip');
 }
 
-function* generateManifestFromCollection(list: List): Generator<Effect, unknown, Tag[]> {
+function* generateManifestFromCollection(
+  collection: Collection,
+): Generator<Effect, unknown, Tag[]> {
   //undefined | Canvas | Tag[]
-  if (list.content === undefined || list.content.length === 0) {
-    throw new Error(`List ${list.name} is empty`);
+  if (collection.content === undefined || collection.content.length === 0) {
+    throw new Error(`Collection ${collection.name} is empty`);
   }
 
   const manifestId = 'https://1.rp.mezanno.xyz/toto.json'; //TODO: to be changed
   const items = yield all(
-    list.content.map((item) => call(generateCanvas, item.canvasId, manifestId)),
+    collection.content.map((item) => call(generateCanvas, item.canvasId, manifestId)),
   );
-  const tags = yield call(getTagsById, list.tags);
+  const tags = yield call(getTagsById, collection.tags);
 
   return {
     '@context': IIIF_CONTEXT,
@@ -121,7 +123,7 @@ function* generateManifestFromCollection(list: List): Generator<Effect, unknown,
     id: manifestId,
     type: 'Manifest',
     label: {
-      none: [list.name],
+      none: [collection.name],
     },
     items,
     ...(tags.length > 0 && { tags }),

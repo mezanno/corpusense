@@ -1,5 +1,5 @@
 import CanvasViewer from '@/components/CanvasViewer';
-import ListMetadaForm from '@/components/ListMetadaForm';
+import CollectionMetadaForm from '@/components/CollectionMetadaForm';
 import {
   Accordion,
   AccordionContent,
@@ -9,7 +9,7 @@ import {
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { setCanvasFromComponent } from '@/state/reducers/canvas';
-import { removeElementFromList, setActiveList } from '@/state/reducers/lists';
+import { removeElementFromCollection, setActiveCollection } from '@/state/reducers/collections';
 import { getCanvasById } from '@/state/selectors/storedItems';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
@@ -20,15 +20,15 @@ import { createRef, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 
-const CANVASVIEWER_NAME = 'list-inspector';
+const CANVASVIEWER_NAME = 'collection-inspector';
 
 const GridThumb = ({
   canvasId,
-  listId,
+  collectionId,
   canvasViewerName,
 }: {
   canvasId: string;
-  listId: string;
+  collectionId: string;
   canvasViewerName: string;
 }) => {
   const canvas = useAppSelector((state) => getCanvasById(state, canvasId)) as Canvas;
@@ -42,7 +42,7 @@ const GridThumb = ({
 
   const handleDelete = useCallback(() => {
     console.log('Delete', canvasId);
-    dispatch(removeElementFromList({ listId, canvasId }));
+    dispatch(removeElementFromCollection({ collectionId: collectionId, canvasId }));
   }, [canvasId]);
 
   if (canvas === undefined) {
@@ -64,17 +64,19 @@ const GridThumb = ({
   );
 };
 
-const ListInspectorContent = ({ listid }: { listid: string }) => {
-  const activeList = useAppSelector((state) => state.lists.values.find((elt) => elt.id === listid));
+const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) => {
+  const activeCollection = useAppSelector((state) =>
+    state.collections.values.find((elt) => elt.id === collectionid),
+  );
 
   const gridRef = useRef(null);
   const refs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
 
   const { t } = useTranslation();
 
-  if (activeList?.content) {
-    if (Object.keys(refs.current).length !== activeList.content.length) {
-      activeList.content.forEach(({ canvasId }) => {
+  if (activeCollection?.content) {
+    if (Object.keys(refs.current).length !== activeCollection.content.length) {
+      activeCollection.content.forEach(({ canvasId }) => {
         if (!(canvasId in refs.current)) {
           refs.current[canvasId] = createRef();
         }
@@ -83,7 +85,7 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
   }
 
   useEffect(() => {
-    if (activeList?.content && gridRef.current !== null) {
+    if (activeCollection?.content && gridRef.current !== null) {
       const grid = GridStack.init(
         { float: false, disableResize: true, disableDrag: true },
         gridRef.current,
@@ -95,7 +97,7 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
 
       grid.batchUpdate(); //afin d'éviter les rendus tant qu'on n'a pas terminé les makeWidgets
       grid.removeAll();
-      activeList.content.forEach(({ canvasId }, index) => {
+      activeCollection.content.forEach(({ canvasId }, index) => {
         const item = refs.current[canvasId].current;
         const x = index % 12;
         const y = Math.floor(index / 12);
@@ -109,11 +111,11 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
       });
       grid.batchUpdate(false); //on termine les makeWidgets
     }
-  }, [activeList]);
+  }, [activeCollection]);
 
   return (
     <div className='flex h-full w-full flex-col space-y-2'>
-      {activeList && (
+      {activeCollection && (
         <>
           <Accordion
             className='rounded-md border bg-white'
@@ -122,9 +124,11 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
             defaultValue='metadata' //this open the metadata by default
           >
             <AccordionItem value='metadata'>
-              <AccordionTrigger className='mr-2 ml-2'>{t('title_metadata_list')}</AccordionTrigger>
+              <AccordionTrigger className='mr-2 ml-2'>
+                {t('title_metadata_collection')}
+              </AccordionTrigger>
               <AccordionContent>
-                <ListMetadaForm list={activeList} />
+                <CollectionMetadaForm collection={activeCollection} />
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -142,14 +146,14 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
                   </div>
                 ))}
               </div> */}
-          {activeList?.content ? (
+          {activeCollection?.content ? (
             <ResizablePanelGroup
               direction='horizontal'
               className='h-fit flex-1 space-x-2 rounded-md border bg-white'
             >
               <ResizablePanel className='h-full w-full' minSize={30}>
                 <div className='m-2 grid grid-cols-8'>
-                  {activeList.content.map((item) => (
+                  {activeCollection.content.map((item) => (
                     <div
                       key={item.canvasId}
                       ref={refs.current[item.canvasId]}
@@ -157,7 +161,7 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
                     >
                       <GridThumb
                         canvasId={item.canvasId}
-                        listId={activeList.id as string}
+                        collectionId={activeCollection.id as string}
                         canvasViewerName={CANVASVIEWER_NAME}
                       />
                     </div>
@@ -170,7 +174,7 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
               </ResizablePanel>
             </ResizablePanelGroup>
           ) : (
-            <div>{t('info_empty_list')}</div>
+            <div>{t('info_empty_collection')}</div>
           )}
         </>
       )}
@@ -178,20 +182,20 @@ const ListInspectorContent = ({ listid }: { listid: string }) => {
   );
 };
 
-const ListInspectorPage = () => {
+const CollectionInspectorPage = () => {
   const { t } = useTranslation();
-  const { listid } = useParams();
+  const { collectionId } = useParams();
   const dispatch = useAppDispatch();
 
-  if (listid !== undefined) {
-    dispatch(setActiveList(listid));
+  if (collectionId !== undefined) {
+    dispatch(setActiveCollection(collectionId));
   }
 
-  return listid === undefined ? (
-    <div>{t('error_idlist_invalid')}</div>
+  return collectionId === undefined ? (
+    <div>{t('error_id_collection_invalid')}</div>
   ) : (
-    <ListInspectorContent listid={listid} />
+    <CollectionInspectorContent collectionid={collectionId} />
   );
 };
 
-export default ListInspectorPage;
+export default CollectionInspectorPage;

@@ -1,7 +1,7 @@
-export interface ListElement {
+export interface CollectionElement {
   id?: string;
   canvasId: string;
   manifestId: string;
-  listId: string;
+  collectionId: string;
   position: number;
 }

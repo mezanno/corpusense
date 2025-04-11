@@ -2,8 +2,8 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
 import annotationsReducer from './reducers/annotations';
 import canvasReducer from './reducers/canvas';
+import collectionsReducer from './reducers/collections';
 import exportReducer from './reducers/export';
-import listReducer from './reducers/lists';
 import manifestsReducer from './reducers/manifests';
 import navigationReducer from './reducers/navigation';
 import selectionReducer from './reducers/selection';
@@ -17,7 +17,7 @@ const sagaMiddleware = createSagaMiddleware();
 export const rootReducer = combineReducers({
   manifests: manifestsReducer,
   selection: selectionReducer,
-  lists: listReducer,
+  collections: collectionsReducer,
   canvases: canvasReducer,
   storedItems: storedItemsReducer,
   navigation: navigationReducer,

@@ -12,11 +12,14 @@ import {
   ContextMenuTrigger,
 } from './ui/context-menu';
 
-import { List } from '@/data/models/List';
+import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { addSelectionToListRequest, createListWithSelectionRequest } from '@/state/reducers/lists';
+import {
+  addSelectionToCollectionRequest,
+  createCollectionWithSelectionRequest,
+} from '@/state/reducers/collections';
 import { setSelectionEndRequest, setSelectionStartRequest } from '@/state/reducers/selection';
-import { getLists } from '@/state/selectors/lists';
+import { getCollections } from '@/state/selectors/collections';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getSelection, isSelected } from '../state/selectors/selection';
@@ -44,10 +47,10 @@ interface CanvasCardProps {
 const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => {
   const { t } = useTranslation();
   const selection = useAppSelector(getSelection);
-  const lists: List[] = useAppSelector(getLists);
+  const collections: Collection[] = useAppSelector(getCollections);
   const selected: boolean = useAppSelector(isSelected(index, canvas.id));
 
-  const inputListName = useRef(null);
+  const inputCollectionName = useRef(null);
 
   //TODO : gérer le cas où canvas.thumbnail est undefined
   const thumbnail = canvas.thumbnail as IIIFExternalWebResource[];
@@ -67,9 +70,11 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
     dispatch(setSelectionEndRequest(index));
   };
 
-  const handleAddSelectionToList = (listId: string | undefined) => {
-    if (listId === undefined) return;
-    dispatch(addSelectionToListRequest({ selection, listId, manifestId }));
+  const handleAddSelectionToCollection = (collectionId: string | undefined) => {
+    if (collectionId === undefined) return;
+    dispatch(
+      addSelectionToCollectionRequest({ selection, collectionId: collectionId, manifestId }),
+    );
   };
 
   const handleClick = (target: EventTarget) => {
@@ -85,12 +90,12 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
     }
   };
 
-  const handleCreateList = () => {
-    const input: HTMLInputElement | null = inputListName.current;
+  const handleCreateCollection = () => {
+    const input: HTMLInputElement | null = inputCollectionName.current;
     //TODO! : gérer le cas où input est null
     if (input === null) return;
-    const listName = (input as HTMLInputElement).value;
-    dispatch(createListWithSelectionRequest({ selection, name: listName, manifestId }));
+    const collectionName = (input as HTMLInputElement).value;
+    dispatch(createCollectionWithSelectionRequest({ selection, name: collectionName, manifestId }));
   };
 
   return (
@@ -126,15 +131,17 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
                 <ContextMenuItem>{t('menu_create_from_selection')}</ContextMenuItem>
               </DialogTrigger>
               <ContextMenuSub>
-                <ContextMenuSubTrigger>{t('menu_add_selection_to_list')}</ContextMenuSubTrigger>
+                <ContextMenuSubTrigger>
+                  {t('menu_add_selection_to_collection')}
+                </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
-                  {lists?.length > 0 &&
-                    lists.map((list: List) => (
+                  {collections?.length > 0 &&
+                    collections.map((col) => (
                       <ContextMenuItem
-                        key={list.id}
-                        onClick={() => handleAddSelectionToList(list.id)}
+                        key={col.id}
+                        onClick={() => handleAddSelectionToCollection(col.id)}
                       >
-                        {list.name}
+                        {col.name}
                       </ContextMenuItem>
                     ))}
                 </ContextMenuSubContent>
@@ -156,23 +163,23 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('btn_create_list')}</DialogTitle>
-          <DialogDescription>{t('form_description_create_list')}</DialogDescription>
+          <DialogTitle>{t('btn_create_collection')}</DialogTitle>
+          <DialogDescription>{t('form_description_create_collection')}</DialogDescription>
         </DialogHeader>
         <div className='grid grid-cols-4 items-center gap-4'>
           <Label htmlFor='name' className='text-right'>
-            {t('form_label_listname')}
+            {t('form_label_collection_name')}
           </Label>
           <Input
-            ref={inputListName}
+            ref={inputCollectionName}
             id='name'
-            placeholder={t('form_placeholder_listname')}
+            placeholder={t('form_placeholder_collection_name')}
             className='col-span-3'
           />
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button type='button' onClick={handleCreateList}>
+            <Button type='button' onClick={handleCreateCollection}>
               {t('btn_create')}
             </Button>
           </DialogClose>

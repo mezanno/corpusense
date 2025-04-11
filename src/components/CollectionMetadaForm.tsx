@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
-import { List } from '@/data/models/List';
+import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { updateListRequest } from '@/state/reducers/lists';
+import { updateCollectionRequest } from '@/state/reducers/collections';
 import { addNewTag } from '@/state/reducers/tags';
 import { getTags } from '@/state/selectors/tags';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -39,7 +39,7 @@ const formSchema = z.object({
   about: z.string().optional(),
 });
 
-const ListMetadaForm = ({ list }: { list: List }) => {
+const CollectionMetadaForm = ({ collection }: { collection: Collection }) => {
   const dispatch = useAppDispatch();
   const storedTags = useAppSelector(getTags);
   //liste des tags existants dans l'application
@@ -48,26 +48,26 @@ const ListMetadaForm = ({ list }: { list: List }) => {
     text: tag.label,
   }));
 
-  //liste des tags de la liste
-  const listTagsDefaultValue: FormTag[] = [];
-  if (list.tags !== undefined) {
-    list.tags.forEach((tagId) => {
+  //liste des tags de la collection
+  const collectionTagsDefaultValue: FormTag[] = [];
+  if (collection.tags !== undefined) {
+    collection.tags.forEach((tagId) => {
       const tag = storedTags.find((t) => t.id === tagId);
       if (tag) {
-        listTagsDefaultValue.push({ id: tag.id, text: tag.label });
+        collectionTagsDefaultValue.push({ id: tag.id, text: tag.label });
       }
     });
   }
-  const [tags, setTags] = useState<FormTag[]>(listTagsDefaultValue);
+  const [tags, setTags] = useState<FormTag[]>(collectionTagsDefaultValue);
 
   const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: list.name,
-      about: list.about,
-      tags: listTagsDefaultValue,
+      name: collection.name,
+      about: collection.about,
+      tags: collectionTagsDefaultValue,
     },
   });
 
@@ -78,19 +78,19 @@ const ListMetadaForm = ({ list }: { list: List }) => {
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values.tags);
 
-    const updatedList = { ...list };
-    updatedList.name = values.name;
-    updatedList.about = values.about;
+    const updatedCollection = { ...collection };
+    updatedCollection.name = values.name;
+    updatedCollection.about = values.about;
     if (values.tags !== undefined) {
-      updatedList.tags = values.tags.map((tag) => tag.id);
+      updatedCollection.tags = values.tags.map((tag) => tag.id);
     }
-    dispatch(updateListRequest(updatedList));
+    dispatch(updateCollectionRequest(updatedCollection));
   }
 
   const handleTagAdded = (newTags: FormTag[]) => {
     console.log('handleTagAdded: ', newTags);
 
-    //on récupère les tags qui ne sont pas déjà dans la liste (state tags)
+    //on récupère les tags qui ne sont pas déjà dans la collection (state tags)
     const diff = newTags.filter((tag) => !tags.some((elt) => elt.id === tag.id));
     if (diff.length > 0) {
       console.log(diff[0]);
@@ -99,10 +99,10 @@ const ListMetadaForm = ({ list }: { list: List }) => {
   };
 
   useEffect(() => {
-    setTags(listTagsDefaultValue);
-    form.setValue('name', list.name);
-    form.setValue('about', list.about);
-  }, [list]);
+    setTags(collectionTagsDefaultValue);
+    form.setValue('name', collection.name);
+    form.setValue('about', collection.about);
+  }, [collection]);
 
   return (
     <div>
@@ -118,10 +118,10 @@ const ListMetadaForm = ({ list }: { list: List }) => {
                 name='name'
                 render={({ field }) => (
                   <FormItem className='w-full'>
-                    <FormLabel>{t('form_label_listname')}</FormLabel>
+                    <FormLabel>{t('form_label_collection_name')}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder={t('form_placeholder_listname')}
+                        placeholder={t('form_placeholder_collection_ame')}
                         type={'text'}
                         value={field.value}
                         onChange={(e) => {
@@ -197,4 +197,4 @@ const ListMetadaForm = ({ list }: { list: List }) => {
   );
 };
 
-export default ListMetadaForm;
+export default CollectionMetadaForm;

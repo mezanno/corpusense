@@ -1,11 +1,11 @@
 import { Manifest } from '@iiif/presentation-3';
-import { ListElement } from './ListElement';
+import { CollectionElement } from './CollectionElement';
 import { Tag } from './Tag';
 
-export interface List {
+export interface Collection {
   id?: string;
   name: string;
-  content?: ListElement[];
+  content?: CollectionElement[];
   about?: string;
   tags: string[];
 }

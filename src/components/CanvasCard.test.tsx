@@ -20,8 +20,8 @@ describe('CanvasCard', () => {
           },
         ],
       },
-      lists: {
-        ...getPreloadedState().lists,
+      collections: {
+        ...getPreloadedState().collections,
       },
     };
 
@@ -54,8 +54,8 @@ describe('CanvasCard', () => {
           },
         ],
       },
-      lists: {
-        ...getPreloadedState().lists,
+      collections: {
+        ...getPreloadedState().collections,
       },
     };
 

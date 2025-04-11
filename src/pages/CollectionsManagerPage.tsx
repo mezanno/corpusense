@@ -27,20 +27,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { List } from '@/data/models/List';
+import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import {
+  addCollectionRequest,
+  importMultipleCollections,
+  importOneCollection,
+  removeCollectionRequest,
+} from '@/state/reducers/collections';
 import {
   exportMultipleCollectionsRequest,
   exportRequest,
   resetAlert,
 } from '@/state/reducers/export';
-import {
-  addListRequest,
-  importMultipleCollections,
-  importOneCollection,
-  removeListRequest,
-} from '@/state/reducers/lists';
-import { getLists } from '@/state/selectors/lists';
+import { getCollections } from '@/state/selectors/collections';
 import { getTagsByIds } from '@/state/selectors/tags';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DownloadIcon, PenLine, Trash2 } from 'lucide-react';
@@ -52,11 +52,11 @@ import { z } from 'zod';
 
 const formSchema = z.object({
   name: z.string().min(4, {
-    message: 'Le nom de la liste doit contenir au moins 4 caractères',
+    message: 'Le nom de la collection doit contenir au moins 4 caractères', //TODO: add translation
   }),
 });
 
-const NewListForm = () => {
+const NewCollectionForm = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -68,7 +68,7 @@ const NewListForm = () => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    dispatch(addListRequest(values.name));
+    dispatch(addCollectionRequest(values.name));
   }
 
   return (
@@ -79,7 +79,7 @@ const NewListForm = () => {
           name='name'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('form_label_listname')}</FormLabel>
+              <FormLabel>{t('form_label_collection_name')}</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -93,12 +93,12 @@ const NewListForm = () => {
   );
 };
 
-const ListTableRow = ({
-  list,
+const CollectionTableRow = ({
+  collection,
   addOrRemoveCollection,
 }: {
-  list: List;
-  addOrRemoveCollection: (listId: string, isAdd: boolean) => void;
+  collection: Collection;
+  addOrRemoveCollection: (collectionId: string, isAdd: boolean) => void;
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -106,7 +106,7 @@ const ListTableRow = ({
   const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
     (state) => state.export,
   );
-  const tags = useAppSelector((state) => getTagsByIds(state, list.tags));
+  const tags = useAppSelector((state) => getTagsByIds(state, collection.tags));
 
   const [downloadLink, setDownloadLink] = useState<string>('');
 
@@ -121,11 +121,11 @@ const ListTableRow = ({
   }, [lastExportContent]);
 
   const handleDelete = (id: string) => {
-    dispatch(removeListRequest(id));
+    dispatch(removeCollectionRequest(id));
   };
 
   const handleOnClick = (id: string) => {
-    void navigate(`/lists/${id}`);
+    void navigate(`/collections/${id}`); //TODO: lien en dur
   };
 
   const handleExport = (event: React.MouseEvent<HTMLButtonElement | MouseEvent>, id: string) => {
@@ -145,28 +145,28 @@ const ListTableRow = ({
   };
 
   return (
-    <TableRow onClick={() => handleOnClick(list.id as string)}>
+    <TableRow onClick={() => handleOnClick(collection.id as string)}>
       <TableCell>
         <Checkbox
           onClick={(e) => {
             e.stopPropagation();
             addOrRemoveCollection(
-              list.id as string,
+              collection.id as string,
               (e.target as HTMLInputElement).dataset['state'] === 'unchecked',
             );
           }}
         />
       </TableCell>
-      <TableCell>{list.name}</TableCell>
+      <TableCell>{collection.name}</TableCell>
       <TableCell>
-        {list.content === undefined || list.content.length === 0 ? (
+        {collection.content === undefined || collection.content.length === 0 ? (
           <Badge variant='secondary' className='text-sm'>
-            {t('info_empty_list')}
+            {t('info_empty_collection')}
           </Badge>
         ) : (
           <Badge className='text-sm'>
             <span className='text-md font-bold'>
-              {t('info_number_of_items', { number: list.content.length })}
+              {t('info_number_of_items', { number: collection.content.length })}
             </span>
           </Badge>
         )}
@@ -181,7 +181,7 @@ const ListTableRow = ({
           variant='destructive'
           onClick={(event) => {
             event.stopPropagation();
-            handleDelete(list.id as string);
+            handleDelete(collection.id as string);
           }}
           title={t('btn_delete')}
           aria-label={t('btn_delete')}
@@ -189,7 +189,7 @@ const ListTableRow = ({
           <Trash2 />
         </Button>
         <Button
-          onClick={(e) => handleExport(e, list.id as string)}
+          onClick={(e) => handleExport(e, collection.id as string)}
           aria-label={t('btn_create_export')}
           title={t('btn_create_export')}
         >
@@ -258,9 +258,9 @@ const UploadFileForm = () => {
   );
 };
 
-const ListsManagerPage = () => {
+const CollectionsManagerPage = () => {
   const dispatch = useAppDispatch();
-  const lists: List[] = useAppSelector(getLists);
+  const collections: Collection[] = useAppSelector(getCollections);
   const { t } = useTranslation();
 
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
@@ -283,17 +283,17 @@ const ListsManagerPage = () => {
     <main className='flex h-full w-full flex-col items-center space-y-4 rounded-2xl border-1 bg-white'>
       <div className='flex w-full flex-col items-center justify-center'>
         <Accordion type='single' collapsible className='w-1/2 lg:w-1/3'>
-          <AccordionItem value='new-list'>
-            <AccordionTrigger>{t('btn_create_list')}</AccordionTrigger>
+          <AccordionItem value='new-collection'>
+            <AccordionTrigger>{t('btn_create_collection')}</AccordionTrigger>
             <AccordionContent>
               <div className='rounded-2xl border-2 border-gray-200 p-2'>
-                <NewListForm />
+                <NewCollectionForm />
               </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
         <Accordion type='single' collapsible className='w-1/2 lg:w-1/3'>
-          <AccordionItem value='import-list'>
+          <AccordionItem value='import-collection'>
             <AccordionTrigger>{t('btn_import_collection')}</AccordionTrigger>
             <AccordionContent>
               <UploadFileForm />
@@ -302,24 +302,26 @@ const ListsManagerPage = () => {
         </Accordion>
       </div>
 
-      {lists.length > 0 ? (
+      {collections.length > 0 ? (
         <section className='flex h-full w-4/5 flex-col items-center space-y-1'>
-          <div className='text-xl'>{t('info_number_of_lists', { number: lists.length })}</div>
+          <div className='text-xl'>
+            {t('info_number_of_collections', { number: collections.length })}
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead></TableHead>
-                <TableHead>{t('table_col_title_listname')}</TableHead>
-                <TableHead>{t('table_col_title_listinfo')}</TableHead>
+                <TableHead>{t('table_col_title_collection_name')}</TableHead>
+                <TableHead>{t('table_col_title_collection_info')}</TableHead>
                 <TableHead>{t('table_col_title_tags')}</TableHead>
                 <TableHead>{t('table_col_title_actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {lists.map((list) => (
-                <ListTableRow
-                  list={list}
-                  key={list.id}
+              {collections.map((col) => (
+                <CollectionTableRow
+                  collection={col}
+                  key={col.id}
                   addOrRemoveCollection={addOrRemoveCollection}
                 />
               ))}
@@ -327,7 +329,7 @@ const ListsManagerPage = () => {
             <TableFooter>
               <TableRow>
                 <TableCell colSpan={4}>
-                  {t('info_selection')} {selectedCollections.length} / {lists.length}
+                  {t('info_selection')} {selectedCollections.length} / {collections.length}
                 </TableCell>
                 <TableCell>
                   {selectedCollections.length > 0 ? (
@@ -348,11 +350,11 @@ const ListsManagerPage = () => {
         </section>
       ) : (
         <div role='alert' className='text-2xl'>
-          {t('info_no_list')}
+          {t('info_no_collection')}
         </div>
       )}
     </main>
   );
 };
 
-export default ListsManagerPage;
+export default CollectionsManagerPage;

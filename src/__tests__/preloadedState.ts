@@ -12,11 +12,11 @@ const emptyPreloadedState: RootState = {
   canvases: {
     values: {},
   },
-  lists: {
+  collections: {
     values: [],
     error: '',
-    newListEvent: false,
-    openedLists: [],
+    newCollectionEvent: false,
+    openedCollections: [],
   },
   selection: {
     canvases: [],

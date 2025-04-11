@@ -1,12 +1,12 @@
 import { getPreloadedState } from '@/__tests__/preloadedState';
 import { renderWithProviders } from '@/__tests__/utils';
 import { useAppDispatch } from '@/hooks/hooks';
-import { addListRequest } from '@/state/reducers/lists';
+import { addCollectionRequest } from '@/state/reducers/collections';
 import { RootState } from '@/state/store';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import ListsManagerPage from './ListsManagerPage';
+import CollectionsManagerPage from './CollectionsManagerPage';
 
 vi.mock('@/hooks/hooks', async (original) => {
   const actual = await original<typeof useAppDispatch>();
@@ -26,22 +26,27 @@ describe('ListsManagerPage', () => {
   it('la page affiche un tableau de 2 listes', () => {
     const preloadedState: RootState = {
       ...getPreloadedState(),
-      lists: {
-        ...getPreloadedState().lists,
+      collections: {
+        ...getPreloadedState().collections,
         values: [
           { id: '1', name: 'List 1', content: [], tags: [] },
           {
             id: '2',
             name: 'List 2',
             content: [
-              { canvasId: 'canvasId', listId: 'listId', position: 0, manifestId: 'manifestId' },
+              {
+                canvasId: 'canvasId',
+                collectionId: 'listId',
+                position: 0,
+                manifestId: 'manifestId',
+              },
             ],
             tags: [],
           },
         ],
       },
     };
-    renderWithProviders(<ListsManagerPage />, { preloadedState });
+    renderWithProviders(<CollectionsManagerPage />, { preloadedState });
 
     //une table doit être présente
     expect(screen.getByRole('table')).toBeInTheDocument();
@@ -58,7 +63,7 @@ describe('ListsManagerPage', () => {
   });
 
   it("la page indique qu'il n'y a pas de liste", () => {
-    renderWithProviders(<ListsManagerPage />, { preloadedState: getPreloadedState() });
+    renderWithProviders(<CollectionsManagerPage />, { preloadedState: getPreloadedState() });
 
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
     expect(screen.getByText("Vous n'avez aucune liste actuellement")).toBeInTheDocument();
@@ -69,7 +74,7 @@ describe('ListsManagerPage', () => {
     const mockDispatch = vi.fn();
     (useAppDispatch as ReturnType<typeof vi.fn>).mockReturnValue(mockDispatch);
 
-    renderWithProviders(<ListsManagerPage />);
+    renderWithProviders(<CollectionsManagerPage />);
     //le formulaire n'est pas visible
     const textboxNotVisible = screen.queryByRole('textbox', { name: 'Nom de la liste' });
     expect(textboxNotVisible).not.toBeInTheDocument();
@@ -92,7 +97,7 @@ describe('ListsManagerPage', () => {
 
     //le formulaire appelle le dispatch
     await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(addListRequest('nomListe'));
+      expect(mockDispatch).toHaveBeenCalledWith(addCollectionRequest('nomListe'));
     });
   });
 });
