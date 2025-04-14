@@ -98,6 +98,7 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
     dispatch(createCollectionWithSelectionRequest({ selection, name: collectionName, manifestId }));
   };
 
+  //TODO : il faut corriger le aria-label pour qu'il prenne une chaine de caractère
   return (
     <Dialog>
       <ContextMenu>
@@ -118,6 +119,9 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
                   thumbnail={thumbnail}
                   style={{ width: 'auto', height: '100px', objectFit: 'contain' }}
                   className='w-fit'
+                  aria-label={t('aria_label_thumbnail_canvas', {
+                    canvas: canvas.label ? canvas.label : '',
+                  })}
                 />
               </CardContent>
             </Card>

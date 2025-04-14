@@ -33,6 +33,7 @@ const GridThumb = ({
 }) => {
   const canvas = useAppSelector((state) => getCanvasById(state, canvasId)) as Canvas;
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const handleOnClick = () => {
     if (canvas !== undefined) {
@@ -56,10 +57,14 @@ const GridThumb = ({
         thumbnail={thumbnail}
         style={{ width: '100px', height: '100px', objectFit: 'contain' }}
         className='w-fit'
+        aria-label='canvas thumbnail'
       />
-      <div className='absolute top-0 right-0 flex items-center justify-center opacity-0 group-hover:opacity-100'>
+      <button
+        className='absolute top-0 right-0 flex items-center justify-center opacity-0 group-hover:opacity-100'
+        title={t('btn_delete_collection')}
+      >
         <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
-      </div>
+      </button>
     </div>
   );
 };
@@ -93,7 +98,6 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
       grid.on('change', (_event, _items) => {
         grid.compact();
       });
-      console.log('compute grid');
 
       grid.batchUpdate(); //afin d'éviter les rendus tant qu'on n'a pas terminé les makeWidgets
       grid.removeAll();
@@ -114,10 +118,11 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
   }, [activeCollection]);
 
   return (
-    <div className='flex h-full w-full flex-col space-y-2'>
+    <section className='flex h-full w-full flex-col space-y-2'>
       {activeCollection && (
         <>
           <Accordion
+            asChild
             className='rounded-md border bg-white'
             type='single'
             collapsible
@@ -138,7 +143,7 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
               className='h-fit flex-1 space-x-2 rounded-md border bg-white'
             >
               <ResizablePanel className='h-full w-full' minSize={30}>
-                <div className='m-2 grid grid-cols-8'>
+                <section className='m-2 grid grid-cols-8'>
                   {activeCollection.content.map((item) => (
                     <div
                       key={item.canvasId}
@@ -152,7 +157,7 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
                       />
                     </div>
                   ))}
-                </div>
+                </section>
               </ResizablePanel>
               <ResizableHandle withHandle />
               <ResizablePanel className='h-full w-full' minSize={30}>
@@ -164,7 +169,7 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
           )}
         </>
       )}
-    </div>
+    </section>
   );
 };
 

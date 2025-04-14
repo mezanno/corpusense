@@ -53,8 +53,10 @@ const ManifestDetails = () => {
           <Thumbnail thumbnail={thumbnail} />
           <Label label={manifest?.label} as='h3' className='text-center text-mezanno-4' />
           <h4 className='w-full text-sm font-bold break-words text-mezanno-4'>{manifest?.id}</h4>
-          <div className='w-full rounded-md border p-2'>
-            <h3 className='text-xl'>{t('title_metadata_gallica')}</h3>
+          <section className='w-full rounded-md border p-2' aria-labelledby='metadata_gallica'>
+            <h3 id='metadata_gallica' className='text-xl'>
+              {t('title_metadata_gallica')}
+            </h3>
             <ScrollArea className='h-72 w-full whitespace-nowrap'>
               <Metadata
                 metadata={manifest?.metadata as MetadataItem[]}
@@ -62,14 +64,16 @@ const ManifestDetails = () => {
               />
               <ScrollBar orientation='horizontal' />
             </ScrollArea>
-          </div>
-          <div className='w-full rounded-md border p-2'>
-            <h3 className='text-xl'>{t('title_metadata_corpusense')}</h3>
+          </section>
+          <section className='w-full rounded-md border p-2' aria-labelledby='metadata_corpusense'>
+            <h3 id='metadata_corpusense' className='text-xl'>
+              {t('title_metadata_corpusense')}
+            </h3>
             <ScrollArea className='h-72 w-full whitespace-nowrap'>
               <MetadataTable />
               <ScrollBar orientation='horizontal' />
             </ScrollArea>
-          </div>
+          </section>
         </div>
       )}
     </section>

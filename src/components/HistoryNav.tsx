@@ -7,24 +7,14 @@ import { IIIFExternalWebResource, InternationalString } from '@iiif/presentation
 import { Summary, Thumbnail } from '@samvera/clover-iiif/primitives';
 import { CircleX, FileImage } from 'lucide-react';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 const Item = ({ url }: { url: string }) => {
   const { manifest } = useManifest(url);
   const dispatch = useAppDispatch();
-
-  const thumbnail = useMemo(() => {
-    if (manifest !== null && manifest.thumbnail !== undefined) {
-      return (
-        <Thumbnail
-          thumbnail={manifest.thumbnail as IIIFExternalWebResource[]}
-          style={{ width: '48px', height: '48px', objectFit: 'contain' }}
-        />
-      );
-    }
-    return <FileImage size={48} />;
-  }, [manifest]);
+  const { t } = useTranslation();
 
   const label = useMemo(() => {
     const text: InternationalString | undefined = manifest?.summary || manifest?.label;
@@ -35,6 +25,19 @@ const Item = ({ url }: { url: string }) => {
         summary={text as InternationalString}
       />
     );
+  }, [manifest]);
+
+  const thumbnail = useMemo(() => {
+    if (manifest !== null && manifest.thumbnail !== undefined) {
+      return (
+        <Thumbnail
+          thumbnail={manifest.thumbnail as IIIFExternalWebResource[]}
+          style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+          aria-label='thumbnail'
+        />
+      );
+    }
+    return <FileImage size={48} />;
   }, [manifest]);
 
   const handleDelete = () => {
@@ -54,9 +57,12 @@ const Item = ({ url }: { url: string }) => {
               {thumbnail}
               {label}
             </Link>
-            <div className='absolute top-0 right-0 flex items-center justify-center opacity-0 group-hover:opacity-100'>
+            <button
+              className='absolute top-0 right-0 flex items-center justify-center opacity-0 group-hover:opacity-100'
+              title={t('btn_delete_from_history')}
+            >
               <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
-            </div>
+            </button>
           </div>
         </TooltipTrigger>
         <TooltipContent>{url}</TooltipContent>

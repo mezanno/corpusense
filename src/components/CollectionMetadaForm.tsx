@@ -177,6 +177,8 @@ const CollectionMetadaForm = ({ collection }: { collection: Collection }) => {
                       styleClasses={{ inlineTagsContainer: 'tagInputInlineContainer' }}
                       activeTagIndex={activeTagIndex}
                       setActiveTagIndex={setActiveTagIndex}
+                      title={t('aria_label_tags')}
+                      alt={t('aria_label_tags')}
                     />
                   </FormControl>
                   <FormDescription>{t('form_description_tags')}</FormDescription>

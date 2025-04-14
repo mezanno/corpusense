@@ -38,7 +38,7 @@ export type CanvasViewerContentProps = {
 };
 
 export const CanvasViewerContent = ({ canvas }: CanvasViewerContentProps) => {
-  console.log('CanvasViewerContent - render', canvas);
+  // console.log('CanvasViewerContent - render', canvas);
   const appDispatch = useAppDispatch();
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
   // useAnnotoriousStoreSync(anno, canvas?.id);

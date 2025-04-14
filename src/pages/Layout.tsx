@@ -114,7 +114,7 @@ const LayoutSideBar = () => {
                               </SidebarMenuSubButton>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <SidebarMenuAction>
+                                  <SidebarMenuAction title={t('btn_more_actions')}>
                                     <MoreHorizontal />
                                   </SidebarMenuAction>
                                 </DropdownMenuTrigger>

@@ -116,7 +116,7 @@ const CanvasGallery = ({ canvasViewerName }: { canvasViewerName: string }) => {
             hitRate={0}
             onSelect={handleSelect}
           />
-          <AutoSizer ref={containerRef}>
+          <AutoSizer ref={containerRef} role='list'>
             {({ height, width }) => (
               <Grid
                 columnCount={4}

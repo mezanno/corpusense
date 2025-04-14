@@ -91,7 +91,7 @@ const AnnotationForm = ({
   };
 
   return (
-    <div className='m-2 flex-col'>
+    <section className='m-2 flex-col' aria-label='annotation form'>
       <Form {...form}>
         <form
           // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -160,6 +160,7 @@ const AnnotationForm = ({
               </div>
             ) : (
               <Button
+                title={t('btn_OCR_analyze')}
                 variant='secondary'
                 className='cursor-pointer'
                 onClick={(e) => handleOcrClick(e)}
@@ -168,6 +169,7 @@ const AnnotationForm = ({
               </Button>
             )}
             <Button
+              title={t('btn_get_extract')}
               variant='secondary'
               className='cursor-pointer'
               onClick={(e) => void handleExtract(e)}
@@ -175,6 +177,7 @@ const AnnotationForm = ({
               <TextSelect />
             </Button>
             <Button
+              title={t('btn_delete_annotation')}
               variant='destructive'
               className='cursor-pointer'
               onClick={(event) => {
@@ -201,7 +204,7 @@ const AnnotationForm = ({
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </section>
   );
 };
 

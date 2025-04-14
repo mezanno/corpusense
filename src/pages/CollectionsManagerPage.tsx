@@ -92,6 +92,7 @@ const CollectionTableRow = ({
     <TableRow onClick={() => void handleOnClick(collection.id as string)}>
       <TableCell>
         <Checkbox
+          aria-label={t('aria_label_selection_collection')}
           onClick={(e) => {
             e.stopPropagation();
             addOrRemoveCollection(
@@ -212,8 +213,8 @@ const CollectionsManagerPage = () => {
   };
 
   return (
-    <main className='flex h-full w-full flex-col items-center space-y-4 rounded-2xl border-1 bg-white'>
-      <div className='ml-2 flex w-full space-x-2'>
+    <div className='flex h-full w-full flex-col items-center space-y-4 rounded-2xl border-1 bg-white'>
+      <section className='ml-2 flex w-full space-x-2'>
         <AlertCollectionDialog
           title={t('btn_create_collection')}
           description={t('description_create_collection')}
@@ -238,13 +239,13 @@ const CollectionsManagerPage = () => {
         >
           {({ close }) => <UploadFileForm close={close} />}
         </AlertCollectionDialog>
-      </div>
+      </section>
 
       {collections.length > 0 ? (
         <section className='flex h-full w-4/5 flex-col items-center space-y-1'>
-          <div className='text-xl'>
+          <h2 className='text-xl'>
             {t('info_number_of_collections', { number: collections.length })}
-          </div>
+          </h2>
           <Table>
             <TableHeader>
               <TableRow>
@@ -276,7 +277,7 @@ const CollectionsManagerPage = () => {
                       aria-label={t('btn_export_collection')}
                       title={t('btn_export_collection')}
                     >
-                      <DownloadIcon aria-label={t('btn_export_collection')} />
+                      <DownloadIcon />
                     </Button>
                   ) : (
                     <div>-</div>
@@ -291,7 +292,7 @@ const CollectionsManagerPage = () => {
           {t('info_no_collection')}
         </div>
       )}
-    </main>
+    </div>
   );
 };
 
