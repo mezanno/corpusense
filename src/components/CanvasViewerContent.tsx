@@ -10,6 +10,7 @@ import {
   AnnotoriousOpenSeadragonAnnotator,
   DrawingStyleExpression,
   ImageAnnotation,
+  OpenSeadragonAnnotationPopup,
   OpenSeadragonAnnotator,
   OpenSeadragonViewer,
   useAnnotations,
@@ -128,7 +129,9 @@ export const CanvasViewerContent = ({ canvas }: CanvasViewerContentProps) => {
       drawingEnabled={cvcState?.mode === 'draw'}
       style={style}
     >
-      <div className='relative h-full w-full'>
+      <div
+        className={`relative h-full w-full ${cvcState?.mode === 'draw' ? 'cursor-pen-tool' : 'cursor-default'}`}
+      >
         <OpenSeadragonViewer
           aria-label='canvas viewer'
           className='h-full w-full bg-amber-50'
@@ -157,16 +160,7 @@ export const CanvasViewerContent = ({ canvas }: CanvasViewerContentProps) => {
           </div>
         )}
       </div>
-      {/* <OpenSeadragonAnnotationPopup
-                  popup={() => (
-                    <HoverCard open={selected.length > 0}>
-                      <HoverCardContent>
-                        <div>{selected[0]?.annotation.bodies[1]?.value}</div>
-                      </HoverCardContent>
-                    </HoverCard>
-                  )}
-                  // popup={() => <AnnotationForm canvas={canvas} selected={selected} />}
-                /> */}
+      <OpenSeadragonAnnotationPopup popup={() => <div>Test</div>} />
     </OpenSeadragonAnnotator>
   );
 };
