@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { setCanvasFromComponent } from '@/state/reducers/canvas';
+import { reset, setCanvasFromComponent } from '@/state/reducers/canvas';
 import { addCollectionToHistory, removeElementFromCollection } from '@/state/reducers/collections';
 import { getCanvasById } from '@/state/selectors/storedItems';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
@@ -175,6 +175,7 @@ const CollectionInspectorPage = () => {
 
   if (collectionId !== undefined) {
     dispatch(addCollectionToHistory(collectionId));
+    dispatch(reset());
   }
 
   return collectionId === undefined ? (
