@@ -1,6 +1,6 @@
 import { ShapeType } from '@annotorious/annotorious';
 import { v4 as uuid } from 'uuid';
-import { Annotation, ElementType, W3CMotivationEnum } from '../Annotation';
+import { Annotation, convertToElementTypeEnum, W3CMotivationEnum } from '../Annotation';
 
 export interface EdwinBox {
   id: number;
@@ -14,9 +14,16 @@ const URL_TAGGING = '/tag';
 
 function convertEdwinToAnnotation(edwinBox: EdwinBox, canvasId: string, originalWidth: number) {
   const multiple = Math.max(originalWidth, 2048) / 2048;
-  if (edwinBox.type !== 'ENTRY') {
-    return null;
+
+  let type = edwinBox.type.toUpperCase();
+  if (type === 'TITLE_LEVEL_1' || type === 'TITLE_LEVEL_2') {
+    type = 'ENTRY';
+  } else if (type === 'SECTION_LEVEL_1' || type === 'SECTION_LEVEL_2') {
+    type = 'SECTION';
+  } else if (type === 'COLUMN_LEVEL_1' || type === 'COLUMN_LEVEL_2') {
+    type = 'COLUMN';
   }
+
   const annotationId = uuid();
   return {
     canvasId,
@@ -43,13 +50,13 @@ function convertEdwinToAnnotation(edwinBox: EdwinBox, canvasId: string, original
     bodies: [
       {
         purpose: W3CMotivationEnum.Classifying,
-        value: ElementType.ENTRY,
+        value: convertToElementTypeEnum(type),
         annotation: annotationId,
         id: annotationId + URL_CLASSIFYING,
       },
       {
         purpose: W3CMotivationEnum.Tagging,
-        value: ElementType.ENTRY,
+        value: edwinBox.type,
         annotation: annotationId,
         id: annotationId + URL_TAGGING,
       },
@@ -62,7 +69,5 @@ export function convertEdwinResult(
   canvasId: string,
   originalWidth: number,
 ): Annotation[] {
-  return boxes
-    .map((b) => convertEdwinToAnnotation(b, canvasId, originalWidth))
-    .filter(Boolean) as Annotation[];
+  return boxes.map((b) => convertEdwinToAnnotation(b, canvasId, originalWidth)).filter(Boolean);
 }

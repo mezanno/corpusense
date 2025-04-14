@@ -29,6 +29,7 @@ export enum ElementType {
   LINE = 'LINE',
   COLUMN = 'COLUMN',
   PAGE = 'PAGE',
+  SECTION = 'SECTION',
 }
 
 export function convertToElementTypeEnum(str: string | undefined): ElementType {
