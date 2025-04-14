@@ -1,6 +1,6 @@
 import { ItemMetadataAttribute } from '@/data/models/Metadata';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { saveMetadaRequest } from '@/state/reducers/manifests';
+import { saveMetadataRequest } from '@/state/reducers/manifests';
 import { getLoadedManifest } from '@/state/selectors/manifests';
 import { CirclePlus, CircleX } from 'lucide-react';
 import { useState } from 'react';
@@ -24,7 +24,7 @@ const MetadataTable = () => {
     //delete empty inputs
     const newMetadata = formMetadata.filter((item) => item.label !== '' && item.value !== '');
     setFormMetadata(newMetadata);
-    dispatch(saveMetadaRequest(newMetadata));
+    dispatch(saveMetadataRequest(newMetadata));
   };
 
   const updateMetadata = (index: number, newValue: Partial<ItemMetadataAttribute>) => {

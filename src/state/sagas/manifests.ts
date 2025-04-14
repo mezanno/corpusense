@@ -16,8 +16,8 @@ import {
   historyUpdated,
   removeFromHistory,
   removeFromHistorySuccess,
-  saveMetadaRequest,
-  saveMetadaSuccess,
+  saveMetadataRequest,
+  saveMetadataSuccess,
   setHistory,
 } from '../reducers/manifests';
 import { getManifestURL } from '../selectors/manifests';
@@ -137,7 +137,7 @@ function* saveMetadaHandler({
       attribute: item,
     }));
     yield call(() => db.itemMetadata.bulkPut(manifestMetadata));
-    yield put(saveMetadaSuccess(payload));
+    yield put(saveMetadataSuccess(payload));
   }
 }
 
@@ -145,7 +145,7 @@ export default function* viewerSaga() {
   yield takeLatest(fetchManifestFromContentRequest, handleFetchManifestFromContent);
   yield takeLatest(fetchManifestFromUrlRequest, handleFetchManifestFromURL);
   yield takeLatest(fetchManifestFromArkRequest, handleFetchManifestFromArk);
-  yield takeEvery(saveMetadaRequest, saveMetadaHandler);
+  yield takeEvery(saveMetadataRequest, saveMetadaHandler);
   yield takeEvery(removeFromHistory, handleRemoveFromHistory);
 }
 
