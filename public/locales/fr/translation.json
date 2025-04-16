@@ -19,6 +19,7 @@
   "btn_delete_annotation": "Supprimer l'annotation",
   "btn_open": "Ouvrir",
   "btn_cancel": "Annuler",
+  "btn_continue": "Continuer",
   "btn_add_metadata": "Ajouter une métadonnée",
   "btn_collection_actions": "Que voulez-vous faire ?",
   "btn_create_collection": "Créer une nouvelle collection",
@@ -59,7 +60,11 @@
   "table_col_title_actions": "Actions",
   "table_col_title_collection_name": "Nom de la collection",
   "table_col_title_collection_info": "Informations",
-  "error_loading_manifest": "Erreur lors du chargement du manifest",
+  "error_occured": "Une erreur est survenue",
+  "error_loading_manifest": "Erreur lors du chargement du manifest : {{error}}",
+  "error_ark_invalid": "L'identifiant ARK ne doit contenir que des chiffres et des lettres",
+  "error_no_manifest_method": "Aucune méthode de chargement de manifest sélectionnée",
+  "error_parse_manifest": "Erreur lors de l'analyse du manifest",
   "error_nothing_toshow": "Rien à afficher",
   "error_id_collection_invalid": "Oups ! L'ID de la collection est invalide !",
   "error_collection_name_length": "Le nom de la collection doit contenir au moins 4 caractères",
@@ -85,5 +90,6 @@
   "aria_label_thumbnail": "Aperçu de l'image",
   "aria_label_selection_collection": "Sélectionner/déselectionner cette collection",
   "aria_label_thumbnail_canvas": "Aperçu du canvas {{canvas}}",
-  "aria_label_tags": "Étiquettes disponibles"
+  "aria_label_tags": "Étiquettes disponibles",
+  "oups": "Oups !"
 }

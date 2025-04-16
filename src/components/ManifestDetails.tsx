@@ -8,6 +8,7 @@ import {
 import { Label, Metadata, Summary, Thumbnail } from '@samvera/clover-iiif/primitives';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import ErrorDialog from './ErrorDialog';
 import Loading from './Loading';
 import './metadata.css';
 import MetadataTable from './MetadataTable';
@@ -15,7 +16,7 @@ import { NoManifestToShow } from './NothingToShow';
 import { ScrollArea, ScrollBar } from './ui/scroll-area';
 
 const ManifestDetails = () => {
-  const { isLoading, error, loadedData } = useAppSelector((state) => state.manifests);
+  const { isLoading, isLoaded, loadedData } = useAppSelector((state) => state.manifests);
   const [manifest, setManifest] = useState<Manifest | null>(null);
   const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[]>([]);
   const { t } = useTranslation();
@@ -36,12 +37,8 @@ const ManifestDetails = () => {
       className='flex h-full w-full flex-col items-center justify-center space-y-2 p-2'
       aria-label='manifest details'
     >
-      {error != null && error !== '' && (
-        <h3 className='text-center text-red-500' role='alert'>
-          {t('error_loading_manifest')}: {error}
-        </h3>
-      )}
-      {manifest === null ? (
+      <ErrorDialog />
+      {!isLoaded ? (
         <NoManifestToShow />
       ) : (
         <div className='flex h-full w-full flex-col items-center space-y-2'>
