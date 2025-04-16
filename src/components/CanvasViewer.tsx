@@ -1,5 +1,5 @@
 import { useAppSelector } from '@/hooks/hooks';
-import { getCanvasForCanvas } from '@/state/selectors/canvas';
+import { getCanvasForComponent } from '@/state/selectors/canvas';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { Annotorious, useHover } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
@@ -30,7 +30,7 @@ export const ReducerContext = createContext<{
 const CanvasViewer = ({ name, editable = false }: { name: string; editable?: boolean }) => {
   console.log('CanvasViewer - render', name);
   //get the canvas to display from redux
-  const canvas = useAppSelector(getCanvasForCanvas(name)) as Canvas;
+  const canvas = useAppSelector(getCanvasForComponent(name)) as Canvas;
 
   const [_hoveredElement, setHoveredElement] = useState<string | null>(null);
   const hover = useHover();
