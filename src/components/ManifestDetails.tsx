@@ -48,7 +48,11 @@ const ManifestDetails = () => {
             summary={manifest?.summary as InternationalString}
           />
           <Thumbnail thumbnail={thumbnail} />
-          <Label label={manifest?.label} as='h3' className='text-center text-mezanno-4' />
+          <Label
+            label={manifest?.label ?? { none: [''] }}
+            as='h3'
+            className='text-center text-mezanno-4'
+          />
           <h4 className='w-full text-sm font-bold break-words text-mezanno-4'>{manifest?.id}</h4>
           <section className='w-full rounded-md border p-2' aria-labelledby='metadata_gallica'>
             <h3 id='metadata_gallica' className='text-xl'>

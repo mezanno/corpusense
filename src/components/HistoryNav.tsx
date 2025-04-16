@@ -1,7 +1,7 @@
 import { History } from '@/data/models/History';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useManifest from '@/hooks/useManifest';
-import { removeFromHistory } from '@/state/reducers/manifests';
+import { removeFromHistoryRequest } from '@/state/reducers/manifests';
 import { getHistory } from '@/state/selectors/manifests';
 import { IIIFExternalWebResource, InternationalString } from '@iiif/presentation-3';
 import { Summary, Thumbnail } from '@samvera/clover-iiif/primitives';
@@ -41,7 +41,7 @@ const Item = ({ url }: { url: string }) => {
   }, [manifest]);
 
   const handleDelete = () => {
-    dispatch(removeFromHistory(url));
+    dispatch(removeFromHistoryRequest(url));
   };
 
   return (

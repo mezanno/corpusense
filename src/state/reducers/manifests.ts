@@ -5,7 +5,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface ManifestState {
   isLoading: boolean;
-  error: string | null;
+  lastError: string | null;
   loadedData: {
     content: Manifest;
     metadata: ItemMetadataAttribute[];
@@ -16,31 +16,37 @@ export interface ManifestState {
 
 const initialState: ManifestState = {
   isLoading: false,
-  error: '',
+  lastError: '',
   loadedData: null,
   history: [],
   isLoaded: false,
 };
 
+const loadingState: Omit<ManifestState, 'history'> = {
+  isLoading: true,
+  lastError: '',
+  loadedData: null,
+  isLoaded: false,
+};
+
+const applyLoadingState = (state: ManifestState): ManifestState => ({
+  ...loadingState,
+  history: state.history,
+});
+
 export const manifestsSlice = createSlice({
   name: 'manifests',
   initialState,
   reducers: {
-    fetchManifestFromUrlRequest: (state, _action: PayloadAction<string>) => {
-      state.isLoading = true;
-      state.error = null;
-    },
-    fetchManifestFromContentRequest: (state, _action: PayloadAction<string>) => {
-      state.isLoading = true;
-      state.error = null;
-    },
-    fetchManifestFromArkRequest: (state, _action: PayloadAction<string>) => {
-      state.isLoading = true;
-      state.error = null;
-    },
+    fetchManifestFromUrlRequest: (state, _action: PayloadAction<string>) =>
+      applyLoadingState(state),
+    fetchManifestFromContentRequest: (state, _action: PayloadAction<string>) =>
+      applyLoadingState(state),
+    fetchManifestFromArkRequest: (state, _action: PayloadAction<string>) =>
+      applyLoadingState(state),
     fetchManifestError: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
-      state.error = action.payload;
+      state.lastError = action.payload;
     },
     fetchManifestSuccess: (
       state,
@@ -50,7 +56,7 @@ export const manifestsSlice = createSlice({
       state.isLoaded = true;
       state.loadedData = action.payload;
     },
-    historyUpdated: (state, action: PayloadAction<History>) => {
+    updateHistorySuccess: (state, action: PayloadAction<History>) => {
       //add the manifest id to the history and remove the duplicates
       // state.history = state.history.filter((id) => id !== action.payload.id);
       state.history.unshift(action.payload);
@@ -58,7 +64,7 @@ export const manifestsSlice = createSlice({
     setHistory: (state, action: PayloadAction<History[]>) => {
       state.history = action.payload;
     },
-    removeFromHistory: (_state, _action: PayloadAction<string>) => {},
+    removeFromHistoryRequest: (_state, _action: PayloadAction<string>) => {},
     removeFromHistorySuccess: (state, action: PayloadAction<string>) => {
       state.history = state.history.filter((item) => item.url !== action.payload);
     },
@@ -66,6 +72,9 @@ export const manifestsSlice = createSlice({
     saveMetadataSuccess: (state, action: PayloadAction<ItemMetadataAttribute[]>) => {
       if (state.loadedData === null) return;
       state.loadedData.metadata = action.payload;
+    },
+    resetLastError: (state) => {
+      state.lastError = '';
     },
   },
 });
@@ -77,10 +86,11 @@ export const {
   fetchManifestError,
   fetchManifestSuccess,
   setHistory,
-  removeFromHistory,
+  removeFromHistoryRequest,
   removeFromHistorySuccess,
-  historyUpdated,
+  updateHistorySuccess,
   saveMetadataRequest,
   saveMetadataSuccess,
+  resetLastError,
 } = manifestsSlice.actions;
 export default manifestsSlice.reducer;

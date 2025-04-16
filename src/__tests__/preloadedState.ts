@@ -5,7 +5,7 @@ const emptyPreloadedState: RootState = {
   manifests: {
     history: [],
     isLoading: false,
-    error: '',
+    lastError: '',
     loadedData: null,
     isLoaded: false,
   },
