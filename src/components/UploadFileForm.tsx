@@ -2,7 +2,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAppDispatch } from '@/hooks/hooks';
-import { importMultipleCollections, importOneCollection } from '@/state/reducers/collections';
+import {
+  importMultipleCollectionsRequest,
+  importOneCollectionRequest,
+} from '@/state/reducers/collections';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -26,12 +29,12 @@ const UploadFileForm = ({ close }: { close: () => void }) => {
         if (typeof content === 'string') {
           try {
             const jsonContent = JSON.parse(content) as object;
-            dispatch(importOneCollection(jsonContent));
+            dispatch(importOneCollectionRequest(jsonContent));
           } catch (error) {
             console.error('Error parsing JSON:', error);
           }
         } else if (content instanceof ArrayBuffer) {
-          dispatch(importMultipleCollections(content));
+          dispatch(importMultipleCollectionsRequest(content));
         } else {
           console.error('Unsupported file type');
         }

@@ -5,7 +5,7 @@ import { Tag } from './Tag';
 export interface Collection {
   id?: string;
   name: string;
-  content?: CollectionElement[];
+  content: CollectionElement[];
   about?: string;
   tags: string[];
 }

@@ -1,6 +1,6 @@
 import { all, call, fork, spawn } from 'redux-saga/effects';
 import annotationsSaga from './annotations';
-import collectionsSaga, { loadCollectionsSaga } from './collections';
+import collectionsSaga, { fetchAllCollections } from './collections';
 import exportSaga from './export';
 import manifestsSaga, { loadHistorySaga } from './manifests';
 import selectionSaga from './selection';
@@ -31,7 +31,7 @@ function getRootSaga() {
       workerSaga,
     ];
     yield all(sagas.map((saga) => spawn(launchSaga, saga)));
-    yield fork(loadCollectionsSaga); //load collections at startup
+    yield fork(fetchAllCollections); //load collections at startup
     yield fork(loadHistorySaga); //load history at startup
     yield fork(loadStoredElements); //load stored elements at startup
     yield fork(loadTagsSaga); //load types list at startup

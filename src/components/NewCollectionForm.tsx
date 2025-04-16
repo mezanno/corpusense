@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useAppDispatch } from '@/hooks/hooks';
-import { addCollectionRequest } from '@/state/reducers/collections';
+import { createCollectionRequest } from '@/state/reducers/collections';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import { useForm } from 'react-hook-form';
@@ -33,7 +33,7 @@ const NewCollectionForm = ({ close }: { close: () => void }) => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    dispatch(addCollectionRequest(values.name));
+    dispatch(createCollectionRequest(values.name));
     close();
   }
 

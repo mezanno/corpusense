@@ -10,7 +10,7 @@ import {
 import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
-import { removeFromOpenedCollections, reset } from '@/state/reducers/collections';
+import { removeFromOpenedCollections, resetLastError } from '@/state/reducers/collections';
 import { getOpenedCollections } from '@/state/selectors/collections';
 import {
   ChevronDown,
@@ -155,7 +155,7 @@ const Layout = () => {
   useEffect(() => {
     if (newCollectionEvent) {
       toast.success(t('toast_collection_created'));
-      dispatch(reset());
+      dispatch(resetLastError());
     }
   }, [newCollectionEvent]);
 

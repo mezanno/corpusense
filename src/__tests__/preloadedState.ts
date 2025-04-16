@@ -14,7 +14,7 @@ const emptyPreloadedState: RootState = {
   },
   collections: {
     values: [],
-    error: '',
+    lastError: '',
     newCollectionEvent: false,
     openedCollections: [],
   },

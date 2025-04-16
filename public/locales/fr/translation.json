@@ -71,7 +71,7 @@
   "error_nothing_toshow": "Rien à afficher",
   "error_id_collection_invalid": "Oups ! L'ID de la collection est invalide !",
   "error_collection_name_length": "Le nom de la collection doit contenir au moins 4 caractères",
-
+  "error_collection_not_found": "La collection n'existe pas",
   "info_empty_collection": "Cette collection est vide",
   "info_no_collection": "Vous n'avez aucune collection actuellement",
   "info_number_of_collections": "Vous avez {{number}} collection(s)",

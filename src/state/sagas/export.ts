@@ -5,13 +5,13 @@ import { convertW3CAnnotationsToIIIF, IIIF_CONTEXT } from '@/data/models/convert
 import { ItemMetadata } from '@/data/models/Metadata';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
+import { getCollectionById } from '@/data/services/collections';
 import { AnnotationPage, Canvas, IIIFExternalWebResource, Manifest } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import FileSaver from 'file-saver';
 import JSZIP from 'jszip';
 import { all, call, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
 import { exportMultipleCollectionsRequest, exportRequest, exportSuccess } from '../reducers/export';
-import { getCollectionById } from './collections';
 import { getTagsById } from './tags';
 
 function* handleExportRequest(
@@ -90,7 +90,10 @@ function* handleExportMultipleCollectionsRequest(
   for (let i = 0; i < collectionIds.length; i++) {
     const id = collectionIds[i];
     try {
-      const collection = (yield call(getCollectionById, id)) as Collection;
+      // const collection = (yield call(getCollectionById, id)) as Collection;
+      const result = yield call(getCollectionById, id);
+      const collection = result as Collection;
+
       const manifest = yield call(generateManifestFromCollection, collection);
       console.log('Manifest ', manifest);
       zip.file(collection.name + '.json', JSON.stringify(manifest, null, 2));

@@ -1,17 +1,18 @@
 import { Collection } from '@/data/models/Collection';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
+import { getErrorMessage } from '@/utils/utils';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface CollectionsState {
   values: Collection[];
-  error: string;
+  lastError: string;
   newCollectionEvent: boolean;
   openedCollections: Collection[];
 }
 
 const initialState: CollectionsState = {
   values: [],
-  error: '',
+  lastError: '',
   newCollectionEvent: false,
   openedCollections: [],
 };
@@ -20,10 +21,10 @@ export const collectionsSlice = createSlice({
   name: 'collections',
   initialState,
   reducers: {
-    addCollectionRequest: (state, _action: PayloadAction<string>) => {
+    createCollectionRequest: (state, _action: PayloadAction<string>) => {
       state.newCollectionEvent = false;
     },
-    addCollectionSuccess: (state, action: PayloadAction<Collection>) => {
+    createCollectionSuccess: (state, action: PayloadAction<Collection>) => {
       state.values.push(action.payload);
       if (
         action.payload.id !== undefined &&
@@ -53,7 +54,7 @@ export const collectionsSlice = createSlice({
     setCollections: (state, action: PayloadAction<Collection[]>) => {
       state.values = action.payload;
     },
-    addCollectionToHistory: (state, action: PayloadAction<string>) => {
+    addCollectionToHistoryRequest: (state, action: PayloadAction<string>) => {
       if (state.openedCollections.find((elt) => elt.id === action.payload) === undefined) {
         state.openedCollections.push(
           state.values.find((elt) => elt.id === action.payload) as Collection,
@@ -88,7 +89,7 @@ export const collectionsSlice = createSlice({
         state.values.find((elt) => elt.id === action.payload.id),
       );
     },
-    removeElementFromCollection: (
+    removeElementFromCollectionRequest: (
       _state,
       _action: PayloadAction<{ collectionId: string; canvasId: string }>,
     ) => {},
@@ -104,32 +105,35 @@ export const collectionsSlice = createSlice({
       const collectionId: string = action.payload;
       state.openedCollections = state.openedCollections.filter((elt) => elt.id !== collectionId);
     },
-    importOneCollection: (_state, _action: PayloadAction<object>) => {},
-    importMultipleCollections: (_state, _action: PayloadAction<ArrayBuffer>) => {},
-    reset: (state) => {
+    importOneCollectionRequest: (_state, _action: PayloadAction<object>) => {},
+    importMultipleCollectionsRequest: (_state, _action: PayloadAction<ArrayBuffer>) => {},
+    setError(state, action: PayloadAction<unknown>) {
+      state.lastError = getErrorMessage(action.payload);
+    },
+    resetLastError: (state) => {
       state.newCollectionEvent = false;
     },
   },
 });
 
 export const {
-  addCollectionRequest,
-  addCollectionSuccess,
+  createCollectionRequest,
+  createCollectionSuccess,
   removeCollectionSuccess,
   removeCollectionRequest,
   updateCollectionRequest,
   updateCollectionSuccess,
   setCollections,
-  addCollectionToHistory,
+  addCollectionToHistoryRequest,
   addSelectionToCollectionRequest,
   addSelectionToCollectionSuccess,
   createCollectionWithSelectionRequest,
-  removeElementFromCollection,
+  removeElementFromCollectionRequest,
   removeElementFromCollectionSuccess,
   removeFromOpenedCollections,
-  // removeSelectionFromList,
-  importOneCollection,
-  importMultipleCollections,
-  reset,
+  importOneCollectionRequest,
+  importMultipleCollectionsRequest,
+  setError,
+  resetLastError,
 } = collectionsSlice.actions;
 export default collectionsSlice.reducer;

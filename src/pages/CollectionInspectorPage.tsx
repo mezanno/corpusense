@@ -9,7 +9,10 @@ import {
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { reset, setCanvasFromComponent } from '@/state/reducers/canvas';
-import { addCollectionToHistory, removeElementFromCollection } from '@/state/reducers/collections';
+import {
+  addCollectionToHistoryRequest,
+  removeElementFromCollectionRequest,
+} from '@/state/reducers/collections';
 import { getCanvasById } from '@/state/selectors/storedItems';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
@@ -43,7 +46,7 @@ const GridThumb = ({
 
   const handleDelete = useCallback(() => {
     console.log('Delete', canvasId);
-    dispatch(removeElementFromCollection({ collectionId: collectionId, canvasId }));
+    dispatch(removeElementFromCollectionRequest({ collectionId: collectionId, canvasId }));
   }, [canvasId]);
 
   if (canvas === undefined) {
@@ -179,7 +182,7 @@ const CollectionInspectorPage = () => {
   const dispatch = useAppDispatch();
 
   if (collectionId !== undefined) {
-    dispatch(addCollectionToHistory(collectionId));
+    dispatch(addCollectionToHistoryRequest(collectionId));
     dispatch(reset());
   }
 
