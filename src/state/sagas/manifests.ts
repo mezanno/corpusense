@@ -119,13 +119,14 @@ function* handleFetchManifest({
     }
 
     //add the manifest to the history
+
+    const addedHistory: History = { url: manifest.id };
     try {
-      const addedHistory: History = { url: manifest.id };
       yield call(() => db.history.add(addedHistory));
-      yield put(updateHistorySuccess(addedHistory));
     } catch (error) {
       console.warn('Error adding url to indexedDB history: ', error);
     }
+    yield put(updateHistorySuccess(addedHistory));
   } catch (error) {
     yield put(fetchManifestError(getErrorMessage(error)));
   }

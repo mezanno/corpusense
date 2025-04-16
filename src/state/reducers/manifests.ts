@@ -58,7 +58,7 @@ export const manifestsSlice = createSlice({
     },
     updateHistorySuccess: (state, action: PayloadAction<History>) => {
       //add the manifest id to the history and remove the duplicates
-      // state.history = state.history.filter((id) => id !== action.payload.id);
+      state.history = state.history.filter((item) => item.url !== action.payload.url);
       state.history.unshift(action.payload);
     },
     setHistory: (state, action: PayloadAction<History[]>) => {
