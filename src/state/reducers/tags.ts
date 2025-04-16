@@ -10,18 +10,18 @@ const initialState: TagState = {
 };
 
 export const tagSlice = createSlice({
-  name: 'typeList',
+  name: 'tags',
   initialState,
   reducers: {
-    addNewTag: (_state, _action: PayloadAction<Tag>) => {},
+    createNewTagRequest: (_state, _action: PayloadAction<Tag>) => {},
     setTags: (state, action: PayloadAction<Tag[]>) => {
       state.values = action.payload;
     },
-    newTagAdded: (state, action: PayloadAction<Tag>) => {
+    createNewTagSuccess: (state, action: PayloadAction<Tag>) => {
       state.values.push(action.payload);
     },
   },
 });
 
-export const { addNewTag, setTags, newTagAdded } = tagSlice.actions;
+export const { createNewTagRequest, setTags, createNewTagSuccess } = tagSlice.actions;
 export default tagSlice.reducer;

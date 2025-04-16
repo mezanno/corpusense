@@ -10,9 +10,9 @@ import { AnnotationPage, Canvas, IIIFExternalWebResource, Manifest } from '@iiif
 import { PayloadAction } from '@reduxjs/toolkit';
 import FileSaver from 'file-saver';
 import JSZIP from 'jszip';
-import { all, call, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
+import { all, call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import { exportMultipleCollectionsRequest, exportRequest, exportSuccess } from '../reducers/export';
-import { getTagsById } from './tags';
+import { getTagsByIds } from '../selectors/tags';
 
 function* handleExportRequest(
   action: PayloadAction<string>,
@@ -27,7 +27,7 @@ function* handleExportRequest(
   let header = 'nom_collection\turl\tnum_page\ttags';
 
   let firstTimeHeader = true;
-  if (collectionToExport !== undefined && collectionToExport.content) {
+  if (collectionToExport !== undefined) {
     for (let i = 0; i < collectionToExport.content.length; i++) {
       let csvLine = collectionToExport.name;
       const collectionElement = collectionToExport.content[i];
@@ -118,7 +118,7 @@ function* generateManifestFromCollection(
   const items = yield all(
     collection.content.map((item) => call(generateCanvas, item.canvasId, manifestId)),
   );
-  const tags = yield call(getTagsById, collection.tags);
+  const tags = yield select(getTagsByIds, collection.tags);
 
   return {
     '@context': IIIF_CONTEXT,

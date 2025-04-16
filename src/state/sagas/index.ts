@@ -5,7 +5,7 @@ import exportSaga from './export';
 import manifestsSaga, { loadHistorySaga } from './manifests';
 import selectionSaga from './selection';
 import { loadStoredElements } from './storedItems';
-import tagsSaga, { loadTagsSaga } from './tags';
+import tagsSaga, { fetchAllTags } from './tags';
 import workerSaga from './workers';
 
 function* launchSaga(saga: () => Generator) {
@@ -34,7 +34,7 @@ function getRootSaga() {
     yield fork(fetchAllCollections); //load collections at startup
     yield fork(loadHistorySaga); //load history at startup
     yield fork(loadStoredElements); //load stored elements at startup
-    yield fork(loadTagsSaga); //load types list at startup
+    yield fork(fetchAllTags); //load types list at startup
   };
 }
 
