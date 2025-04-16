@@ -12,7 +12,7 @@ const useAppNavigation = () => {
     if (manifestId === undefined) {
       await navigate(`${CorpusenseRoutes.MANIFEST}`);
     } else {
-      await navigate(`${CorpusenseRoutes.MANIFEST}/manifestId=${manifestId}`);
+      await navigate(`${CorpusenseRoutes.MANIFEST}?manifestId=${manifestId}`);
     }
   };
   const goToCollectionsManager = async () => {
