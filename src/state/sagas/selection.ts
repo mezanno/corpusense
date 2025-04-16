@@ -10,6 +10,10 @@ import {
 import { getCanvases } from '../selectors/manifests';
 import { getSelectionEnd, getSelectionStart } from '../selectors/selection';
 
+/**
+ * Set the selection start index. Update the canvases selected accordingly.
+ * @param action
+ */
 function* handleSetSelectionStart(
   action: PayloadAction<number>,
 ): Generator<Effect, void, Canvas[] | number> {
@@ -17,8 +21,8 @@ function* handleSetSelectionStart(
 
   const canvasesLoaded = yield select(getCanvases);
   if (Array.isArray(canvasesLoaded) && canvasesLoaded.length > 0) {
-    const currentIndexEnd = yield select(getSelectionEnd);
-    const end = currentIndexEnd as number;
+    const selectionEnd = yield select(getSelectionEnd);
+    const end = selectionEnd as number;
 
     const selection = [] as SelectedCanvas[];
     let newIndexEnd = newIndexStart;
@@ -40,7 +44,7 @@ function* handleSetSelectionStart(
 
     yield put(
       setSelection({
-        selection: selection,
+        selection,
         start: newIndexStart,
         end: newIndexEnd,
       }),
@@ -78,7 +82,7 @@ function* handleSetSelectionEnd(
 
     yield put(
       setSelection({
-        selection: selection,
+        selection,
         start: newIndexStart,
         end: newIndexEnd,
       }),
