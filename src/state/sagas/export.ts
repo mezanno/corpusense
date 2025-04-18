@@ -3,9 +3,9 @@ import { Collection } from '@/data/models/Collection';
 import { ItemMetadata } from '@/data/models/Metadata';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
-import { getCollectionById } from '@/data/services/collections';
-import { generateManifestFromCollection } from '@/data/services/export';
-import { Canvas, IIIFExternalWebResource, Manifest } from '@iiif/presentation-3';
+import { generateManifestFromCollection, ManifestExport } from '@/data/services/export';
+import { getErrorMessage } from '@/utils/utils';
+import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import FileSaver from 'file-saver';
 import JSZIP from 'jszip';
@@ -82,26 +82,27 @@ function* handleExportRequest(
 
 function* handleExportMultipleCollectionsRequest(
   action: PayloadAction<string[]>,
-): Generator<Effect, void, Manifest | Collection | Blob> {
+): Generator<Effect, void, ManifestExport | Blob> {
   const collectionIds = action.payload;
   const zip = new JSZIP();
   for (let i = 0; i < collectionIds.length; i++) {
     const id = collectionIds[i];
     try {
-      // const collection = (yield call(getCollectionById, id)) as Collection;
-      const result = yield call(getCollectionById, id);
-      const collection = result as Collection;
-
-      const manifest = yield call(generateManifestFromCollection, collection);
-      console.log('Manifest ', manifest);
-      zip.file(collection.name + '.json', JSON.stringify(manifest, null, 2));
+      const { name, manifest } = (yield call(generateManifestFromCollection, id)) as ManifestExport;
+      console.log(name, ' --> ', manifest);
+      zip.file(name + '.json', JSON.stringify(manifest, null, 2));
     } catch (error) {
-      console.error('Error generating manifest:', error);
+      console.error('Error generating manifest:', getErrorMessage(error));
       continue;
     }
   }
   const zipContent = (yield call(() => zip.generateAsync({ type: 'blob' }))) as Blob;
   yield call(FileSaver.saveAs, zipContent, 'exported_collections.zip');
+
+  //TODO : il faudrait ajouter un message de succès (avec potentiellement certaines erreurs) ou un message d'erreur
+  //exportSuccess
+  //exportSuccessWithErrors
+  //exportError
 }
 
 export default function* exportSaga() {

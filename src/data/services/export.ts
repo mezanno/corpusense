@@ -1,12 +1,23 @@
-import { AnnotationPage, Canvas } from '@iiif/presentation-3';
+import { AnnotationPage, Canvas, Manifest } from '@iiif/presentation-3';
+import i18next from 'i18next';
 import { db } from '../db';
-import { Collection } from '../models/Collection';
 import { convertW3CAnnotationsToIIIF, IIIF_CONTEXT } from '../models/converters/iiif';
 import { getTagsByIds } from './tags';
 
-const generateManifestFromCollection = async (collection: Collection) => {
-  if (collection.content === undefined || collection.content.length === 0) {
-    throw new Error(`Collection ${collection.name} is empty`);
+export interface ManifestExport {
+  name: string;
+  manifest: Manifest;
+}
+
+const generateManifestFromCollection = async (id: string): Promise<ManifestExport> => {
+  const collection = await db.collections.get(id);
+
+  if (collection === undefined) {
+    throw new Error(i18next.t('error_export_collection_not_found'));
+  }
+
+  if (collection.content.length === 0) {
+    throw new Error(i18next.t('error_export_collection_empty', { name: collection.name }));
   }
 
   const manifestId = 'https://1.rp.mezanno.xyz/toto.json'; //TODO: to be changed
@@ -20,15 +31,18 @@ const generateManifestFromCollection = async (collection: Collection) => {
   const tags = await getTagsByIds(collection.tags);
 
   return {
-    '@context': IIIF_CONTEXT,
-    // id: list.id as string,
-    id: manifestId,
-    type: 'Manifest',
-    label: {
-      none: [collection.name],
+    name: collection.name,
+    manifest: {
+      '@context': IIIF_CONTEXT,
+      // id: list.id as string,
+      id: manifestId,
+      type: 'Manifest',
+      label: {
+        none: [collection.name],
+      },
+      items,
+      ...(tags.length > 0 && { tags }),
     },
-    items,
-    ...(tags.length > 0 && { tags }),
   };
 };
 
