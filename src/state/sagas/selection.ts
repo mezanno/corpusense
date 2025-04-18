@@ -11,7 +11,7 @@ import { getCanvases } from '../selectors/manifests';
 import { getSelectionEnd, getSelectionStart } from '../selectors/selection';
 
 /**
- * Set the selection start index. Update the canvases selected accordingly.
+ * Side effect to set the selection start index. Update the canvases selected accordingly.
  * @param action
  */
 function* handleSetSelectionStart(
@@ -52,6 +52,10 @@ function* handleSetSelectionStart(
   }
 }
 
+/**
+ * Side effect to set the selection end index. Update the canvases selected accordingly.
+ * @param action
+ */
 function* handleSetSelectionEnd(
   action: PayloadAction<number>,
 ): Generator<Effect, void, Canvas[] | number> {

@@ -9,7 +9,7 @@ import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import FileSaver from 'file-saver';
 import JSZIP from 'jszip';
-import { call, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
+import { call, CallEffect, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
 import { exportMultipleCollectionsRequest, exportRequest, exportSuccess } from '../reducers/export';
 
 function* handleExportRequest(
@@ -80,9 +80,13 @@ function* handleExportRequest(
   }
 }
 
+/**
+ * Export one or more collections to a zip file
+ * @param action The ids of the collections to export
+ */
 function* handleExportMultipleCollectionsRequest(
   action: PayloadAction<string[]>,
-): Generator<Effect, void, ManifestExport | Blob> {
+): Generator<CallEffect, void, ManifestExport | Blob> {
   const collectionIds = action.payload;
   const zip = new JSZIP();
   for (let i = 0; i < collectionIds.length; i++) {
