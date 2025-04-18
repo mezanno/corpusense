@@ -26,14 +26,10 @@ import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { removeCollectionRequest } from '@/state/reducers/collections';
-import {
-  exportMultipleCollectionsRequest,
-  exportRequest,
-  resetAlert,
-} from '@/state/reducers/export';
+import { exportMultipleCollectionsRequest, resetAlert } from '@/state/reducers/export';
 import { getCollections } from '@/state/selectors/collections';
 import { getTagsByIds } from '@/state/selectors/tags';
-import { DownloadIcon, FilePlus, Import, PenLine, Trash2 } from 'lucide-react';
+import { DownloadIcon, FilePlus, Import, Trash2 } from 'lucide-react';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -72,13 +68,13 @@ const CollectionTableRow = ({
     await navigation.goToCollectionExplorer(id);
   };
 
-  const handleExport = (event: React.MouseEvent<HTMLButtonElement | MouseEvent>, id: string) => {
-    console.log(event);
-    event.stopPropagation();
-    event.preventDefault();
+  // const handleExport = (event: React.MouseEvent<HTMLButtonElement | MouseEvent>, id: string) => {
+  //   console.log(event);
+  //   event.stopPropagation();
+  //   event.preventDefault();
 
-    dispatch(exportRequest(id));
-  };
+  //   dispatch(exportRequest(id));
+  // };
 
   const handleDownload = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.stopPropagation();
@@ -133,13 +129,13 @@ const CollectionTableRow = ({
         >
           <Trash2 />
         </Button>
-        <Button
+        {/* <Button
           onClick={(e) => handleExport(e, collection.id as string)}
           aria-label={t('btn_create_export')}
           title={t('btn_create_export')}
         >
           <PenLine aria-label={t('btn_create_export')} />
-        </Button>
+        </Button> */}
 
         {lastExportStatus === 'OK' && (
           <Button
