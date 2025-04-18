@@ -1,7 +1,6 @@
 import { db } from '@/data/db';
 import { Annotation } from '@/data/models/Annotation';
-import { convertAnnotationPageToW3CAnnotations } from '@/data/models/converters/iiif';
-import { AnnotationPage, Canvas } from '@iiif/presentation-3';
+import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
@@ -151,13 +150,6 @@ function* handleSyncWithDB(action: PayloadAction<string>): Generator<Effect, voi
   }
 }
 
-function* importAnnotationFromJson(aPage: AnnotationPage) {
-  console.log('importAnnotationFromJson - ', aPage);
-
-  const annotationsW3C = convertAnnotationPageToW3CAnnotations(aPage);
-  yield call(() => db.annotations.bulkPut(annotationsW3C));
-}
-
 export default function* annotationsSaga() {
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotationRequest);
   yield takeEvery(removeAnnotationRequest, handleRemoveAnnotationRequest);
@@ -170,5 +162,3 @@ export default function* annotationsSaga() {
   // yield takeLatest(updateAnnotationValueRequest, handleUpdateAnnotationValueRequest);
   yield takeLatest(syncWithDB, handleSyncWithDB);
 }
-
-export { importAnnotationFromJson };

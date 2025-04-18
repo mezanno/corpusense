@@ -1,5 +1,6 @@
 import { Collection, ExportedCollection } from '@/data/models/Collection';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
+import { importAnnotationFromJson } from '@/data/services/annotations';
 import { saveCollection } from '@/data/services/collections';
 import { PayloadAction } from '@reduxjs/toolkit';
 import i18next from 'i18next';
@@ -24,7 +25,6 @@ import {
   updateCollectionRequest,
   updateCollectionSuccess,
 } from '../reducers/collections';
-import { importAnnotationFromJson } from './annotations';
 import { loadStoredElements } from './storedItems';
 
 function* fetchAllCollections(): Generator<
