@@ -5,7 +5,7 @@ import { Annotorious, useHover } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
 import React, { createContext, useEffect, useReducer, useState } from 'react';
 import { CanvasViewerContent, CanvasViewerContentWithTools } from './CanvasViewerContent';
-import { NothingToShow } from './NothingToShow';
+import NothingToShow from './NothingToShow';
 import {
   ACTIONS,
   CanvasViewerContentAction,

@@ -12,7 +12,7 @@ import ErrorDialog from './ErrorDialog';
 import Loading from './Loading';
 import './metadata.css';
 import MetadataTable from './MetadataTable';
-import { NoManifestToShow } from './NothingToShow';
+import NoManifestToShow from './NoManifestToShow';
 import { ScrollArea, ScrollBar } from './ui/scroll-area';
 
 const ManifestDetails = () => {
