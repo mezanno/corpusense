@@ -13,13 +13,13 @@ afterEach(() => {
 });
 
 //Nécessaire pour que le hook use-mobile.ts (généré par shadcn ui) fonctionne correctement dans les tests
-// globalThis.matchMedia =
-//   globalThis.matchMedia ??
-//   (() => ({
-//     matches: false,
-//     addEventListener: () => {},
-//     removeEventListener: () => {},
-//   }));
+globalThis.matchMedia =
+  globalThis.matchMedia ??
+  (() => ({
+    matches: false,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }));
 
 //Nécessaire pour faire fonctionner Annotorious
 /* tslint:disable-next-line */
@@ -38,3 +38,5 @@ afterEach(() => {
 //   drawArrays: () => {},
 //   // Ajoute d'autres méthodes si nécessaire pour ton test
 // });
+
+console.log('vitest.setup.ts loaded');

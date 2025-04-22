@@ -12,6 +12,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // 'react-i18next': path.resolve(__dirname, './src/__tests__/react-i18next.ts'),
     },
   },
   build: {
@@ -27,24 +28,31 @@ export default defineConfig({
   test: {
     globals: true, // Activer les fonctions globales comme 'describe', 'it', etc.
     environment: 'jsdom', // Utiliser jsdom pour simuler un environnement de navigateur
-    // setupFiles: './vitest.setup.ts',
     setupFiles: process.env.NODE_ENV === 'production' ? [] : ['./vitest.setup.ts'], // Ne pas charger le fichier de setup en production
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
     },
   },
   server: {
+    // proxy: {
+    //   '/gallica': {
+    //     //url vers laquelle les requêtes sont envoyées
+    //     target: 'http://localhost/', //cible de la redirection
+    //     changeOrigin: true,
+    //     // secure: false,
+    //     rewrite(url) {
+    //       console.log('url', url);
+    //       return url.replace('native', 'default');
+    //     },
+    //   },
+    // },
     proxy: {
-      '/gallica': {
-        //url vers laquelle les requêtes sont envoyées
-        target: 'http://localhost/', //cible de la redirection
+      '/gradio': {
+        target: 'https://api.mezanno.xyz/ocr/', // cible de la redirection
         changeOrigin: true,
-        // secure: false,
-        rewrite(url) {
-          console.log('url', url);
-          return url.replace('native', 'default');
-        },
+        rewrite: (url) => url.replace(/^\/gradio/, ''), // réécrit l'URL pour supprimer le préfixe /api
+        selfHandleResponse: false, // permet de gérer la réponse nous-même
       },
     },
   },

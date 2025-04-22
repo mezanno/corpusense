@@ -1,0 +1,454 @@
+{
+  "@context": "http://iiif.io/api/presentation/3/context.json",
+  "id": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/manifest.json",
+  "type": "Manifest",
+  "label": {
+    "none": ["BnF, département Fonds du service reproduction, V-27698"]
+  },
+  "provider": [
+    {
+      "id": "https://gallica.bnf.fr/",
+      "type": "Agent",
+      "label": {
+        "none": ["BNF Gallica"]
+      },
+      "homepage": [
+        {
+          "id": "https://gallica.bnf.fr",
+          "type": "Text",
+          "label": {
+            "fr": ["Page d'accueil Gallica"],
+            "en": ["Homepage for BNF Gallica Project"]
+          }
+        }
+      ],
+      "logo": [
+        {
+          "id": "https://gallica.bnf.fr/mbImage/logos/logo-bnf.png",
+          "type": "Image",
+          "format": "image/png"
+        }
+      ],
+      "seeAlso": [
+        {
+          "id": "https://gallica.bnf.fr/edit/und/conditions-dutilisation-des-contenus-de-gallica",
+          "type": "Text",
+          "label": {
+            "fr": ["Conditions d'utilisation des contenus de Gallica"],
+            "en": ["Gallica's contents terms and conditions of use"]
+          }
+        }
+      ]
+    }
+  ],
+  "behavior": ["paged"],
+  "homepage": [
+    {
+      "id": "https://gallica.bnf.fr/ark:/12148/bpt6k14267837",
+      "type": "Text",
+      "label": {
+        "en": ["Relates to"]
+      }
+    }
+  ],
+  "thumbnail": [
+    {
+      "id": "https://openapi.bnf.fr/iiif/image/v3/ark:/12148/bpt6k14267837/f7/full/,120/0/default.webp",
+      "type": "Image",
+      "format": "image/webp",
+      "service": [
+        {
+          "id": "https://openapi.bnf.fr/iiif/image/v3/ark:/12148/bpt6k14267837/f7",
+          "type": "ImageService3",
+          "profile": "level2"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "none": [
+      "Almanach-Bottin du commerce de Paris, des départemens de la France et des principales villes du monde... / par Séb. Bottin,..."
+    ]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": ["Language"]
+      },
+      "value": {
+        "en": ["French"]
+      }
+    },
+    {
+      "label": {
+        "fr": ["Dépôt"],
+        "en": ["Repository"]
+      },
+      "value": {
+        "fr": ["Bibliothèque nationale de France"],
+        "en": ["Bibliothèque nationale de France"]
+      }
+    },
+    {
+      "label": {
+        "fr": ["Numérisation par"],
+        "en": ["Digitised by"]
+      },
+      "value": {
+        "fr": ["Bibliothèque nationale de France"],
+        "en": ["Bibliothèque nationale de France"]
+      }
+    },
+    {
+      "label": {
+        "fr": ["Source images"],
+        "en": ["Images source"]
+      },
+      "value": {
+        "fr": ["https://gallica.bnf.fr/ark:/12148/bpt6k14267837"],
+        "en": ["https://gallica.bnf.fr/ark:/12148/bpt6k14267837"]
+      }
+    },
+    {
+      "label": {
+        "fr": ["Source meta-données"],
+        "en": ["Metadata source"]
+      },
+      "value": {
+        "fr": [
+          "http://oai.bnf.fr/oai2/OAIHandler?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:bnf.fr:gallica/ark:/12148/bpt6k14267837"
+        ],
+        "en": [
+          "http://oai.bnf.fr/oai2/OAIHandler?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:bnf.fr:gallica/ark:/12148/bpt6k14267837"
+        ]
+      }
+    },
+    {
+      "label": {
+        "fr": ["Titre"],
+        "en": ["Title"]
+      },
+      "value": {
+        "fr": [
+          "Almanach-Bottin du commerce de Paris, des départemens de la France et des principales villes du monde... / par Séb. Bottin,..."
+        ],
+        "en": [
+          "Almanach-Bottin du commerce de Paris, des départemens de la France et des principales villes du monde... / par Séb. Bottin,..."
+        ]
+      }
+    },
+    {
+      "label": {
+        "fr": ["Relation"],
+        "en": ["Relation"]
+      },
+      "value": {
+        "fr": ["http://gallica.bnf.fr/ark:/12148/cb32686424w/date"],
+        "en": ["http://gallica.bnf.fr/ark:/12148/cb32686424w/date"]
+      }
+    },
+    {
+      "label": {
+        "fr": ["Cote"],
+        "en": ["Shelfmark"]
+      },
+      "value": {
+        "fr": [
+          "Bibliothèque nationale de France, département Fonds du service reproduction, V-27698"
+        ],
+        "en": [
+          "Bibliothèque nationale de France, département Fonds du service reproduction, V-27698"
+        ]
+      }
+    },
+    {
+      "label": {
+        "fr": ["Description"],
+        "en": ["Description"]
+      },
+      "value": {
+        "fr": ["1845."],
+        "en": ["1845."]
+      }
+    },
+    {
+      "label": {
+        "none": ["Format"]
+      },
+      "value": {
+        "none": ["Nombre total de vues :  7802"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Creator"],
+        "none": ["Creator"],
+        "fr": ["Créateur"]
+      },
+      "value": {
+        "en": ["Bottin, Sébastien (1764-1853). Auteur du texte"],
+        "none": ["Bottin, Sébastien (1764-1853). Auteur du texte"],
+        "fr": ["Bottin, Sébastien (1764-1853). Auteur du texte"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Publisher"],
+        "none": ["Publisher"],
+        "fr": ["Editeur"]
+      },
+      "value": {
+        "en": ["bureau de l'Almanach du commerce (Paris)"],
+        "none": ["bureau de l'Almanach du commerce (Paris)"],
+        "fr": ["bureau de l'Almanach du commerce (Paris)"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Date"],
+        "none": ["Date"],
+        "fr": ["Date"]
+      },
+      "value": {
+        "en": ["1845"],
+        "none": ["1845"],
+        "fr": ["1845"]
+      }
+    },
+    {
+      "label": {
+        "fr": ["Type"],
+        "en": ["Type"]
+      },
+      "value": {
+        "fr": [""],
+        "en": [""]
+      }
+    }
+  ],
+  "start": {
+    "id": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/f7/canvas",
+    "type": "Canvas"
+  },
+  "rights": "http://rightsstatements.org/vocab/NoC-NC/1.0/",
+  "requiredStatement": {
+    "label": {
+      "none": ["Attribution"]
+    },
+    "value": {
+      "none": [
+        "Bibliothèque nationale de France, département Fonds du service reproduction, V-27698"
+      ]
+    }
+  },
+  "seeAlso": [
+    {
+      "id": "http://oai.bnf.fr/oai2/OAIHandler?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:bnf.fr:gallica/ark:/12148/bpt6k14267837",
+      "type": "Dataset",
+      "label": {
+        "en": ["Bibliographic Description in XML"]
+      },
+      "format": "application/xml",
+      "profile": "http://www.openarchives.org/OAI/2.0/"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/f1/canvas",
+      "type": "Canvas",
+      "label": {
+        "none": ["plat sup."]
+      },
+      "height": 4143,
+      "width": 2774,
+      "thumbnail": [
+        {
+          "id": "https://openapi.bnf.fr/iiif/image/v3/ark:/12148/bpt6k14267837/f1/full/,120/0/default.webp",
+          "type": "Image",
+          "format": "image/webp"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/f1/canvas/annotationpage/1",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/f1/canvas/annotationpage/1/annotation/1",
+              "type": "Annotation",
+              "motivation": "painting",
+              "metadata": [
+                {
+                  "label": {
+                    "en": ["DPI"],
+                    "fr": ["PPP"]
+                  },
+                  "value": {
+                    "en": ["15748"],
+                    "fr": ["15748"]
+                  }
+                },
+                {
+                  "label": {
+                    "en": ["description"],
+                    "fr": ["description"]
+                  },
+                  "value": {
+                    "en": ["binding"],
+                    "fr": ["binding"]
+                  }
+                }
+              ],
+              "body": {
+                "id": "https://openapi.bnf.fr/iiif/image/v3/ark:/12148/bpt6k14267837/f1/full/max/0/default.webp",
+                "type": "Image",
+                "label": {
+                  "none": ["T0000001.jp2"]
+                },
+                "format": "image/webp",
+                "height": 4143,
+                "width": 2774,
+                "service": [
+                  {
+                    "id": "https://openapi.bnf.fr/iiif/image/v3/ark:/12148/bpt6k14267837/f1",
+                    "type": "ImageService3",
+                    "profile": "level2"
+                  }
+                ]
+              },
+              "target": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/f1/canvas"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/f2/canvas",
+      "type": "Canvas",
+      "label": {
+        "none": ["contreplat sup."]
+      },
+      "height": 4187,
+      "width": 2774,
+      "thumbnail": [
+        {
+          "id": "https://openapi.bnf.fr/iiif/image/v3/ark:/12148/bpt6k14267837/f2/full/,120/0/default.webp",
+          "type": "Image",
+          "format": "image/webp"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/f2/canvas/annotationpage/1",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/f2/canvas/annotationpage/1/annotation/1",
+              "type": "Annotation",
+              "motivation": "painting",
+              "metadata": [
+                {
+                  "label": {
+                    "en": ["DPI"],
+                    "fr": ["PPP"]
+                  },
+                  "value": {
+                    "en": ["15748"],
+                    "fr": ["15748"]
+                  }
+                },
+                {
+                  "label": {
+                    "en": ["description"],
+                    "fr": ["description"]
+                  },
+                  "value": {
+                    "en": ["binding"],
+                    "fr": ["binding"]
+                  }
+                }
+              ],
+              "body": {
+                "id": "https://openapi.bnf.fr/iiif/image/v3/ark:/12148/bpt6k14267837/f2/full/max/0/default.webp",
+                "type": "Image",
+                "label": {
+                  "none": ["T0000002.jp2"]
+                },
+                "format": "image/webp",
+                "height": 4187,
+                "width": 2774,
+                "service": [
+                  {
+                    "id": "https://openapi.bnf.fr/iiif/image/v3/ark:/12148/bpt6k14267837/f2",
+                    "type": "ImageService3",
+                    "profile": "level2"
+                  }
+                ]
+              },
+              "target": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/f2/canvas"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/f3/canvas",
+      "type": "Canvas",
+      "label": {
+        "none": ["NP"]
+      },
+      "height": 4187,
+      "width": 2774,
+      "thumbnail": [
+        {
+          "id": "https://openapi.bnf.fr/iiif/image/v3/ark:/12148/bpt6k14267837/f3/full/,120/0/default.webp",
+          "type": "Image",
+          "format": "image/webp"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/f3/canvas/annotationpage/1",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/f3/canvas/annotationpage/1/annotation/1",
+              "type": "Annotation",
+              "motivation": "painting",
+              "metadata": [
+                {
+                  "label": {
+                    "en": ["DPI"],
+                    "fr": ["PPP"]
+                  },
+                  "value": {
+                    "en": ["15748"],
+                    "fr": ["15748"]
+                  }
+                }
+              ],
+              "body": {
+                "id": "https://openapi.bnf.fr/iiif/image/v3/ark:/12148/bpt6k14267837/f3/full/max/0/default.webp",
+                "type": "Image",
+                "label": {
+                  "none": ["T0000003.jp2"]
+                },
+                "format": "image/webp",
+                "height": 4187,
+                "width": 2774,
+                "service": [
+                  {
+                    "id": "https://openapi.bnf.fr/iiif/image/v3/ark:/12148/bpt6k14267837/f3",
+                    "type": "ImageService3",
+                    "profile": "level2"
+                  }
+                ]
+              },
+              "target": "https://openapi.bnf.fr/iiif/presentation/v3/ark:/12148/bpt6k14267837/f3/canvas"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

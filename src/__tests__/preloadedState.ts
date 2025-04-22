@@ -1,11 +1,11 @@
 import { Annotation } from '@/data/models/Annotation';
 import { RootState } from '@/state/store';
 
-const emptyPreloadedState: RootState = {
+const defaultPreloadedState: RootState = {
   manifests: {
     history: [],
     isLoading: false,
-    lastError: '',
+    lastError: null,
     loadedData: null,
     isLoaded: false,
   },
@@ -30,8 +30,8 @@ const emptyPreloadedState: RootState = {
     values: [],
   },
   export: {
-    lastExportContent: [],
-    lastExportDate: new Date(),
+    lastExportContent: null,
+    lastExportDate: null,
     lastExportStatus: 'UNKNOWN',
     lastExportError: '',
   },
@@ -46,7 +46,7 @@ const emptyPreloadedState: RootState = {
 
 export const getPreloadedState = (partialState: Partial<RootState> = {}): RootState => {
   return {
-    ...emptyPreloadedState,
+    ...defaultPreloadedState,
     ...partialState,
   };
 };
