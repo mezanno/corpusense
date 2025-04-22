@@ -7,7 +7,7 @@ interface CollectionsState {
   values: Collection[];
   lastError: string;
   newCollectionEvent: boolean;
-  openedCollections: Collection[];
+  openedCollections: string[];
 }
 
 const initialState: CollectionsState = {
@@ -28,9 +28,9 @@ export const collectionsSlice = createSlice({
       state.values.push(action.payload);
       if (
         action.payload.id !== undefined &&
-        state.openedCollections.find((elt) => elt.id === action.payload.id)
+        state.openedCollections.find((id) => id === action.payload.id) != null
       ) {
-        state.openedCollections.push(action.payload);
+        state.openedCollections.push(action.payload.id);
       }
       state.newCollectionEvent = true;
     },
@@ -38,7 +38,7 @@ export const collectionsSlice = createSlice({
     removeCollectionSuccess: (state, action: PayloadAction<string>) => {
       const collectionId: string = action.payload;
       state.values = state.values.filter((elt) => elt.id !== collectionId);
-      state.openedCollections = state.openedCollections.filter((elt) => elt.id !== collectionId);
+      state.openedCollections = state.openedCollections.filter((id) => id !== collectionId);
     },
     updateCollectionRequest: (_state, _action) => {},
     updateCollectionSuccess: (state, action: PayloadAction<Collection>) => {
@@ -55,10 +55,8 @@ export const collectionsSlice = createSlice({
       state.values = action.payload;
     },
     addCollectionToHistoryRequest: (state, action: PayloadAction<string>) => {
-      if (state.openedCollections.find((elt) => elt.id === action.payload) === undefined) {
-        state.openedCollections.push(
-          state.values.find((elt) => elt.id === action.payload) as Collection,
-        );
+      if (state.openedCollections.find((id) => id === action.payload) === undefined) {
+        state.openedCollections.push(action.payload);
       }
     },
     addSelectionToCollectionRequest: (
@@ -103,7 +101,7 @@ export const collectionsSlice = createSlice({
     },
     removeFromOpenedCollections: (state, action: PayloadAction<string>) => {
       const collectionId: string = action.payload;
-      state.openedCollections = state.openedCollections.filter((elt) => elt.id !== collectionId);
+      state.openedCollections = state.openedCollections.filter((id) => id !== collectionId);
     },
     importOneCollectionRequest: (_state, _action: PayloadAction<object>) => {},
     importMultipleCollectionsRequest: (_state, _action: PayloadAction<ArrayBuffer>) => {},
