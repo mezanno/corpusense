@@ -5,6 +5,7 @@ import { setSelection } from '@/state/reducers/selection';
 import { getCanvases, getManifestURL } from '@/state/selectors/manifests';
 import { Canvas } from '@iiif/presentation-3';
 import { FC, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Selecto, { OnSelect } from 'react-selecto';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeGrid as Grid } from 'react-window';
@@ -60,6 +61,7 @@ const CanvasGallery = ({ canvasViewerName }: { canvasViewerName: string }) => {
   const manifestId = useAppSelector(getManifestURL);
   const containerRef = useRef(null);
   const [_focused, setFocused] = useState<EventTarget | null>(null);
+  const { t } = useTranslation();
 
   const handleCardClick = (target: EventTarget, canvas: Canvas) => {
     setFocused((prev) => {
@@ -104,7 +106,7 @@ const CanvasGallery = ({ canvasViewerName }: { canvasViewerName: string }) => {
   return (
     <section className='h-full w-full items-center justify-center p-4' aria-label='canvas gallery'>
       {canvases.length == 0 ? (
-        <div>Le manifest ne contient aucun canvas</div>
+        <div role='alert'>{t('info_empty_manifest')}</div>
       ) : (
         <>
           <Selecto

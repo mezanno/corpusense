@@ -105,10 +105,8 @@ const CollectionTableRow = ({
             {t('info_empty_collection')}
           </Badge>
         ) : (
-          <Badge className='text-sm'>
-            <span className='text-md font-bold'>
-              {t('info_number_of_items', { number: collection.content.length })}
-            </span>
+          <Badge className='text-md font-bold'>
+            {t('info_number_of_items', { number: collection.content.length })}
           </Badge>
         )}
       </TableCell>

@@ -36,7 +36,7 @@ const MetadataTable = () => {
   };
 
   return (
-    <div className='w-full flex-col items-center justify-center space-y-2'>
+    <div className='flex w-full flex-col items-center justify-center space-y-2'>
       <Table>
         {/* <TableCaption>Metadata Corpusense</TableCaption> */}
         <TableHeader>
@@ -63,23 +63,31 @@ const MetadataTable = () => {
                   onChange={(e) => updateMetadata(index, { value: e.target.value })}
                 />
               </TableCell>
-              <TableCell className='flex space-x-2'>
-                <CircleX
+              <TableCell className='flex justify-center space-x-2'>
+                <button
+                  title={t('btn_delete_metadata')}
+                  className='cursor-pointer'
                   onClick={() => setFormMetadata((prev) => prev.filter((_, i) => i !== index))}
-                />
+                >
+                  <CircleX />
+                </button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
-      <div
+      <button
+        title={t('btn_add_metadata')}
         onClick={handleAddMetadata}
-        className='flex items-center justify-center space-x-2 rounded-xl border-2 p-2'
+        className='flex cursor-pointer items-center justify-center space-x-2 rounded-xl border-2 p-2'
       >
-        <CirclePlus /> <span>{t('btn_add_metadata')}</span>
-      </div>
-      <Button onClick={handleOnSave}>{t('btn_save')}</Button>
+        <CirclePlus />
+        <span>{t('btn_add_metadata')}</span>
+      </button>
+      <Button onClick={handleOnSave} title={t('btn_save')}>
+        {t('btn_save')}
+      </Button>
     </div>
   );
 };

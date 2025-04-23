@@ -45,15 +45,17 @@ const NewCollectionForm = ({ close }: { close: () => void }) => {
           name='name'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('form_label_collection_name')}</FormLabel>
+              <FormLabel id='form-label'>{t('form_label_collection_name')}</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} aria-describedby='form-label' />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type='submit'>{t('btn_create')}</Button>
+        <Button type='submit' title={t('btn_create')}>
+          {t('btn_create')}
+        </Button>
       </form>
     </Form>
   );
