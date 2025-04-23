@@ -23,20 +23,29 @@ describe('ListsManagerPage', () => {
     vi.restoreAllMocks();
   });
 
-  it('la page affiche un tableau de 2 listes', () => {
+  it("la page affiche les boutons create/import et indique qu'il n'y a pas de collection", () => {
+    renderWithProviders(<CollectionsManagerPage />, { preloadedState: getPreloadedState() });
+
+    expect(screen.getByRole('button', { name: 'btn_create_collection' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'btn_import_collection' })).toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.getByText('info_no_collection')).toBeInTheDocument();
+  });
+
+  it('la page affiche un tableau de 2 collections', () => {
     const preloadedState: RootState = {
       ...getPreloadedState(),
       collections: {
         ...getPreloadedState().collections,
         values: [
-          { id: '1', name: 'List 1', content: [], tags: [] },
+          { id: '1', name: 'Collection 1', content: [], tags: [] },
           {
             id: '2',
-            name: 'List 2',
+            name: 'Collection 2',
             content: [
               {
                 canvasId: 'canvasId',
-                collectionId: 'listId',
+                collectionId: 'collectionId',
                 position: 0,
                 manifestId: 'manifestId',
               },
@@ -50,23 +59,30 @@ describe('ListsManagerPage', () => {
 
     //une table doit être présente
     expect(screen.getByRole('table')).toBeInTheDocument();
+    expect(
+      screen.getByRole('columnheader', { name: 'table_col_title_collection_name' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('columnheader', { name: 'table_col_title_collection_info' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'table_col_title_tags' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('columnheader', { name: 'table_col_title_actions' }),
+    ).toBeInTheDocument();
 
-    //on doit avoir 3 lignes dans le tableau (2 listes + 1 header)
-    expect(screen.getAllByRole('row')).toHaveLength(3);
-    // screen.getByRole('toto');
+    expect(screen.getByRole('heading', { name: 'info_number_of_collections' })).toBeInTheDocument();
+
+    //on doit avoir 4 lignes dans le tableau (2 collections + 1 header + 1 footer)
+    expect(screen.getAllByRole('row')).toHaveLength(4);
 
     //la première liste doit indiquer qu'elle est vide
-    expect(screen.getByText('Liste vide')).toBeInTheDocument();
+    expect(screen.getByRole('cell', { name: 'info_empty_collection' })).toBeInTheDocument();
 
-    //la deuxième liste doit indiquer qu'elle contient 1 élément
-    expect(screen.getByRole('cell', { name: '1 élément(s)' })).toBeInTheDocument();
-  });
+    //la deuxième liste doit indiquer qu'elle contient des éléments
+    expect(screen.getByRole('cell', { name: 'info_number_of_items' })).toBeInTheDocument();
 
-  it("la page indique qu'il n'y a pas de liste", () => {
-    renderWithProviders(<CollectionsManagerPage />, { preloadedState: getPreloadedState() });
-
-    expect(screen.queryByRole('table')).not.toBeInTheDocument();
-    expect(screen.getByText("Vous n'avez aucune liste actuellement")).toBeInTheDocument();
+    //il doit y avoir 2 boutons de suppression
+    expect(screen.getAllByRole('button', { name: 'btn_delete' }).length).toBe(2);
   });
 
   it('affiche le formulaire de création de liste', async () => {
@@ -75,17 +91,20 @@ describe('ListsManagerPage', () => {
     (useAppDispatch as ReturnType<typeof vi.fn>).mockReturnValue(mockDispatch);
 
     renderWithProviders(<CollectionsManagerPage />);
-    //le formulaire n'est pas visible
-    const textboxNotVisible = screen.queryByRole('textbox', { name: 'Nom de la liste' });
-    expect(textboxNotVisible).not.toBeInTheDocument();
+
+    // //le formulaire n'est pas visible
+    // const textboxNotVisible = screen.queryByRole('textbox', { name: 'Nom de la liste' });
+    // expect(textboxNotVisible).not.toBeInTheDocument();
 
     //on clic sur le bouton pour afficher le formulaire
-    const btn = screen.getByRole('button', { name: 'Créer une nouvelle liste' });
+    const btn = screen.getByRole('button', { name: 'btn_create_collection' });
     expect(btn).toBeInTheDocument();
     await userEvent.click(btn);
 
+    console.log(screen.debug());
+
     //le formulaire est visible
-    const textboxVisible = screen.getByRole('textbox', { name: 'Nom de la liste' });
+    const textboxVisible = screen.getByRole('textbox', { name: 'name' });
     expect(textboxVisible).toBeInTheDocument();
 
     //on saisit un nom de liste

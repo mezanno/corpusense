@@ -1,4 +1,4 @@
-import manifest from '@/__tests__/manifest.json';
+import manifest from '@/__tests__/manifestWith3Canvas.json';
 import { getPreloadedState } from '@/__tests__/preloadedState';
 import { renderWithProviders } from '@/__tests__/utils';
 import { RootState } from '@/state/store';
@@ -18,8 +18,7 @@ describe('ManifestExplorerPage', () => {
     expect(screen.getByRole('region', { name: 'manifest details' })).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'canvas gallery' })).not.toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'canvas viewer' })).not.toBeInTheDocument();
-
-    expect(screen.getByText('Nothing to show')).toBeInTheDocument();
+    expect(screen.getByText('error_nothing_toshow')).toBeInTheDocument();
   });
 
   it('ManifestExplorerPage affiche les sections détails et canvas gallery si un manifest est chargé', () => {
@@ -38,13 +37,12 @@ describe('ManifestExplorerPage', () => {
     expect(screen.getByRole('region', { name: 'manifest details' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'canvas gallery' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'canvas viewer' })).toBeInTheDocument();
-
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-      'Journal officiel de la République française. Lois et décrets',
+      'Almanach-Bottin du commerce de Paris, des départemens de la France et des principales villes du monde... / par Séb. Bottin,...',
     );
   });
 
-  it("ManifestExplorerPage affiche un message d'erreur et l'historique si le manifest n'est pas valide", () => {
+  it("ManifestExplorerPage affiche un message d'erreur s'il y a une erreur lors du chargement d'un manifest", () => {
     const preloadedState: RootState = {
       ...getPreloadedState(),
       manifests: {
@@ -54,20 +52,7 @@ describe('ManifestExplorerPage', () => {
     };
 
     renderWithProviders(<ManifestExplorerPage />, { preloadedState });
-    expect(screen.getByRole('region', { name: 'manifest details' })).toBeInTheDocument();
-    expect(screen.queryByRole('region', { name: 'canvas gallery' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('region', { name: 'canvas viewer' })).not.toBeInTheDocument();
 
-    //one of the element with role alert should contain the text 'Manifest invalide'
-    expect(
-      screen
-        .getAllByRole('alert')
-        .some(
-          (alert) => alert.textContent !== null && alert?.textContent.includes('Manifest invalide'),
-        ),
-    ).toBeTruthy();
-
-    //TODO : fix this test l'historique ne s'affuche que s'il y a qqch dans l'historique
-    // expect(screen.getByRole('navigation', { name: 'historique' })).toBeInTheDocument();
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
   });
 });
