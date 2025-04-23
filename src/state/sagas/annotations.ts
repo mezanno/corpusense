@@ -1,6 +1,6 @@
 import { db } from '@/data/db';
 import { Annotation } from '@/data/models/Annotation';
-import { saveAllAnnotations } from '@/data/services/annotations';
+import { removeAllAnnotations, saveAllAnnotations } from '@/data/services/annotations';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
@@ -9,6 +9,9 @@ import {
   addLinkBetweenAnnotationsSuccess,
   fetchAnnotationsSuccess,
   linkAnnotationsFailure,
+  removeAllAnnotationsFailure,
+  removeAllAnnotationsRequest,
+  removeAllAnnotationsSuccess,
   removeAnnotationRequest,
   removeAnnotationSuccess,
   removeLinkBetweenAnnotationsRequest,
@@ -35,6 +38,19 @@ function* handleRemoveAnnotationRequest(action: PayloadAction<string>) {
     yield put(removeAnnotationSuccess(action.payload));
   } catch (e) {
     console.warn(e);
+  }
+}
+
+function* handleRemoveAllAnnotations(
+  action: PayloadAction<string>,
+): Generator<Effect, void, string[]> {
+  const collectionId = action.payload;
+  try {
+    const canvasIds = yield call(removeAllAnnotations, collectionId);
+    yield put(removeAllAnnotationsSuccess(canvasIds));
+  } catch (e) {
+    console.warn(e);
+    yield put(removeAllAnnotationsFailure);
   }
 }
 
@@ -138,6 +154,7 @@ function* handleSyncWithDB(action: PayloadAction<string>): Generator<Effect, voi
 export default function* annotationsSaga() {
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotationRequest);
   yield takeEvery(removeAnnotationRequest, handleRemoveAnnotationRequest);
+  yield takeEvery(removeAllAnnotationsRequest, handleRemoveAllAnnotations);
   //charge les annotations d'un canvas lorsque l'on change de canvas
   yield takeLatest(setCanvasFromComponent, handleSetCanvasFromComponent);
   yield takeEvery(addLinkBetweenAnnotationsRequest, handleAddLinkBetweenAnnotationsRequest);
