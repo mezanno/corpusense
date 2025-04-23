@@ -11,7 +11,7 @@ const AnalysisMenu = ({
   handleOcr: () => void;
 }) => {
   const params = {
-    name: 'btn_analysis_menu',
+    name: 'btn_start_analysis',
     icon: <TextSearch />,
     info: 'info_start_analysis',
     items: [

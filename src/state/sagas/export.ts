@@ -3,7 +3,11 @@ import { Collection } from '@/data/models/Collection';
 import { ItemMetadata } from '@/data/models/Metadata';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
-import { generateManifestFromCollection, ManifestExport } from '@/data/services/export';
+import {
+  generateManifestFromCollection,
+  generateTextForCollection,
+  ManifestExport,
+} from '@/data/services/export';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
@@ -118,9 +122,20 @@ function* handleExportMultipleCollectionsRequest(
  * Export all the text from all the annotations of a collection
  * @param action
  */
-function* handleExportTextOfCollection(_action: PayloadAction<string>) {
-  //:Generator<CallEffect, void, Canvas[]> {
-  // const canvases = yield call(() => getCanvasesByCollectionId(action.payload));
+function* handleExportTextOfCollection(
+  action: PayloadAction<string>,
+): Generator<Effect, void, string> {
+  try {
+    const text = yield call(generateTextForCollection, action.payload);
+    console.log('Text generated:', text);
+    yield call(
+      FileSaver.saveAs,
+      new Blob([text], { type: 'text/plain;charset=utf-8' }),
+      'exported_text.txt',
+    );
+  } catch (error) {
+    console.error('Error generating text:', getErrorMessage(error));
+  }
 }
 
 export default function* exportSaga() {

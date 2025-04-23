@@ -1,7 +1,9 @@
 import { AnnotationPage, Canvas, Manifest } from '@iiif/presentation-3';
 import i18next from 'i18next';
 import { db } from '../db';
+import { getAnnotationText } from '../models/Annotation';
 import { convertW3CAnnotationsToIIIF, IIIF_CONTEXT } from '../models/converters/iiif';
+import { getCanvasesByCollectionId } from './collections';
 import { getTagsByIds } from './tags';
 
 export interface ManifestExport {
@@ -89,4 +91,39 @@ const generateAnnotationPage = async (canvasId: string) => {
   return convertW3CAnnotationsToIIIF(result);
 };
 
-export { generateAnnotationPage, generateCanvas, generateManifestFromCollection };
+const generateTextFromCanvas = async (canvasId: string) => {
+  const annotations = await db.annotations.where('canvasId').equals(canvasId).toArray();
+  if (annotations === undefined || annotations.length === 0) {
+    return '';
+  }
+  let text = '';
+  for (let i = 0; i < annotations.length; i++) {
+    text = text.concat(getAnnotationText(annotations[i])).concat('\n');
+  }
+  return text;
+};
+
+const generateTextForCollection = async (collectionId: string) => {
+  const canvases = await getCanvasesByCollectionId(collectionId);
+  if (canvases === undefined || canvases.length === 0) {
+    throw new Error(i18next.t('error_export_collection_empty'));
+  }
+
+  let allTheText = '';
+  for (let i = 0; i < canvases.length; i++) {
+    const text = await generateTextFromCanvas(canvases[i].id);
+    if (text !== undefined && text.length > 0) {
+      allTheText = allTheText.concat(text);
+    }
+  }
+
+  return allTheText;
+};
+
+export {
+  generateAnnotationPage,
+  generateCanvas,
+  generateManifestFromCollection,
+  generateTextForCollection,
+  generateTextFromCanvas,
+};
