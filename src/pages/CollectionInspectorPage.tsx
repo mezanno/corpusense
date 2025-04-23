@@ -1,5 +1,5 @@
 import CanvasViewer from '@/components/CanvasViewer';
-import CollectionMetadaForm from '@/components/CollectionMetadaForm';
+import CollectionMetadataForm from '@/components/CollectionMetadataForm';
 import {
   Accordion,
   AccordionContent,
@@ -136,11 +136,11 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
                 {t('title_metadata_collection')}
               </AccordionTrigger>
               <AccordionContent>
-                <CollectionMetadaForm collection={activeCollection} />
+                <CollectionMetadataForm collection={activeCollection} />
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-          {activeCollection?.content ? (
+          {activeCollection?.content.length > 0 ? (
             <ResizablePanelGroup
               direction='horizontal'
               className='h-fit flex-1 space-x-2 rounded-md border bg-white'
@@ -182,6 +182,8 @@ const CollectionInspectorPage = () => {
   const dispatch = useAppDispatch();
 
   if (collectionId !== undefined) {
+    console.log('CollectionInspectorPage', collectionId);
+
     dispatch(addCollectionToHistoryRequest(collectionId));
     dispatch(reset());
   }

@@ -39,7 +39,7 @@ const formSchema = z.object({
   about: z.string().optional(),
 });
 
-const CollectionMetadaForm = ({ collection }: { collection: Collection }) => {
+const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
   const dispatch = useAppDispatch();
   const storedTags = useAppSelector(getTags);
   //liste des tags existants dans l'application
@@ -199,4 +199,4 @@ const CollectionMetadaForm = ({ collection }: { collection: Collection }) => {
   );
 };
 
-export default CollectionMetadaForm;
+export default CollectionMetadataForm;
