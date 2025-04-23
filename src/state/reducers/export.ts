@@ -25,6 +25,7 @@ export const exportSlice = createSlice({
       state.lastExportStatus = 'OK';
     },
     exportMultipleCollectionsRequest: (_state, _action: PayloadAction<string[]>) => {},
+    exportTextOfCollectionRequest: (_state, _action: PayloadAction<string>) => {},
     exportError: (state, action: PayloadAction<string>) => {
       state.lastExportError = action.payload;
       state.lastExportStatus = 'ERROR';
@@ -40,6 +41,7 @@ export const {
   exportSuccess,
   exportError,
   exportMultipleCollectionsRequest,
+  exportTextOfCollectionRequest,
   resetAlert,
 } = exportSlice.actions;
 export default exportSlice.reducer;

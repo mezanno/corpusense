@@ -14,6 +14,7 @@ export interface CanvasViewerContentState {
   error: string | undefined;
   source: TileSource[]; //the source of tiles for the viewer from the canvas
   image: IIIFExternalWebResource | undefined;
+  canvas: Canvas | undefined;
   somethingHasChanged: boolean;
 }
 
@@ -23,6 +24,7 @@ export const initialState: CanvasViewerContentState = {
   error: undefined,
   source: [],
   image: undefined,
+  canvas: undefined,
   somethingHasChanged: false,
 };
 
@@ -55,7 +57,7 @@ export function CanvasViewerContentReducer(
       console.log('ACTIONS.SET_CANVAS - image: ', image);
 
       let source = undefined;
-      if (canvas.items?.[0]?.items?.[0]?.body != null) {
+      if (image !== undefined) {
         if (image?.service?.length != null) {
           const service = image.service[0] as ImageService;
           if (service !== undefined) {
@@ -79,6 +81,7 @@ export function CanvasViewerContentReducer(
       return {
         ...state,
         image,
+        canvas,
         source,
         somethingHasChanged: false,
       };

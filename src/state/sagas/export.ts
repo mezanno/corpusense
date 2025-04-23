@@ -10,7 +10,12 @@ import { PayloadAction } from '@reduxjs/toolkit';
 import FileSaver from 'file-saver';
 import JSZIP from 'jszip';
 import { call, CallEffect, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
-import { exportMultipleCollectionsRequest, exportRequest, exportSuccess } from '../reducers/export';
+import {
+  exportMultipleCollectionsRequest,
+  exportRequest,
+  exportSuccess,
+  exportTextOfCollectionRequest,
+} from '../reducers/export';
 
 function* handleExportRequest(
   action: PayloadAction<string>,
@@ -109,7 +114,17 @@ function* handleExportMultipleCollectionsRequest(
   //exportError
 }
 
+/**
+ * Export all the text from all the annotations of a collection
+ * @param action
+ */
+function* handleExportTextOfCollection(_action: PayloadAction<string>) {
+  //:Generator<CallEffect, void, Canvas[]> {
+  // const canvases = yield call(() => getCanvasesByCollectionId(action.payload));
+}
+
 export default function* exportSaga() {
   yield takeLatest(exportRequest, handleExportRequest);
   yield takeEvery(exportMultipleCollectionsRequest, handleExportMultipleCollectionsRequest);
+  yield takeEvery(exportTextOfCollectionRequest, handleExportTextOfCollection);
 }

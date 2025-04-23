@@ -4,9 +4,11 @@ import {
   ElementType,
   getBodies,
 } from '@/data/models/Annotation';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useExtract } from '@/hooks/useExtract';
-import { useOcr } from '@/hooks/useOcr';
 import { useUpdateAnnotation } from '@/hooks/useSaveAnnotation';
+import { fetchOcrRequest } from '@/state/reducers/workers';
+import { getWorker } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas } from '@iiif/presentation-3';
@@ -18,7 +20,6 @@ import { z } from 'zod';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogDescription } from './ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
-import { Progress } from './ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Textarea } from './ui/textarea';
 
@@ -39,8 +40,10 @@ const AnnotationForm = ({
   canvas: Canvas;
   handleDelete: (id: string) => void;
 }) => {
+  const appDispatch = useAppDispatch();
   const updateAnnotation = useUpdateAnnotation();
-  const { computeTextWithOcr, progress, working } = useOcr();
+  const worker = useAppSelector((state) => getWorker(state, canvas.id));
+  const isWorkerRunning = worker?.status === 'pending';
   const { t } = useTranslation();
 
   const extract = useExtract();
@@ -66,17 +69,20 @@ const AnnotationForm = ({
     }
   }, [selected]);
 
-  const startOcrAsync = async () => {
+  const startOcrAsync = () => {
     const rect = selected[0].annotation.target.selector.geometry;
-    console.log('handleOcr', rect);
-
-    const text = await computeTextWithOcr(canvas, {
-      left: rect.bounds.minX,
-      top: rect.bounds.minY,
-      width: rect.bounds.maxX - rect.bounds.minX,
-      height: rect.bounds.maxY - rect.bounds.minY,
-    });
-    form.setValue('value', text);
+    appDispatch(
+      fetchOcrRequest({
+        canvas,
+        region: {
+          left: rect.bounds.minX,
+          top: rect.bounds.minY,
+          width: rect.bounds.maxX - rect.bounds.minX,
+          height: rect.bounds.maxY - rect.bounds.minY,
+        },
+      }),
+    );
+    // form.setValue('value', text);
   };
 
   const handleOcrClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -153,10 +159,10 @@ const AnnotationForm = ({
           </Button>
 
           <div className='absolute top-0 right-0 flex justify-end space-x-2'>
-            {working ? (
+            {isWorkerRunning ? (
               <div className='flex-row items-center space-x-2'>
                 OCR
-                <Progress value={progress} className='w-[60%]' />
+                {/* <Progress value={progress} className='w-[60%]' /> */}
               </div>
             ) : (
               <Button

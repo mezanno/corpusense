@@ -11,6 +11,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import { removeFromOpenedCollections, resetLastError } from '@/state/reducers/collections';
+import { resetLastWorkerError } from '@/state/reducers/workers';
 import { getOpenedCollections } from '@/state/selectors/collections';
 import {
   ChevronDown,
@@ -45,6 +46,8 @@ import {
 const LayoutSideBar = () => {
   const { t } = useTranslation();
   const openedCollections = useAppSelector(getOpenedCollections);
+  console.log('openedCollections: ', openedCollections);
+
   const navigation = useAppNavigation();
   const dispatch = useAppDispatch();
 
@@ -149,6 +152,7 @@ const LayoutSideBar = () => {
 
 const Layout = () => {
   const { newCollectionEvent } = useAppSelector((state) => state.collections);
+  const { error } = useAppSelector((state) => state.workers.global);
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -158,6 +162,13 @@ const Layout = () => {
       dispatch(resetLastError());
     }
   }, [newCollectionEvent]);
+
+  useEffect(() => {
+    if (error && error !== '') {
+      toast.error(`${t('toast_error')} : ${error}`);
+      dispatch(resetLastWorkerError());
+    }
+  }, [error]);
 
   return (
     <SidebarProvider>
@@ -172,7 +183,7 @@ const Layout = () => {
         </header>
         <div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
           <Outlet />
-          <Toaster />
+          <Toaster position='top-right' expand={true} richColors />
         </div>
       </SidebarInset>
     </SidebarProvider>

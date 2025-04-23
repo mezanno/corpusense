@@ -1,5 +1,6 @@
 import CanvasViewer from '@/components/CanvasViewer';
 import CollectionMetadataForm from '@/components/CollectionMetadataForm';
+import CollectionToolbar from '@/components/CollectionToolbar';
 import {
   Accordion,
   AccordionContent,
@@ -7,13 +8,16 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { Spinner } from '@/components/ui/spinner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { reset, setCanvasFromComponent } from '@/state/reducers/canvas';
 import {
   addCollectionToHistoryRequest,
   removeElementFromCollectionRequest,
 } from '@/state/reducers/collections';
+import { WorkerStatus } from '@/state/reducers/workers';
 import { getCanvasById } from '@/state/selectors/storedItems';
+import { getWorker } from '@/state/selectors/workers';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import { GridStack } from 'gridstack';
@@ -35,6 +39,8 @@ const GridThumb = ({
   canvasViewerName: string;
 }) => {
   const canvas = useAppSelector((state) => getCanvasById(state, canvasId)) as Canvas;
+  const worker = useAppSelector((state) => getWorker(state, canvasId));
+  const isWorkerRunning = worker?.status === WorkerStatus.PENDING;
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -68,6 +74,12 @@ const GridThumb = ({
       >
         <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
       </button>
+
+      {isWorkerRunning && (
+        <div className='absolute inset-0 flex items-center justify-center'>
+          <Spinner size={'small'} />
+        </div>
+      )}
     </div>
   );
 };
@@ -126,7 +138,7 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
         <>
           <Accordion
             asChild
-            className='rounded-md border bg-white'
+            className='panel'
             type='single'
             collapsible
             defaultValue='metadata' //this open the metadata by default
@@ -140,11 +152,9 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+          <CollectionToolbar collectionId={collectionid} />
           {activeCollection?.content.length > 0 ? (
-            <ResizablePanelGroup
-              direction='horizontal'
-              className='h-fit flex-1 space-x-2 rounded-md border bg-white'
-            >
+            <ResizablePanelGroup direction='horizontal' className='panel h-fit flex-1'>
               <ResizablePanel className='h-full w-full' minSize={30}>
                 <section className='m-2 grid grid-cols-8'>
                   {activeCollection.content.map((item) => (

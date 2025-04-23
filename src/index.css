@@ -255,8 +255,18 @@
   }
 }
 
+@layer components {
+  .soft-button {
+    @apply flex cursor-pointer items-center justify-center space-x-2 rounded-xl border-2 p-2 hover:bg-gray-100;
+  }
+}
+
 @layer utilities {
   .cursor-pen-tool {
     cursor: var(--cursor-pen-tool);
+  }
+
+  .panel {
+    @apply rounded-md border bg-white p-2;
   }
 }

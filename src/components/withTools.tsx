@@ -1,45 +1,40 @@
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { useOcr } from '@/hooks/useOcr';
 import { syncWithDB } from '@/state/reducers/annotations';
-import { startProcess } from '@/state/reducers/workers';
+import { fetchLayoutRequest, fetchOcrRequest, WorkerStatus } from '@/state/reducers/workers';
 import { getAnnotations } from '@/state/selectors/annotations';
-import { isWorkerRunning } from '@/state/selectors/workers';
+import { getWorker } from '@/state/selectors/workers';
 import { RootState } from '@/state/store';
-import { Move, Network, Save, SquarePen, TextSearch } from 'lucide-react';
+import { Move, Save, SquarePen } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import AnalysisMenu from './AnalysisMenu';
 import { ReducerContext } from './CanvasViewer';
 import { CanvasViewerContentProps } from './CanvasViewerContent';
 import { ACTIONS } from './reducers/CanvasViewerContentReducer';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
-import { Progress } from './ui/progress';
 import { ResizablePanel, ResizablePanelGroup } from './ui/resizable';
-import { Spinner } from './ui/spinner';
 import { Switch } from './ui/switch';
-import { Toggle } from './ui/toggle';
 
 export const withTools = <T extends object>(WrappedComponent: React.ComponentType<T>) => {
   const ComponentWithTools = (props: CanvasViewerContentProps) => {
     console.log('withTools - render');
 
-    //Tesseract worker states
-    const { progress, working } = useOcr();
-
     const appDispatch = useAppDispatch();
     const { t } = useTranslation();
     const { cvcState, cvcDispatch } = useContext(ReducerContext);
 
-    const isRunning = useAppSelector((state: RootState) =>
-      cvcState?.image?.id !== undefined ? isWorkerRunning(state, cvcState.image.id) : false,
+    const worker = useAppSelector((state: RootState) =>
+      cvcState?.canvas?.id !== undefined ? getWorker(state, cvcState.canvas.id) : null,
     );
+    const isWorkerRunning = worker !== null && worker.status === WorkerStatus.PENDING;
 
     /** 
      on va surveiller les annotations dans le store pour voir si on doit mettre le statut de sauvegarde à jour
      */
     const annotationsInStore = useSelector((state: RootState) =>
-      getAnnotations(state, props.canvas.id),
+      getAnnotations(state, cvcState.canvas?.id ?? ''),
     );
     const [isLookingForLayout, setIsLookingForLayout] = useState(false);
     useEffect(() => {
@@ -52,19 +47,24 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
      * Fin bloc de code pour surveiller les annotations
      */
 
-    const handleOcrClick = () => {
-      console.log('click ', cvcState);
-
-      if (cvcState?.image?.id !== undefined) {
+    const handleStartLayoutAnalysis = () => {
+      if (cvcState?.image?.id !== undefined && cvcState?.canvas !== undefined) {
         appDispatch(
-          startProcess({
+          fetchLayoutRequest({
             imageUrl: cvcState.image.id,
-            canvasId: props.canvas.id,
+            canvasId: cvcState.canvas.id,
             originalWidth: cvcState.image.width ?? 0,
           }),
         );
         setIsLookingForLayout(true);
       }
+    };
+
+    const handleStartOcrAnalysis = () => {
+      if (cvcState?.image?.id !== undefined) {
+        appDispatch(fetchOcrRequest({ canvas: props.canvas }));
+      }
+      setIsLookingForLayout(true);
     };
 
     const handleSave = () => {
@@ -86,24 +86,20 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
         <h4 className='w-full border-b-1 text-center text-sm italic'>{props.canvas?.id}</h4>
 
         <div className='m-1 flex h-auto w-full gap-2 space-x-2'>
-          <Toggle
+          {/* <Toggle
+            className='soft-button'
             pressed={cvcState?.treePanelOpen}
             onPressedChange={() => cvcDispatch({ type: ACTIONS.TOGGLE_TREE_PANEL })}
             aria-label='Toggle annotation tree panel'
           >
             <Network />
-          </Toggle>
-          {!isRunning ? (
-            <Button onClick={handleOcrClick}>
-              <TextSearch />
-              {t('btn_detect_layout')}
-            </Button>
-          ) : (
-            <div className='flex items-center space-x-2 text-sm'>
-              <Spinner />
-              {t('info_layout')}
-            </div>
-          )}
+          </Toggle> */}
+          <AnalysisMenu
+            isRunning={isWorkerRunning}
+            handleLayout={handleStartLayoutAnalysis}
+            handleOcr={handleStartOcrAnalysis}
+          />
+
           <div className='flex items-center space-x-1 align-middle'>
             <span className='ml-1'>
               {cvcState?.mode === 'draw' ? <SquarePen size={16} /> : <Move size={16} />}
@@ -143,9 +139,10 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
         )} */}
           <ResizablePanel className='relative h-full w-1/2'>
             <WrappedComponent {...(props as T)} />
-            {working && (
+            {isWorkerRunning && (
               <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center'>
-                <Progress value={progress} className='w-[60%]' />
+                {/* <Progress value={progress} className='w-[60%]' /> */}
+                **
               </div>
             )}
           </ResizablePanel>

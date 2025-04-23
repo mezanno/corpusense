@@ -1,3 +1,4 @@
+import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export const WorkerStatus = {
@@ -7,14 +8,33 @@ export const WorkerStatus = {
   ERROR: 'error',
 };
 
-type WorkerState = Record<
-  string,
-  { result?: string | object; status: string; error?: string }
-> | null;
+export interface WorkerState {
+  global: {
+    error: string;
+  };
+  workers: Record<
+    string, //canvasId
+    {
+      result?: string | object;
+      status: string;
+      error?: string;
+    }
+  >;
+}
 
-const initialState: WorkerState = {};
+export const workerInitialState: WorkerState = {
+  global: {
+    error: '',
+  },
+  workers: {},
+};
 
-export interface StartProcessPayload {
+export interface fetchOcrPayload {
+  canvas: Canvas;
+  region?: { left: number; top: number; width: number; height: number };
+}
+
+export interface fetchLayoutPayload {
   imageUrl: string;
   canvasId: string;
   originalWidth: number;
@@ -22,33 +42,53 @@ export interface StartProcessPayload {
 
 export const workerSlice = createSlice({
   name: 'worker',
-  initialState,
+  initialState: workerInitialState,
   reducers: {
-    startProcess: (state, action: PayloadAction<StartProcessPayload>) => {
-      const url = action.payload.imageUrl;
-      state[url] = {
+    fetchLayoutRequest: (_state, _action: PayloadAction<fetchLayoutPayload>) => {},
+    fetchOcrRequest: (_state, _action: PayloadAction<fetchOcrPayload>) => {},
+    fetchBatchOcrRequest: (_state, _action: PayloadAction<string>) => {
+      //action.payload is a collectionId
+    },
+    processStart: (state, action: PayloadAction<string>) => {
+      //action.payload is a canvasId
+      state.workers[action.payload] = {
         result: '',
         status: WorkerStatus.PENDING,
         error: '',
       };
     },
-    processSuccess: (state, action: PayloadAction<{ url: string; result: string | object }>) => {
-      const url = action.payload.url;
+    processSuccess: (
+      state,
+      action: PayloadAction<{ canvasId: string; result: string | object }>,
+    ) => {
       console.log('processSuccess: ', action);
-      state[url] = {
+      state.workers[action.payload.canvasId] = {
         result: action.payload.result,
         status: WorkerStatus.SUCCESS,
       };
     },
-    processError: (state, action: PayloadAction<{ url: string; error: string }>) => {
-      const url = action.payload.url;
-      state[url] = {
-        status: WorkerStatus.ERROR,
-        error: action.payload.error,
-      };
+    processError: (state, action: PayloadAction<{ canvasId: string | null; error: string }>) => {
+      if (action.payload.canvasId !== null) {
+        state.workers[action.payload.canvasId] = {
+          status: WorkerStatus.ERROR,
+          error: action.payload.error,
+        };
+      }
+      state.global.error = action.payload.error;
+    },
+    resetLastWorkerError: (state) => {
+      state.global.error = '';
     },
   },
 });
 
-export const { startProcess, processError, processSuccess } = workerSlice.actions;
+export const {
+  fetchLayoutRequest,
+  fetchOcrRequest,
+  fetchBatchOcrRequest,
+  processError,
+  processSuccess,
+  processStart,
+  resetLastWorkerError,
+} = workerSlice.actions;
 export default workerSlice.reducer;

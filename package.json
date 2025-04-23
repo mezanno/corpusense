@@ -95,8 +95,7 @@
     "tailwindcss-animate": "^1.0.7",
     "tesseract.js": "^6.0.0",
     "uuid": "^11.1.0",
-    "vaul": "^1.1.2",
-    "zod": "^3.24.2"
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.26.0",
@@ -136,6 +135,7 @@
     "tailwindcss": "^4.0.6",
     "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2",
+    "ts-to-zod": "^3.15.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.0",
     "vite": "^6.1.0",
@@ -143,7 +143,8 @@
     "vitest": "^3.1.2",
     "vitest-webgl-canvas-mock": "^1.1.0",
     "workbox-cli": "^7.3.0",
-    "workbox-window": "^7.3.0"
+    "workbox-window": "^7.3.0",
+    "zod": "^3.24.3"
   },
   "overrides": {
     "react": "^19.0.0",

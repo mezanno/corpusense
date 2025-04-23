@@ -1,3 +1,4 @@
+import { Canvas } from '@iiif/presentation-3';
 import { db } from '../db';
 import { Collection } from '../models/Collection';
 import { SelectedCanvas } from '../models/SelectedCanvas';
@@ -8,6 +9,23 @@ const getCollectionById = async (id: string) => {
     throw new Error(`Collection with id ${id} not found`);
   }
   return result;
+};
+
+const getCanvasesByCollectionId = async (collectionId: string) => {
+  const collection = await db.collections.get(collectionId);
+  if (collection === undefined) {
+    throw new Error(`Collection with id ${collectionId} not found`);
+  }
+  const canvasesIds = collection.content.map((elt) => elt.canvasId);
+  const items = await db.storedItems.bulkGet(canvasesIds);
+
+  if (items === undefined || items.length === 0) {
+    return [];
+  }
+
+  return items
+    .map((item) => item?.content as Canvas)
+    .filter((canvas): canvas is Canvas => canvas !== undefined);
 };
 
 const saveCollection = async (collection: Collection, selection: SelectedCanvas[]) => {
@@ -22,4 +40,4 @@ const saveCollection = async (collection: Collection, selection: SelectedCanvas[
   });
 };
 
-export { getCollectionById, saveCollection };
+export { getCanvasesByCollectionId, getCollectionById, saveCollection };

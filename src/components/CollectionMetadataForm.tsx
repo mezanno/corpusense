@@ -105,97 +105,95 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
   }, [collection]);
 
   return (
-    <div>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className='mx-auto flex w-full flex-col gap-2 p-2 md:p-5'
-        >
-          <div className='flex gap-2'>
-            <div className='flex w-1/2 flex-col gap-2'>
-              <FormField
-                control={form.control}
-                name='name'
-                render={({ field }) => (
-                  <FormItem className='w-full'>
-                    <FormLabel>{t('form_label_collection_name')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={t('form_placeholder_collection_name')}
-                        type={'text'}
-                        value={field.value}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          field.onChange(val);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name='about'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('form_label_about')}</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder={t('form_placeholder_about')}
-                        className='resize-none'
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className='mx-auto flex w-full flex-col gap-2 p-2 md:p-5'
+      >
+        <div className='flex gap-2'>
+          <div className='flex w-1/2 flex-col gap-2'>
+            <FormField
+              control={form.control}
+              name='name'
+              render={({ field }) => (
+                <FormItem className='w-full'>
+                  <FormLabel>{t('form_label_collection_name')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t('form_placeholder_collection_name')}
+                      type={'text'}
+                      value={field.value}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        field.onChange(val);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
-              name='tags'
+              name='about'
               render={({ field }) => (
-                <FormItem className='flex w-1/2 flex-col items-start'>
-                  <FormLabel className='text-left'>{t('form_label_tags')}</FormLabel>
-                  <FormControl id='test'>
-                    {/* @ts-expect-error TagInput */}
-                    <TagInput
+                <FormItem>
+                  <FormLabel>{t('form_label_about')}</FormLabel>
+                  <FormControl>
+                    <Textarea
                       {...field}
-                      placeholder={t('form_placeholder_tags')}
-                      tags={tags}
-                      enableAutocomplete={true}
-                      autocompleteOptions={autoCompleteTags}
-                      setTags={(newTags) => {
-                        setTags(newTags);
-                        setValue('tags', newTags as [FormTag, ...FormTag[]]);
-                        handleTagAdded(newTags as FormTag[]);
-                      }}
-                      generateTagId={() => uuid()}
-                      styleClasses={{ inlineTagsContainer: 'tagInputInlineContainer' }}
-                      activeTagIndex={activeTagIndex}
-                      setActiveTagIndex={setActiveTagIndex}
-                      title={t('aria_label_tags')}
-                      alt={t('aria_label_tags')}
+                      placeholder={t('form_placeholder_about')}
+                      className='resize-none'
                     />
                   </FormControl>
-                  <FormDescription>{t('form_description_tags')}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-          <div className='flex w-full items-center justify-end pt-3'>
-            <Button className='rounded-lg' size='sm'>
-              {/* {isPending ? 'Submitting...' : 'Submit'} */}
-              {t('btn_save')}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </div>
+
+          <FormField
+            control={form.control}
+            name='tags'
+            render={({ field }) => (
+              <FormItem className='flex w-1/2 flex-col items-start'>
+                <FormLabel className='text-left'>{t('form_label_tags')}</FormLabel>
+                <FormControl id='test'>
+                  {/* @ts-expect-error TagInput */}
+                  <TagInput
+                    {...field}
+                    placeholder={t('form_placeholder_tags')}
+                    tags={tags}
+                    enableAutocomplete={true}
+                    autocompleteOptions={autoCompleteTags}
+                    setTags={(newTags) => {
+                      setTags(newTags);
+                      setValue('tags', newTags as [FormTag, ...FormTag[]]);
+                      handleTagAdded(newTags as FormTag[]);
+                    }}
+                    generateTagId={() => uuid()}
+                    styleClasses={{ inlineTagsContainer: 'tagInputInlineContainer' }}
+                    activeTagIndex={activeTagIndex}
+                    setActiveTagIndex={setActiveTagIndex}
+                    title={t('aria_label_tags')}
+                    alt={t('aria_label_tags')}
+                  />
+                </FormControl>
+                <FormDescription>{t('form_description_tags')}</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className='flex w-full items-center justify-start pt-3'>
+          <Button className='rounded-lg' size='sm'>
+            {/* {isPending ? 'Submitting...' : 'Submit'} */}
+            {t('btn_save')}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 };
 

@@ -49,10 +49,11 @@ export default defineConfig({
     // },
     proxy: {
       '/gradio': {
-        target: 'https://api.mezanno.xyz/ocr/', // cible de la redirection
+        target: 'https://api.mezanno.xyz/ocr/gradio_api', // cible de la redirection
         changeOrigin: true,
-        rewrite: (url) => url.replace(/^\/gradio/, ''), // réécrit l'URL pour supprimer le préfixe /api
+        rewrite: (url) => url.replace(/^\/gradio/, ''), // réécrit l'URL pour supprimer le préfixe /gradio
         selfHandleResponse: false, // permet de gérer la réponse nous-même
+        ws: true,
       },
     },
   },
