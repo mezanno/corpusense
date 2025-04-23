@@ -6,7 +6,6 @@ import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/eff
 import {
   addLinkBetweenAnnotationsRequest,
   addLinkBetweenAnnotationsSuccess,
-  fetchAnnotationsByCanvasId,
   fetchAnnotationsSuccess,
   linkAnnotationsFailure,
   removeAnnotationRequest,
@@ -33,19 +32,6 @@ function* handleRemoveAnnotationRequest(action: PayloadAction<string>) {
   try {
     yield call(() => db.annotations.delete(action.payload));
     yield put(removeAnnotationSuccess(action.payload));
-  } catch (e) {
-    console.warn(e);
-  }
-}
-
-function* handleFetchAnnotationsByCanvasId(
-  action: PayloadAction<string>,
-): Generator<Effect, void, Annotation[]> {
-  try {
-    const annotations = yield call(() =>
-      db.annotations.where('canvasId').equals(action.payload).toArray(),
-    );
-    yield put(fetchAnnotationsSuccess(annotations));
   } catch (e) {
     console.warn(e);
   }
@@ -153,8 +139,6 @@ function* handleSyncWithDB(action: PayloadAction<string>): Generator<Effect, voi
 export default function* annotationsSaga() {
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotationRequest);
   yield takeEvery(removeAnnotationRequest, handleRemoveAnnotationRequest);
-  //TODO! Surement inutile désormais
-  yield takeLatest(fetchAnnotationsByCanvasId, handleFetchAnnotationsByCanvasId);
   //charge les annotations d'un canvas lorsque l'on change de canvas
   yield takeLatest(setCanvasFromComponent, handleSetCanvasFromComponent);
   yield takeEvery(addLinkBetweenAnnotationsRequest, handleAddLinkBetweenAnnotationsRequest);
