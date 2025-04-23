@@ -96,6 +96,7 @@ export function convertAnnotationPageToW3CAnnotations(aPage: AnnotationPage): An
       const a = {
         id: annotationId,
         canvasId: baseUrl,
+        order: -1, //!TODO : revoir l'ordre
         target: {
           annotation: annotationId,
           selector: {

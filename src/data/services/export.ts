@@ -82,8 +82,7 @@ const generateCanvas = async (canvasId: string, manifestId: string) => {
 };
 
 const generateAnnotationPage = async (canvasId: string) => {
-  const result = await db.annotations.where('canvasId').equals(canvasId).toArray();
-
+  const result = await db.annotations.where('canvasId').equals(canvasId).sortBy('order');
   if (result === undefined || result.length === 0) {
     throw new Error(`Annotation with id ${canvasId} not found`);
   }
@@ -92,7 +91,7 @@ const generateAnnotationPage = async (canvasId: string) => {
 };
 
 const generateTextFromCanvas = async (canvasId: string) => {
-  const annotations = await db.annotations.where('canvasId').equals(canvasId).toArray();
+  const annotations = await db.annotations.where('canvasId').equals(canvasId).sortBy('order');
   if (annotations === undefined || annotations.length === 0) {
     return '';
   }

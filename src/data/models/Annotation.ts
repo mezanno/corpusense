@@ -21,6 +21,7 @@ export interface Annotation extends ImageAnnotation {
   canvasId?: string;
   previous?: string;
   next?: string;
+  order?: number;
 }
 
 export enum ElementType {
@@ -30,6 +31,7 @@ export enum ElementType {
   COLUMN = 'COLUMN',
   PAGE = 'PAGE',
   SECTION = 'SECTION',
+  REGION = 'REGION',
 }
 
 export function convertToElementTypeEnum(str: string | undefined): ElementType {

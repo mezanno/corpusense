@@ -28,6 +28,7 @@ const useAddAnnotation = () => {
         },
       ],
       canvasId,
+      order: -1,
     };
 
     dispatch(saveAnnotationRequest(newAnnotation));

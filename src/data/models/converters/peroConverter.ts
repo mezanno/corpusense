@@ -29,7 +29,11 @@ type PeroResult = [
   },
 ];
 
-export function convertPeroLineToAnnotation(line: PeroLine, canvasId: string): Annotation {
+export function convertPeroLineToAnnotation(
+  line: PeroLine,
+  canvasId: string,
+  order: number,
+): Annotation {
   const annotationId = uuid();
   const minX = Math.min(...line.polygon.map((point) => point[0]));
   const minY = Math.min(...line.polygon.map((point) => point[1]));
@@ -37,7 +41,8 @@ export function convertPeroLineToAnnotation(line: PeroLine, canvasId: string): A
   const maxY = Math.max(...line.polygon.map((point) => point[1]));
   return {
     id: annotationId,
-    canvasId: canvasId,
+    canvasId,
+    order,
     target: {
       annotation: annotationId,
       selector: {
@@ -82,7 +87,7 @@ export function convertPeroTranscriptionsToAnnotations(
     const lines = peroResult[0].result.transcriptions[i].lines;
     for (let l = 0; l < lines.length; l++) {
       const line = lines[l];
-      annotations.push(convertPeroLineToAnnotation(line, canvasId));
+      annotations.push(convertPeroLineToAnnotation(line, canvasId, l));
     }
   }
 
