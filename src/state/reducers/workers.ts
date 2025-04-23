@@ -1,5 +1,6 @@
 import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import i18next from 'i18next';
 
 export const WorkerStatus = {
   IDLE: 'idle',
@@ -11,6 +12,7 @@ export const WorkerStatus = {
 export interface WorkerState {
   global: {
     error: string;
+    lastEvent: string;
   };
   workers: Record<
     string, //canvasId
@@ -25,6 +27,7 @@ export interface WorkerState {
 export const workerInitialState: WorkerState = {
   global: {
     error: '',
+    lastEvent: '',
   },
   workers: {},
 };
@@ -44,10 +47,15 @@ export const workerSlice = createSlice({
   name: 'worker',
   initialState: workerInitialState,
   reducers: {
-    fetchLayoutRequest: (_state, _action: PayloadAction<fetchLayoutPayload>) => {},
-    fetchOcrRequest: (_state, _action: PayloadAction<fetchOcrPayload>) => {},
-    fetchBatchOcrRequest: (_state, _action: PayloadAction<string>) => {
+    fetchLayoutRequest: (state, action: PayloadAction<fetchLayoutPayload>) => {
+      state.global.lastEvent = i18next.t('info_start_layout', { canvas: action.payload.canvasId });
+    },
+    fetchOcrRequest: (state, action: PayloadAction<fetchOcrPayload>) => {
+      state.global.lastEvent = i18next.t('info_start_ocr', { canvas: action.payload.canvas.id });
+    },
+    fetchBatchOcrRequest: (state, action: PayloadAction<string>) => {
       //action.payload is a collectionId
+      state.global.lastEvent = i18next.t('info_start_ocr', { canvas: action.payload });
     },
     processStart: (state, action: PayloadAction<string>) => {
       //action.payload is a canvasId
@@ -61,7 +69,9 @@ export const workerSlice = createSlice({
       state,
       action: PayloadAction<{ canvasId: string; result: string | object }>,
     ) => {
-      console.log('processSuccess: ', action);
+      state.global.lastEvent = i18next.t('info_finish_analysis', {
+        canvas: action.payload.canvasId,
+      });
       state.workers[action.payload.canvasId] = {
         result: action.payload.result,
         status: WorkerStatus.SUCCESS,
@@ -79,6 +89,17 @@ export const workerSlice = createSlice({
     resetLastWorkerError: (state) => {
       state.global.error = '';
     },
+    resetLastEvent: (state) => {
+      state.global.lastEvent = '';
+    },
+    resetCanvasProcess: (state, action: PayloadAction<string>) => {
+      //action.payload is a canvasId
+      state.workers[action.payload] = {
+        result: '',
+        status: WorkerStatus.IDLE,
+        error: '',
+      };
+    },
   },
 });
 
@@ -90,5 +111,7 @@ export const {
   processSuccess,
   processStart,
   resetLastWorkerError,
+  resetLastEvent,
+  resetCanvasProcess,
 } = workerSlice.actions;
 export default workerSlice.reducer;

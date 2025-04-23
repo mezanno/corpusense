@@ -152,7 +152,7 @@ const LayoutSideBar = () => {
 
 const Layout = () => {
   const { newCollectionEvent } = useAppSelector((state) => state.collections);
-  const { error } = useAppSelector((state) => state.workers.global);
+  const { error, lastEvent } = useAppSelector((state) => state.workers.global);
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -169,6 +169,13 @@ const Layout = () => {
       dispatch(resetLastWorkerError());
     }
   }, [error]);
+
+  useEffect(() => {
+    if (lastEvent && lastEvent !== '') {
+      toast.info(lastEvent);
+      dispatch(resetLastWorkerError());
+    }
+  }, [lastEvent]);
 
   return (
     <SidebarProvider>
