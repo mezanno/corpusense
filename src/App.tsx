@@ -22,7 +22,7 @@ function App() {
           />
           <Route path='tags' element={<TagsPage />} />
           <Route path='export' element={<ExportPage />} />
-          <Route path='*' element={<div>Oups...</div>} />
+          {/* <Route path='*' element={<div>Oups...</div>} /> */}
         </Route>
       </Routes>
     </BrowserRouter>
