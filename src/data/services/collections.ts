@@ -11,7 +11,7 @@ const getCollectionById = async (id: string) => {
   return result;
 };
 
-const getCanvasesByCollectionId = async (collectionId: string) => {
+const getCanvasesByCollectionId = async (collectionId: string): Promise<Canvas[]> => {
   const collection = await db.collections.get(collectionId);
   if (collection === undefined) {
     throw new Error(`Collection with id ${collectionId} not found`);
