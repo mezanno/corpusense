@@ -1,5 +1,6 @@
 import { AnnotationPage } from '@iiif/presentation-3';
 import { db } from '../db';
+import { Annotation } from '../models/Annotation';
 import { convertAnnotationPageToW3CAnnotations } from '../models/converters/iiif';
 
 const importAnnotationFromJson = async (aPage: AnnotationPage) => {
@@ -8,4 +9,10 @@ const importAnnotationFromJson = async (aPage: AnnotationPage) => {
   return await db.annotations.bulkPut(annotationsW3C);
 };
 
-export { importAnnotationFromJson };
+const saveAllAnnotations = async (annotations: Annotation[]) => {
+  for (const annotation of annotations) {
+    await db.annotations.put(annotation);
+  }
+};
+
+export { importAnnotationFromJson, saveAllAnnotations };

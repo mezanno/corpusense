@@ -1,5 +1,6 @@
 import { db } from '@/data/db';
 import { Annotation } from '@/data/models/Annotation';
+import { saveAllAnnotations } from '@/data/services/annotations';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
@@ -128,9 +129,7 @@ function* handleSyncWithDB(action: PayloadAction<string>): Generator<Effect, voi
   const canvasId = action.payload;
   try {
     const annotations = yield select(getAnnotations, canvasId);
-    for (const annotation of annotations) {
-      yield call(() => db.annotations.put(annotation));
-    }
+    yield call(saveAllAnnotations, annotations);
   } catch (e) {
     console.warn(e);
   }
