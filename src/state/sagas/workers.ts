@@ -3,6 +3,7 @@ import { call, CallEffect, Effect, fork, put, PutEffect, takeLatest } from 'redu
 import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
+import { saveAllAnnotations } from '@/data/services/annotations';
 import { getCanvasesByCollectionId } from '@/data/services/collections';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
@@ -80,8 +81,6 @@ function* handleFetchOcr({
               ybr: region?.top + region?.height,
             },
           ]);
-    console.log('Gradio - image: ', image.id);
-
     const gradioResult = (yield call(() =>
       client.predict('/transcribe', { image_url: image.id, regions }),
     )) as PredictReturn;
@@ -91,6 +90,7 @@ function* handleFetchOcr({
       const peroResult = peroResultSchema.parse(gradioResult.data);
       const annotations = convertPeroTranscriptionsToAnnotations(peroResult, canvas.id);
       yield put(fetchAnnotationsSuccess(annotations));
+      yield call(saveAllAnnotations, annotations);
       yield put(processSuccess({ canvasId: canvas.id, result: 'toto' }));
     } catch (error) {
       try {
