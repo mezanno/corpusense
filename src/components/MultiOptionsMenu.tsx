@@ -23,19 +23,21 @@ export interface MultiOptionsMenuParams {
 const MultiOptionsMenu = ({
   params,
   isRunning,
+  color = 'text-black',
 }: {
   params: MultiOptionsMenuParams;
   isRunning: boolean;
+  color?: string;
 }) => {
   const { t } = useTranslation();
 
   return (
-    <div className='relative'>
+    <div className={`relative ${color}`}>
       <DropdownMenu>
         <DropdownMenuTrigger className='soft-button' title={t(params.name)}>
           {params.icon}
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent className={` ${color}`}>
           <DropdownMenuLabel className='flex items-center gap-2 space-x-2'>
             {isRunning ? (
               <>

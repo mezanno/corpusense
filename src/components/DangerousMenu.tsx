@@ -22,7 +22,7 @@ const DangerousMenu: FC<DangerousMenuProps> = ({ isRunning, handleDeleteAllAnnot
     ],
   };
 
-  return <MultiOptionsMenu params={params} isRunning={isRunning} />;
+  return <MultiOptionsMenu params={params} isRunning={isRunning} color='text-red-500' />;
 };
 
 export default DangerousMenu;
