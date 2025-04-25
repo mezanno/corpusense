@@ -21,6 +21,7 @@ import { PayloadAction } from '@reduxjs/toolkit';
 import { PredictReturn } from 'node_modules/@gradio/client/dist/types';
 import { fetchAnnotationsSuccess } from '../reducers/annotations';
 import {
+  fetchBatchLayoutRequest,
   fetchBatchOcrRequest,
   fetchLayoutPayload,
   fetchLayoutRequest,
@@ -33,17 +34,26 @@ import {
 } from '../reducers/workers';
 
 function* handleFetchLayout({
-  imageUrl,
-  canvasId,
+  canvas,
   originalWidth,
 }: fetchLayoutPayload): Generator<CallEffect | PutEffect, void, Response> {
   try {
-    console.log('fetchLayout: ', imageUrl);
+    if (canvas === undefined) {
+      // yield put(processError({ url: canvas.id, error: 'Canvas or region is undefined' }));
+      return;
+    }
+
+    yield put(processRunning(canvas.id));
+    const image = canvas.items?.[0].items?.[0].body as IIIFExternalWebResource;
+    if (image === undefined || image.id === undefined) {
+      yield put(processError({ canvasId: canvas.id, error: 'Image is undefined' }));
+      return;
+    }
 
     const response: Response = yield call(
       fetch,
       // `http://localhost:3000/layout?image_url=${imageUrl}`,
-      `https://api.mezanno.xyz/layout?image_url=${imageUrl}`,
+      `https://api.mezanno.xyz/layout?image_url=${image.id}`,
     );
     if (!response.ok) {
       throw new Error('Network response was not ok');
@@ -51,15 +61,15 @@ function* handleFetchLayout({
     const data = yield call([response, 'json']);
     console.log('data: ', data);
 
-    yield put(processSuccess({ canvasId: imageUrl, result: data }));
+    yield put(processSuccess({ canvasId: canvas.id, result: data }));
 
     //convert the result into an array of Annotation
-    const annotations = convertEdwinResult(data as unknown as EdwinBox[], canvasId, originalWidth);
+    const annotations = convertEdwinResult(data as unknown as EdwinBox[], canvas.id, originalWidth);
     //and send it to the redux store
     yield put(fetchAnnotationsSuccess(annotations));
   } catch (error) {
     console.error('Error fetching layout:', error);
-    yield put(processError({ canvasId: imageUrl, error: getErrorMessage(error) }));
+    yield put(processError({ canvasId: canvas.id, error: getErrorMessage(error) }));
   }
 }
 
@@ -118,6 +128,26 @@ function* handleFetchOcr({
   }
 }
 
+function* handleStartBatchLayoutProcess(
+  action: PayloadAction<string>,
+): Generator<Effect, void, Canvas[]> {
+  const collectionId = action.payload;
+  const canvases = yield call(getCanvasesByCollectionId, collectionId);
+  if (canvases === undefined || canvases.length === 0) {
+    // yield put(processError({ error: 'No canvases found' }));
+    return;
+  }
+  for (const canvas of canvases) {
+    yield put(processStart(canvas.id));
+  }
+  for (let i = 0; i < canvases.length; i++) {
+    yield call(handleFetchLayout, {
+      canvas: canvases[i],
+      originalWidth: canvases[i].width ?? 0,
+    });
+  }
+}
+
 function* handleStartBatchOcrProcess(
   action: PayloadAction<string>,
 ): Generator<Effect, void, Canvas[]> {
@@ -157,4 +187,5 @@ export default function* workerSaga() {
   yield takeLatest(fetchLayoutRequest, handleStartProcess);
   yield takeLatest(fetchOcrRequest, handleStartOcrProcess);
   yield takeLatest(fetchBatchOcrRequest, handleStartBatchOcrProcess);
+  yield takeLatest(fetchBatchLayoutRequest, handleStartBatchLayoutProcess);
 }

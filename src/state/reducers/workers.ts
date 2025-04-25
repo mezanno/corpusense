@@ -39,8 +39,7 @@ export interface fetchOcrPayload {
 }
 
 export interface fetchLayoutPayload {
-  imageUrl: string;
-  canvasId: string;
+  canvas: Canvas;
   originalWidth: number;
 }
 
@@ -49,7 +48,11 @@ export const workerSlice = createSlice({
   initialState: workerInitialState,
   reducers: {
     fetchLayoutRequest: (state, action: PayloadAction<fetchLayoutPayload>) => {
-      state.global.lastEvent = i18next.t('info_start_layout', { canvas: action.payload.canvasId });
+      state.global.lastEvent = i18next.t('info_start_layout', { canvas: action.payload.canvas });
+    },
+    fetchBatchLayoutRequest: (state, action: PayloadAction<string>) => {
+      //action.payload is a collectionId
+      state.global.lastEvent = i18next.t('info_start_ocr', { canvas: action.payload });
     },
     fetchOcrRequest: (state, action: PayloadAction<fetchOcrPayload>) => {
       state.global.lastEvent = i18next.t('info_start_ocr', { canvas: action.payload.canvas.id });
@@ -112,6 +115,7 @@ export const workerSlice = createSlice({
 
 export const {
   fetchLayoutRequest,
+  fetchBatchLayoutRequest,
   fetchOcrRequest,
   fetchBatchOcrRequest,
   processError,

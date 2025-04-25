@@ -51,8 +51,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       if (cvcState?.image?.id !== undefined && cvcState?.canvas !== undefined) {
         appDispatch(
           fetchLayoutRequest({
-            imageUrl: cvcState.image.id,
-            canvasId: cvcState.canvas.id,
+            canvas: cvcState.canvas,
             originalWidth: cvcState.image.width ?? 0,
           }),
         );
