@@ -127,14 +127,14 @@ export const createAnnotation = (
   } as Annotation;
 };
 
-export const createAnnotationFromImageAnnotation = ({
+export const createAnnotationFromExistingAnnotation = ({
   annotation,
   canvasId,
   order,
   type,
   value,
 }: {
-  annotation: ImageAnnotation;
+  annotation: Annotation;
   canvasId?: string;
   order?: number;
   type: ElementType;
@@ -156,7 +156,7 @@ export const createAnnotationFromImageAnnotation = ({
         id: annotation.id + URL_TAGGING,
       },
     ],
-    canvasId,
-    order,
+    canvasId: canvasId ?? annotation.canvasId,
+    order: order ?? annotation.order,
   };
 };

@@ -1,6 +1,6 @@
 import {
   Annotation,
-  createAnnotationFromImageAnnotation,
+  createAnnotationFromExistingAnnotation,
   ElementType,
 } from '@/data/models/Annotation';
 import { saveAnnotationRequest } from '@/state/reducers/annotations';
@@ -11,7 +11,7 @@ const useAddAnnotation = () => {
   const dispatch = useAppDispatch();
 
   return (annotation: ImageAnnotation, canvasId: string) => {
-    const newAnnotation = createAnnotationFromImageAnnotation({
+    const newAnnotation = createAnnotationFromExistingAnnotation({
       annotation,
       canvasId,
       order: -1,
@@ -27,12 +27,11 @@ const useUpdateAnnotation = () => {
   const dispatch = useAppDispatch();
 
   return (annotation: Annotation, type: ElementType, value: string) => {
-    const updatedAnnotation = createAnnotationFromImageAnnotation({
+    const updatedAnnotation = createAnnotationFromExistingAnnotation({
       annotation,
       type,
       value,
     });
-
     dispatch(saveAnnotationRequest(updatedAnnotation));
   };
 };
