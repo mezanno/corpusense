@@ -22,7 +22,7 @@ import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
-import { CircleX } from 'lucide-react';
+import { CalendarClock, CircleX } from 'lucide-react';
 import { createRef, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
@@ -40,7 +40,6 @@ const GridThumb = ({
 }) => {
   const canvas = useAppSelector((state) => getCanvasById(state, canvasId)) as Canvas;
   const worker = useAppSelector((state) => getWorker(state, canvasId));
-  const isWorkerRunning = worker?.status === WorkerStatus.PENDING;
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -75,7 +74,13 @@ const GridThumb = ({
         <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
       </button>
 
-      {isWorkerRunning && (
+      {worker !== undefined && worker?.status == WorkerStatus.PENDING && (
+        <div className='absolute inset-0 flex items-center justify-center'>
+          <CalendarClock size={'small'} width={28} />
+        </div>
+      )}
+
+      {worker !== undefined && worker?.status == WorkerStatus.PROCESSING && (
         <div className='absolute inset-0 flex items-center justify-center'>
           <Spinner size={'small'} />
         </div>
@@ -156,7 +161,7 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
           {activeCollection?.content.length > 0 ? (
             <ResizablePanelGroup direction='horizontal' className='panel h-fit flex-1'>
               <ResizablePanel className='h-full w-full' minSize={30}>
-                <section className='m-2 grid grid-cols-8'>
+                <section className='m-2 grid grid-cols-8 overflow-y-auto' ref={gridRef}>
                   {activeCollection.content.map((item) => (
                     <div
                       key={item.canvasId}

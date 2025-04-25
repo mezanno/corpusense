@@ -5,6 +5,7 @@ import i18next from 'i18next';
 export const WorkerStatus = {
   IDLE: 'idle',
   PENDING: 'pending',
+  PROCESSING: 'processing',
   SUCCESS: 'success',
   ERROR: 'error',
 };
@@ -60,8 +61,14 @@ export const workerSlice = createSlice({
     processStart: (state, action: PayloadAction<string>) => {
       //action.payload is a canvasId
       state.workers[action.payload] = {
-        result: '',
         status: WorkerStatus.PENDING,
+      };
+    },
+    processRunning: (state, action: PayloadAction<string>) => {
+      //action.payload is a canvasId
+      state.workers[action.payload] = {
+        status: WorkerStatus.PROCESSING,
+        result: '',
         error: '',
       };
     },
@@ -109,6 +116,7 @@ export const {
   fetchBatchOcrRequest,
   processError,
   processSuccess,
+  processRunning,
   processStart,
   resetLastWorkerError,
   resetLastEvent,
