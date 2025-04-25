@@ -87,20 +87,34 @@ export const CanvasViewerContent = ({ canvas }: CanvasViewerContentProps) => {
   };
 
   useEffect(() => {
-    console.log('annotationsInStore updated', anno, annotationsInAnnotorious);
+    console.log('annotationsInStore updated', anno);
+    console.log('annotationsInStore', annotationsInStore);
+    console.log('annotationsInAnnotorious', annotationsInAnnotorious);
+
     if (annotationsInStore !== undefined && anno !== null) {
+      //for each annotation in the redux store
       annotationsInStore.forEach((annotation) => {
-        if (!annotationsInAnnotorious.some((a) => a.id === annotation.id)) {
-          try {
-            anno.addAnnotation(annotation);
-          } catch (e) {
-            console.error('Error adding annotation', e);
-          }
-        } else {
-          try {
+        const existing = annotationsInAnnotorious.find((a) => a.id === annotation.id);
+        try {
+          //if the annotation is already in annotorious, update it
+          if (existing) {
             anno.updateAnnotation(annotation);
+          } else {
+            //if the annotation is not already in annotorious, add it
+            anno.addAnnotation(annotation);
+          }
+        } catch (e) {
+          console.error(`Error ${existing ? 'updating' : 'adding'} annotation`, e);
+        }
+      });
+      //for each annotation in annotorious
+      annotationsInAnnotorious.forEach((annotation) => {
+        //if the annotation is not in the redux store, remove it
+        if (!annotationsInStore.some((a) => a.id === annotation.id)) {
+          try {
+            anno.removeAnnotation(annotation.id);
           } catch (e) {
-            console.error('Error updating annotation', e);
+            console.error('Error removing annotation', e);
           }
         }
       });

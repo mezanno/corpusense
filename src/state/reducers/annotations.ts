@@ -39,7 +39,7 @@ const annotationsSlice = createSlice({
     },
     removeAllAnnotationsRequest(_state, _action: PayloadAction<string>) {}, //action.payload = collectionId
     removeAllAnnotationsSuccess(state, action: PayloadAction<string[]>) {
-      state.values = state.values.filter((a) => !action.payload.includes(a.id));
+      state.values = state.values.filter((a) => !action.payload.includes(a.canvasId ?? ''));
     },
     removeAllAnnotationsFailure(_state, _action) {
       // state.error = action.payload;
@@ -52,7 +52,13 @@ const annotationsSlice = createSlice({
       console.log('fetchAnnotationsSuccess: ', action);
 
       state.isLoading = false;
-      state.values = [...state.values, ...action.payload];
+
+      state.values = [
+        ...state.values,
+        ...action.payload.filter(
+          (item) => !state.values.some((existing) => existing.id === item.id),
+        ),
+      ];
     },
     addLinkBetweenAnnotationsRequest(
       _state,
