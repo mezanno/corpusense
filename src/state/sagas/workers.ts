@@ -1,4 +1,13 @@
-import { call, CallEffect, Effect, fork, put, PutEffect, takeLatest } from 'redux-saga/effects';
+import {
+  all,
+  call,
+  CallEffect,
+  Effect,
+  fork,
+  put,
+  PutEffect,
+  takeLatest,
+} from 'redux-saga/effects';
 
 import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
@@ -18,6 +27,7 @@ import {
   fetchOcrPayload,
   fetchOcrRequest,
   processError,
+  processRunning,
   processStart,
   processSuccess,
 } from '../reducers/workers';
@@ -61,7 +71,7 @@ function* handleFetchOcr({
     // yield put(processError({ url: canvas.id, error: 'Canvas or region is undefined' }));
     return;
   }
-  yield put(processStart(canvas.id));
+  yield put(processRunning(canvas.id));
   const image = canvas.items?.[0].items?.[0].body as IIIFExternalWebResource;
   if (image === undefined || image.id === undefined) {
     yield put(processError({ canvasId: canvas.id, error: 'Image is undefined' }));
@@ -103,7 +113,7 @@ function* handleFetchOcr({
       }
     }
   } catch (error) {
-    console.error(error);
+    console.error('handleFetchOcr: ', error);
     yield put(processError({ canvasId: canvas.id, error: getErrorMessage(error) }));
   }
 }
@@ -117,11 +127,21 @@ function* handleStartBatchOcrProcess(
     // yield put(processError({ error: 'No canvases found' }));
     return;
   }
-  for (let i = 0; i < canvases.length; i++) {
-    yield fork(handleFetchOcr, {
-      canvas: canvases[i],
-      region: undefined,
-    });
+  for (const canvas of canvases) {
+    yield put(processStart(canvas.id));
+  }
+  const batchSize = 10; // Number of canvases to process in parallel
+  try {
+    for (let i = 0; i < canvases.length; i += batchSize) {
+      const batch = canvases.slice(i, i + batchSize);
+      yield all(batch.map((canvas) => call(handleFetchOcr, { canvas, region: undefined })));
+      // yield fork(handleFetchOcr, {
+      //   canvas: canvases[i],
+      //   region: undefined,
+      // });
+    }
+  } catch (error) {
+    console.error('Error fetching canvases:', error);
   }
 }
 
