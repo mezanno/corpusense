@@ -1,5 +1,4 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import './App.css';
 import { CorpusenseRoutes } from './hooks/useAppNavigation';
 import CollectionInspectorPage from './pages/CollectionInspectorPage';
 import CollectionsManagerPage from './pages/CollectionsManagerPage';

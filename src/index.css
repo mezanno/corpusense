@@ -270,3 +270,9 @@
     @apply rounded-md border bg-white p-2;
   }
 }
+
+html,
+body,
+#root {
+  @apply h-full w-full;
+}

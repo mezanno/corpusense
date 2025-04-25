@@ -178,20 +178,18 @@ const Layout = () => {
   }, [lastEvent]);
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className='h-full w-full'>
       <LayoutSideBar />
-      <SidebarInset className='w-100'>
+      <SidebarInset className='m-2'>
         {/*TODO: Fix this width : pour une raison inconnue w-100 empêche la fenêtre de déborder*/}
         <header className='flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
-          <div className='flex items-center gap-2 px-4'>
-            <SidebarTrigger className='-ml-1' />
+          <div className='flex items-center'>
+            <SidebarTrigger />
             <ManifestExplorerDrawer />
           </div>
         </header>
-        <div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
-          <Outlet />
-          <Toaster position='top-right' expand={true} richColors />
-        </div>
+        <Outlet />
+        <Toaster position='top-right' expand={true} richColors />
       </SidebarInset>
     </SidebarProvider>
   );

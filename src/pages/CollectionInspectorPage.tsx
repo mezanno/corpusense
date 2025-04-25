@@ -138,9 +138,9 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
   }, [activeCollection]);
 
   return (
-    <section className='flex h-full w-full flex-col space-y-2'>
+    <section className='h-full max-h-full w-full max-w-full'>
       {activeCollection && (
-        <>
+        <div className='flex h-full max-h-full w-full max-w-full flex-col gap-2'>
           <Accordion
             asChild
             className='panel'
@@ -149,9 +149,7 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
             defaultValue='metadata' //this open the metadata by default
           >
             <AccordionItem value='metadata'>
-              <AccordionTrigger className='mr-2 ml-2'>
-                {t('title_metadata_collection')}
-              </AccordionTrigger>
+              <AccordionTrigger className='mx-2'>{t('title_metadata_collection')}</AccordionTrigger>
               <AccordionContent>
                 <CollectionMetadataForm collection={activeCollection} />
               </AccordionContent>
@@ -159,33 +157,37 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
           </Accordion>
           <CollectionToolbar collectionId={collectionid} />
           {activeCollection?.content.length > 0 ? (
-            <ResizablePanelGroup direction='horizontal' className='panel h-fit flex-1'>
-              <ResizablePanel className='h-full w-full' minSize={30}>
-                <section className='m-2 grid grid-cols-8 overflow-y-auto' ref={gridRef}>
-                  {activeCollection.content.map((item) => (
-                    <div
-                      key={item.canvasId}
-                      ref={refs.current[item.canvasId]}
-                      className='flex items-center justify-center'
-                    >
-                      <GridThumb
-                        canvasId={item.canvasId}
-                        collectionId={activeCollection.id as string}
-                        canvasViewerName={CANVASVIEWER_NAME}
-                      />
-                    </div>
-                  ))}
-                </section>
-              </ResizablePanel>
-              <ResizableHandle withHandle />
-              <ResizablePanel className='h-full w-full' minSize={30}>
-                <CanvasViewer name={CANVASVIEWER_NAME} editable={true} />
-              </ResizablePanel>
-            </ResizablePanelGroup>
+            <div className='panel h-full w-full overflow-hidden'>
+              <ResizablePanelGroup direction='horizontal'>
+                <ResizablePanel className='flex' minSize={30}>
+                  <div className='flex w-fit flex-wrap gap-2 overflow-y-auto'>
+                    {activeCollection.content.map((item) => (
+                      <div
+                        key={item.canvasId}
+                        ref={refs.current[item.canvasId]}
+                        className='flex items-center justify-center'
+                      >
+                        <GridThumb
+                          canvasId={item.canvasId}
+                          collectionId={activeCollection.id as string}
+                          canvasViewerName={CANVASVIEWER_NAME}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+                <ResizablePanel className='flex-1 overflow-hidden' minSize={30}>
+                  <CanvasViewer name={CANVASVIEWER_NAME} editable={true} />
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </div>
           ) : (
-            <div>{t('info_empty_collection')}</div>
+            <div className='p-4 text-center text-muted-foreground'>
+              {t('info_empty_collection')}
+            </div>
           )}
-        </>
+        </div>
       )}
     </section>
   );
