@@ -1,4 +1,3 @@
-import { ShapeType } from '@annotorious/annotorious';
 import {
   Annotation as AnnotationIIF,
   AnnotationPage,
@@ -7,7 +6,12 @@ import {
   EmbeddedResource,
 } from '@iiif/presentation-3';
 import { uniq } from 'lodash';
-import { Annotation, convertToElementTypeEnum, W3CMotivationEnum } from '../Annotation';
+import {
+  Annotation,
+  convertToElementTypeEnum,
+  createAnnotation,
+  W3CMotivationEnum,
+} from '../Annotation';
 
 export const IIIF_CONTEXT = 'http://iiif.io/api/presentation/3/context.json';
 export const URL_ANNOTATIONPAGE = 'annotationpage/corpusense';
@@ -83,7 +87,7 @@ export function convertAnnotationPageToW3CAnnotations(aPage: AnnotationPage): An
         continue;
       }
 
-      const { id: idType, value: typeValue } = getBodyIdAndValueForMotivation(
+      const { value: typeValue } = getBodyIdAndValueForMotivation(
         bodies,
         W3CMotivationEnum.Classifying,
       );
@@ -93,43 +97,19 @@ export function convertAnnotationPageToW3CAnnotations(aPage: AnnotationPage): An
         W3CMotivationEnum.Tagging,
       );
       const annotationId = extractAnnotationIdFromBody(idValue);
-      const a = {
-        id: annotationId,
+
+      const a = createAnnotation({
         canvasId: baseUrl,
         order: -1, //!TODO : revoir l'ordre
-        target: {
-          annotation: annotationId,
-          selector: {
-            type: ShapeType.RECTANGLE,
-            geometry: {
-              bounds: {
-                minX: xywh.x,
-                minY: xywh.y,
-                maxX: xywh.x + xywh.w,
-                maxY: xywh.y + xywh.h,
-              },
-              x: xywh.x,
-              y: xywh.y,
-              w: xywh.w,
-              h: xywh.h,
-            },
-          },
-        },
-        bodies: [
-          {
-            purpose: W3CMotivationEnum.Tagging,
-            value: valueValue,
-            id: idValue,
-            annotation: annotationId,
-          },
-          {
-            purpose: W3CMotivationEnum.Classifying,
-            value: type,
-            id: idType,
-            annotation: annotationId,
-          },
-        ],
-      };
+        minX: xywh.x,
+        minY: xywh.y,
+        maxX: xywh.x + xywh.w,
+        maxY: xywh.y + xywh.h,
+        type,
+        value: valueValue,
+        id: annotationId,
+      });
+
       annotations.push(a);
     } catch (error) {
       console.warn('Error while extracting information from target', error);

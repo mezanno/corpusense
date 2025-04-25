@@ -58,7 +58,7 @@ const AnnotationForm = ({
   });
 
   function onSubmit(values: z.infer<typeof annotationFormSchema>) {
-    updateAnnotation(selected[0].annotation, values.type, values.value);
+    updateAnnotation(selected[0].annotation, values.type, values.value ?? '');
   }
 
   useEffect(() => {

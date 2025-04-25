@@ -1,4 +1,5 @@
-import { ImageAnnotation } from '@annotorious/annotorious';
+import { ImageAnnotation, ShapeType } from '@annotorious/annotorious';
+import { v4 as uuid } from 'uuid';
 
 export enum W3CMotivationEnum {
   Assessing = 'assessing',
@@ -22,6 +23,7 @@ export interface Annotation extends ImageAnnotation {
   previous?: string;
   next?: string;
   order?: number;
+  collectionId?: string;
 }
 
 export enum ElementType {
@@ -63,3 +65,98 @@ function getAnnotationValue(annotation: Annotation) {
 function getValueForMotivation(annotation: Annotation, motivation: W3CMotivationEnum) {
   return annotation.bodies.find((b) => b.purpose === motivation)?.value;
 }
+
+export interface AnnotationCreateDTO {
+  canvasId: string;
+  order: number;
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  type: ElementType;
+  value: string | undefined;
+}
+
+export interface AnnotationWithIdCreateDTO extends AnnotationCreateDTO {
+  id: string;
+}
+
+const URL_CLASSIFYING = '/class';
+const URL_TAGGING = '/tag';
+
+export const createAnnotation = (
+  annotationDTO: AnnotationCreateDTO | AnnotationWithIdCreateDTO,
+) => {
+  const annotationId = 'id' in annotationDTO ? annotationDTO.id : uuid();
+  return {
+    id: annotationId,
+    canvasId: annotationDTO.canvasId,
+    order: annotationDTO.order,
+    target: {
+      annotation: annotationId,
+      selector: {
+        type: ShapeType.RECTANGLE,
+        geometry: {
+          bounds: {
+            minX: annotationDTO.minX,
+            minY: annotationDTO.minY,
+            maxX: annotationDTO.maxX,
+            maxY: annotationDTO.maxY,
+          },
+          x: annotationDTO.minX,
+          y: annotationDTO.minY,
+          w: annotationDTO.maxX - annotationDTO.minX,
+          h: annotationDTO.maxY - annotationDTO.minY,
+        },
+      },
+    },
+    bodies: [
+      {
+        purpose: W3CMotivationEnum.Classifying,
+        value: annotationDTO.type,
+        annotation: annotationId,
+        id: annotationId + URL_CLASSIFYING,
+      },
+      {
+        purpose: W3CMotivationEnum.Tagging,
+        value: annotationDTO.value,
+        annotation: annotationId,
+        id: annotationId + URL_TAGGING,
+      },
+    ],
+  } as Annotation;
+};
+
+export const createAnnotationFromImageAnnotation = ({
+  annotation,
+  canvasId,
+  order,
+  type,
+  value,
+}: {
+  annotation: ImageAnnotation;
+  canvasId?: string;
+  order?: number;
+  type: ElementType;
+  value: string;
+}): Annotation => {
+  return {
+    ...annotation,
+    bodies: [
+      {
+        purpose: W3CMotivationEnum.Classifying,
+        value: type,
+        annotation: annotation.id,
+        id: annotation.id + URL_CLASSIFYING,
+      },
+      {
+        purpose: W3CMotivationEnum.Tagging,
+        value: value,
+        annotation: annotation.id,
+        id: annotation.id + URL_TAGGING,
+      },
+    ],
+    canvasId,
+    order,
+  };
+};

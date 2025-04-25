@@ -1,9 +1,4 @@
-import { ShapeType } from '@annotorious/annotorious';
-import { v4 as uuid } from 'uuid';
-import { Annotation, ElementType, W3CMotivationEnum } from '../Annotation';
-
-const URL_CLASSIFYING = '/class';
-const URL_TAGGING = '/tag';
+import { Annotation, createAnnotation, ElementType } from '../Annotation';
 
 type PeroLine = {
   id: string;
@@ -34,48 +29,16 @@ export function convertPeroLineToAnnotation(
   canvasId: string,
   order: number,
 ): Annotation {
-  const annotationId = uuid();
-  const minX = Math.min(...line.polygon.map((point) => point[0]));
-  const minY = Math.min(...line.polygon.map((point) => point[1]));
-  const maxX = Math.max(...line.polygon.map((point) => point[0]));
-  const maxY = Math.max(...line.polygon.map((point) => point[1]));
-  return {
-    id: annotationId,
+  return createAnnotation({
     canvasId,
     order,
-    target: {
-      annotation: annotationId,
-      selector: {
-        type: ShapeType.RECTANGLE,
-        geometry: {
-          bounds: {
-            minX,
-            minY,
-            maxX,
-            maxY,
-          },
-          x: minX,
-          y: minY,
-          w: maxX - minX,
-          h: maxY - minY,
-        },
-      },
-    },
-    bodies: [
-      {
-        purpose: W3CMotivationEnum.Classifying,
-        value: ElementType.LINE,
-        annotation: annotationId,
-        id: annotationId + URL_CLASSIFYING,
-      },
-      {
-        purpose: W3CMotivationEnum.Tagging,
-        value: line.transcription,
-        annotation: annotationId,
-        id: annotationId + URL_TAGGING,
-      },
-    ],
-  } as Annotation;
+    minX: Math.min(...line.polygon.map((point) => point[0])),
+    minY: Math.min(...line.polygon.map((point) => point[1])),
+    maxX: Math.max(...line.polygon.map((point) => point[0])),
+    maxY: Math.max(...line.polygon.map((point) => point[1])),
+    type: ElementType.LINE,
+    value: line.transcription,
+  });
 }
 
 export function convertPeroTranscriptionsToAnnotations(

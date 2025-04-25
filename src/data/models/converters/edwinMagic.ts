@@ -1,6 +1,4 @@
-import { ShapeType } from '@annotorious/annotorious';
-import { v4 as uuid } from 'uuid';
-import { Annotation, convertToElementTypeEnum, W3CMotivationEnum } from '../Annotation';
+import { Annotation, convertToElementTypeEnum, createAnnotation } from '../Annotation';
 
 export interface EdwinBox {
   id: number;
@@ -8,9 +6,6 @@ export interface EdwinBox {
   type: string;
   box: number[];
 }
-
-const URL_CLASSIFYING = '/class';
-const URL_TAGGING = '/tag';
 
 function convertEdwinToAnnotation(edwinBox: EdwinBox, canvasId: string, originalWidth: number) {
   const multiple = Math.max(originalWidth, 2048) / 2048;
@@ -24,44 +19,16 @@ function convertEdwinToAnnotation(edwinBox: EdwinBox, canvasId: string, original
     type = 'COLUMN';
   }
 
-  const annotationId = uuid();
-  return {
+  return createAnnotation({
     canvasId,
-    // id: edwinBox.id.toString(),
-    id: annotationId,
-    target: {
-      selector: {
-        type: ShapeType.RECTANGLE,
-        geometry: {
-          bounds: {
-            minX: edwinBox.box[0] * multiple,
-            minY: edwinBox.box[1] * multiple,
-            maxX: edwinBox.box[0] * multiple + edwinBox.box[2] * multiple,
-            maxY: edwinBox.box[1] * multiple + edwinBox.box[3] * multiple,
-          },
-          x: edwinBox.box[0] * multiple,
-          y: edwinBox.box[1] * multiple,
-          w: edwinBox.box[2] * multiple,
-          h: edwinBox.box[3] * multiple,
-        },
-      },
-      annotation: annotationId,
-    },
-    bodies: [
-      {
-        purpose: W3CMotivationEnum.Classifying,
-        value: convertToElementTypeEnum(type),
-        annotation: annotationId,
-        id: annotationId + URL_CLASSIFYING,
-      },
-      {
-        purpose: W3CMotivationEnum.Tagging,
-        value: edwinBox.type,
-        annotation: annotationId,
-        id: annotationId + URL_TAGGING,
-      },
-    ],
-  } as unknown as Annotation;
+    order: 0,
+    minX: edwinBox.box[0] * multiple,
+    minY: edwinBox.box[1] * multiple,
+    maxX: edwinBox.box[0] * multiple + edwinBox.box[2] * multiple,
+    maxY: edwinBox.box[1] * multiple + edwinBox.box[3] * multiple,
+    type: convertToElementTypeEnum(type),
+    value: edwinBox.type,
+  });
 }
 
 export function convertEdwinResult(
