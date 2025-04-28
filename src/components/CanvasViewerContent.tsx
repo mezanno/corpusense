@@ -1,6 +1,6 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
 import { useAppDispatch } from '@/hooks/hooks';
-import { useAddAnnotation } from '@/hooks/useSaveAnnotation';
+import { useAddAnnotation, useUpdateAnnotation } from '@/hooks/useSaveAnnotation';
 import { removeAnnotationRequest } from '@/state/reducers/annotations';
 import { getAnnotations } from '@/state/selectors/annotations';
 import { RootState } from '@/state/store';
@@ -51,6 +51,7 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
   const { hoveredElement } = useContext(HoverContext);
 
   const addAnnotation = useAddAnnotation();
+  const updateAnnotation = useUpdateAnnotation();
 
   useEffect(() => {
     if (anno === null || anno === undefined) return;
@@ -65,7 +66,7 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
     };
     const onUpdate = (annotation: Annotation) => {
       console.log('updateAnnotation', annotation);
-      // updateAnnotation(annotation);
+      updateAnnotation(annotation);
       cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: true });
     };
     const onDelete = (annotation: ImageAnnotation) => {

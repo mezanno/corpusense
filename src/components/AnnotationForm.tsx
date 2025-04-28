@@ -6,7 +6,7 @@ import {
 } from '@/data/models/Annotation';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useExtract } from '@/hooks/useExtract';
-import { useUpdateAnnotation } from '@/hooks/useSaveAnnotation';
+import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
 import { fetchOcrRequest } from '@/state/reducers/workers';
 import { getWorker } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
@@ -41,7 +41,7 @@ const AnnotationForm = ({
   handleDelete: (id: string) => void;
 }) => {
   const appDispatch = useAppDispatch();
-  const updateAnnotation = useUpdateAnnotation();
+  const modifyAnnotation = useModifyAnnotation();
   const worker = useAppSelector((state) => getWorker(state, canvas.id));
   const isWorkerRunning = worker?.status === 'pending';
   const { t } = useTranslation();
@@ -58,7 +58,7 @@ const AnnotationForm = ({
   });
 
   function onSubmit(values: z.infer<typeof annotationFormSchema>) {
-    updateAnnotation(selected[0].annotation, values.type, values.value ?? '');
+    modifyAnnotation(selected[0].annotation, values.type, values.value ?? '');
   }
 
   useEffect(() => {

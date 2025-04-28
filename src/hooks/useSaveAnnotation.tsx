@@ -26,14 +26,28 @@ const useAddAnnotation = () => {
 const useUpdateAnnotation = () => {
   const dispatch = useAppDispatch();
 
+  return (annotation: Annotation) => {
+    //, type: ElementType, value: string) => {
+    // const updatedAnnotation = createAnnotationFromExistingAnnotation({
+    //   annotation,
+    //   type,
+    //   value,
+    // });
+    dispatch(saveAnnotationRequest(annotation));
+  };
+};
+
+const useModifyAnnotation = () => {
+  const dispatch = useAppDispatch();
+
   return (annotation: Annotation, type: ElementType, value: string) => {
-    const updatedAnnotation = createAnnotationFromExistingAnnotation({
+    const modifiedAnnotation = createAnnotationFromExistingAnnotation({
       annotation,
       type,
       value,
     });
-    dispatch(saveAnnotationRequest(updatedAnnotation));
+    dispatch(saveAnnotationRequest(modifiedAnnotation));
   };
 };
 
-export { useAddAnnotation, useUpdateAnnotation };
+export { useAddAnnotation, useModifyAnnotation, useUpdateAnnotation };
