@@ -18,7 +18,7 @@ export enum W3CMotivationEnum {
 }
 
 export interface Annotation extends ImageAnnotation {
-  partfOf?: string;
+  partOf?: string;
   canvasId?: string;
   previous?: string;
   next?: string;
@@ -85,49 +85,34 @@ export interface AnnotationWithIdCreateDTO extends AnnotationCreateDTO {
 const URL_CLASSIFYING = '/class';
 const URL_TAGGING = '/tag';
 
-export const createAnnotation = (
-  annotationDTO: AnnotationCreateDTO | AnnotationWithIdCreateDTO,
-) => {
-  const annotationId = 'id' in annotationDTO ? annotationDTO.id : uuid();
+export function createAnnotation<T extends AnnotationCreateDTO | AnnotationWithIdCreateDTO>(
+  annotationDTO: T,
+): Annotation {
+  const annotationId = (annotationDTO as AnnotationWithIdCreateDTO).id ?? uuid();
+  const { canvasId, collectionId, order, minX, minY, maxX, maxY, type, value } = annotationDTO;
+  const bounds = { minX, minY, maxX, maxY };
+
   return {
     id: annotationId,
-    canvasId: annotationDTO.canvasId,
-    collectionId: annotationDTO.collectionId,
-    order: annotationDTO.order,
+    canvasId,
+    collectionId,
+    order,
     target: {
       annotation: annotationId,
       selector: {
         type: ShapeType.RECTANGLE,
         geometry: {
-          bounds: {
-            minX: annotationDTO.minX,
-            minY: annotationDTO.minY,
-            maxX: annotationDTO.maxX,
-            maxY: annotationDTO.maxY,
-          },
-          x: annotationDTO.minX,
-          y: annotationDTO.minY,
-          w: annotationDTO.maxX - annotationDTO.minX,
-          h: annotationDTO.maxY - annotationDTO.minY,
+          bounds,
+          x: bounds.minX,
+          y: bounds.minY,
+          w: bounds.maxX - bounds.minX,
+          h: bounds.maxY - bounds.minY,
         },
       },
     },
-    bodies: [
-      {
-        purpose: W3CMotivationEnum.Classifying,
-        value: annotationDTO.type,
-        annotation: annotationId,
-        id: annotationId + URL_CLASSIFYING,
-      },
-      {
-        purpose: W3CMotivationEnum.Tagging,
-        value: annotationDTO.value,
-        annotation: annotationId,
-        id: annotationId + URL_TAGGING,
-      },
-    ],
+    bodies: createBodies(type, value ?? '', annotationId),
   } as Annotation;
-};
+}
 
 export const createAnnotationFromExistingAnnotation = ({
   annotation,
@@ -149,19 +134,23 @@ export const createAnnotationFromExistingAnnotation = ({
     collectionId: collectionId ?? annotation.collectionId,
     canvasId: canvasId ?? annotation.canvasId,
     order: order ?? annotation.order,
-    bodies: [
-      {
-        purpose: W3CMotivationEnum.Classifying,
-        value: type,
-        annotation: annotation.id,
-        id: annotation.id + URL_CLASSIFYING,
-      },
-      {
-        purpose: W3CMotivationEnum.Tagging,
-        value: value,
-        annotation: annotation.id,
-        id: annotation.id + URL_TAGGING,
-      },
-    ],
+    bodies: createBodies(type, value, annotation.id),
   };
+};
+
+export const createBodies = (type: ElementType, value: string, annotationId: string) => {
+  return [
+    {
+      purpose: W3CMotivationEnum.Classifying,
+      value: type,
+      annotation: annotationId,
+      id: annotationId + URL_CLASSIFYING,
+    },
+    {
+      purpose: W3CMotivationEnum.Tagging,
+      value: value,
+      annotation: annotationId,
+      id: annotationId + URL_TAGGING,
+    },
+  ];
 };
