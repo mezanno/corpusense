@@ -28,7 +28,7 @@ const getCanvasesByCollectionId = async (collectionId: string): Promise<Canvas[]
     .filter((canvas): canvas is Canvas => canvas !== undefined);
 };
 
-const saveCollection = async (collection: Collection, selection: SelectedCanvas[]) => {
+const saveCollectionContent = async (collection: Collection, selection: SelectedCanvas[]) => {
   await db.transaction('rw', db.storedItems, db.collections, async () => {
     const canvasesToStore = selection.map((elt) => ({
       id: elt.canvas.id,
@@ -40,4 +40,30 @@ const saveCollection = async (collection: Collection, selection: SelectedCanvas[
   });
 };
 
-export { getCanvasesByCollectionId, getCollectionById, saveCollection };
+function generateCollectionContent(
+  position: number,
+  selection: SelectedCanvas[],
+  collectionId: string,
+  manifestId: string,
+  existingCanvasIds: string[] = [],
+) {
+  return selection
+    .map((elt) =>
+      existingCanvasIds.includes(elt.canvas.id)
+        ? null
+        : {
+            canvasId: elt.canvas.id,
+            collectionId,
+            position: ++position,
+            manifestId,
+          },
+    )
+    .filter((elt) => elt !== null);
+}
+
+export {
+  generateCollectionContent,
+  getCanvasesByCollectionId,
+  getCollectionById,
+  saveCollectionContent,
+};

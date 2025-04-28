@@ -1,7 +1,11 @@
 import { Collection, ExportedCollection } from '@/data/models/Collection';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
-import { importAnnotationFromJson } from '@/data/services/annotations';
-import { saveCollection } from '@/data/services/collections';
+import {
+  generateFirstAnnotation,
+  importAnnotationFromJson,
+  saveAllAnnotations,
+} from '@/data/services/annotations';
+import { generateCollectionContent, saveCollectionContent } from '@/data/services/collections';
 import { PayloadAction } from '@reduxjs/toolkit';
 import i18next from 'i18next';
 import JSZip from 'jszip';
@@ -131,8 +135,14 @@ function* handleAddSelectionToCollection(
       existingCanvasIds,
     );
     collection.content = [...collection.content, ...newContent];
+    yield call(saveCollectionContent, collection, payload.selection);
 
-    yield call(saveCollection, collection, payload.selection);
+    const firstAnnotations = generateFirstAnnotation(
+      payload.selection,
+      payload.collectionId,
+      existingCanvasIds,
+    );
+    yield call(saveAllAnnotations, firstAnnotations);
     yield call(loadStoredElements); //TODO: ? est-ce nécessaire de tout recharger ?
     yield put(addSelectionToCollectionSuccess(collection));
   } catch (e) {
@@ -154,9 +164,12 @@ function* handleCreateCollectionWithSelection(
     payload.manifestId,
   );
 
+  const firstAnnotations = generateFirstAnnotation(payload.selection, collectionId);
+
   try {
     yield call(() => db.collections.add(newCollection));
-    yield call(saveCollection, newCollection, payload.selection);
+    yield call(saveCollectionContent, newCollection, payload.selection);
+    yield call(saveAllAnnotations, firstAnnotations);
     yield call(loadStoredElements); //il faut appeler le saga pour mettre à jour le state //TODO: ? est-ce nécessaire de tout recharger ?
     yield put(createCollectionSuccess(newCollection));
   } catch (e) {
@@ -165,27 +178,6 @@ function* handleCreateCollectionWithSelection(
   }
 
   return newCollection;
-}
-
-function generateCollectionContent(
-  position: number,
-  selection: SelectedCanvas[],
-  collectionId: string,
-  manifestId: string,
-  existingCanvasIds: string[] = [],
-) {
-  return selection
-    .map((elt) =>
-      existingCanvasIds.includes(elt.canvas.id)
-        ? null
-        : {
-            canvasId: elt.canvas.id,
-            collectionId,
-            position: ++position,
-            manifestId,
-          },
-    )
-    .filter((elt) => elt !== null);
 }
 
 function* handleRemoveElementFromCollection(
