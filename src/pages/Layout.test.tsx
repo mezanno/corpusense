@@ -52,14 +52,14 @@ describe('Layout', () => {
       ...baseState,
       collections: {
         ...baseState.collections,
-        openedCollections: [
-          'id1',
-          // {
-          //   id: '1',
-          //   name: 'Collection 1',
-          //   content: [],
-          //   tags: [],
-          // },
+        openedCollections: ['id1'],
+        values: [
+          {
+            id: 'id1',
+            name: 'Collection 1',
+            content: [],
+            tags: [],
+          },
         ],
       },
     };
