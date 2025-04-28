@@ -1,3 +1,5 @@
+import { getImage } from '@/data/services/canvas';
+import { getErrorMessage } from '@/utils/utils';
 import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentation-3';
 import { TileSource } from 'openseadragon';
 
@@ -53,11 +55,11 @@ export function CanvasViewerContentReducer(
     }
     case ACTIONS.SET_CANVAS: {
       const canvas = action.payload;
-      const image = canvas.items?.[0]?.items?.[0]?.body as IIIFExternalWebResource | undefined;
-      console.log('ACTIONS.SET_CANVAS - image: ', image);
+      try {
+        const image = getImage(canvas);
+        console.log('ACTIONS.SET_CANVAS - image: ', image);
 
-      let source = undefined;
-      if (image !== undefined) {
+        let source = undefined;
         if (image?.service?.length != null) {
           const service = image.service[0] as ImageService;
           if (service !== undefined) {
@@ -68,23 +70,30 @@ export function CanvasViewerContentReducer(
             }
           }
         }
-      }
-      console.log('ACTIONS.SET_CANVAS - source: ', source);
-      //if source is undefined, set an error
-      if (source === undefined) {
+        console.log('ACTIONS.SET_CANVAS - source: ', source);
+        //if source is undefined, set an error
+        if (source === undefined) {
+          return {
+            ...state,
+            error: 'Aucun service trouvé',
+            somethingHasChanged: false,
+          };
+        }
         return {
           ...state,
-          error: 'Aucun service trouvé',
+          image,
+          canvas,
+          source,
+          somethingHasChanged: false,
+        };
+      } catch (error) {
+        console.error('ACTIONS.SET_CANVAS - error: ', error);
+        return {
+          ...state,
+          error: getErrorMessage(error),
           somethingHasChanged: false,
         };
       }
-      return {
-        ...state,
-        image,
-        canvas,
-        source,
-        somethingHasChanged: false,
-      };
     }
     case ACTIONS.SOMETHING_HAS_CHANGED: {
       return {

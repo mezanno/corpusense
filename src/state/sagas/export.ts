@@ -3,13 +3,14 @@ import { Collection } from '@/data/models/Collection';
 import { ItemMetadata } from '@/data/models/Metadata';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
+import { getImage } from '@/data/services/canvas';
 import {
   generateManifestFromCollection,
   generateTextForCollection,
   ManifestExport,
 } from '@/data/services/export';
 import { getErrorMessage } from '@/utils/utils';
-import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
+import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import FileSaver from 'file-saver';
 import JSZIP from 'jszip';
@@ -44,43 +45,48 @@ function* handleExportRequest(
 
       const canvas = storedCanvas?.content as Canvas;
       if (canvas !== undefined) {
-        const image = canvas.items?.[0]?.items?.[0].body as IIIFExternalWebResource;
-        const url = image.id;
+        try {
+          const image = getImage(canvas);
+          const url = image.id;
 
-        if (url !== undefined) {
-          csvLine = csvLine.concat('\t').concat(url);
+          if (url !== undefined) {
+            csvLine = csvLine.concat('\t').concat(url);
 
-          const label = canvas.label?.none?.[0] ?? '';
-          csvLine = csvLine.concat('\t').concat(label);
+            const label = canvas.label?.none?.[0] ?? '';
+            csvLine = csvLine.concat('\t').concat(label);
 
-          if (collectionToExport.tags?.length > 0) {
-            const resultTags = yield call(() =>
-              db.tags.filter((tag) => collectionToExport.tags.includes(tag.id)).toArray(),
-            );
-            const tags = resultTags as Tag[];
-            const tagLabels = tags.reduce((acc, tag) => acc.concat(tag.label).concat(','), '');
-            csvLine = csvLine.concat('\t').concat(tagLabels);
-          }
-
-          const match = collectionElement.canvasId.match(/ark:\/\d+\/([^\\/]+)/);
-          const manifestArk = match ? match[1] : null;
-          if (manifestArk !== null) {
-            const resultMetadata = yield call(() =>
-              db.itemMetadata.filter((itemMD) => itemMD.id.includes(manifestArk)).toArray(),
-            );
-            const metadata = resultMetadata as ItemMetadata[];
-            for (let j = 0; j < metadata.length; j++) {
-              console.log();
-
-              csvLine = csvLine.concat('\t').concat(metadata[j].attribute.value);
-              if (firstTimeHeader) {
-                header = header.concat('\t').concat(metadata[j].attribute.label);
-              }
+            if (collectionToExport.tags?.length > 0) {
+              const resultTags = yield call(() =>
+                db.tags.filter((tag) => collectionToExport.tags.includes(tag.id)).toArray(),
+              );
+              const tags = resultTags as Tag[];
+              const tagLabels = tags.reduce((acc, tag) => acc.concat(tag.label).concat(','), '');
+              csvLine = csvLine.concat('\t').concat(tagLabels);
             }
-            firstTimeHeader = false;
+
+            const match = collectionElement.canvasId.match(/ark:\/\d+\/([^\\/]+)/);
+            const manifestArk = match ? match[1] : null;
+            if (manifestArk !== null) {
+              const resultMetadata = yield call(() =>
+                db.itemMetadata.filter((itemMD) => itemMD.id.includes(manifestArk)).toArray(),
+              );
+              const metadata = resultMetadata as ItemMetadata[];
+              for (let j = 0; j < metadata.length; j++) {
+                console.log();
+
+                csvLine = csvLine.concat('\t').concat(metadata[j].attribute.value);
+                if (firstTimeHeader) {
+                  header = header.concat('\t').concat(metadata[j].attribute.label);
+                }
+              }
+              firstTimeHeader = false;
+            }
+            csvLine = csvLine.concat('\n');
+            exportLines = exportLines.concat(csvLine);
           }
-          csvLine = csvLine.concat('\n');
-          exportLines = exportLines.concat(csvLine);
+        } catch (error) {
+          console.error('Error generating export line:', getErrorMessage(error));
+          continue;
         }
       }
     }

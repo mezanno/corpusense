@@ -13,10 +13,11 @@ import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagi
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
 import { saveAllAnnotations } from '@/data/services/annotations';
+import { getImage } from '@/data/services/canvas';
 import { getCanvasesByCollectionId } from '@/data/services/collections';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
-import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
+import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { PredictReturn } from 'node_modules/@gradio/client/dist/types';
 import { fetchAnnotationsSuccess } from '../reducers/annotations';
@@ -45,11 +46,7 @@ function* handleFetchLayout({
     }
 
     yield put(processRunning(canvas.id));
-    const image = canvas.items?.[0].items?.[0].body as IIIFExternalWebResource;
-    if (image === undefined || image.id === undefined) {
-      yield put(processError({ canvasId: canvas.id, error: 'Image is undefined' }));
-      return;
-    }
+    const image = getImage(canvas);
 
     const response: Response = yield call(
       fetch,
@@ -89,13 +86,10 @@ function* handleFetchOcr({
     return;
   }
   yield put(processRunning(canvas.id));
-  const image = canvas.items?.[0].items?.[0].body as IIIFExternalWebResource;
-  if (image === undefined || image.id === undefined) {
-    yield put(processError({ canvasId: canvas.id, error: 'Image is undefined' }));
-    return;
-  }
 
   try {
+    const image = getImage(canvas);
+
     const client = (yield call(() => Client.connect('https://api.mezanno.xyz/ocr/'))) as Client;
     const regions =
       region === undefined || region === null
