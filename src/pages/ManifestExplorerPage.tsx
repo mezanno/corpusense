@@ -25,8 +25,13 @@ const ManifestExplorerPage = () => {
 
   useEffect(() => {
     const id = searchParams.get('manifestId');
+    const forceV3 = searchParams.get('forceV3');
     if (id != null) {
-      dispatch(fetchManifestFromUrlRequest(id));
+      if (forceV3 !== null) {
+        dispatch(fetchManifestFromUrlRequest({ manifestId: id, forceV3: forceV3 === 'true' }));
+      } else {
+        dispatch(fetchManifestFromUrlRequest({ manifestId: id }));
+      }
     }
   }, [searchParams]);
 

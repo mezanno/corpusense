@@ -8,11 +8,13 @@ export const CorpusenseRoutes = {
 const useAppNavigation = () => {
   const navigate = useNavigate();
 
-  const goToManifestExplorer = async (manifestId?: string) => {
+  const goToManifestExplorer = async (manifestId?: string, forceV3?: boolean) => {
     if (manifestId === undefined) {
       await navigate(`${CorpusenseRoutes.MANIFEST}`);
     } else {
-      await navigate(`${CorpusenseRoutes.MANIFEST}?manifestId=${manifestId}`);
+      await navigate(
+        `${CorpusenseRoutes.MANIFEST}?manifestId=${manifestId}${forceV3 !== undefined ? '&forceV3=' + forceV3 : ''}`,
+      );
     }
   };
   const goToCollectionsManager = async () => {

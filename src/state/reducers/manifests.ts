@@ -34,11 +34,16 @@ const applyLoadingState = (state: ManifestState): ManifestState => ({
   history: state.history,
 });
 
+export interface FetchManifestPayload {
+  manifestId: string;
+  forceV3?: boolean;
+}
+
 export const manifestsSlice = createSlice({
   name: 'manifests',
   initialState,
   reducers: {
-    fetchManifestFromUrlRequest: (state, _action: PayloadAction<string>) =>
+    fetchManifestFromUrlRequest: (state, _action: PayloadAction<FetchManifestPayload>) =>
       applyLoadingState(state),
     fetchManifestFromContentRequest: (state, _action: PayloadAction<string>) =>
       applyLoadingState(state),

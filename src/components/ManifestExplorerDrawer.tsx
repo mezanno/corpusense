@@ -13,8 +13,9 @@ import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
+import { boolean, z } from 'zod';
 import { Button } from './ui/button';
+import { Checkbox } from './ui/checkbox';
 import {
   Drawer,
   DrawerClose,
@@ -30,6 +31,7 @@ import { Input } from './ui/input';
 
 const urlFormSchema = z.object({
   url: z.string(), //.url("This doesn't look like a valid URL"),
+  forceV3: boolean().optional(),
 });
 
 const ManifestURLForm = ({ handleClose }: handleCloseProps) => {
@@ -42,10 +44,11 @@ const ManifestURLForm = ({ handleClose }: handleCloseProps) => {
     resolver: zodResolver(urlFormSchema),
     defaultValues: {
       url: currentManifestId,
+      forceV3: true,
     },
   });
   async function onSubmit(values: z.infer<typeof urlFormSchema>) {
-    await navigation.goToManifestExplorer(values.url);
+    await navigation.goToManifestExplorer(values.url, values.forceV3);
     handleClose();
   }
 
@@ -62,6 +65,22 @@ const ManifestURLForm = ({ handleClose }: handleCloseProps) => {
                 <Input {...field} />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='forceV3'
+          render={({ field }) => (
+            <FormItem className='flex items-center space-x-2'>
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  className='border-1 border-black'
+                />
+              </FormControl>
+              <FormLabel>{t('form_forcev3')}</FormLabel>
             </FormItem>
           )}
         />

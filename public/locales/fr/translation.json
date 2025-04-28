@@ -56,6 +56,7 @@
   "form_label_manifest_content": "Contenu du manifest",
   "form_description_tags": "Tags associés à cette collection",
   "form_description_create_collection": "Créez une nouvelle collection à partir de la sélection que vous avez effectuée.",
+  "form_forcev3": "Si posible, utiliser la version 3 de Gallica",
   "title_metadata_gallica": "Métadonnées Gallica",
   "title_metadata_corpusense": "Métadonnées Corpusense",
   "title_metadata_collection": "Métadonnées de la collection",

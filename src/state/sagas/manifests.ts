@@ -13,6 +13,7 @@ import {
   fetchManifestFromArkRequest,
   fetchManifestFromContentRequest,
   fetchManifestFromUrlRequest,
+  FetchManifestPayload,
   fetchManifestSuccess,
   removeFromHistoryRequest,
   removeFromHistorySuccess,
@@ -30,13 +31,14 @@ import { getManifestURL } from '../selectors/manifests';
  * @param action The action containing the URL of the manifest to fetch.
  */
 function* handleFetchManifestFromURL(action: {
-  payload: string;
+  payload: FetchManifestPayload;
 }): Generator<Effect, void, StoredItem | undefined> {
-  const url = action.payload;
+  const url = action.payload.manifestId;
+  const forceV3 = action.payload.forceV3;
   const item = yield call(() => db.storedItems.get(url));
 
   if (item === undefined) {
-    yield call(() => handleFetchManifest({ fetchFunction: () => fetchJson(url) }));
+    yield call(() => handleFetchManifest({ fetchFunction: () => fetchJson(url, forceV3) }));
   } else {
     yield call(() => handleFetchManifest({ storedManifest: item.content as Manifest }));
   }
@@ -54,7 +56,7 @@ function* handleFetchManifestFromArk(action: { payload: string }) {
   }
   //build the URL based on old Gallica API
   const url = `https://gallica.bnf.fr/iiif/ark:/12148/${action.payload}/manifest.json`;
-  yield handleFetchManifestFromURL({ payload: url });
+  yield handleFetchManifestFromURL({ payload: { manifestId: url } });
 }
 
 /**

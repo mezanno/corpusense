@@ -64,7 +64,7 @@ describe('ManifestExplorerDrawer - DrawerTabs', () => {
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(
-        fetchManifestFromUrlRequest('https://example.com/manifest.json'),
+        fetchManifestFromUrlRequest({ manifestId: 'https://example.com/manifest.json' }),
       );
     });
   });

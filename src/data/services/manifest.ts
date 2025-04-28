@@ -1,23 +1,27 @@
 import i18next from 'i18next';
 import { db } from '../db';
 
-const fetchJson = async (url: string): Promise<object> => {
+const fetchJson = async (url: string, forceV3: boolean = true): Promise<object> => {
   console.log('fetchJson: ', url);
   let fetchUrl = url;
-  if (url.includes('gallica.bnf.fr')) {
-    console.log('Gallica v1 detected');
-    const urlV3 = url.replace('gallica.bnf.fr/iiif', 'openapi.bnf.fr/iiif/presentation/v3');
-    const responseHead = await fetch(urlV3, {
-      headers: { 'Access-Control-Allow-Origin': '*' },
-    });
-    if (responseHead.ok) {
-      console.info('using Gallica API v3: ', urlV3);
-      fetchUrl = urlV3;
-    } else {
-      console.warn('Gallica API v3 not available, using proxy');
+  if (forceV3) {
+    if (url.includes('gallica.bnf.fr')) {
+      console.log('Gallica v1 detected');
+      const urlV3 = url.replace('gallica.bnf.fr/iiif', 'openapi.bnf.fr/iiif/presentation/v3');
+      const responseHead = await fetch(urlV3, {
+        headers: { 'Access-Control-Allow-Origin': '*' },
+      });
+      if (responseHead.ok) {
+        console.info('using Gallica API v3: ', urlV3);
+        fetchUrl = urlV3;
+      } else {
+        console.warn('Gallica API v3 not available, using proxy');
 
-      fetchUrl = `http://localhost:3001/proxy?url=${encodeURIComponent(url)}`;
+        fetchUrl = `http://localhost:3001/proxy?url=${encodeURIComponent(url)}`;
+      }
     }
+  } else {
+    fetchUrl = `http://localhost:3001/proxy?url=${encodeURIComponent(url)}`;
   }
   console.log('fetch with url: ', fetchUrl);
   try {
