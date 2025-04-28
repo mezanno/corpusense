@@ -15,12 +15,12 @@ export const peroResultSchema = z.tuple([
         code_version: z.string(),
         model_version: z.string(),
       }),
-      transcriptions: z.tuple([
+      transcriptions: z.array(
         z.object({
           lines: z.array(peroLineSchema),
           region: z.tuple([z.number(), z.number(), z.number(), z.number()]),
         }),
-      ]),
+      ),
     }),
   }),
 ]);
