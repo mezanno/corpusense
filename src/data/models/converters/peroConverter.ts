@@ -1,24 +1,9 @@
+import { z } from 'zod';
 import { Annotation, createAnnotation, ElementType } from '../Annotation';
+import { peroLineSchema, peroResultSchema } from './peroSchema';
 
-type PeroLine = {
-  id: string;
-  polygon: [number, number][];
-  transcription: string;
-  transcription_confidence: number;
-};
-export type PeroResult = Array<{
-  result: {
-    ocr_engine: {
-      name: string;
-      code_version: string;
-      model_version: string;
-    };
-    transcriptions: Array<{
-      lines: PeroLine[];
-      region: [number, number, number, number];
-    }>;
-  };
-}>;
+export type PeroResult = z.infer<typeof peroResultSchema>;
+type PeroLine = z.infer<typeof peroLineSchema>;
 
 export function convertPeroLineToAnnotation(
   line: PeroLine,

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const peroLineSchema = z.object({
+export const peroLineSchema = z.object({
   id: z.string(),
   polygon: z.array(z.tuple([z.number(), z.number()])),
   transcription: z.string(),
