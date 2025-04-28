@@ -160,7 +160,7 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
             <div className='panel h-full w-full overflow-hidden'>
               <ResizablePanelGroup direction='horizontal'>
                 <ResizablePanel className='flex' minSize={30}>
-                  <div className='flex w-fit flex-wrap gap-2 overflow-y-auto'>
+                  <div className='flex w-fit flex-wrap items-start gap-2 overflow-y-auto'>
                     {activeCollection.content.map((item) => (
                       <div
                         key={item.canvasId}
