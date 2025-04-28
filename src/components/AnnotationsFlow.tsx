@@ -1,7 +1,6 @@
 import { Annotation, ElementType, getBodies } from '@/data/models/Annotation';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useAppDispatch } from '@/hooks/hooks';
 import { addLinkBetweenAnnotationsRequest } from '@/state/reducers/annotations';
-import { getAnnotations } from '@/state/selectors/annotations';
 import {
   addEdge,
   Background,
@@ -57,8 +56,9 @@ const AnnotationsFlow = ({
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { setCenter } = useReactFlow();
+  console.log('AnnotationsFlow - render', canvasId, selectedNodeId);
 
-  const annotations = useAppSelector((state) => getAnnotations(state, canvasId));
+  const annotations = [] as Annotation[]; //useAppSelector((state) => getAnnotations(state, canvasId));
   const dispatch = useAppDispatch();
   const hoveredElement = useContext(HoverContext).hoveredElement;
   const setHoveredElement = useContext(HoverSetterContext).setHoveredElement;

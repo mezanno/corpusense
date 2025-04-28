@@ -32,7 +32,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
      on va surveiller les annotations dans le store pour voir si on doit mettre le statut de sauvegarde à jour
      */
     const annotationsInStore = useSelector((state: RootState) =>
-      getAnnotations(state, cvcState.canvas?.id ?? ''),
+      getAnnotations(state, cvcState.canvas?.id ?? '', props.collectionId ?? ''),
     );
     const [isLookingForLayout, setIsLookingForLayout] = useState(false);
     useEffect(() => {
@@ -70,8 +70,10 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     };
 
     const handleSave = () => {
-      appDispatch(syncWithDB(props.canvas.id));
-      cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: false });
+      if (props.collectionId !== undefined) {
+        appDispatch(syncWithDB({ canvasId: props.canvas.id, collectionId: props.collectionId }));
+        cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: false });
+      }
     };
 
     // const flow = useMemo(

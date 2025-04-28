@@ -1,7 +1,6 @@
 import { db } from '@/data/db';
 import { Annotation } from '@/data/models/Annotation';
 import { removeAllAnnotations, saveAllAnnotations } from '@/data/services/annotations';
-import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
@@ -20,7 +19,7 @@ import {
   saveAnnotationSuccess,
   syncWithDB,
 } from '../reducers/annotations';
-import { setCanvasFromComponent } from '../reducers/canvas';
+import { setCanvasFromComponent, SetCanvasFromComponentPayload } from '../reducers/canvas';
 import { getAnnotations } from '../selectors/annotations';
 
 function* handleSaveAnnotationRequest(action: PayloadAction<Annotation>) {
@@ -56,17 +55,23 @@ function* handleRemoveAllAnnotations(
 }
 
 function* handleSetCanvasFromComponent(
-  action: PayloadAction<{ componentId: string; canvas: Canvas }>,
+  action: PayloadAction<SetCanvasFromComponentPayload>,
 ): Generator<Effect, void, Annotation[]> {
   console.log('handleSetCanvasFromComponent - ', action.payload);
-
-  try {
-    const annotations = yield call(() =>
-      db.annotations.where('canvasId').equals(action.payload.canvas.id).toArray(),
-    );
-    yield put(fetchAnnotationsSuccess(annotations));
-  } catch (e) {
-    console.warn(e);
+  if (action.payload.collectionId !== undefined) {
+    try {
+      const annotations = yield call(() =>
+        db.annotations
+          .where({
+            canvasId: action.payload.canvas.id,
+            collectionId: action.payload.collectionId,
+          })
+          .toArray(),
+      );
+      yield put(fetchAnnotationsSuccess(annotations));
+    } catch (e) {
+      console.warn(e);
+    }
   }
 }
 
@@ -142,10 +147,12 @@ function* handleRemoveLinkBetweenAnnotationsRequest(
   }
 }*/
 
-function* handleSyncWithDB(action: PayloadAction<string>): Generator<Effect, void, Annotation[]> {
-  const canvasId = action.payload;
+function* handleSyncWithDB(
+  action: PayloadAction<{ canvasId: string; collectionId: string }>,
+): Generator<Effect, void, Annotation[]> {
+  const { canvasId, collectionId } = action.payload;
   try {
-    const annotations = yield select(getAnnotations, canvasId);
+    const annotations = yield select(getAnnotations, canvasId, collectionId);
     yield call(saveAllAnnotations, annotations);
   } catch (e) {
     console.warn(e);

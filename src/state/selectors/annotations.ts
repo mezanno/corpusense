@@ -1,15 +1,18 @@
+import { Annotation } from '@/data/models/Annotation';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
+const selectAnnotations = (state: RootState) => state.annotations.values ?? [];
+const selectCanvasId = (_: RootState, canvasId: string) => canvasId;
+const selectCollectionId = (_: RootState, _canvasId: string, collectionId: string) => collectionId;
+
 const getAnnotations = createSelector(
-  [
-    (state: RootState) => state.annotations.values ?? [],
-    (_: RootState, canvasId: string) => canvasId,
-  ],
-  (annotations, canvasId) =>
-    annotations
-      .filter((a) => a.canvasId === canvasId)
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
+  [selectAnnotations, selectCanvasId, selectCollectionId],
+  (annotations, canvasId, collectionId): Annotation[] => {
+    return annotations
+      .filter((a) => a.canvasId === canvasId && a.collectionId === collectionId)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  },
 );
 
 export { getAnnotations };

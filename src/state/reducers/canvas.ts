@@ -8,14 +8,17 @@ const initialState: CanvasesState = {
   values: {},
 };
 
+export interface SetCanvasFromComponentPayload {
+  componentId: string;
+  canvas: Canvas;
+  collectionId?: string;
+}
+
 export const canvasesSlice = createSlice({
   name: 'canvases',
   initialState,
   reducers: {
-    setCanvasFromComponent: (
-      state,
-      action: PayloadAction<{ componentId: string; canvas: Canvas }>,
-    ) => {
+    setCanvasFromComponent: (state, action: PayloadAction<SetCanvasFromComponentPayload>) => {
       const { componentId, canvas } = action.payload;
       state.values[componentId] = canvas;
     },

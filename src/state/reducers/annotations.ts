@@ -110,7 +110,7 @@ const annotationsSlice = createSlice({
     linkAnnotationsFailure(state, action: PayloadAction<string>) {
       state.error = action.payload;
     },
-    syncWithDB(_state, _action: PayloadAction<string>) {},
+    syncWithDB(_state, _action: PayloadAction<{ canvasId: string; collectionId: string }>) {},
   },
 });
 

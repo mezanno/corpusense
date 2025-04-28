@@ -10,7 +10,7 @@ import {
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Spinner } from '@/components/ui/spinner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { reset, setCanvasFromComponent } from '@/state/reducers/canvas';
+import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import {
   addCollectionToHistoryRequest,
   removeElementFromCollectionRequest,
@@ -45,7 +45,7 @@ const GridThumb = ({
 
   const handleOnClick = () => {
     if (canvas !== undefined) {
-      dispatch(setCanvasFromComponent({ componentId: canvasViewerName, canvas }));
+      dispatch(setCanvasFromComponent({ componentId: canvasViewerName, canvas, collectionId }));
     }
   };
 
@@ -198,12 +198,14 @@ const CollectionInspectorPage = () => {
   const { collectionId } = useParams();
   const dispatch = useAppDispatch();
 
-  if (collectionId !== undefined) {
-    console.log('CollectionInspectorPage', collectionId);
+  useEffect(() => {
+    if (collectionId !== undefined) {
+      console.log('CollectionInspectorPage', collectionId);
 
-    dispatch(addCollectionToHistoryRequest(collectionId));
-    dispatch(reset());
-  }
+      dispatch(addCollectionToHistoryRequest(collectionId));
+      // dispatch(reset());
+    }
+  }, [collectionId]);
 
   return collectionId === undefined ? (
     <div className='flex justify-center'>{t('error_id_collection_invalid')}</div>
