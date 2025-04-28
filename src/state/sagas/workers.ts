@@ -9,10 +9,11 @@ import {
   takeLatest,
 } from 'redux-saga/effects';
 
+import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
 import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
-import { saveAllAnnotations } from '@/data/services/annotations';
+import { getAnnotationsForCanvas, saveAllAnnotations } from '@/data/services/annotations';
 import { getImage } from '@/data/services/canvas';
 import { getCanvasesByCollectionId } from '@/data/services/collections';
 import { getErrorMessage } from '@/utils/utils';
@@ -80,7 +81,11 @@ function* handleFetchOcr({
   canvas,
   collectionId,
   region,
-}: fetchOcrPayload): Generator<CallEffect | PutEffect, void, Client | PredictReturn> {
+}: fetchOcrPayload): Generator<
+  CallEffect | PutEffect,
+  void,
+  Client | PredictReturn | Annotation[]
+> {
   if (canvas === undefined) {
     // yield put(processError({ url: canvas.id, error: 'Canvas or region is undefined' }));
     return;
@@ -90,18 +95,40 @@ function* handleFetchOcr({
   try {
     const image = getImage(canvas);
 
+    let regions = JSON.stringify([]);
+    if (region === undefined || region === null) {
+      const annotations = (yield call(
+        getAnnotationsForCanvas,
+        canvas.id,
+        collectionId,
+      )) as Annotation[];
+      const annotationRegions = annotations.filter(
+        (a) => getAnnotationType(a) === ElementType.REGION,
+      );
+      if (annotationRegions.length > 0) {
+        regions = JSON.stringify(
+          annotationRegions.map((annotation) => {
+            return {
+              xtl: annotation.target.selector.geometry.bounds.minX,
+              ytl: annotation.target.selector.geometry.bounds.minY,
+              xbr: annotation.target.selector.geometry.bounds.maxX,
+              ybr: annotation.target.selector.geometry.bounds.maxY,
+            };
+          }),
+        );
+      }
+    } else {
+      regions = JSON.stringify([
+        {
+          xtl: region?.left,
+          ytl: region?.top,
+          xbr: region?.left + region?.width,
+          ybr: region?.top + region?.height,
+        },
+      ]);
+    }
+
     const client = (yield call(() => Client.connect('https://api.mezanno.xyz/ocr/'))) as Client;
-    const regions =
-      region === undefined || region === null
-        ? JSON.stringify([])
-        : JSON.stringify([
-            {
-              xtl: region?.left,
-              ytl: region?.top,
-              xbr: region?.left + region?.width,
-              ybr: region?.top + region?.height,
-            },
-          ]);
     const gradioResult = (yield call(() =>
       client.predict('/transcribe', { image_url: image.id, regions }),
     )) as PredictReturn;
@@ -109,6 +136,8 @@ function* handleFetchOcr({
     console.log(gradioResult.data);
     try {
       const peroResult = peroResultSchema.parse(gradioResult.data);
+      console.log('peroResult: ', peroResult);
+
       const annotations = convertPeroTranscriptionsToAnnotations(
         peroResult,
         canvas.id,
