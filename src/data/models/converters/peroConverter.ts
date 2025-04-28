@@ -6,23 +6,19 @@ type PeroLine = {
   transcription: string;
   transcription_confidence: number;
 };
-type PeroResult = [
-  {
-    result: {
-      ocr_engine: {
-        name: string;
-        code_version: string;
-        model_version: string;
-      };
-      transcriptions: [
-        {
-          lines: PeroLine[];
-          region: [number, number, number, number];
-        },
-      ];
+export type PeroResult = Array<{
+  result: {
+    ocr_engine: {
+      name: string;
+      code_version: string;
+      model_version: string;
     };
-  },
-];
+    transcriptions: Array<{
+      lines: PeroLine[];
+      region: [number, number, number, number];
+    }>;
+  };
+}>;
 
 export function convertPeroLineToAnnotation(
   line: PeroLine,

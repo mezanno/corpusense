@@ -7,7 +7,7 @@ const peroLineSchema = z.object({
   transcription_confidence: z.number(),
 });
 
-export const peroResultSchema = z.tuple([
+export const peroResultSchema = z.array(
   z.object({
     result: z.object({
       ocr_engine: z.object({
@@ -23,7 +23,7 @@ export const peroResultSchema = z.tuple([
       ),
     }),
   }),
-]);
+);
 
 export const peroResultError = z.tuple([
   z.object({
