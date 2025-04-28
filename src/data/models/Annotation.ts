@@ -52,7 +52,7 @@ export function getAnnotationText(annotation: Annotation) {
   return getAnnotationValue(annotation) ?? '';
 }
 
-function getAnnotationType(annotation: Annotation) {
+export function getAnnotationType(annotation: Annotation) {
   const type = getValueForMotivation(annotation, W3CMotivationEnum.Classifying);
   return type === undefined ? ElementType.TAG : convertToElementTypeEnum(type);
 }
