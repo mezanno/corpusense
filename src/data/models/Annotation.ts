@@ -68,6 +68,7 @@ function getValueForMotivation(annotation: Annotation, motivation: W3CMotivation
 
 export interface AnnotationCreateDTO {
   canvasId: string;
+  collectionId: string;
   order: number;
   minX: number;
   minY: number;
@@ -91,6 +92,7 @@ export const createAnnotation = (
   return {
     id: annotationId,
     canvasId: annotationDTO.canvasId,
+    collectionId: annotationDTO.collectionId,
     order: annotationDTO.order,
     target: {
       annotation: annotationId,
@@ -129,19 +131,24 @@ export const createAnnotation = (
 
 export const createAnnotationFromExistingAnnotation = ({
   annotation,
-  canvasId,
-  order,
   type,
   value,
+  collectionId,
+  canvasId,
+  order,
 }: {
   annotation: Annotation;
   canvasId?: string;
+  collectionId?: string;
   order?: number;
   type: ElementType;
   value: string;
 }): Annotation => {
   return {
     ...annotation,
+    collectionId: collectionId ?? annotation.collectionId,
+    canvasId: canvasId ?? annotation.canvasId,
+    order: order ?? annotation.order,
     bodies: [
       {
         purpose: W3CMotivationEnum.Classifying,
@@ -156,7 +163,5 @@ export const createAnnotationFromExistingAnnotation = ({
         id: annotation.id + URL_TAGGING,
       },
     ],
-    canvasId: canvasId ?? annotation.canvasId,
-    order: order ?? annotation.order,
   };
 };

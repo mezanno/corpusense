@@ -35,9 +35,10 @@ const colors = {
 
 export type CanvasViewerContentProps = {
   canvas: Canvas;
+  collectionId?: string;
 };
 
-export const CanvasViewerContent = ({ canvas }: CanvasViewerContentProps) => {
+export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerContentProps) => {
   // console.log('CanvasViewerContent - render', canvas);
   const appDispatch = useAppDispatch();
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
@@ -55,8 +56,12 @@ export const CanvasViewerContent = ({ canvas }: CanvasViewerContentProps) => {
     if (anno === null || anno === undefined) return;
 
     const onCreate = (annotation: ImageAnnotation) => {
-      addAnnotation(annotation, canvas.id);
-      cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: true });
+      if (collectionId !== undefined) {
+        addAnnotation(annotation, canvas.id, collectionId);
+        cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: true });
+      } else {
+        console.warn('No collectionId provided, annotation not saved');
+      }
     };
     const onUpdate = (annotation: Annotation) => {
       console.log('updateAnnotation', annotation);

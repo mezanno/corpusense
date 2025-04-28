@@ -74,6 +74,7 @@ const AnnotationForm = ({
     appDispatch(
       fetchOcrRequest({
         canvas,
+        collectionId: selected[0].annotation.id,
         region: {
           left: rect.bounds.minX,
           top: rect.bounds.minY,

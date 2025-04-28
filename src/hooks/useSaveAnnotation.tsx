@@ -10,15 +10,15 @@ import { useAppDispatch } from './hooks';
 const useAddAnnotation = () => {
   const dispatch = useAppDispatch();
 
-  return (annotation: ImageAnnotation, canvasId: string) => {
+  return (annotation: ImageAnnotation, canvasId: string, collectionId: string) => {
     const newAnnotation = createAnnotationFromExistingAnnotation({
       annotation,
       canvasId,
+      collectionId,
       order: -1,
       type: ElementType.TAG,
       value: '',
     });
-
     dispatch(saveAnnotationRequest(newAnnotation));
   };
 };

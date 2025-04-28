@@ -24,6 +24,7 @@ import { setCanvasFromComponent } from '../reducers/canvas';
 import { getAnnotations } from '../selectors/annotations';
 
 function* handleSaveAnnotationRequest(action: PayloadAction<Annotation>) {
+  console.log('handleSaveAnnotationRequest - ', action.payload);
   try {
     yield call(() => db.annotations.put(action.payload));
     yield put(saveAnnotationSuccess(action.payload));

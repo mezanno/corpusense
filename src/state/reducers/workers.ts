@@ -35,11 +35,13 @@ export const workerInitialState: WorkerState = {
 
 export interface fetchOcrPayload {
   canvas: Canvas;
+  collectionId: string;
   region?: { left: number; top: number; width: number; height: number };
 }
 
 export interface fetchLayoutPayload {
   canvas: Canvas;
+  collectionId: string;
   originalWidth: number;
 }
 

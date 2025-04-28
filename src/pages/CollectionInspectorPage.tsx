@@ -89,9 +89,9 @@ const GridThumb = ({
   );
 };
 
-const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) => {
+const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) => {
   const activeCollection = useAppSelector((state) =>
-    state.collections.values.find((elt) => elt.id === collectionid),
+    state.collections.values.find((elt) => elt.id === collectionId),
   );
 
   const gridRef = useRef(null);
@@ -155,7 +155,7 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-          <CollectionToolbar collectionId={collectionid} />
+          <CollectionToolbar collectionId={collectionId} />
           {activeCollection?.content.length > 0 ? (
             <div className='panel h-full w-full overflow-hidden'>
               <ResizablePanelGroup direction='horizontal'>
@@ -178,7 +178,7 @@ const CollectionInspectorContent = ({ collectionid }: { collectionid: string }) 
                 </ResizablePanel>
                 <ResizableHandle withHandle />
                 <ResizablePanel className='flex-1 overflow-hidden' minSize={30}>
-                  <CanvasViewer name={CANVASVIEWER_NAME} editable={true} />
+                  <CanvasViewer name={CANVASVIEWER_NAME} colllectionId={collectionId} />
                 </ResizablePanel>
               </ResizablePanelGroup>
             </div>
@@ -208,7 +208,7 @@ const CollectionInspectorPage = () => {
   return collectionId === undefined ? (
     <div className='flex justify-center'>{t('error_id_collection_invalid')}</div>
   ) : (
-    <CollectionInspectorContent collectionid={collectionId} />
+    <CollectionInspectorContent collectionId={collectionId} />
   );
 };
 

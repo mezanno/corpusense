@@ -19,8 +19,6 @@ import { Switch } from './ui/switch';
 
 export const withTools = <T extends object>(WrappedComponent: React.ComponentType<T>) => {
   const ComponentWithTools = (props: CanvasViewerContentProps) => {
-    console.log('withTools - render');
-
     const appDispatch = useAppDispatch();
     const { t } = useTranslation();
     const { cvcState, cvcDispatch } = useContext(ReducerContext);
@@ -48,10 +46,15 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
      */
 
     const handleStartLayoutAnalysis = () => {
-      if (cvcState?.image?.id !== undefined && cvcState?.canvas !== undefined) {
+      if (
+        cvcState?.image?.id !== undefined &&
+        cvcState?.canvas !== undefined &&
+        props.collectionId !== undefined
+      ) {
         appDispatch(
           fetchLayoutRequest({
             canvas: cvcState.canvas,
+            collectionId: props.collectionId,
             originalWidth: cvcState.image.width ?? 0,
           }),
         );
@@ -60,8 +63,8 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     };
 
     const handleStartOcrAnalysis = () => {
-      if (cvcState?.image?.id !== undefined) {
-        appDispatch(fetchOcrRequest({ canvas: props.canvas }));
+      if (cvcState?.image?.id !== undefined && props.collectionId !== undefined) {
+        appDispatch(fetchOcrRequest({ canvas: props.canvas, collectionId: props.collectionId }));
       }
       setIsLookingForLayout(true);
     };

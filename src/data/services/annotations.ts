@@ -4,9 +4,9 @@ import { Annotation } from '../models/Annotation';
 import { convertAnnotationPageToW3CAnnotations } from '../models/converters/iiif';
 import { getCanvasesByCollectionId } from './collections';
 
-const importAnnotationFromJson = async (aPage: AnnotationPage) => {
+const importAnnotationFromJson = async (aPage: AnnotationPage, collectionId: string) => {
   console.log('importAnnotationFromJson - ', aPage);
-  const annotationsW3C = convertAnnotationPageToW3CAnnotations(aPage);
+  const annotationsW3C = convertAnnotationPageToW3CAnnotations(aPage, collectionId);
   return await db.annotations.bulkPut(annotationsW3C);
 };
 

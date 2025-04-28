@@ -35,6 +35,7 @@ import {
 
 function* handleFetchLayout({
   canvas,
+  collectionId,
   originalWidth,
 }: fetchLayoutPayload): Generator<CallEffect | PutEffect, void, Response> {
   try {
@@ -64,7 +65,12 @@ function* handleFetchLayout({
     yield put(processSuccess({ canvasId: canvas.id, result: data }));
 
     //convert the result into an array of Annotation
-    const annotations = convertEdwinResult(data as unknown as EdwinBox[], canvas.id, originalWidth);
+    const annotations = convertEdwinResult(
+      data as unknown as EdwinBox[],
+      canvas.id,
+      collectionId,
+      originalWidth,
+    );
     //and send it to the redux store
     yield put(fetchAnnotationsSuccess(annotations));
   } catch (error) {
@@ -75,6 +81,7 @@ function* handleFetchLayout({
 
 function* handleFetchOcr({
   canvas,
+  collectionId,
   region,
 }: fetchOcrPayload): Generator<CallEffect | PutEffect, void, Client | PredictReturn> {
   if (canvas === undefined) {
@@ -108,7 +115,11 @@ function* handleFetchOcr({
     console.log(gradioResult.data);
     try {
       const peroResult = peroResultSchema.parse(gradioResult.data);
-      const annotations = convertPeroTranscriptionsToAnnotations(peroResult, canvas.id);
+      const annotations = convertPeroTranscriptionsToAnnotations(
+        peroResult,
+        canvas.id,
+        collectionId,
+      );
       yield put(fetchAnnotationsSuccess(annotations));
       yield call(saveAllAnnotations, annotations);
       yield put(processSuccess({ canvasId: canvas.id, result: 'toto' }));
@@ -143,6 +154,7 @@ function* handleStartBatchLayoutProcess(
   for (let i = 0; i < canvases.length; i++) {
     yield call(handleFetchLayout, {
       canvas: canvases[i],
+      collectionId,
       originalWidth: canvases[i].width ?? 0,
     });
   }
@@ -164,7 +176,9 @@ function* handleStartBatchOcrProcess(
   try {
     for (let i = 0; i < canvases.length; i += batchSize) {
       const batch = canvases.slice(i, i + batchSize);
-      yield all(batch.map((canvas) => call(handleFetchOcr, { canvas, region: undefined })));
+      yield all(
+        batch.map((canvas) => call(handleFetchOcr, { canvas, collectionId, region: undefined })),
+      );
       // yield fork(handleFetchOcr, {
       //   canvas: canvases[i],
       //   region: undefined,

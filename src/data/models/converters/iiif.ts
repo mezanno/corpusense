@@ -60,7 +60,10 @@ export function convertW3CAnnotationsToIIIF(annotations: Annotation[]): Annotati
   };
 }
 
-export function convertAnnotationPageToW3CAnnotations(aPage: AnnotationPage): Annotation[] {
+export function convertAnnotationPageToW3CAnnotations(
+  aPage: AnnotationPage,
+  collectionId: string,
+): Annotation[] {
   const allItems = aPage.items;
   if (allItems === undefined || allItems.length === 0) {
     throw new Error('Annotation items are undefined or empty');
@@ -100,6 +103,7 @@ export function convertAnnotationPageToW3CAnnotations(aPage: AnnotationPage): An
 
       const a = createAnnotation({
         canvasId: baseUrl,
+        collectionId,
         order: -1, //!TODO : revoir l'ordre
         minX: xywh.x,
         minY: xywh.y,

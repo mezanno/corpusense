@@ -27,7 +27,7 @@ export const ReducerContext = createContext<{
   cvcDispatch: React.ActionDispatch<[action: CanvasViewerContentAction]>;
 }>({ cvcState: initialState, cvcDispatch: () => {} });
 
-const CanvasViewer = ({ name, editable = false }: { name: string; editable?: boolean }) => {
+const CanvasViewer = ({ name, colllectionId }: { name: string; colllectionId?: string }) => {
   console.log('CanvasViewer - render', name);
   //get the canvas to display from redux
   const canvas = useAppSelector(getCanvasForComponent(name)) as Canvas;
@@ -54,8 +54,8 @@ const CanvasViewer = ({ name, editable = false }: { name: string; editable?: boo
       ) : (
         <Annotorious>
           <ReducerContext.Provider value={{ cvcState, cvcDispatch }}>
-            {editable ? (
-              <CanvasViewerContentWithTools canvas={canvas} />
+            {colllectionId !== undefined ? (
+              <CanvasViewerContentWithTools canvas={canvas} collectionId={colllectionId} />
             ) : (
               <CanvasViewerContent canvas={canvas} />
             )}

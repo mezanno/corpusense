@@ -256,6 +256,7 @@ function* handleImportOneCollection(_action: PayloadAction<object>): Generator<E
   }
 
   const collectionName = manifest.label?.none?.[0] ?? 'Imported collection'; //TODO change default name
+  const collectionId = uuid(); //TODO change default id
 
   //add the tags
   const tags = manifest.tags ?? [];
@@ -286,7 +287,7 @@ function* handleImportOneCollection(_action: PayloadAction<object>): Generator<E
         if (annotationPage.id.endsWith('.json')) {
           continue;
         } else {
-          yield call(importAnnotationFromJson, annotationPage);
+          yield call(importAnnotationFromJson, annotationPage, collectionId);
         }
       }
     }

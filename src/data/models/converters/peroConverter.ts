@@ -27,10 +27,12 @@ type PeroResult = [
 export function convertPeroLineToAnnotation(
   line: PeroLine,
   canvasId: string,
+  collectionId: string,
   order: number,
 ): Annotation {
   return createAnnotation({
     canvasId,
+    collectionId,
     order,
     minX: Math.min(...line.polygon.map((point) => point[0])),
     minY: Math.min(...line.polygon.map((point) => point[1])),
@@ -44,13 +46,14 @@ export function convertPeroLineToAnnotation(
 export function convertPeroTranscriptionsToAnnotations(
   peroResult: PeroResult,
   canvasId: string,
+  collectionId: string,
 ): Annotation[] {
   const annotations: Annotation[] = [];
   for (let i = 0; i < peroResult[0].result.transcriptions.length; i++) {
     const lines = peroResult[0].result.transcriptions[i].lines;
     for (let l = 0; l < lines.length; l++) {
       const line = lines[l];
-      annotations.push(convertPeroLineToAnnotation(line, canvasId, l));
+      annotations.push(convertPeroLineToAnnotation(line, canvasId, collectionId, l));
     }
   }
 

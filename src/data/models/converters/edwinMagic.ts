@@ -7,7 +7,12 @@ export interface EdwinBox {
   box: number[];
 }
 
-function convertEdwinToAnnotation(edwinBox: EdwinBox, canvasId: string, originalWidth: number) {
+function convertEdwinToAnnotation(
+  edwinBox: EdwinBox,
+  canvasId: string,
+  collectionId: string,
+  originalWidth: number,
+) {
   const multiple = Math.max(originalWidth, 2048) / 2048;
 
   let type = edwinBox.type.toUpperCase();
@@ -21,6 +26,7 @@ function convertEdwinToAnnotation(edwinBox: EdwinBox, canvasId: string, original
 
   return createAnnotation({
     canvasId,
+    collectionId,
     order: 0,
     minX: edwinBox.box[0] * multiple,
     minY: edwinBox.box[1] * multiple,
@@ -34,7 +40,10 @@ function convertEdwinToAnnotation(edwinBox: EdwinBox, canvasId: string, original
 export function convertEdwinResult(
   boxes: EdwinBox[],
   canvasId: string,
+  collecionId: string,
   originalWidth: number,
 ): Annotation[] {
-  return boxes.map((b) => convertEdwinToAnnotation(b, canvasId, originalWidth)).filter(Boolean);
+  return boxes
+    .map((b) => convertEdwinToAnnotation(b, canvasId, collecionId, originalWidth))
+    .filter(Boolean);
 }
