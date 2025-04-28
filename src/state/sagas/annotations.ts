@@ -1,6 +1,10 @@
 import { db } from '@/data/db';
 import { Annotation } from '@/data/models/Annotation';
-import { removeAllAnnotations, saveAllAnnotations } from '@/data/services/annotations';
+import {
+  getAnnotationsForCanvas,
+  removeAllAnnotations,
+  saveAllAnnotations,
+} from '@/data/services/annotations';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
@@ -60,13 +64,10 @@ function* handleSetCanvasFromComponent(
   console.log('handleSetCanvasFromComponent - ', action.payload);
   if (action.payload.collectionId !== undefined) {
     try {
-      const annotations = yield call(() =>
-        db.annotations
-          .where({
-            canvasId: action.payload.canvas.id,
-            collectionId: action.payload.collectionId,
-          })
-          .toArray(),
+      const annotations = yield call(
+        getAnnotationsForCanvas,
+        action.payload.canvas.id,
+        action.payload.collectionId,
       );
       yield put(fetchAnnotationsSuccess(annotations));
     } catch (e) {

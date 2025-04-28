@@ -6,6 +6,15 @@ import { SelectedCanvas } from '../models/SelectedCanvas';
 import { getImage } from './canvas';
 import { getCanvasesByCollectionId } from './collections';
 
+const getAnnotationsForCanvas = async (canvasId: string, collectionId: string) => {
+  return db.annotations
+    .where({
+      canvasId,
+      collectionId,
+    })
+    .toArray();
+};
+
 const importAnnotationFromJson = async (aPage: AnnotationPage, collectionId: string) => {
   console.log('importAnnotationFromJson - ', aPage);
   const annotationsW3C = convertAnnotationPageToW3CAnnotations(aPage, collectionId);
@@ -60,6 +69,7 @@ function generateFirstAnnotation(
 export {
   generateFirstAnnotation,
   generatePageAnnotationForCanvas,
+  getAnnotationsForCanvas,
   importAnnotationFromJson,
   removeAllAnnotations,
   saveAllAnnotations,
