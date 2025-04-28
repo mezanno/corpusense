@@ -20,7 +20,7 @@ import {
 } from '@/state/reducers/collections';
 import { setSelectionEndRequest, setSelectionStartRequest } from '@/state/reducers/selection';
 import { getCollections } from '@/state/selectors/collections';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getSelection, isSelected } from '../state/selectors/selection';
 import { Button } from './ui/button';
@@ -32,7 +32,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -46,6 +45,7 @@ interface CanvasCardProps {
 
 const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => {
   const { t } = useTranslation();
+  const [dialogOpen, setDialogOpen] = useState(false);
   const selection = useAppSelector(getSelection);
   const collections: Collection[] = useAppSelector(getCollections);
   const selected: boolean = useAppSelector(isSelected(index, canvas.id));
@@ -96,11 +96,12 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
     if (input === null) return;
     const collectionName = (input as HTMLInputElement).value;
     dispatch(createCollectionWithSelectionRequest({ selection, name: collectionName, manifestId }));
+    setDialogOpen(false);
   };
 
   //TODO : il faut corriger le aria-label pour qu'il prenne une chaine de caractère
   return (
-    <Dialog>
+    <>
       <ContextMenu>
         <div className='flex h-full w-full justify-center'>
           <ContextMenuTrigger>
@@ -131,9 +132,9 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
         <ContextMenuContent>
           {selection.length > 0 && (
             <>
-              <DialogTrigger asChild>
-                <ContextMenuItem>{t('menu_create_from_selection')}</ContextMenuItem>
-              </DialogTrigger>
+              <ContextMenuItem onClick={() => setDialogOpen(true)}>
+                {t('menu_create_from_selection')}
+              </ContextMenuItem>
               <ContextMenuSub>
                 <ContextMenuSubTrigger>
                   {t('menu_add_selection_to_collection')}
@@ -165,31 +166,33 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
         </ContextMenuContent>
       </ContextMenu>
 
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t('btn_create_collection')}</DialogTitle>
-          <DialogDescription>{t('form_description_create_collection')}</DialogDescription>
-        </DialogHeader>
-        <div className='grid grid-cols-4 items-center gap-4'>
-          <Label htmlFor='name' className='text-right'>
-            {t('form_label_collection_name')}
-          </Label>
-          <Input
-            ref={inputCollectionName}
-            id='name'
-            placeholder={t('form_placeholder_collection_name')}
-            className='col-span-3'
-          />
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button type='button' onClick={handleCreateCollection}>
-              {t('btn_create')}
-            </Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('btn_create_collection')}</DialogTitle>
+            <DialogDescription>{t('form_description_create_collection')}</DialogDescription>
+          </DialogHeader>
+          <div className='grid grid-cols-4 items-center gap-4'>
+            <Label htmlFor='name' className='text-right'>
+              {t('form_label_collection_name')}
+            </Label>
+            <Input
+              ref={inputCollectionName}
+              id='name'
+              placeholder={t('form_placeholder_collection_name')}
+              className='col-span-3'
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type='button' onClick={handleCreateCollection}>
+                {t('btn_create')}
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
