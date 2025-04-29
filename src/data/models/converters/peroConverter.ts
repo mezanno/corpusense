@@ -30,11 +30,12 @@ export function convertPeroTranscriptionsToAnnotations(
   collectionId: string,
 ): Annotation[] {
   const annotations: Annotation[] = [];
+  let order = 0;
   for (let i = 0; i < peroResult[0].result.transcriptions.length; i++) {
     const lines = peroResult[0].result.transcriptions[i].lines;
     for (let l = 0; l < lines.length; l++) {
       const line = lines[l];
-      annotations.push(convertPeroLineToAnnotation(line, canvasId, collectionId, l));
+      annotations.push(convertPeroLineToAnnotation(line, canvasId, collectionId, order++));
     }
   }
 
