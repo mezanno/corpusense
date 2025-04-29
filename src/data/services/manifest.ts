@@ -57,4 +57,15 @@ const loadMetadataForManifest = async (manifestId: string) => {
   return metadata?.map((item) => item.attribute) ?? [];
 };
 
-export { exists, fetchJson, loadMetadataForManifest };
+const getCanvass = async (manifestId: string, canvasId: string) => {
+  const manfiest = await db.storedItems.get(manifestId);
+  if (manfiest) {
+    const canvas = manfiest.content.items?.find((item) => item.id === canvasId);
+    if (canvas) {
+      return canvas;
+    }
+  }
+  throw new Error(i18next.t('error_canvas_not_found'));
+};
+
+export { exists, fetchJson, getCanvass, loadMetadataForManifest };
