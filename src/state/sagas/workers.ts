@@ -107,14 +107,16 @@ function* handleFetchOcr({
       );
       if (annotationRegions.length > 0) {
         regions = JSON.stringify(
-          annotationRegions.map((annotation) => {
-            return {
-              xtl: annotation.target.selector.geometry.bounds.minX,
-              ytl: annotation.target.selector.geometry.bounds.minY,
-              xbr: annotation.target.selector.geometry.bounds.maxX,
-              ybr: annotation.target.selector.geometry.bounds.maxY,
-            };
-          }),
+          annotationRegions
+            .sort((a1, a2) => (a1.order ?? 0) - (a2.order ?? 0))
+            .map((annotation) => {
+              return {
+                xtl: annotation.target.selector.geometry.bounds.minX,
+                ytl: annotation.target.selector.geometry.bounds.minY,
+                xbr: annotation.target.selector.geometry.bounds.maxX,
+                ybr: annotation.target.selector.geometry.bounds.maxY,
+              };
+            }),
         );
       }
     } else {
