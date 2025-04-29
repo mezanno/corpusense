@@ -1,18 +1,30 @@
 import { Collection, ExportedCollection } from '@/data/models/Collection';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
+import { StoredItem } from '@/data/models/StoredItem';
 import {
   generateFirstAnnotation,
   importAnnotationFromJson,
   saveAllAnnotations,
 } from '@/data/services/annotations';
 import { generateCollectionContent, saveCollectionContent } from '@/data/services/collections';
+import { getCanvass } from '@/data/services/manifest';
+import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import i18next from 'i18next';
 import JSZip from 'jszip';
-import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/effects';
+import {
+  call,
+  CallEffect,
+  Effect,
+  put,
+  PutEffect,
+  takeEvery,
+  takeLatest,
+} from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
 import { db } from '../../data/db';
 import {
+  addCollectionToHistoryRequest,
   addSelectionToCollectionRequest,
   addSelectionToCollectionSuccess,
   createCollectionRequest,
@@ -29,6 +41,7 @@ import {
   updateCollectionRequest,
   updateCollectionSuccess,
 } from '../reducers/collections';
+import { setStoredItems } from '../reducers/storedItems';
 import { loadStoredElements } from './storedItems';
 
 function* fetchAllCollections(): Generator<
@@ -303,6 +316,45 @@ function* handleImportOneCollection(_action: PayloadAction<object>): Generator<E
   yield put(updateCollectionSuccess({ ...newCollection, tags: tags.map((tag) => tag.id) }));
 }
 
+function* handleLoadCollection(
+  action: PayloadAction<string>,
+): Generator<Effect, void, Collection[] | StoredItem[] | Canvas> {
+  //reload all the collections
+  const collections = (yield call(() => db.collections.toArray())) as Collection[];
+  yield put(setCollections(collections));
+
+  //get the collection to load
+  const collectionToLoad = collections.find((collection) => collection.id === action.payload);
+  if (collectionToLoad === undefined) {
+    yield put(setError(i18next.t('error_collection_not_found')));
+    return;
+  }
+
+  //check if the canvas are already in the storedItems, if not add them to the storedItems
+  const contentToLoad = collectionToLoad.content.map((elt) => ({
+    canvasId: elt.canvasId,
+    manifestId: elt.manifestId,
+  }));
+  const storedItems = (yield call(() => db.storedItems.toArray())) as StoredItem[];
+  const storedCanvasIds = storedItems.map((elt) => elt.id);
+  const contentToAdd = contentToLoad.filter((elt) => !storedCanvasIds.includes(elt.canvasId));
+  if (contentToAdd.length > 0) {
+    for (const content of contentToAdd) {
+      const canvas = (yield call(getCanvass, content.manifestId, content.canvasId)) as Canvas;
+      if (canvas !== undefined) {
+        yield call(() =>
+          db.storedItems.add({
+            id: content.canvasId,
+            content: canvas,
+          }),
+        );
+      }
+    }
+    const newStoredItems = (yield call(() => db.storedItems.toArray())) as StoredItem[];
+    yield put(setStoredItems(newStoredItems));
+  }
+}
+
 export default function* collectionsSaga() {
   yield takeEvery(createCollectionRequest, handleCreateCollection);
   yield takeEvery(removeCollectionRequest, handleRemoveCollection);
@@ -312,6 +364,7 @@ export default function* collectionsSaga() {
   yield takeEvery(updateCollectionRequest, handleUpdateCollection);
   yield takeEvery(importOneCollectionRequest, handleImportOneCollection);
   yield takeEvery(importMultipleCollectionsRequest, handleImportMultipleCollections);
+  yield takeLatest(addCollectionToHistoryRequest, handleLoadCollection);
 }
 
 export { fetchAllCollections };
