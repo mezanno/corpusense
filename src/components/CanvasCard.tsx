@@ -26,7 +26,6 @@ import { getSelection, isSelected } from '../state/selectors/selection';
 import { Button } from './ui/button';
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -102,7 +101,8 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
   //TODO : il faut corriger le aria-label pour qu'il prenne une chaine de caractère
   return (
     <>
-      <ContextMenu>
+      {/* modal={false} : fix a bug with the Dialog+ContextMenu : https://github.com/radix-ui/primitives/issues/1836 */}
+      <ContextMenu modal={false}>
         <div className='flex h-full w-full justify-center'>
           <ContextMenuTrigger>
             <Card
@@ -184,11 +184,7 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
             />
           </div>
           <DialogFooter>
-            <DialogClose asChild>
-              <Button type='button' onClick={handleCreateCollection}>
-                {t('btn_create')}
-              </Button>
-            </DialogClose>
+            <Button onClick={handleCreateCollection}>{t('btn_create')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
