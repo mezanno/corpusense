@@ -22,6 +22,8 @@ import {
   saveAnnotationRequest,
   saveAnnotationSuccess,
   syncWithDB,
+  updateAnnotationOrderValueRequest,
+  updateAnnotationOrderValueSuccess,
 } from '../reducers/annotations';
 import { setCanvasFromComponent, SetCanvasFromComponentPayload } from '../reducers/canvas';
 import { getAnnotations } from '../selectors/annotations';
@@ -118,6 +120,19 @@ function* handleRemoveLinkBetweenAnnotationsRequest(
   }
 }
 
+function* handleUpdateAnnotationOrderValue(
+  action: PayloadAction<{ annotationId: string; value: number }>,
+) {
+  try {
+    yield call(() =>
+      db.annotations.update(action.payload.annotationId, { order: action.payload.value }),
+    );
+    yield put(updateAnnotationOrderValueSuccess(action.payload));
+  } catch (error) {
+    console.warn(error);
+  }
+}
+
 /*function* handleUpdateAnnotationValueRequest(
   action: PayloadAction<{ id: string; value: string }>,
 ): Generator<Effect, void, Annotation> {
@@ -169,5 +184,6 @@ export default function* annotationsSaga() {
   yield takeEvery(addLinkBetweenAnnotationsRequest, handleAddLinkBetweenAnnotationsRequest);
   yield takeEvery(removeLinkBetweenAnnotationsRequest, handleRemoveLinkBetweenAnnotationsRequest);
   // yield takeLatest(updateAnnotationValueRequest, handleUpdateAnnotationValueRequest);
+  yield takeEvery(updateAnnotationOrderValueRequest, handleUpdateAnnotationOrderValue);
   yield takeLatest(syncWithDB, handleSyncWithDB);
 }

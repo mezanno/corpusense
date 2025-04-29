@@ -107,6 +107,19 @@ const annotationsSlice = createSlice({
         }
       }
     },
+    updateAnnotationOrderValueRequest(
+      _state,
+      _action: PayloadAction<{ annotationId: string; value: number }>,
+    ) {},
+    updateAnnotationOrderValueSuccess(
+      state,
+      action: PayloadAction<{ annotationId: string; value: number }>,
+    ) {
+      const annotation = state.values.find((a) => a.id === action.payload.annotationId);
+      if (annotation !== undefined) {
+        annotation.order = action.payload.value;
+      }
+    },
     linkAnnotationsFailure(state, action: PayloadAction<string>) {
       state.error = action.payload;
     },
@@ -129,6 +142,8 @@ export const {
   removeLinkBetweenAnnotationsRequest,
   removeLinkBetweenAnnotationsSuccess,
   // updateAnnotationValueRequest,
+  updateAnnotationOrderValueRequest,
+  updateAnnotationOrderValueSuccess,
   updateAnnotationValueSuccess,
   linkAnnotationsFailure,
   syncWithDB,

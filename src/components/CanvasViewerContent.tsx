@@ -1,7 +1,10 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
 import { useAppDispatch } from '@/hooks/hooks';
 import { useAddAnnotation, useUpdateAnnotation } from '@/hooks/useSaveAnnotation';
-import { removeAnnotationRequest } from '@/state/reducers/annotations';
+import {
+  removeAnnotationRequest,
+  updateAnnotationOrderValueRequest,
+} from '@/state/reducers/annotations';
 import { getAnnotations } from '@/state/selectors/annotations';
 import { RootState } from '@/state/store';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
@@ -13,6 +16,7 @@ import {
   OpenSeadragonAnnotationPopup,
   OpenSeadragonAnnotator,
   OpenSeadragonViewer,
+  PopupProps,
   useAnnotations,
   useAnnotator,
   useSelection,
@@ -23,14 +27,57 @@ import { useSelector } from 'react-redux';
 import AnnotationForm from './AnnotationForm';
 import { HoverContext, ReducerContext } from './CanvasViewer';
 import { ACTIONS } from './reducers/CanvasViewerContentReducer';
+import { Button } from './ui/button';
 import withTools from './withTools';
 
+//bleu foncé : #264653
+//ver clair : #2a9d8f
+//ocre : #e9c46a
+//orange : #f4a261
+//rouge : #e76f51
+
 const colors = {
-  [ElementType.TAG.toString()]: '#00ff00',
-  [ElementType.ENTRY.toString()]: '#ff0000',
+  [ElementType.TAG.toString()]: '#ffffff',
+  [ElementType.ENTRY.toString()]: '#264653',
   [ElementType.COLUMN.toString()]: '#0000ff',
-  [ElementType.LINE.toString()]: '#000000',
-  [ElementType.PAGE.toString()]: '#ff00ff',
+  [ElementType.LINE.toString()]: '#2a9d8f',
+  [ElementType.PAGE.toString()]: '#e9c46a',
+  [ElementType.REGION.toString()]: '#e76f51',
+};
+
+const AnnotationPopup = (props: PopupProps) => {
+  const appDispatch = useAppDispatch();
+  const annotation = props.annotation as Annotation;
+
+  const handlePlus = () => {
+    appDispatch(
+      updateAnnotationOrderValueRequest({
+        annotationId: annotation.id,
+        value: (annotation.order ?? -1) + 1,
+      }),
+    );
+  };
+
+  const handleMinus = () => {
+    appDispatch(
+      updateAnnotationOrderValueRequest({
+        annotationId: annotation.id,
+        value: (annotation.order ?? 1) - 1,
+      }),
+    );
+  };
+
+  return (
+    <div className='flex items-center gap-2 rounded-xl bg-white/75 p-2'>
+      <Button className='soft-button' onClick={handleMinus}>
+        -
+      </Button>
+      {annotation.order}
+      <Button className='soft-button' onClick={handlePlus}>
+        +
+      </Button>
+    </div>
+  );
 };
 
 export type CanvasViewerContentProps = {
@@ -182,7 +229,11 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
           </div>
         )}
       </div>
-      <OpenSeadragonAnnotationPopup popup={() => <div>Test</div>} />
+      <OpenSeadragonAnnotationPopup
+        popup={(props) => <AnnotationPopup {...props} />}
+        arrow={true}
+        placement={'top'}
+      />
     </OpenSeadragonAnnotator>
   );
 };
