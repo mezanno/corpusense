@@ -133,36 +133,6 @@ function* handleUpdateAnnotationOrderValue(
   }
 }
 
-/*function* handleUpdateAnnotationValueRequest(
-  action: PayloadAction<{ id: string; value: string }>,
-): Generator<Effect, void, Annotation> {
-  console.log('handleUpdateAnnotationValueRequest');
-
-  const annotation = yield call(() => db.annotations.get(action.payload.id));
-  if (annotation === undefined) {
-    yield put(linkAnnotationsFailure('Annotation not found'));
-    return;
-  }
-  const body = {
-    purpose: 'tagging',
-    value: action.payload.value,
-    annotation: annotation.id,
-    id: annotation.id + '-t', //TODO: revoir format
-  };
-  if (annotation.bodies[0].purpose === 'classifying') {
-    annotation.bodies[1] = body;
-  } else {
-    annotation.bodies[0] = body;
-  }
-  try {
-    yield call(() => db.annotations.put(annotation));
-    yield put(updateAnnotationValueSuccess(action.payload));
-  } catch (e) {
-    console.warn(e);
-    yield put(linkAnnotationsFailure('Failed to update annotation value'));
-  }
-}*/
-
 function* handleSyncWithDB(
   action: PayloadAction<{ canvasId: string; collectionId: string }>,
 ): Generator<Effect, void, Annotation[]> {
@@ -183,7 +153,6 @@ export default function* annotationsSaga() {
   yield takeLatest(setCanvasFromComponent, handleSetCanvasFromComponent);
   yield takeEvery(addLinkBetweenAnnotationsRequest, handleAddLinkBetweenAnnotationsRequest);
   yield takeEvery(removeLinkBetweenAnnotationsRequest, handleRemoveLinkBetweenAnnotationsRequest);
-  // yield takeLatest(updateAnnotationValueRequest, handleUpdateAnnotationValueRequest);
   yield takeEvery(updateAnnotationOrderValueRequest, handleUpdateAnnotationOrderValue);
   yield takeLatest(syncWithDB, handleSyncWithDB);
 }

@@ -90,23 +90,6 @@ const annotationsSlice = createSlice({
         toAnnotation.previous = undefined;
       }
     },
-    // updateAnnotationValueRequest(_state, _action: PayloadAction<{ id: string; value: string }>) {},
-    updateAnnotationValueSuccess(state, action: PayloadAction<{ id: string; value: string }>) {
-      const annotation = state.values.find((a) => a.id === action.payload.id);
-      if (annotation) {
-        const body = {
-          purpose: 'tagging',
-          value: action.payload.value,
-          id: annotation.id + '-t',
-          annotation: annotation.id,
-        };
-        if (annotation.bodies[0].purpose === 'classifying') {
-          annotation.bodies[1] = body;
-        } else {
-          annotation.bodies[0] = body;
-        }
-      }
-    },
     updateAnnotationOrderValueRequest(
       _state,
       _action: PayloadAction<{ annotationId: string; value: number }>,
@@ -141,10 +124,8 @@ export const {
   addLinkBetweenAnnotationsSuccess,
   removeLinkBetweenAnnotationsRequest,
   removeLinkBetweenAnnotationsSuccess,
-  // updateAnnotationValueRequest,
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
-  updateAnnotationValueSuccess,
   linkAnnotationsFailure,
   syncWithDB,
 } = annotationsSlice.actions;
