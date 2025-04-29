@@ -149,7 +149,13 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
             defaultValue='metadata' //this open the metadata by default
           >
             <AccordionItem value='metadata'>
-              <AccordionTrigger className='mx-2'>{t('title_metadata_collection')}</AccordionTrigger>
+              <AccordionTrigger className='mx-2'>
+                <h2 className='flex gap-2 text-lg'>
+                  {t('title_metadata_collection')}
+                  <span className='font-bold italic'>{activeCollection.name}</span>
+                  <span className='font-thin'>({activeCollection.id})</span>
+                </h2>
+              </AccordionTrigger>
               <AccordionContent>
                 <CollectionMetadataForm collection={activeCollection} />
               </AccordionContent>
