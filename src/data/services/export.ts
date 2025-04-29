@@ -97,7 +97,10 @@ const generateTextFromCanvas = async (canvasId: string) => {
   }
   let text = '';
   for (let i = 0; i < annotations.length; i++) {
-    text = text.concat(getAnnotationText(annotations[i])).concat('\n');
+    const t = getAnnotationText(annotations[i]);
+    if (t !== undefined && t.length > 0) {
+      text = text.concat(t).concat('\n');
+    }
   }
   return text;
 };
