@@ -20,8 +20,9 @@ const getAnnotationsForCollection = async (collectionId: string) => {
 };
 
 const importAnnotationFromJson = async (aPage: AnnotationPage, collectionId: string) => {
-  console.log('importAnnotationFromJson - ', aPage);
+  console.log(`importAnnotationFromJson in - ${collectionId}: `, aPage);
   const annotationsW3C = convertAnnotationPageToW3CAnnotations(aPage, collectionId);
+  console.log(`importAnnotationFromJson out - ${collectionId}: `, annotationsW3C);
   return await db.annotations.bulkPut(annotationsW3C);
 };
 

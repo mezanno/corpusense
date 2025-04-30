@@ -18,16 +18,18 @@ export const URL_ANNOTATIONPAGE = 'annotationpage/corpusense';
 
 export function convertW3CAnnotationsToIIIF(annotations: Annotation[]): AnnotationPage {
   if (annotations.length === 0) {
-    throw new Error('Annotation is empty');
+    throw new Error('Error during convertion from W3CAnnotations to IIIF: annotations is empty');
   }
 
   const canvasId = annotations[0].canvasId;
   if (canvasId === undefined) {
-    throw new Error('CanvasId is undefined');
+    throw new Error('Error during convertion from W3CAnnotations to IIIF: canvasId is undefined');
   }
 
   const annotationPageId = `${canvasId}/${URL_ANNOTATIONPAGE}`;
   const annotationsIff: AnnotationIIF[] = [];
+  console.log(`convertW3CAnnotationsToIIIF -> ${annotations.length} annotations in ${canvasId}`);
+
   for (let i = 0; i < annotations.length; i++) {
     const w3cAnnotation = annotations[i];
     const bounds = w3cAnnotation.target.selector.geometry.bounds;
@@ -113,6 +115,8 @@ export function convertAnnotationPageToW3CAnnotations(
         value: valueValue,
         id: annotationId,
       });
+
+      console.log('convertAnnotationPageToW3CAnnotations -> ', a);
 
       annotations.push(a);
     } catch (error) {

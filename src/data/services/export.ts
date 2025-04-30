@@ -84,7 +84,7 @@ const generateCanvas = async (canvasId: string, manifestId: string) => {
 const generateAnnotationPage = async (canvasId: string) => {
   const result = await db.annotations.where('canvasId').equals(canvasId).sortBy('order');
   if (result === undefined || result.length === 0) {
-    throw new Error(`Annotation with id ${canvasId} not found`);
+    throw new Error(`No annotations found in canvas ${canvasId}`);
   }
 
   return convertW3CAnnotationsToIIIF(result);
