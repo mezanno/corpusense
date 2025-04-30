@@ -19,21 +19,8 @@ const useAddAnnotation = () => {
       type: ElementType.TAG,
       value: '',
     });
+    console.log('useAddAnnotation');
     dispatch(saveAnnotationRequest(newAnnotation));
-  };
-};
-
-const useUpdateAnnotation = () => {
-  const dispatch = useAppDispatch();
-
-  return (annotation: Annotation) => {
-    //, type: ElementType, value: string) => {
-    // const updatedAnnotation = createAnnotationFromExistingAnnotation({
-    //   annotation,
-    //   type,
-    //   value,
-    // });
-    dispatch(saveAnnotationRequest(annotation));
   };
 };
 
@@ -46,8 +33,9 @@ const useModifyAnnotation = () => {
       type,
       value,
     });
+    console.log('useModifyAnnotation ', modifiedAnnotation);
     dispatch(saveAnnotationRequest(modifiedAnnotation));
   };
 };
 
-export { useAddAnnotation, useModifyAnnotation, useUpdateAnnotation };
+export { useAddAnnotation, useModifyAnnotation };

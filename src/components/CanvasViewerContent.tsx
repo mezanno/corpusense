@@ -1,8 +1,9 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
 import { useAppDispatch } from '@/hooks/hooks';
-import { useAddAnnotation, useUpdateAnnotation } from '@/hooks/useSaveAnnotation';
+import { useAddAnnotation } from '@/hooks/useSaveAnnotation';
 import {
   removeAnnotationRequest,
+  saveAnnotationRequest,
   updateAnnotationOrderValueRequest,
 } from '@/state/reducers/annotations';
 import { getAnnotations } from '@/state/selectors/annotations';
@@ -22,11 +23,10 @@ import {
   useSelection,
 } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import AnnotationForm from './AnnotationForm';
 import { HoverContext, ReducerContext } from './CanvasViewer';
-import { ACTIONS } from './reducers/CanvasViewerContentReducer';
 import { Button } from './ui/button';
 import withTools from './withTools';
 
@@ -86,68 +86,24 @@ export type CanvasViewerContentProps = {
 };
 
 export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerContentProps) => {
-  // console.log('CanvasViewerContent - render', canvas);
+  console.log(`CanvasViewerContent - render ${canvas.id}, ${collectionId}`);
   const appDispatch = useAppDispatch();
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
-  // useAnnotoriousStoreSync(anno, canvas?.id);
+  const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
+  const annotationsInAnnotorious = useAnnotations();
   const annotationsInStore = useSelector((state: RootState) =>
     getAnnotations(state, canvas.id, collectionId ?? ''),
   );
-  const annotationsInAnnotorious = useAnnotations();
-  const { selected } = useSelection();
+  const addAnnotation = useAddAnnotation(); //logic to add an annotation to the store
 
-  const { cvcState, cvcDispatch } = useContext(ReducerContext);
+  const { cvcState } = useContext(ReducerContext); //the reducer/state of the canvas viewer
   const { hoveredElement } = useContext(HoverContext);
 
-  const addAnnotation = useAddAnnotation();
-  const updateAnnotation = useUpdateAnnotation();
+  const isNewCanvas = useRef(true); //to check if the canvas is new (to avoid syncing the annotations when the canvas is the same)
 
   useEffect(() => {
-    if (anno === null || anno === undefined) return;
-
-    const onCreate = (annotation: ImageAnnotation) => {
-      if (collectionId !== undefined) {
-        addAnnotation(annotation, canvas.id, collectionId);
-        cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: true });
-      } else {
-        console.warn('No collectionId provided, annotation not saved');
-      }
-    };
-    const onUpdate = (annotation: Annotation) => {
-      console.log('updateAnnotation', annotation);
-      updateAnnotation(annotation);
-      cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: true });
-    };
-    const onDelete = (annotation: ImageAnnotation) => {
-      appDispatch(removeAnnotationRequest(annotation.id));
-      cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: true });
-    };
-
-    anno.on('createAnnotation', onCreate);
-    anno.on('updateAnnotation', onUpdate);
-    anno.on('deleteAnnotation', onDelete);
-
-    return () => {
-      anno.off('createAnnotation', onCreate);
-      anno.off('updateAnnotation', onUpdate);
-      anno.off('deleteAnnotation', onDelete);
-      // syncRef.current = false; //if the annotoriousInstance changes, reset the syncRef
-    };
-  }, [anno]);
-
-  const handleDeleteAnnotation = (id: string) => {
-    if (anno !== undefined) {
-      anno.removeAnnotation(id);
-    }
-  };
-
-  useEffect(() => {
-    console.log('annotationsInStore updated', anno);
-    console.log('annotationsInStore', annotationsInStore);
-    console.log('annotationsInAnnotorious', annotationsInAnnotorious);
-
-    if (annotationsInStore !== undefined && anno !== null) {
-      //for each annotation in the redux store
+    if (isNewCanvas.current === false) {
+      //sync the annotations in the store with the annotations in annotorious
       annotationsInStore.forEach((annotation) => {
         const existing = annotationsInAnnotorious.find((a) => a.id === annotation.id);
         try {
@@ -162,9 +118,10 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
           console.error(`Error ${existing ? 'updating' : 'adding'} annotation`, e);
         }
       });
-      //for each annotation in annotorious
+
+      //sync annotations in annotorious with annotations in the store (remove the ones that are not in the store)
       annotationsInAnnotorious.forEach((annotation) => {
-        //if the annotation is not in the redux store, remove it
+        //if the annotation is not in the store, remove it
         if (!annotationsInStore.some((a) => a.id === annotation.id)) {
           try {
             anno.removeAnnotation(annotation.id);
@@ -176,9 +133,45 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
     }
   }, [annotationsInStore]);
 
+  const handleDeleteAnnotation = (id: string) => {
+    appDispatch(removeAnnotationRequest(id)); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
+  };
+
+  //initialize the Annotorious
+  useEffect(() => {
+    if (anno === null || anno === undefined) return;
+
+    const onCreate = (annotation: ImageAnnotation) => {
+      if (collectionId !== undefined) {
+        addAnnotation(annotation, canvas.id, collectionId);
+      } else {
+        console.warn('No collectionId provided, annotation not saved');
+      }
+    };
+    const onUpdate = (annotation: Annotation) => {
+      appDispatch(saveAnnotationRequest(annotation));
+    };
+
+    anno.on('createAnnotation', onCreate);
+    anno.on('updateAnnotation', onUpdate);
+
+    if (isNewCanvas.current && annotationsInStore !== undefined) {
+      //initializing Annototious with the annotations in the store
+      anno.setAnnotations(annotationsInStore);
+      isNewCanvas.current = false;
+    }
+
+    return () => {
+      anno.off('createAnnotation', onCreate);
+      anno.off('updateAnnotation', onUpdate);
+    };
+  }, [anno]);
+
+  //when the canvas changes, clear the annotations of Annotorious
   useEffect(() => {
     if (anno !== null) {
       anno.clearAnnotations();
+      isNewCanvas.current = true;
     }
   }, [canvas]);
 

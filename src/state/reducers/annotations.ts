@@ -22,6 +22,7 @@ const annotationsSlice = createSlice({
   reducers: {
     saveAnnotationRequest(_state, _action: PayloadAction<Annotation>) {},
     saveAnnotationSuccess(state, action: PayloadAction<Annotation>) {
+      //if the annotation already exists in the store, update it
       if (state.values.find((a) => a.id === action.payload.id)) {
         state.values = state.values.map((a) => {
           if (a.id === action.payload.id) {
@@ -30,6 +31,7 @@ const annotationsSlice = createSlice({
           return a;
         });
       } else {
+        //if the annotation does not exist, add it
         state.values.push(action.payload);
       }
     },

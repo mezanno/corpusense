@@ -1,16 +1,12 @@
 import { db } from '@/data/db';
 import { Annotation } from '@/data/models/Annotation';
-import {
-  getAnnotationsForCanvas,
-  removeAllAnnotations,
-  saveAllAnnotations,
-} from '@/data/services/annotations';
+import { removeAllAnnotations, saveAllAnnotations } from '@/data/services/annotations';
 import { PayloadAction } from '@reduxjs/toolkit';
+import { isEqual } from 'lodash';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
   addLinkBetweenAnnotationsRequest,
   addLinkBetweenAnnotationsSuccess,
-  fetchAnnotationsSuccess,
   linkAnnotationsFailure,
   removeAllAnnotationsFailure,
   removeAllAnnotationsRequest,
@@ -25,14 +21,19 @@ import {
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
 } from '../reducers/annotations';
-import { setCanvasFromComponent, SetCanvasFromComponentPayload } from '../reducers/canvas';
 import { getAnnotations } from '../selectors/annotations';
 
-function* handleSaveAnnotationRequest(action: PayloadAction<Annotation>) {
+function* handleSaveAnnotationRequest(
+  action: PayloadAction<Annotation>,
+): Generator<Effect, void, Annotation> {
   console.log('handleSaveAnnotationRequest - ', action.payload);
   try {
-    yield call(() => db.annotations.put(action.payload));
-    yield put(saveAnnotationSuccess(action.payload));
+    const existingAnnotation = yield call(() => db.annotations.get(action.payload.id));
+    //save only if annotations are different to avoid unnecessary writes and call to saveAnnotationSuccess
+    if (!isEqual(existingAnnotation, action.payload)) {
+      yield call(() => db.annotations.put(action.payload));
+      yield put(saveAnnotationSuccess(action.payload));
+    }
   } catch (e) {
     console.warn(e);
   }
@@ -57,24 +58,6 @@ function* handleRemoveAllAnnotations(
   } catch (e) {
     console.warn(e);
     yield put(removeAllAnnotationsFailure);
-  }
-}
-
-function* handleSetCanvasFromComponent(
-  action: PayloadAction<SetCanvasFromComponentPayload>,
-): Generator<Effect, void, Annotation[]> {
-  console.log('handleSetCanvasFromComponent - ', action.payload);
-  if (action.payload.collectionId !== undefined) {
-    try {
-      const annotations = yield call(
-        getAnnotationsForCanvas,
-        action.payload.canvas.id,
-        action.payload.collectionId,
-      );
-      yield put(fetchAnnotationsSuccess(annotations));
-    } catch (e) {
-      console.warn(e);
-    }
   }
 }
 
@@ -149,8 +132,6 @@ export default function* annotationsSaga() {
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotationRequest);
   yield takeEvery(removeAnnotationRequest, handleRemoveAnnotationRequest);
   yield takeEvery(removeAllAnnotationsRequest, handleRemoveAllAnnotations);
-  //charge les annotations d'un canvas lorsque l'on change de canvas
-  yield takeLatest(setCanvasFromComponent, handleSetCanvasFromComponent);
   yield takeEvery(addLinkBetweenAnnotationsRequest, handleAddLinkBetweenAnnotationsRequest);
   yield takeEvery(removeLinkBetweenAnnotationsRequest, handleRemoveLinkBetweenAnnotationsRequest);
   yield takeEvery(updateAnnotationOrderValueRequest, handleUpdateAnnotationOrderValue);
