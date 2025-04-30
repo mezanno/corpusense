@@ -22,7 +22,7 @@ db.version(1).stores({
   typesList: '&label',
   itemMetadata: '[id+attribute.label]',
   tags: '&id',
-  annotations: '&id, canvasId, [canvasId+collectionId]',
+  annotations: '&id, canvasId, collectionId, [canvasId+collectionId]',
 });
 
 export { db };

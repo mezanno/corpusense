@@ -1,8 +1,10 @@
+import { Annotation } from '@/data/models/Annotation';
 import { Collection, ExportedCollection } from '@/data/models/Collection';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { StoredItem } from '@/data/models/StoredItem';
 import {
   generateFirstAnnotation,
+  getAnnotationsForCollection,
   importAnnotationFromJson,
   saveAllAnnotations,
 } from '@/data/services/annotations';
@@ -23,6 +25,7 @@ import {
 } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
 import { db } from '../../data/db';
+import { fetchAnnotationsSuccess } from '../reducers/annotations';
 import {
   addCollectionToHistoryRequest,
   addSelectionToCollectionRequest,
@@ -318,40 +321,50 @@ function* handleImportOneCollection(_action: PayloadAction<object>): Generator<E
 
 function* handleLoadCollection(
   action: PayloadAction<string>,
-): Generator<Effect, void, Collection[] | StoredItem[] | Canvas> {
-  //reload all the collections
-  const collections = (yield call(() => db.collections.toArray())) as Collection[];
-  yield put(setCollections(collections));
+): Generator<Effect, void, Collection[] | StoredItem[] | Canvas | Annotation[]> {
+  try {
+    const collectionId = action.payload;
+    //reload all the collections
+    const collections = (yield call(() => db.collections.toArray())) as Collection[];
+    yield put(setCollections(collections));
 
-  //get the collection to load
-  const collectionToLoad = collections.find((collection) => collection.id === action.payload);
-  if (collectionToLoad === undefined) {
-    yield put(setError(i18next.t('error_collection_not_found')));
-    return;
-  }
-
-  //check if the canvas are already in the storedItems, if not add them to the storedItems
-  const contentToLoad = collectionToLoad.content.map((elt) => ({
-    canvasId: elt.canvasId,
-    manifestId: elt.manifestId,
-  }));
-  const storedItems = (yield call(() => db.storedItems.toArray())) as StoredItem[];
-  const storedCanvasIds = storedItems.map((elt) => elt.id);
-  const contentToAdd = contentToLoad.filter((elt) => !storedCanvasIds.includes(elt.canvasId));
-  if (contentToAdd.length > 0) {
-    for (const content of contentToAdd) {
-      const canvas = (yield call(getCanvass, content.manifestId, content.canvasId)) as Canvas;
-      if (canvas !== undefined) {
-        yield call(() =>
-          db.storedItems.add({
-            id: content.canvasId,
-            content: canvas,
-          }),
-        );
-      }
+    //get the collection to load
+    const collectionToLoad = collections.find((collection) => collection.id === collectionId);
+    if (collectionToLoad === undefined) {
+      yield put(setError(i18next.t('error_collection_not_found')));
+      return;
     }
-    const newStoredItems = (yield call(() => db.storedItems.toArray())) as StoredItem[];
-    yield put(setStoredItems(newStoredItems));
+
+    //check if the canvas are already in the storedItems, if not add them to the storedItems
+    const contentToLoad = collectionToLoad.content.map((elt) => ({
+      canvasId: elt.canvasId,
+      manifestId: elt.manifestId,
+    }));
+    const storedItems = (yield call(() => db.storedItems.toArray())) as StoredItem[];
+    const storedCanvasIds = storedItems.map((elt) => elt.id);
+    const contentToAdd = contentToLoad.filter((elt) => !storedCanvasIds.includes(elt.canvasId));
+    if (contentToAdd.length > 0) {
+      for (const content of contentToAdd) {
+        const canvas = (yield call(getCanvass, content.manifestId, content.canvasId)) as Canvas;
+        if (canvas !== undefined) {
+          yield call(() =>
+            db.storedItems.add({
+              id: content.canvasId,
+              content: canvas,
+            }),
+          );
+        }
+      }
+      const newStoredItems = (yield call(() => db.storedItems.toArray())) as StoredItem[];
+      yield put(setStoredItems(newStoredItems));
+    }
+
+    //load all the annotations of the collection
+    const annotations = (yield call(getAnnotationsForCollection, collectionId)) as Annotation[];
+    yield put(fetchAnnotationsSuccess(annotations));
+  } catch (e) {
+    console.log('error', e);
+    yield put(setError(e));
   }
 }
 

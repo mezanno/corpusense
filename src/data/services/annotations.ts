@@ -15,6 +15,10 @@ const getAnnotationsForCanvas = async (canvasId: string, collectionId: string) =
     .toArray();
 };
 
+const getAnnotationsForCollection = async (collectionId: string) => {
+  return await db.annotations.where('collectionId').equals(collectionId).toArray();
+};
+
 const importAnnotationFromJson = async (aPage: AnnotationPage, collectionId: string) => {
   console.log('importAnnotationFromJson - ', aPage);
   const annotationsW3C = convertAnnotationPageToW3CAnnotations(aPage, collectionId);
@@ -70,6 +74,7 @@ export {
   generateFirstAnnotation,
   generatePageAnnotationForCanvas,
   getAnnotationsForCanvas,
+  getAnnotationsForCollection,
   importAnnotationFromJson,
   removeAllAnnotations,
   saveAllAnnotations,
