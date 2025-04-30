@@ -12,7 +12,7 @@ const getAnnotationsForCanvas = async (canvasId: string, collectionId: string) =
       canvasId,
       collectionId,
     })
-    .toArray();
+    .sortBy('order');
 };
 
 const getAnnotationsForCollection = async (collectionId: string) => {
