@@ -75,7 +75,6 @@ export function convertAnnotationPageToW3CAnnotations(
   const targets = uniq(allItems.map((i) => i.target));
   for (let r = 0; r < targets.length; r++) {
     const target = targets[r] as ContentResourceString;
-
     try {
       const { baseUrl, xywh } = extractInformationFromTarget(target);
       const bodies = allItems
@@ -106,7 +105,7 @@ export function convertAnnotationPageToW3CAnnotations(
       const a = createAnnotation({
         canvasId: baseUrl,
         collectionId,
-        order: -1, //!TODO : revoir l'ordre
+        order: r,
         minX: xywh.x,
         minY: xywh.y,
         maxX: xywh.x + xywh.w,
