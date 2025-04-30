@@ -167,24 +167,26 @@ function* handleAddSelectionToCollection(
   }
 }
 
-function* handleCreateCollectionWithSelection(
-  action: PayloadAction<{ selection: SelectedCanvas[]; name: string; manifestId: string }>,
-): Generator<Effect, Collection, Collection | undefined> {
-  const { payload } = action;
-  const collectionId = uuid();
-  const newCollection: Collection = { id: collectionId, name: payload.name, tags: [], content: [] };
-  newCollection.content = generateCollectionContent(
-    0,
-    payload.selection,
-    collectionId,
-    payload.manifestId,
-  );
+export interface CollectionWithSelectionPayload {
+  selection: SelectedCanvas[];
+  name: string;
+  id?: string;
+  manifestId: string;
+}
 
-  const firstAnnotations = generateFirstAnnotation(payload.selection, collectionId);
+function* handleCreateCollectionWithSelection(
+  action: PayloadAction<CollectionWithSelectionPayload>,
+): Generator<Effect, Collection, Collection | undefined> {
+  const { id, name, selection, manifestId } = action.payload;
+  const collectionId = id ?? uuid();
+  const newCollection: Collection = { id: collectionId, name, tags: [], content: [] };
+  newCollection.content = generateCollectionContent(0, selection, collectionId, manifestId);
+
+  const firstAnnotations = generateFirstAnnotation(selection, collectionId);
 
   try {
     yield call(() => db.collections.add(newCollection));
-    yield call(saveCollectionContent, newCollection, payload.selection);
+    yield call(saveCollectionContent, newCollection, selection);
     yield call(saveAllAnnotations, firstAnnotations);
     yield call(loadStoredElements); //il faut appeler le saga pour mettre à jour le state //TODO: ? est-ce nécessaire de tout recharger ?
     yield put(createCollectionSuccess(newCollection));
@@ -266,6 +268,8 @@ function* handleImportOneCollection(_action: PayloadAction<object>): Generator<E
   const collectionName = manifest.label?.none?.[0] ?? 'Imported collection'; //TODO change default name
   const collectionId = uuid(); //TODO change default id
 
+  console.log(`Importing ${collectionName} (${collectionId})`);
+
   //add the tags
   const tags = manifest.tags ?? [];
   yield call(() => db.tags.bulkPut(tags));
@@ -305,6 +309,7 @@ function* handleImportOneCollection(_action: PayloadAction<object>): Generator<E
     payload: {
       selection: selectedCanvas,
       name: collectionName,
+      id: collectionId,
       manifestId: manifest.id,
     },
     type: createCollectionWithSelectionRequest.type,
