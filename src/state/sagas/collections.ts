@@ -167,7 +167,7 @@ function* handleAddSelectionToCollection(
   }
 }
 
-export interface CollectionWithSelectionPayload {
+export interface CreateCollectionWithSelectionPayload {
   selection: SelectedCanvas[];
   name: string;
   id?: string;
@@ -175,19 +175,21 @@ export interface CollectionWithSelectionPayload {
 }
 
 function* handleCreateCollectionWithSelection(
-  action: PayloadAction<CollectionWithSelectionPayload>,
+  action: PayloadAction<CreateCollectionWithSelectionPayload>,
 ): Generator<Effect, Collection, Collection | undefined> {
   const { id, name, selection, manifestId } = action.payload;
   const collectionId = id ?? uuid();
   const newCollection: Collection = { id: collectionId, name, tags: [], content: [] };
   newCollection.content = generateCollectionContent(0, selection, collectionId, manifestId);
 
-  const firstAnnotations = generateFirstAnnotation(selection, collectionId);
-
   try {
     yield call(() => db.collections.add(newCollection));
     yield call(saveCollectionContent, newCollection, selection);
-    yield call(saveAllAnnotations, firstAnnotations);
+    if (id === undefined) {
+      //if an id was provided, it means it is an import, so we don't need to create the first annotations
+      const firstAnnotations = generateFirstAnnotation(selection, collectionId);
+      yield call(saveAllAnnotations, firstAnnotations);
+    }
     yield call(loadStoredElements); //il faut appeler le saga pour mettre à jour le state //TODO: ? est-ce nécessaire de tout recharger ?
     yield put(createCollectionSuccess(newCollection));
   } catch (e) {
