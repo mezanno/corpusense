@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { ClockLoader } from 'react-spinners';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +36,7 @@ const MultiOptionsMenu = ({
     <div className={`relative ${color}`}>
       <DropdownMenu>
         <DropdownMenuTrigger className='soft-button' title={t(params.name)}>
-          {params.icon}
+          {isRunning ? <ClockLoader size={24} /> : params.icon}
         </DropdownMenuTrigger>
         <DropdownMenuContent className={` ${color}`}>
           <DropdownMenuLabel className='flex items-center gap-2 space-x-2'>
@@ -57,7 +58,7 @@ const MultiOptionsMenu = ({
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      {isRunning && <Spinner className='absolute -top-2 -right-2' size={'small'} />}
+      {/* {isRunning && <Spinner className='absolute -top-2 -right-2' size={'small'} />} */}
     </div>
   );
 };

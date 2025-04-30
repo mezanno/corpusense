@@ -26,7 +26,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const worker = useAppSelector((state: RootState) =>
       cvcState?.canvas?.id !== undefined ? getWorker(state, cvcState.canvas.id) : null,
     );
-    const isWorkerRunning = worker !== null && worker.status === WorkerStatus.PENDING;
+    const isWorkerRunning = worker !== null && worker.status === WorkerStatus.PROCESSING;
 
     /** 
      on va surveiller les annotations dans le store pour voir si on doit mettre le statut de sauvegarde à jour

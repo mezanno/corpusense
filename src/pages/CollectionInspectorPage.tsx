@@ -8,7 +8,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { Spinner } from '@/components/ui/spinner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import {
@@ -22,10 +21,11 @@ import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
-import { CalendarClock, CircleX } from 'lucide-react';
+import { CircleX } from 'lucide-react';
 import { createRef, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
+import { BarLoader, ClockLoader } from 'react-spinners';
 
 const CANVASVIEWER_NAME = 'collection-inspector';
 
@@ -76,13 +76,15 @@ const GridThumb = ({
 
       {worker !== undefined && worker?.status == WorkerStatus.PENDING && (
         <div className='absolute inset-0 flex items-center justify-center'>
-          <CalendarClock size={'small'} width={28} />
+          {/* <CalendarClock size={'small'} width={28} /> */}
+          <BarLoader width={25} />
         </div>
       )}
 
       {worker !== undefined && worker?.status == WorkerStatus.PROCESSING && (
         <div className='absolute inset-0 flex items-center justify-center'>
-          <Spinner size={'small'} />
+          {/* <Spinner size={'small'} /> */}
+          <ClockLoader size={24} />
         </div>
       )}
     </div>
