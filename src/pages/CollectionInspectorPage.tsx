@@ -60,7 +60,10 @@ const GridThumb = ({
   const thumbnail = canvas.thumbnail as IIIFExternalWebResource[];
 
   return (
-    <div className='group relative' onClick={handleOnClick}>
+    <div
+      className='group relative cursor-pointer rounded-md p-1 shadow hover:scale-110 hover:border-slate-200 hover:bg-slate-100'
+      onClick={handleOnClick}
+    >
       <Thumbnail
         thumbnail={thumbnail}
         style={{ width: '100px', height: '100px', objectFit: 'contain' }}
@@ -68,7 +71,7 @@ const GridThumb = ({
         aria-label='canvas thumbnail'
       />
       <button
-        className='absolute top-0 right-0 flex items-center justify-center opacity-0 group-hover:opacity-100'
+        className='absolute top-0 right-0 flex cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 hover:scale-110'
         title={t('btn_delete_collection')}
       >
         <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
@@ -168,12 +171,12 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
             <div className='panel h-full w-full overflow-hidden'>
               <ResizablePanelGroup direction='horizontal'>
                 <ResizablePanel className='flex' minSize={30}>
-                  <div className='flex w-fit flex-wrap items-start gap-2 overflow-y-auto'>
+                  <div className='flex w-fit flex-wrap content-start items-start gap-2 overflow-y-auto'>
                     {activeCollection.content.map((item) => (
                       <div
                         key={item.canvasId}
                         ref={refs.current[item.canvasId]}
-                        className='flex items-center justify-center'
+                        className='flex p-1'
                       >
                         <GridThumb
                           canvasId={item.canvasId}
