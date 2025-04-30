@@ -3,6 +3,7 @@ import i18next from 'i18next';
 import { db } from '../db';
 import { getAnnotationText } from '../models/Annotation';
 import { convertW3CAnnotationsToIIIF, IIIF_CONTEXT } from '../models/converters/iiif';
+import { getAnnotationsForCanvas } from './annotations';
 import { getCanvasesByCollectionId } from './collections';
 import { getTagsByIds } from './tags';
 
@@ -26,7 +27,7 @@ const generateManifestFromCollection = async (id: string): Promise<ManifestExpor
   const items = [];
   for (let i = 0; i < collection.content.length; i++) {
     const canvasId = collection.content[i].canvasId;
-    const canvas = await generateCanvas(canvasId, manifestId);
+    const canvas = await generateCanvas(canvasId, manifestId, id);
     items.push(canvas);
   }
 
@@ -48,7 +49,7 @@ const generateManifestFromCollection = async (id: string): Promise<ManifestExpor
   };
 };
 
-const generateCanvas = async (canvasId: string, manifestId: string) => {
+const generateCanvas = async (canvasId: string, manifestId: string, collectionId: string) => {
   const storedItem = await db.storedItems.get(canvasId);
   if (storedItem === undefined) {
     throw new Error(`Canvas with id ${canvasId} not found`);
@@ -61,7 +62,7 @@ const generateCanvas = async (canvasId: string, manifestId: string) => {
   // }
 
   try {
-    const canvasAnnotationPage = await generateAnnotationPage(canvasId);
+    const canvasAnnotationPage = await generateAnnotationPage(canvasId, collectionId);
     if (canvasAnnotationPage !== undefined) {
       allAnnotationPages = allAnnotationPages.concat(canvasAnnotationPage);
     }
@@ -81,8 +82,8 @@ const generateCanvas = async (canvasId: string, manifestId: string) => {
   return canvasIif;
 };
 
-const generateAnnotationPage = async (canvasId: string) => {
-  const result = await db.annotations.where('canvasId').equals(canvasId).sortBy('order');
+const generateAnnotationPage = async (canvasId: string, collectionId: string) => {
+  const result = await getAnnotationsForCanvas(canvasId, collectionId);
   if (result === undefined || result.length === 0) {
     throw new Error(`No annotations found in canvas ${canvasId}`);
   }
@@ -90,8 +91,8 @@ const generateAnnotationPage = async (canvasId: string) => {
   return convertW3CAnnotationsToIIIF(result);
 };
 
-const generateTextFromCanvas = async (canvasId: string) => {
-  const annotations = await db.annotations.where('canvasId').equals(canvasId).sortBy('order');
+const generateTextFromCanvas = async (canvasId: string, collectionId: string) => {
+  const annotations = await getAnnotationsForCanvas(canvasId, collectionId);
   if (annotations === undefined || annotations.length === 0) {
     return '';
   }
@@ -113,7 +114,7 @@ const generateTextForCollection = async (collectionId: string) => {
 
   let allTheText = '';
   for (let i = 0; i < canvases.length; i++) {
-    const text = await generateTextFromCanvas(canvases[i].id);
+    const text = await generateTextFromCanvas(canvases[i].id, collectionId);
     if (text !== undefined && text.length > 0) {
       allTheText = allTheText.concat(text);
     }
