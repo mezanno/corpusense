@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -146,6 +147,10 @@ const LayoutSideBar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter>
+        <div>Corpusense v{import.meta.env.VITE_APP_VERSION}</div>
+      </SidebarFooter>
     </Sidebar>
   );
 };

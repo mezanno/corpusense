@@ -1,11 +1,15 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { readFileSync } from 'fs';
 import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { loadEnv, PluginOption } from 'vite';
 import { defineConfig } from 'vitest/config'; //au lieu de { defineConfig } from 'vitest/config' pour pouvoir configurer test
 
 console.log('process.env.NODE_ENV', process.env.REACT_APP_BASE);
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -15,6 +19,10 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss(), visualizer() as PluginOption],
     base: env.VITE_BASE_PATH || '/',
+    define: {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version),
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
