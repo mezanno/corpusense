@@ -1,4 +1,4 @@
-import { db } from '@/data/db';
+import { getManifestRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { Manifest } from '@iiif/presentation-3';
 import { useEffect, useState } from 'react';
 
@@ -8,10 +8,8 @@ const useManifest = (manifestUrl: string) => {
   useEffect(() => {
     const fetchManifest = async () => {
       try {
-        const result = await db.storedItems.get(manifestUrl);
-        if (result) {
-          setManifest(result.content as Manifest);
-        }
+        const m = await getManifestRepository().getManifest(manifestUrl);
+        setManifest(m);
       } catch (error) {
         console.log(error);
       }

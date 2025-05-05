@@ -1,5 +1,5 @@
-import { db } from '@/data/db';
 import { StoredItem } from '@/data/models/StoredItem';
+import { getStoredItemRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { call, Effect, put } from 'redux-saga/effects';
 import { setStoredItems } from '../reducers/storedItems';
 
@@ -8,9 +8,12 @@ import { setStoredItems } from '../reducers/storedItems';
  */
 function* loadStoredElements(): Generator<Effect, void, StoredItem[]> {
   try {
-    const storedElements: StoredItem[] = yield call(() => db.storedItems.toArray());
-
-    yield put({ type: setStoredItems.type, payload: storedElements });
+    const storedItemRepository = getStoredItemRepository();
+    const storedElements: StoredItem[] = yield call([
+      storedItemRepository,
+      storedItemRepository.getAll,
+    ]);
+    yield put(setStoredItems(storedElements));
   } catch (e) {
     console.warn('Error loading storedElements from indexedDB', e);
   }

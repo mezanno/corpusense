@@ -13,9 +13,11 @@ import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annota
 import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
-import { getAnnotationsForCanvas, saveAllAnnotations } from '@/data/services/annotations';
-import { getImage } from '@/data/services/canvas';
-import { getCanvasesByCollectionId } from '@/data/services/collections';
+import {
+  getAnnotationRepository,
+  getCollectionRepository,
+} from '@/data/repositories/indexeddb/dbFactory';
+import { getImage } from '@/data/utils/canvas';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
 import { Canvas } from '@iiif/presentation-3';
@@ -97,8 +99,9 @@ function* handleFetchOcr({
 
     let regions = JSON.stringify([]);
     if (region === undefined || region === null) {
+      const annotationRepository = getAnnotationRepository();
       const annotations = (yield call(
-        getAnnotationsForCanvas,
+        [annotationRepository, annotationRepository.getAnnotationsForCanvas],
         canvas.id,
         collectionId,
       )) as Annotation[];
@@ -146,7 +149,8 @@ function* handleFetchOcr({
         collectionId,
       );
       yield put(fetchAnnotationsSuccess(annotations));
-      yield call(saveAllAnnotations, annotations);
+      const annotationRepository = getAnnotationRepository();
+      yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
       yield put(processSuccess({ canvasId: canvas.id, result: 'toto' }));
     } catch (error) {
       try {
@@ -168,7 +172,11 @@ function* handleStartBatchLayoutProcess(
   action: PayloadAction<string>,
 ): Generator<Effect, void, Canvas[]> {
   const collectionId = action.payload;
-  const canvases = yield call(getCanvasesByCollectionId, collectionId);
+  const collectionRepository = getCollectionRepository();
+  const canvases = yield call(
+    [collectionRepository, collectionRepository.getCanvasesByCollectionId],
+    collectionId,
+  );
   if (canvases === undefined || canvases.length === 0) {
     // yield put(processError({ error: 'No canvases found' }));
     return;
@@ -189,7 +197,11 @@ function* handleStartBatchOcrProcess(
   action: PayloadAction<string>,
 ): Generator<Effect, void, Canvas[]> {
   const collectionId = action.payload;
-  const canvases = yield call(getCanvasesByCollectionId, collectionId);
+  const collectionRepository = getCollectionRepository();
+  const canvases = yield call(
+    [collectionRepository, collectionRepository.getCanvasesByCollectionId],
+    collectionId,
+  );
   if (canvases === undefined || canvases.length === 0) {
     // yield put(processError({ error: 'No canvases found' }));
     return;

@@ -1,8 +1,10 @@
-import { db } from '@/data/db';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
-import { StoredItem } from '@/data/models/StoredItem';
-import { fetchJson, loadMetadataForManifest } from '@/data/services/manifest';
+import {
+  getItemMetadataRepository,
+  getManifestRepository,
+} from '@/data/repositories/indexeddb/dbFactory';
+import { fetchJson } from '@/data/utils/manifest';
 import { convertJsonToManifest } from '@/utils/manifest';
 import { getErrorMessage, onlyLettersAndNumbers } from '@/utils/utils';
 import { Manifest } from '@iiif/presentation-3';
@@ -32,15 +34,15 @@ import { getManifestURL } from '../selectors/manifests';
  */
 function* handleFetchManifestFromURL(action: {
   payload: FetchManifestPayload;
-}): Generator<Effect, void, StoredItem | undefined> {
+}): Generator<Effect, void, Manifest> {
   const url = action.payload.manifestId;
   const forceV3 = action.payload.forceV3;
-  const item = yield call(() => db.storedItems.get(url));
-
-  if (item === undefined) {
+  try {
+    const manifestRepository = getManifestRepository();
+    const manifest = yield call([manifestRepository, manifestRepository.getManifest], url);
+    yield call(() => handleFetchManifest({ storedManifest: manifest }));
+  } catch (error) {
     yield call(() => handleFetchManifest({ fetchFunction: () => fetchJson(url, forceV3) }));
-  } else {
-    yield call(() => handleFetchManifest({ storedManifest: item.content as Manifest }));
   }
 }
 
@@ -80,7 +82,7 @@ function* handleFetchManifest({
 }: {
   fetchFunction?: () => Promise<object> | object;
   storedManifest?: Manifest;
-}): Generator<Effect, void, Manifest | ItemMetadataAttribute[]> {
+}): Generator<Effect, void, Manifest | ItemMetadataAttribute[] | History> {
   try {
     let manifest: Manifest;
     if (fetchFunction) {
@@ -101,7 +103,11 @@ function* handleFetchManifest({
     }
 
     //load the metadata
-    const result = yield call(loadMetadataForManifest, manifest.id);
+    const manifestRepository = getManifestRepository();
+    const result = yield call(
+      [manifestRepository, manifestRepository.loadMetadataForManifest],
+      manifest.id,
+    );
     const metadata: ItemMetadataAttribute[] = Array.isArray(result) ? result : [];
 
     yield put(
@@ -114,21 +120,22 @@ function* handleFetchManifest({
     //save the manifest to indexedDB
     if (storedManifest === undefined) {
       try {
-        yield call(() => db.storedItems.add({ id: manifest.id, content: manifest }));
+        yield call([manifestRepository, manifestRepository.saveManifest], manifest);
       } catch (error) {
         console.warn('Error saving manifest to indexedDB', error);
       }
     }
 
     //add the manifest to the history
-
-    const addedHistory: History = { url: manifest.id };
     try {
-      yield call(() => db.history.add(addedHistory));
+      const addedHistory = (yield call(
+        [manifestRepository, manifestRepository.addToHistory],
+        manifest.id,
+      )) as History;
+      yield put(updateHistorySuccess(addedHistory));
     } catch (error) {
       console.warn('Error adding url to indexedDB history: ', error);
     }
-    yield put(updateHistorySuccess(addedHistory));
   } catch (error) {
     yield put(fetchManifestError(getErrorMessage(error)));
   }
@@ -141,7 +148,8 @@ function* handleFetchManifest({
 function* handleRemoveFromHistory(action: { payload: string }) {
   const url = action.payload;
   try {
-    yield call(() => db.history.delete(url));
+    const manifestRepository = getManifestRepository();
+    yield call([manifestRepository, manifestRepository.removeFromHistory], url);
     yield put(removeFromHistorySuccess(url));
   } catch (error) {
     console.warn('Error removing url from indexedDB history: ', error);
@@ -154,8 +162,9 @@ function* handleRemoveFromHistory(action: { payload: string }) {
  */
 function* loadHistorySaga(): Generator<Effect, void, History[]> {
   try {
-    const history: History[] = yield call(() => db.history.toArray());
-    yield put({ type: setHistory.type, payload: history });
+    const manifestRepository = getManifestRepository();
+    const history: History[] = yield call([manifestRepository, manifestRepository.getHistory]);
+    yield put(setHistory(history));
   } catch (e) {
     console.warn('Error loading history from indexedDB', e);
   }
@@ -180,7 +189,8 @@ function* handleSaveMetadata({
       id: manifestId,
       attribute: item,
     }));
-    yield call(() => db.itemMetadata.bulkPut(manifestMetadata));
+    const itemMetadataRepository = getItemMetadataRepository();
+    yield call([itemMetadataRepository, itemMetadataRepository.addMetadata], manifestMetadata);
     yield put(saveMetadataSuccess(payload));
   }
 }

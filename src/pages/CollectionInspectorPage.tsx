@@ -61,7 +61,7 @@ const GridThumb = ({
 
   return (
     <div
-      className='group relative cursor-pointer rounded-md p-1 shadow hover:scale-110 hover:border-slate-200 hover:bg-slate-100'
+      className='group relative cursor-pointer rounded-md p-1 shadow transition hover:scale-110 hover:border-slate-200 hover:bg-slate-100'
       onClick={handleOnClick}
     >
       <Thumbnail

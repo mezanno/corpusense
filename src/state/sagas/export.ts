@@ -1,14 +1,18 @@
-import { db } from '@/data/db';
 import { Collection } from '@/data/models/Collection';
 import { ItemMetadata } from '@/data/models/Metadata';
-import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
-import { getImage } from '@/data/services/canvas';
+import {
+  getCanvasRepository,
+  getCollectionRepository,
+  getItemMetadataRepository,
+  getTagRepository,
+} from '@/data/repositories/indexeddb/dbFactory';
+import { getImage } from '@/data/utils/canvas';
 import {
   generateManifestFromCollection,
   generateTextForCollection,
   ManifestExport,
-} from '@/data/services/export';
+} from '@/data/utils/export';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
@@ -24,10 +28,13 @@ import {
 
 function* handleExportRequest(
   action: PayloadAction<string>,
-): Generator<Effect, void, Collection | StoredItem | Tag[] | ItemMetadata[]> {
+): Generator<Effect, void, Collection | Canvas | Tag[] | ItemMetadata[]> {
   const collectionId = action.payload;
-
-  const result = yield call(() => db.collections.get(collectionId));
+  const collectionRepository = getCollectionRepository();
+  const result = yield call(
+    [collectionRepository, collectionRepository.getCollectionById],
+    collectionId,
+  );
   const collectionToExport = result as Collection;
   console.log('Collection to export', collectionToExport);
 
@@ -35,59 +42,60 @@ function* handleExportRequest(
   let header = 'nom_collection\turl\tnum_page\ttags';
 
   let firstTimeHeader = true;
+  const canvasRepository = getCanvasRepository();
+  const tagRepository = getTagRepository();
+  const itemMetadataRepository = getItemMetadataRepository();
   if (collectionToExport !== undefined) {
     for (let i = 0; i < collectionToExport.content.length; i++) {
       let csvLine = collectionToExport.name;
       const collectionElement = collectionToExport.content[i];
-      const storedCanvas = (yield call(() => db.storedItems.get(collectionElement.canvasId))) as
-        | StoredItem
-        | undefined;
+      try {
+        const canvas = (yield call(
+          [canvasRepository, canvasRepository.getCanvasById],
+          collectionElement.canvasId,
+        )) as Canvas;
 
-      const canvas = storedCanvas?.content as Canvas;
-      if (canvas !== undefined) {
-        try {
-          const image = getImage(canvas);
-          const url = image.id;
+        const image = getImage(canvas);
+        const url = image.id;
 
-          if (url !== undefined) {
-            csvLine = csvLine.concat('\t').concat(url);
+        if (url !== undefined) {
+          csvLine = csvLine.concat('\t').concat(url);
 
-            const label = canvas.label?.none?.[0] ?? '';
-            csvLine = csvLine.concat('\t').concat(label);
+          const label = canvas.label?.none?.[0] ?? '';
+          csvLine = csvLine.concat('\t').concat(label);
 
-            if (collectionToExport.tags?.length > 0) {
-              const resultTags = yield call(() =>
-                db.tags.filter((tag) => collectionToExport.tags.includes(tag.id)).toArray(),
-              );
-              const tags = resultTags as Tag[];
-              const tagLabels = tags.reduce((acc, tag) => acc.concat(tag.label).concat(','), '');
-              csvLine = csvLine.concat('\t').concat(tagLabels);
-            }
-
-            const match = collectionElement.canvasId.match(/ark:\/\d+\/([^\\/]+)/);
-            const manifestArk = match ? match[1] : null;
-            if (manifestArk !== null) {
-              const resultMetadata = yield call(() =>
-                db.itemMetadata.filter((itemMD) => itemMD.id.includes(manifestArk)).toArray(),
-              );
-              const metadata = resultMetadata as ItemMetadata[];
-              for (let j = 0; j < metadata.length; j++) {
-                console.log();
-
-                csvLine = csvLine.concat('\t').concat(metadata[j].attribute.value);
-                if (firstTimeHeader) {
-                  header = header.concat('\t').concat(metadata[j].attribute.label);
-                }
-              }
-              firstTimeHeader = false;
-            }
-            csvLine = csvLine.concat('\n');
-            exportLines = exportLines.concat(csvLine);
+          if (collectionToExport.tags?.length > 0) {
+            const tags = (yield call(
+              [tagRepository, tagRepository.getTagsByIds],
+              collectionToExport.tags,
+            )) as Tag[];
+            const tagLabels = tags.reduce((acc, tag) => acc.concat(tag.label).concat(','), '');
+            csvLine = csvLine.concat('\t').concat(tagLabels);
           }
-        } catch (error) {
-          console.error('Error generating export line:', getErrorMessage(error));
-          continue;
+
+          const match = collectionElement.canvasId.match(/ark:\/\d+\/([^\\/]+)/);
+          const manifestArk = match ? match[1] : null;
+          if (manifestArk !== null) {
+            const metadata = (yield call(
+              [itemMetadataRepository, itemMetadataRepository.getByArk],
+              manifestArk,
+            )) as ItemMetadata[];
+            for (let j = 0; j < metadata.length; j++) {
+              console.log();
+
+              csvLine = csvLine.concat('\t').concat(metadata[j].attribute.value);
+              if (firstTimeHeader) {
+                header = header.concat('\t').concat(metadata[j].attribute.label);
+              }
+            }
+            firstTimeHeader = false;
+          }
+          csvLine = csvLine.concat('\n');
+          exportLines = exportLines.concat(csvLine);
         }
+      } catch (error) {
+        console.error('Error generating export line:', getErrorMessage(error));
+        continue;
       }
     }
 

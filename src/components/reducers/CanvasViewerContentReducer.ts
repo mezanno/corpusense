@@ -1,4 +1,4 @@
-import { getImage } from '@/data/services/canvas';
+import { getImage } from '@/data/utils/canvas';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentation-3';
 import { TileSource } from 'openseadragon';

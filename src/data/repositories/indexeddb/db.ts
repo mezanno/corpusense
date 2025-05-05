@@ -1,10 +1,10 @@
+import { Annotation } from '@/data/models/Annotation';
+import { Collection } from '@/data/models/Collection';
+import { History } from '@/data/models/History';
+import { ItemMetadata } from '@/data/models/Metadata';
+import { StoredItem } from '@/data/models/StoredItem';
+import { Tag } from '@/data/models/Tag';
 import Dexie, { type EntityTable } from 'dexie';
-import { Annotation } from './models/Annotation';
-import { Collection } from './models/Collection';
-import { History } from './models/History';
-import { ItemMetadata } from './models/Metadata';
-import { StoredItem } from './models/StoredItem';
-import { Tag } from './models/Tag';
 
 const db = new Dexie('mezanno') as Dexie & {
   collections: EntityTable<Collection, 'id'>;

@@ -1,5 +1,4 @@
 import i18next from 'i18next';
-import { db } from '../db';
 
 const fetchJson = async (url: string, forceV3: boolean = true): Promise<object> => {
   console.log('fetchJson: ', url);
@@ -50,22 +49,4 @@ const fetchJson = async (url: string, forceV3: boolean = true): Promise<object> 
   }
 };
 
-const exists = async (id: string) => !!(await db.storedItems.get(id));
-
-const loadMetadataForManifest = async (manifestId: string) => {
-  const metadata = await db.itemMetadata.where({ id: manifestId }).toArray();
-  return metadata?.map((item) => item.attribute) ?? [];
-};
-
-const getCanvass = async (manifestId: string, canvasId: string) => {
-  const manfiest = await db.storedItems.get(manifestId);
-  if (manfiest) {
-    const canvas = manfiest.content.items?.find((item) => item.id === canvasId);
-    if (canvas) {
-      return canvas;
-    }
-  }
-  throw new Error(i18next.t('error_canvas_not_found'));
-};
-
-export { exists, fetchJson, getCanvass, loadMetadataForManifest };
+export { fetchJson };

@@ -43,6 +43,7 @@ export default tseslint.config(
       '@typescript-eslint/strict-boolean-expressions': 'error', // Force un typage strict des booléens
       // "@typescript-eslint/no-untyped-public-signature": "error" // Empêche les signatures publiques sans type
       // 'no-unused-vars': 'warn',
+      '@typescript-eslint/unbound-method': 'off', //évite les faux positifs sur les méthodes de classes
     },
   },
   {
