@@ -13,13 +13,13 @@ void i18n
   .init({
     // Specifies the default language (locale) used
     // when a user visits our site for the first time.
-    // We use English here, but feel free to use
-    // whichever locale you want.
-    lng: 'fr',
+    // lng: 'fr',
     // Fallback locale used when a translation is
     // missing in the active locale. Again, use your
     // preferred locale here.
     fallbackLng: 'fr',
+    // supportedLngs: ['fr', 'en'],
+
     debug: true,
     // Normally, we want `escapeValue: true` as it
     // ensures that i18next escapes any code in
@@ -29,6 +29,10 @@ void i18n
     // it off in i18next.
     interpolation: {
       escapeValue: false,
+    },
+    detection: {
+      order: ['navigator', 'querystring', 'localStorage'],
+      caches: ['localStorage'],
     },
     backend: {
       loadPath: `${basePath}/locales/{{lng}}/{{ns}}.json`, // Prend en compte le `base` de la configuration de Vite
