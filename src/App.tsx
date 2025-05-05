@@ -7,9 +7,12 @@ import Layout from './pages/Layout';
 import ManifestExplorerPage from './pages/ManifestExplorerPage';
 import TagsPage from './pages/TagsPage';
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/strict-boolean-expressions
+const basePath: string = import.meta.env.VITE_BASE_PATH || '/';
+
 function App() {
   return (
-    <BrowserRouter basename='/corpusense'>
+    <BrowserRouter basename={basePath}>
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<ManifestExplorerPage />} />

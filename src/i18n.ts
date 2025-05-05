@@ -3,6 +3,9 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
 import { initReactI18next } from 'react-i18next';
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/strict-boolean-expressions
+const basePath: string = import.meta.env.VITE_BASE_PATH || '/';
+
 void i18n
   .use(initReactI18next)
   .use(Backend)
@@ -28,7 +31,7 @@ void i18n
       escapeValue: false,
     },
     backend: {
-      loadPath: '/corpusense/locales/{{lng}}/{{ns}}.json', // Prend en compte le `base` de la configuration de Vite
+      loadPath: `${basePath}/locales/{{lng}}/{{ns}}.json`, // Prend en compte le `base` de la configuration de Vite
     },
   });
 
