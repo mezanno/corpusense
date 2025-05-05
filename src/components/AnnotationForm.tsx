@@ -5,14 +5,13 @@ import {
   getBodies,
 } from '@/data/models/Annotation';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { useExtract } from '@/hooks/useExtract';
 import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
 import { fetchOcrRequest } from '@/state/reducers/workers';
 import { getWorker } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas } from '@iiif/presentation-3';
-import { Copy, Save, TextSearch, TextSelect, Trash2 } from 'lucide-react';
+import { Copy, Save, TextSearch, Trash2 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -46,7 +45,6 @@ const AnnotationForm = ({
   const isWorkerRunning = worker?.status === 'pending';
   const { t } = useTranslation();
 
-  const extract = useExtract();
   const [dialogContent, setDialogContent] = React.useState<string>('');
 
   const form = useForm<z.infer<typeof annotationFormSchema>>({
@@ -89,12 +87,6 @@ const AnnotationForm = ({
   const handleOcrClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     void startOcrAsync();
-  };
-
-  const handleExtract = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    const citation = await extract(selected[0].annotation);
-    setDialogContent(citation);
   };
 
   return (
@@ -175,14 +167,7 @@ const AnnotationForm = ({
                 <TextSearch />
               </Button>
             )}
-            <Button
-              title={t('btn_get_extract')}
-              variant='secondary'
-              className='cursor-pointer'
-              onClick={(e) => void handleExtract(e)}
-            >
-              <TextSelect />
-            </Button>
+
             <Button
               title={t('btn_delete_annotation')}
               variant='destructive'
