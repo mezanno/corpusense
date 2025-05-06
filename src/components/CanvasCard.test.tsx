@@ -1,4 +1,4 @@
-import canvas from '@/__tests__/canvas.json';
+import canvas from '@/__tests__/canvasWithImage.json';
 import { getPreloadedState } from '@/__tests__/preloadedState';
 import { renderWithProviders } from '@/__tests__/utils';
 import { RootState } from '@/state/store';

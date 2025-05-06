@@ -18,7 +18,7 @@ vi.mock('@/hooks/hooks', async (original) => {
 
 const user = userEvent.setup();
 
-describe('ListsManagerPage', () => {
+describe('CollectionsManagerPage', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
@@ -104,14 +104,14 @@ describe('ListsManagerPage', () => {
     console.log(screen.debug());
 
     //le formulaire est visible
-    const textboxVisible = screen.getByRole('textbox', { name: 'name' });
+    const textboxVisible = screen.getByRole('textbox', { name: 'form_label_collection_name' });
     expect(textboxVisible).toBeInTheDocument();
 
     //on saisit un nom de liste
     await user.type(textboxVisible, 'nomListe');
 
     //on clic sur le bouton pour créer la liste
-    const btnCreate = screen.getByRole('button', { name: 'Créer' });
+    const btnCreate = screen.getByRole('button', { name: 'btn_create' });
     await userEvent.click(btnCreate);
 
     //le formulaire appelle le dispatch
