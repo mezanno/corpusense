@@ -219,7 +219,7 @@ const ManifestExplorerDrawer = () => {
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
-        <Button className='cursor-pointer' aria-label='Open manifest dialog'>
+        <Button className='cursor-pointer' aria-label={t('btn_open_manifest')}>
           <ExternalLink size={16} />
           {t('btn_open_manifest')}
         </Button>

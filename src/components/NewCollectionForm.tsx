@@ -12,17 +12,19 @@ import { Input } from '@/components/ui/input';
 import { useAppDispatch } from '@/hooks/hooks';
 import { createCollectionRequest } from '@/state/reducers/collections';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { t } from 'i18next';
+import i18next from 'i18next';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 const formSchema = z.object({
   name: z.string().min(4, {
-    message: t('error_collection_name_length'),
+    message: i18next.t('error_collection_name_length'),
   }),
 });
 
 const NewCollectionForm = ({ close }: { close: () => void }) => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const form = useForm<z.infer<typeof formSchema>>({
