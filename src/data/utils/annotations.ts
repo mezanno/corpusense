@@ -5,7 +5,7 @@ import { SelectedCanvas } from '../models/SelectedCanvas';
 import { getAnnotationRepository } from '../repositories/indexeddb/dbFactory';
 import { getImage } from './canvas';
 
-const generatePageAnnotationForCanvas = (canvas: Canvas, collectionId: string) => {
+const generateRegionAnnotationForCanvas = (canvas: Canvas, collectionId: string) => {
   const image = getImage(canvas);
   if (image.width === undefined || image.height === undefined) {
     throw new Error('Image width or height is undefined');
@@ -32,7 +32,7 @@ function generateFirstAnnotation(
     .map((elt) =>
       existingCanvasIds.includes(elt.canvas.id)
         ? null
-        : generatePageAnnotationForCanvas(elt.canvas, collectionId),
+        : generateRegionAnnotationForCanvas(elt.canvas, collectionId),
     )
     .filter((elt) => elt !== null);
 }
@@ -46,4 +46,4 @@ function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {
   return annotationRepository.saveAllAnnotations(annotationsW3C);
 }
 
-export { generateFirstAnnotation, generatePageAnnotationForCanvas, importAnnotationFromJson };
+export { generateFirstAnnotation, generateRegionAnnotationForCanvas, importAnnotationFromJson };
