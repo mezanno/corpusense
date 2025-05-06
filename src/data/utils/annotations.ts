@@ -1,4 +1,5 @@
 import { AnnotationPage, Canvas } from '@iiif/presentation-3';
+import i18next from 'i18next';
 import { createAnnotation, ElementType } from '../models/Annotation';
 import { convertAnnotationPageToW3CAnnotations } from '../models/converters/iiif';
 import { SelectedCanvas } from '../models/SelectedCanvas';
@@ -8,7 +9,7 @@ import { getImage } from './canvas';
 const generateRegionAnnotationForCanvas = (canvas: Canvas, collectionId: string) => {
   const image = getImage(canvas);
   if (image.width === undefined || image.height === undefined) {
-    throw new Error('Image width or height is undefined');
+    throw new Error(i18next.t('error_image_dimensions'));
   }
   return createAnnotation({
     canvasId: canvas.id,
@@ -28,13 +29,19 @@ function generateFirstAnnotation(
   collectionId: string,
   existingCanvasIds: string[] = [],
 ) {
-  return selection
-    .map((elt) =>
-      existingCanvasIds.includes(elt.canvas.id)
-        ? null
-        : generateRegionAnnotationForCanvas(elt.canvas, collectionId),
-    )
-    .filter((elt) => elt !== null);
+  const annotations = [];
+  for (const elt of selection) {
+    //si l'élément est déjà dans la liste, on ne lui ajoute pas de nouvelle annotation
+    if (existingCanvasIds.includes(elt.canvas.id)) {
+      continue;
+    }
+    try {
+      annotations.push(generateRegionAnnotationForCanvas(elt.canvas, collectionId));
+    } catch (e) {
+      // console.error(e);
+    }
+  }
+  return annotations.filter((elt) => elt !== null);
 }
 
 function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {
