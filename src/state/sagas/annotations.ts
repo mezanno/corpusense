@@ -28,12 +28,19 @@ function* handleSaveAnnotationRequest(
   console.log('handleSaveAnnotationRequest - ', action.payload);
   try {
     const annotationRepository = getAnnotationRepository();
-    const existingAnnotation = yield call(
-      [annotationRepository, annotationRepository.getById],
-      action.payload.id,
-    );
-    //save only if annotations are different to avoid unnecessary writes and call to saveAnnotationSuccess
-    if (!isEqual(existingAnnotation, action.payload)) {
+    let existingAnnotation = undefined;
+    try {
+      existingAnnotation = yield call(
+        [annotationRepository, annotationRepository.getById],
+        action.payload.id,
+      );
+      //save only if annotations are different to avoid unnecessary writes and call to saveAnnotationSuccess
+      if (!isEqual(existingAnnotation, action.payload)) {
+        yield call([annotationRepository, annotationRepository.updateAnnotation], action.payload);
+        yield put(saveAnnotationSuccess(action.payload));
+      }
+    } catch (error) {
+      // If the annotation does not exist, create it
       yield call([annotationRepository, annotationRepository.updateAnnotation], action.payload);
       yield put(saveAnnotationSuccess(action.payload));
     }
