@@ -86,6 +86,7 @@
   "error_collection_not_found": "La collection n'existe pas",
   "error_export_collection_not_found": "La collection à exporter n'existe pas",
   "error_export_collection_empty": "La collection {{name}} est vide",
+  "error_export_no_text": "Aucun texte à exporter. Avez-vous lancé l'OCR sur ce corpus ?",
   "error_image_dimensions": "Les dimensions de l'image sont invalides",
   "info_empty_collection": "Cette collection est vide",
   "info_empty_manifest": "Ce manifest ne contient aucune page",

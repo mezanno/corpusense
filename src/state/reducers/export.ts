@@ -26,12 +26,17 @@ export const exportSlice = createSlice({
     },
     exportMultipleCollectionsRequest: (_state, _action: PayloadAction<string[]>) => {},
     exportTextOfCollectionRequest: (_state, _action: PayloadAction<string>) => {},
+    exportTextOfCanvasRequest: (
+      _state,
+      _action: PayloadAction<{ canvasId: string; collectionId: string }>,
+    ) => {},
     exportError: (state, action: PayloadAction<string>) => {
       state.lastExportError = action.payload;
       state.lastExportStatus = 'ERROR';
     },
     resetAlert: (state) => {
       state.lastExportDate = null;
+      state.lastExportStatus = 'UNKNOWN';
     },
   },
 });
@@ -42,6 +47,7 @@ export const {
   exportError,
   exportMultipleCollectionsRequest,
   exportTextOfCollectionRequest,
+  exportTextOfCanvasRequest,
   resetAlert,
 } = exportSlice.actions;
 export default exportSlice.reducer;

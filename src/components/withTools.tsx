@@ -1,5 +1,6 @@
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { syncWithDB } from '@/state/reducers/annotations';
+import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import { fetchLayoutRequest, fetchOcrRequest, WorkerStatus } from '@/state/reducers/workers';
 import { getAnnotations } from '@/state/selectors/annotations';
 import { getWorker } from '@/state/selectors/workers';
@@ -11,6 +12,7 @@ import { useSelector } from 'react-redux';
 import AnalysisMenu from './AnalysisMenu';
 import { ReducerContext } from './CanvasViewer';
 import { CanvasViewerContentProps } from './CanvasViewerContent';
+import ExportMenu from './ExportMenu';
 import { ACTIONS } from './reducers/CanvasViewerContentReducer';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
@@ -76,6 +78,17 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       }
     };
 
+    const handleExportText = () => {
+      if (props.collectionId !== undefined) {
+        appDispatch(
+          exportTextOfCanvasRequest({
+            canvasId: props.canvas.id,
+            collectionId: props.collectionId,
+          }),
+        );
+      }
+    };
+
     // const flow = useMemo(
     //   () => (
     //     <ReactFlowProvider>
@@ -103,6 +116,8 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
             handleLayout={handleStartLayoutAnalysis}
             handleOcr={handleStartOcrAnalysis}
           />
+
+          <ExportMenu handleExportText={handleExportText} isRunning={false} />
 
           <div className='flex items-center space-x-1 align-middle'>
             <span className='ml-1'>

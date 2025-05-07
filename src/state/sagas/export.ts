@@ -11,6 +11,7 @@ import { getImage } from '@/data/utils/canvas';
 import {
   generateManifestFromCollection,
   generateTextForCollection,
+  generateTextFromCanvas,
   ManifestExport,
 } from '@/data/utils/export';
 import { getErrorMessage } from '@/utils/utils';
@@ -20,9 +21,11 @@ import FileSaver from 'file-saver';
 import JSZIP from 'jszip';
 import { call, CallEffect, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
+  exportError,
   exportMultipleCollectionsRequest,
   exportRequest,
   exportSuccess,
+  exportTextOfCanvasRequest,
   exportTextOfCollectionRequest,
 } from '../reducers/export';
 
@@ -152,8 +155,35 @@ function* handleExportTextOfCollection(
   }
 }
 
+/**
+ * Export all the text from all the annotations of a collection
+ * @param action
+ */
+function* handleExportTextOfCanvas(
+  action: PayloadAction<{ canvasId: string; collectionId: string }>,
+): Generator<Effect, void, string> {
+  const { canvasId, collectionId } = action.payload;
+  try {
+    const text = yield call(generateTextFromCanvas, canvasId, collectionId);
+    console.log('Text generated:', text);
+    if (text === undefined || text.length === 0) {
+      console.log('No text found for this canvas');
+      yield put(exportError('error_export_no_text'));
+      return;
+    }
+    yield call(
+      FileSaver.saveAs,
+      new Blob([text], { type: 'text/plain;charset=utf-8' }),
+      'exported_text.txt',
+    );
+  } catch (error) {
+    console.error('Error generating text:', getErrorMessage(error));
+  }
+}
+
 export default function* exportSaga() {
   yield takeLatest(exportRequest, handleExportRequest);
   yield takeEvery(exportMultipleCollectionsRequest, handleExportMultipleCollectionsRequest);
   yield takeEvery(exportTextOfCollectionRequest, handleExportTextOfCollection);
+  yield takeEvery(exportTextOfCanvasRequest, handleExportTextOfCanvas);
 }

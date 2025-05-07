@@ -103,6 +103,7 @@ const generateTextFromCanvas = async (canvasId: string, collectionId: string) =>
     collectionId,
   );
   if (annotations === undefined || annotations.length === 0) {
+    console.log(`No annotations found in canvas ${canvasId}`);
     return '';
   }
   let text = '';
