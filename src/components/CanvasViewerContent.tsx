@@ -198,7 +198,7 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
           aria-label='canvas viewer'
           className='h-full w-full bg-amber-50'
           options={{
-            prefixUrl: '/corpusense/images/',
+            prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
             defaultZoomLevel: 0.5,
             minZoomLevel: 0.1,
             tileSources: cvcState?.source,
