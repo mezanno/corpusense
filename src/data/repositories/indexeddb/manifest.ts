@@ -19,7 +19,7 @@ export class IndexedDBManifestRepository implements ManifestRepository {
     throw new Error(i18next.t('error_canvas_not_found'));
   }
 
-  async getManifest(manifestId: string) {
+  async getManifest(manifestId: string): Promise<Manifest> {
     const manifest = await db.storedItems.get(manifestId);
     if (manifest !== undefined) {
       return manifest.content as Manifest;

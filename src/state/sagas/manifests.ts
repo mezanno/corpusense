@@ -9,7 +9,7 @@ import { convertJsonToManifest } from '@/utils/manifest';
 import { getErrorMessage, onlyLettersAndNumbers } from '@/utils/utils';
 import { Manifest } from '@iiif/presentation-3';
 import i18next from 'i18next';
-import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
+import { call, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
   fetchManifestError,
   fetchManifestFromArkRequest,
@@ -19,12 +19,12 @@ import {
   fetchManifestSuccess,
   removeFromHistoryRequest,
   removeFromHistorySuccess,
+  SaveMetadataPayload,
   saveMetadataRequest,
   saveMetadataSuccess,
   setHistory,
   updateHistorySuccess,
 } from '../reducers/manifests';
-import { getManifestURL } from '../selectors/manifests';
 
 /**
  * Side effect to fetch a manifest from a URL. First, it checks if the manifest is already
@@ -40,9 +40,9 @@ function* handleFetchManifestFromURL(action: {
   try {
     const manifestRepository = getManifestRepository();
     const manifest = yield call([manifestRepository, manifestRepository.getManifest], url);
-    yield call(() => handleFetchManifest({ storedManifest: manifest }));
+    yield call(handleFetchManifest, { storedManifest: manifest });
   } catch (error) {
-    yield call(() => handleFetchManifest({ fetchFunction: () => fetchJson(url, forceV3) }));
+    yield call(handleFetchManifest, { fetchFunction: () => fetchJson(url, forceV3) });
   }
 }
 
@@ -58,7 +58,7 @@ function* handleFetchManifestFromArk(action: { payload: string }) {
   }
   //build the URL based on old Gallica API
   const url = `https://gallica.bnf.fr/iiif/ark:/12148/${action.payload}/manifest.json`;
-  yield handleFetchManifestFromURL({ payload: { manifestId: url } });
+  yield call(handleFetchManifestFromURL, { payload: { manifestId: url } });
 }
 
 /**
@@ -180,12 +180,12 @@ function* loadHistorySaga(): Generator<Effect, void, History[]> {
 function* handleSaveMetadata({
   payload,
 }: {
-  payload: ItemMetadataAttribute[];
+  payload: SaveMetadataPayload;
 }): Generator<Effect, void, string | null> {
-  const manifestId = yield select(getManifestURL);
+  const { manifestId, metadata } = payload;
 
   if (manifestId !== null) {
-    const manifestMetadata: ItemMetadata[] = payload.map((item) => ({
+    const manifestMetadata: ItemMetadata[] = metadata.map((item) => ({
       id: manifestId,
       attribute: item,
     }));
@@ -203,4 +203,12 @@ export default function* viewerSaga() {
   yield takeEvery(removeFromHistoryRequest, handleRemoveFromHistory);
 }
 
-export { loadHistorySaga };
+export {
+  handleFetchManifest,
+  handleFetchManifestFromArk,
+  handleFetchManifestFromContent,
+  handleFetchManifestFromURL,
+  handleRemoveFromHistory,
+  handleSaveMetadata,
+  loadHistorySaga,
+};
