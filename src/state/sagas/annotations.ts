@@ -1,4 +1,4 @@
-import { Annotation } from '@/data/models/Annotation';
+import { Annotation, getAnnotationType } from '@/data/models/Annotation';
 import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { isEqual } from 'lodash';
@@ -24,25 +24,45 @@ import { getAnnotations } from '../selectors/annotations';
 
 function* handleSaveAnnotationRequest(
   action: PayloadAction<Annotation>,
-): Generator<Effect, void, Annotation> {
-  console.log('handleSaveAnnotationRequest - ', action.payload);
+): Generator<Effect, void, Annotation | Annotation[]> {
+  const annotationToSave = action.payload;
+  console.log('handleSaveAnnotationRequest - ', annotationToSave);
   try {
     const annotationRepository = getAnnotationRepository();
     let existingAnnotation = undefined;
     try {
       existingAnnotation = yield call(
         [annotationRepository, annotationRepository.getById],
-        action.payload.id,
+        annotationToSave.id,
       );
       //save only if annotations are different to avoid unnecessary writes and call to saveAnnotationSuccess
-      if (!isEqual(existingAnnotation, action.payload)) {
-        yield call([annotationRepository, annotationRepository.updateAnnotation], action.payload);
-        yield put(saveAnnotationSuccess(action.payload));
+      if (!isEqual(existingAnnotation, annotationToSave)) {
+        yield call([annotationRepository, annotationRepository.updateAnnotation], annotationToSave);
+        yield put(saveAnnotationSuccess(annotationToSave));
       }
     } catch (error) {
       // If the annotation does not exist, create it
-      yield call([annotationRepository, annotationRepository.updateAnnotation], action.payload);
-      yield put(saveAnnotationSuccess(action.payload));
+      //compute the order value if not set or if set to -1
+      //TODO : this should be done in the repository
+      let newOrder = annotationToSave.order;
+      if (
+        (annotationToSave.order === undefined || annotationToSave.order === -1) &&
+        annotationToSave.canvasId !== undefined &&
+        annotationToSave.collectionId !== undefined
+      ) {
+        const annotationsForCanvas = (yield call(
+          [annotationRepository, annotationRepository.getAnnotationsForCanvas],
+          annotationToSave.canvasId,
+          annotationToSave.collectionId,
+        )) as Annotation[];
+        const regions = annotationsForCanvas
+          .filter((a) => getAnnotationType(a) === getAnnotationType(annotationToSave))
+          .map((a) => a.order ?? -1);
+        newOrder = regions.length > 0 ? Math.max(...regions) + 1 : 0;
+      }
+      const newAnnotation = { ...annotationToSave, order: newOrder };
+      yield call([annotationRepository, annotationRepository.updateAnnotation], newAnnotation);
+      yield put(saveAnnotationSuccess(newAnnotation));
     }
   } catch (e) {
     console.warn(e);
