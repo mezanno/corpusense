@@ -82,8 +82,8 @@ export interface AnnotationWithIdCreateDTO extends AnnotationCreateDTO {
   id: string;
 }
 
-const URL_CLASSIFYING = '/class';
-const URL_TAGGING = '/tag';
+export const URL_CLASSIFYING = '/class';
+export const URL_TAGGING = '/tag';
 
 export function createAnnotation<T extends AnnotationCreateDTO | AnnotationWithIdCreateDTO>(
   annotationDTO: T,

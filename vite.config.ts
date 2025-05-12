@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, './src'),
         // 'react-i18next': path.resolve(__dirname, './src/__tests__/react-i18next.ts'),
+        // i18next: path.resolve(__dirname, './src/__tests__/i18next.ts'),
       },
     },
     build: {

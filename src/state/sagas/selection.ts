@@ -98,3 +98,5 @@ export default function* viewerSaga() {
   yield takeLatest(setSelectionStartRequest, handleSetSelectionStart);
   yield takeLatest(setSelectionEndRequest, handleSetSelectionEnd);
 }
+
+export { handleSetSelectionEnd, handleSetSelectionStart };
