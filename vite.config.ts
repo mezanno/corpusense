@@ -14,7 +14,22 @@ const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
-  console.log('env: ', env);
+  console.log('mode: ', mode);
+  console.log('NODE_ENV: ', process.env.NODE_ENV);
+
+  //if NODE_ENV is test, use the test version of react-i18next and i18next
+  const alias = [
+    { find: '@', replacement: path.resolve(__dirname, './src') },
+    ...(process.env.NODE_ENV === 'test'
+      ? [
+          {
+            find: 'react-i18next',
+            replacement: path.resolve(__dirname, './src/__tests__/react-i18next.ts'),
+          },
+          { find: 'i18next', replacement: path.resolve(__dirname, './src/__tests__/i18next.ts') },
+        ]
+      : []),
+  ];
 
   return {
     plugins: [react(), tailwindcss(), visualizer() as PluginOption],
@@ -24,11 +39,7 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version),
     },
     resolve: {
-      alias: {
-        '@': path.resolve(__dirname, './src'),
-        // 'react-i18next': path.resolve(__dirname, './src/__tests__/react-i18next.ts'),
-        // i18next: path.resolve(__dirname, './src/__tests__/i18next.ts'),
-      },
+      alias,
     },
     build: {
       rollupOptions: {
@@ -43,7 +54,7 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true, // Activer les fonctions globales comme 'describe', 'it', etc.
       environment: 'jsdom', // Utiliser jsdom pour simuler un environnement de navigateur
-      setupFiles: process.env.NODE_ENV === 'production' ? [] : ['./vitest.setup.ts'], // Ne pas charger le fichier de setup en production
+      setupFiles: process.env.NODE_ENV === 'test' ? ['./vitest.setup.ts'] : [], // Ne charge le fichier de configuration que pour les tests
       coverage: {
         provider: 'v8',
         reporter: ['text', 'json', 'html', 'lcov'],
