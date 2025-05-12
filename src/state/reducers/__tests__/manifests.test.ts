@@ -85,8 +85,9 @@ describe('manifests reducer', () => {
       ...initialState,
       loadedData: { content: { id: 'manifest1', type: 'Manifest' }, metadata: [] },
     };
+    const manifestId = 'manifest1';
     const metadata: ItemMetadataAttribute[] = [{ label: 'Title', value: 'Example Manifest' }];
-    const action = saveMetadataSuccess(metadata);
+    const action = saveMetadataSuccess({ manifestId, metadata });
     //@ts-expect-error initialStateWithLoadedData
     const state = reducer(initialStateWithLoadedData, action);
 

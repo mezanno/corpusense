@@ -39,6 +39,11 @@ export interface FetchManifestPayload {
   forceV3?: boolean;
 }
 
+export interface SaveMetadataPayload {
+  manifestId: string;
+  metadata: ItemMetadataAttribute[];
+}
+
 export const manifestsSlice = createSlice({
   name: 'manifests',
   initialState,
@@ -73,10 +78,10 @@ export const manifestsSlice = createSlice({
     removeFromHistorySuccess: (state, action: PayloadAction<string>) => {
       state.history = state.history.filter((item) => item.url !== action.payload);
     },
-    saveMetadataRequest: (_state, _action: PayloadAction<ItemMetadataAttribute[]>) => {},
-    saveMetadataSuccess: (state, action: PayloadAction<ItemMetadataAttribute[]>) => {
+    saveMetadataRequest: (_state, _action: PayloadAction<SaveMetadataPayload>) => {},
+    saveMetadataSuccess: (state, action: PayloadAction<SaveMetadataPayload>) => {
       if (state.loadedData === null) return;
-      state.loadedData.metadata = action.payload;
+      state.loadedData.metadata = action.payload.metadata;
     },
     resetLastError: (state) => {
       state.lastError = '';
