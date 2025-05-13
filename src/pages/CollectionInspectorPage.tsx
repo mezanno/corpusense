@@ -15,6 +15,7 @@ import {
   removeElementFromCollectionRequest,
 } from '@/state/reducers/collections';
 import { WorkerStatus } from '@/state/reducers/workers';
+import { isCanvasDisplayed } from '@/state/selectors/canvas';
 import { getCanvasById } from '@/state/selectors/storedItems';
 import { getWorker } from '@/state/selectors/workers';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
@@ -39,6 +40,9 @@ const GridThumb = ({
   canvasViewerName: string;
 }) => {
   const canvas = useAppSelector((state) => getCanvasById(state, canvasId)) as Canvas;
+  const idDisplayed = useAppSelector((state) =>
+    isCanvasDisplayed(state, canvasId, canvasViewerName),
+  );
   const worker = useAppSelector((state) => getWorker(state, canvasId));
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
@@ -61,7 +65,7 @@ const GridThumb = ({
 
   return (
     <div
-      className='group relative cursor-pointer rounded-md p-1 shadow transition hover:scale-110 hover:border-slate-200 hover:bg-slate-100'
+      className={`group relative cursor-pointer rounded-md p-1 shadow transition hover:scale-110 ${idDisplayed ? 'bg-amber-400' : 'bg-amber-100'} `}
       onClick={handleOnClick}
     >
       <Thumbnail
