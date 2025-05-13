@@ -1,5 +1,5 @@
 import { useAppDispatch } from '@/hooks/hooks';
-import { removeAllAnnotationsRequest } from '@/state/reducers/annotations';
+import { removeCollectionAnnotationsRequest } from '@/state/reducers/annotations';
 import { exportTextOfCollectionRequest } from '@/state/reducers/export';
 import { fetchBatchLayoutRequest, fetchBatchOcrRequest } from '@/state/reducers/workers';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +18,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   };
 
   const handleDeleteAllAnnotations = () => {
-    appDispatch(removeAllAnnotationsRequest(collectionId));
+    appDispatch(removeCollectionAnnotationsRequest(collectionId));
   };
 
   const handleExportText = () => {

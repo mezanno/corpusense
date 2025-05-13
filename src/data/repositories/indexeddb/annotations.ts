@@ -48,10 +48,14 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     await db.annotations.delete(id);
   }
 
-  async removeAllAnnotations(collectionId: string) {
+  async removeByCollectionId(collectionId: string) {
     const canvases = await getCollectionRepository().getCanvasesByCollectionId(collectionId);
     const canvasIds = canvases.map((canvas) => canvas.id);
-    await db.annotations.where('canvasId').anyOf(canvasIds).delete();
+    await db.annotations.where('collectionId').equals(collectionId).delete();
     return canvasIds;
+  }
+
+  async removeByCanvasId(canvasId: string, collectionId: string) {
+    await db.annotations.where('[canvasId+collectionId]').equals([canvasId, collectionId]).delete();
   }
 }
