@@ -119,19 +119,19 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
 
           <ExportMenu handleExportText={handleExportText} isRunning={false} />
 
-          <div className='flex items-center space-x-1 align-middle'>
-            <span className='ml-1'>
-              {cvcState?.mode === 'draw' ? <SquarePen size={16} /> : <Move size={16} />}
-            </span>
+          <div className='flex items-center space-x-1 rounded-xl border p-2 align-middle'>
             <Switch
               id='viewer-mode'
               onCheckedChange={() => cvcDispatch({ type: ACTIONS.TOGGLE_MODE })}
             />
+            <span className='ml-1'>
+              {cvcState?.mode === 'draw' ? <SquarePen size={16} /> : <Move size={16} />}
+            </span>
             <Label htmlFor='viewer-mode' className='flex items-center'>
               <span>
                 {cvcState?.mode === 'draw'
-                  ? t('btn_toggle_mode_view')
-                  : t('btn_toggle_mode_annotate')}
+                  ? t('btn_toggle_mode_annotate')
+                  : t('btn_toggle_mode_view')}
               </span>
             </Label>
           </div>
