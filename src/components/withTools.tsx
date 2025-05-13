@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { syncWithDB } from '@/state/reducers/annotations';
+import { removeCanvasAnnotationsRequest, syncWithDB } from '@/state/reducers/annotations';
 import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import { fetchLayoutRequest, fetchOcrRequest, WorkerStatus } from '@/state/reducers/workers';
 import { getAnnotations } from '@/state/selectors/annotations';
@@ -9,11 +9,10 @@ import { Move, Save, SquarePen } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import AnalysisMenu from './AnalysisMenu';
 import { ReducerContext } from './CanvasViewer';
 import { CanvasViewerContentProps } from './CanvasViewerContent';
-import ExportMenu from './ExportMenu';
 import { ACTIONS } from './reducers/CanvasViewerContentReducer';
+import Toolbar from './ToolBar';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { ResizablePanel, ResizablePanelGroup } from './ui/resizable';
@@ -89,6 +88,17 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       }
     };
 
+    const handleDeleteAllAnnotations = () => {
+      if (props.collectionId !== undefined) {
+        appDispatch(
+          removeCanvasAnnotationsRequest({
+            canvasId: props.canvas.id,
+            collectionId: props.collectionId,
+          }),
+        );
+      }
+    };
+
     // const flow = useMemo(
     //   () => (
     //     <ReactFlowProvider>
@@ -111,13 +121,12 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
           >
             <Network />
           </Toggle> */}
-          <AnalysisMenu
-            isRunning={isWorkerRunning}
-            handleLayout={handleStartLayoutAnalysis}
+          <Toolbar
             handleOcr={handleStartOcrAnalysis}
+            handleExportText={handleExportText}
+            handleDeleteAllAnnotations={handleDeleteAllAnnotations}
+            handleLayout={handleStartLayoutAnalysis}
           />
-
-          <ExportMenu handleExportText={handleExportText} isRunning={false} />
 
           <div className='flex items-center space-x-1 rounded-xl border p-2 align-middle'>
             <Switch
