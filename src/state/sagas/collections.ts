@@ -403,4 +403,15 @@ export default function* collectionsSaga() {
   yield takeLatest(addCollectionToHistoryRequest, handleLoadCollection);
 }
 
-export { fetchAllCollections };
+export {
+  fetchAllCollections,
+  handleAddSelectionToCollection,
+  handleCreateCollection,
+  handleCreateCollectionWithSelection,
+  handleImportMultipleCollections,
+  handleImportOneCollection,
+  handleLoadCollection,
+  handleRemoveCollection,
+  handleRemoveElementFromCollection,
+  handleUpdateCollection,
+};

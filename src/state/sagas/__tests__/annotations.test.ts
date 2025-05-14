@@ -7,18 +7,18 @@ import { throwError } from 'redux-saga-test-plan/providers';
 import { call } from 'redux-saga/effects';
 import { Mock, vi } from 'vitest';
 import {
-  removeAllAnnotationsRequest,
   removeAllAnnotationsSuccess,
   removeAnnotationRequest,
   removeAnnotationSuccess,
+  removeCollectionAnnotationsRequest,
   saveAnnotationRequest,
   saveAnnotationSuccess,
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
 } from '../../reducers/annotations';
 import {
-  handleRemoveAllAnnotations,
   handleRemoveAnnotation,
+  handleRemoveCollectionAnnotations,
   handleSaveAnnotation,
   handleUpdateAnnotationOrderValue,
 } from '../annotations';
@@ -148,7 +148,10 @@ describe('annotations saga', () => {
     };
     (getAnnotationRepository as Mock).mockReturnValue(mockRepository);
 
-    return expectSaga(handleRemoveAllAnnotations, removeAllAnnotationsRequest(collectionId))
+    return expectSaga(
+      handleRemoveCollectionAnnotations,
+      removeCollectionAnnotationsRequest(collectionId),
+    )
       .provide([
         [call([mockRepository, mockRepository.removeAllAnnotations], collectionId), mockCanvasIds],
       ])
