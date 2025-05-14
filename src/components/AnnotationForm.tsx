@@ -6,6 +6,7 @@ import {
 } from '@/data/models/Annotation';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
+import { removeAllRegionAnnotationsRequest } from '@/state/reducers/annotations';
 import { exportTextOfAnnotationRequest } from '@/state/reducers/export';
 import { fetchOcrRequest } from '@/state/reducers/workers';
 import { getWorker } from '@/state/selectors/workers';
@@ -91,6 +92,10 @@ const AnnotationForm = ({
     appDispatch(exportTextOfAnnotationRequest(selected[0].annotation));
   };
 
+  const handleRemoveAllAnnotationsInside = () => {
+    appDispatch(removeAllRegionAnnotationsRequest(selected[0].annotation));
+  };
+
   return (
     <section className='m-2 flex-col' aria-label='annotation form'>
       <Form {...form}>
@@ -154,7 +159,11 @@ const AnnotationForm = ({
           </Button>
 
           <div className='absolute top-0 right-0 flex justify-end space-x-2'>
-            <Toolbar handleOcr={startOcrAsync} handleExportText={handleExportText} />
+            <Toolbar
+              handleOcr={startOcrAsync}
+              handleExportText={handleExportText}
+              handleDeleteAllAnnotations={handleRemoveAllAnnotationsInside}
+            />
 
             <Button
               title={t('btn_delete_annotation')}
