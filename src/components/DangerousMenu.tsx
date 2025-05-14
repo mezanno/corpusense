@@ -5,7 +5,7 @@ import MultiOptionsMenu from './MultiOptionsMenu';
 
 interface DangerousMenuProps {
   isRunning: boolean;
-  handleDeleteAllAnnotations: () => void;
+  handleDeleteAllAnnotations?: () => void;
 }
 
 const DangerousMenu: FC<DangerousMenuProps> = ({ isRunning, handleDeleteAllAnnotations }) => {

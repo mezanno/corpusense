@@ -17,7 +17,7 @@ export interface MultiOptionsMenuParams {
   items: {
     name: string;
     icon: React.ReactNode;
-    action: () => void;
+    action?: () => void;
   }[];
 }
 
@@ -31,6 +31,11 @@ const MultiOptionsMenu = ({
   color?: string;
 }) => {
   const { t } = useTranslation();
+
+  //if no action is provided, the menu will not be shown
+  if (params.items.every((item) => item.action === undefined)) {
+    return null;
+  }
 
   return (
     <div className={`relative ${color}`}>
@@ -50,12 +55,14 @@ const MultiOptionsMenu = ({
             )}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {params.items.map((item, index) => (
-            <DropdownMenuItem key={index} disabled={isRunning} onClick={item.action}>
-              {item.icon}
-              {t(item.name)}
-            </DropdownMenuItem>
-          ))}
+          {params.items
+            .filter((p) => p.action !== undefined)
+            .map((item, index) => (
+              <DropdownMenuItem key={index} disabled={isRunning} onClick={item.action}>
+                {item.icon}
+                {t(item.name)}
+              </DropdownMenuItem>
+            ))}
         </DropdownMenuContent>
       </DropdownMenu>
       {/* {isRunning && <Spinner className='absolute -top-2 -right-2' size={'small'} />} */}

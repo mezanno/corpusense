@@ -6,7 +6,7 @@ const ExportMenu = ({
   handleExportText,
 }: {
   isRunning: boolean;
-  handleExportText: () => void;
+  handleExportText?: () => void;
 }) => {
   const params = {
     name: 'btn_export_menu',

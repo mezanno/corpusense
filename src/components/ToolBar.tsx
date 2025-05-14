@@ -10,10 +10,10 @@ const Toolbar = ({
   handleExportText,
 }: {
   title?: string;
-  handleLayout: () => void;
-  handleOcr: () => void;
-  handleDeleteAllAnnotations: () => void;
-  handleExportText: () => void;
+  handleLayout?: () => void;
+  handleOcr?: () => void;
+  handleDeleteAllAnnotations?: () => void;
+  handleExportText?: () => void;
 }) => {
   return (
     <div className='flex items-center space-x-2'>

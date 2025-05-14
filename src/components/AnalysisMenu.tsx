@@ -7,8 +7,8 @@ const AnalysisMenu = ({
   handleOcr,
 }: {
   isRunning: boolean;
-  handleLayout: () => void;
-  handleOcr: () => void;
+  handleLayout?: () => void;
+  handleOcr?: () => void;
 }) => {
   const params = {
     name: 'btn_start_analysis',
