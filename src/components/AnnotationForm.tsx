@@ -6,16 +6,18 @@ import {
 } from '@/data/models/Annotation';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
+import { exportTextOfAnnotationRequest } from '@/state/reducers/export';
 import { fetchOcrRequest } from '@/state/reducers/workers';
 import { getWorker } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas } from '@iiif/presentation-3';
-import { Copy, Save, TextSearch, Trash2 } from 'lucide-react';
+import { Copy, Save, Trash2 } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import Toolbar from './ToolBar';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogDescription } from './ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
@@ -68,25 +70,25 @@ const AnnotationForm = ({
   }, [selected]);
 
   const startOcrAsync = () => {
-    const rect = selected[0].annotation.target.selector.geometry;
-    appDispatch(
-      fetchOcrRequest({
-        canvas,
-        collectionId: selected[0].annotation.id,
-        region: {
-          left: rect.bounds.minX,
-          top: rect.bounds.minY,
-          width: rect.bounds.maxX - rect.bounds.minX,
-          height: rect.bounds.maxY - rect.bounds.minY,
-        },
-      }),
-    );
-    // form.setValue('value', text);
+    if (selected[0].annotation.collectionId !== undefined) {
+      const rect = selected[0].annotation.target.selector.geometry;
+      appDispatch(
+        fetchOcrRequest({
+          canvas,
+          collectionId: selected[0].annotation.collectionId,
+          region: {
+            left: rect.bounds.minX,
+            top: rect.bounds.minY,
+            width: rect.bounds.maxX - rect.bounds.minX,
+            height: rect.bounds.maxY - rect.bounds.minY,
+          },
+        }),
+      );
+    }
   };
 
-  const handleOcrClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    void startOcrAsync();
+  const handleExportText = () => {
+    appDispatch(exportTextOfAnnotationRequest(selected[0].annotation));
   };
 
   return (
@@ -152,21 +154,7 @@ const AnnotationForm = ({
           </Button>
 
           <div className='absolute top-0 right-0 flex justify-end space-x-2'>
-            {isWorkerRunning ? (
-              <div className='flex-row items-center space-x-2'>
-                OCR
-                {/* <Progress value={progress} className='w-[60%]' /> */}
-              </div>
-            ) : (
-              <Button
-                title={t('btn_OCR_analyze')}
-                variant='secondary'
-                className='cursor-pointer'
-                onClick={(e) => handleOcrClick(e)}
-              >
-                <TextSearch />
-              </Button>
-            )}
+            <Toolbar handleOcr={startOcrAsync} handleExportText={handleExportText} />
 
             <Button
               title={t('btn_delete_annotation')}
