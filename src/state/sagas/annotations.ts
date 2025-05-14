@@ -152,62 +152,6 @@ function* handleRemoveAllRegionAnnotations(
   }
 }
 
-// function* handleAddLinkBetweenAnnotations(
-//   action: PayloadAction<{ source: string; target: string }>,
-// ): Generator<Effect, void, Annotation> {
-//   const annotationRepository = getAnnotationRepository();
-//   const sourceAnnotation = yield call(
-//     [annotationRepository, annotationRepository.getById],
-//     action.payload.source,
-//   );
-//   const targetAnnotation = yield call(
-//     [annotationRepository, annotationRepository.getById],
-//     action.payload.target,
-//   );
-//   if (sourceAnnotation === undefined || targetAnnotation === undefined) {
-//     yield put(linkAnnotationsFailure('One or both annotations not found'));
-//     return;
-//   }
-//   sourceAnnotation.next = action.payload.target;
-//   targetAnnotation.previous = action.payload.source;
-//   try {
-//     yield call([annotationRepository, annotationRepository.updateAnnotation], sourceAnnotation);
-//     yield call([annotationRepository, annotationRepository.updateAnnotation], targetAnnotation);
-//     yield put(addLinkBetweenAnnotationsSuccess(action.payload));
-//   } catch (e) {
-//     console.warn(e);
-//     yield put(linkAnnotationsFailure('Failed to link annotations'));
-//   }
-// }
-
-// function* handleRemoveLinkBetweenAnnotations(
-//   action: PayloadAction<{ source: string; target: string }>,
-// ): Generator<Effect, void, Annotation> {
-//   const annotationRepository = getAnnotationRepository();
-//   const sourceAnnotation = yield call(
-//     [annotationRepository, annotationRepository.getById],
-//     action.payload.source,
-//   );
-//   const targetAnnotation = yield call(
-//     [annotationRepository, annotationRepository.getById],
-//     action.payload.target,
-//   );
-//   if (sourceAnnotation === undefined || targetAnnotation === undefined) {
-//     yield put(linkAnnotationsFailure('One or both annotations not found'));
-//     return;
-//   }
-//   sourceAnnotation.next = undefined;
-//   targetAnnotation.previous = undefined;
-//   try {
-//     yield call([annotationRepository, annotationRepository.updateAnnotation], sourceAnnotation);
-//     yield call([annotationRepository, annotationRepository.updateAnnotation], targetAnnotation);
-//     yield put(removeLinkBetweenAnnotationsSuccess(action.payload));
-//   } catch (e) {
-//     console.warn(e);
-//     yield put(linkAnnotationsFailure('Failed to link annotations'));
-//   }
-// }
-
 function* handleUpdateAnnotationOrderValue(
   action: PayloadAction<{ annotationId: string; value: number }>,
 ) {
@@ -243,8 +187,6 @@ export default function* annotationsSaga() {
   yield takeEvery(removeAllCollectionAnnotationsRequest, handleRemoveAllCollectionAnnotations);
   yield takeEvery(removeAllCanvasAnnotationsRequest, handleRemoveAllCanvasAnnotations);
   yield takeEvery(removeAllRegionAnnotationsRequest, handleRemoveAllRegionAnnotations);
-  // yield takeEvery(addLinkBetweenAnnotationsRequest, handleAddLinkBetweenAnnotations);
-  // yield takeEvery(removeLinkBetweenAnnotationsRequest, handleRemoveLinkBetweenAnnotations);
   yield takeEvery(updateAnnotationOrderValueRequest, handleUpdateAnnotationOrderValue);
   yield takeLatest(syncWithDB, handleSyncWithDB);
 }

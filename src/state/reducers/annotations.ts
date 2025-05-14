@@ -67,36 +67,6 @@ const annotationsSlice = createSlice({
         ),
       ];
     },
-    addLinkBetweenAnnotationsRequest(
-      _state,
-      _action: PayloadAction<{ source: string; target: string }>,
-    ) {},
-    addLinkBetweenAnnotationsSuccess(
-      state,
-      action: PayloadAction<{ source: string; target: string }>,
-    ) {
-      const fromAnnotation = state.values.find((a) => a.id === action.payload.source);
-      const toAnnotation = state.values.find((a) => a.id === action.payload.target);
-      if (fromAnnotation && toAnnotation) {
-        fromAnnotation.next = action.payload.target;
-        toAnnotation.previous = action.payload.source;
-      }
-    },
-    removeLinkBetweenAnnotationsRequest(
-      _state,
-      _action: PayloadAction<{ source: string; target: string }>,
-    ) {},
-    removeLinkBetweenAnnotationsSuccess(
-      state,
-      action: PayloadAction<{ source: string; target: string }>,
-    ) {
-      const fromAnnotation = state.values.find((a) => a.id === action.payload.source);
-      const toAnnotation = state.values.find((a) => a.id === action.payload.target);
-      if (fromAnnotation && toAnnotation) {
-        fromAnnotation.next = undefined;
-        toAnnotation.previous = undefined;
-      }
-    },
     updateAnnotationOrderValueRequest(
       _state,
       _action: PayloadAction<{ annotationId: string; value: number }>,
@@ -109,9 +79,6 @@ const annotationsSlice = createSlice({
       if (annotation !== undefined) {
         annotation.order = action.payload.value;
       }
-    },
-    linkAnnotationsFailure(state, action: PayloadAction<string>) {
-      state.error = action.payload;
     },
     syncWithDB(_state, _action: PayloadAction<{ canvasId: string; collectionId: string }>) {},
   },
@@ -129,13 +96,8 @@ export const {
   removeAllRegionAnnotationsRequest,
   fetchAnnotationsByCanvasId,
   fetchAnnotationsSuccess,
-  addLinkBetweenAnnotationsRequest,
-  addLinkBetweenAnnotationsSuccess,
-  removeLinkBetweenAnnotationsRequest,
-  removeLinkBetweenAnnotationsSuccess,
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
-  linkAnnotationsFailure,
   syncWithDB,
 } = annotationsSlice.actions;
 export default annotationsSlice.reducer;
