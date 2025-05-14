@@ -13,9 +13,10 @@ export interface AnnotationRepository {
   getAnnotationsForCollection(collectionId: string): Promise<Annotation[]>;
   getById(id: string): Promise<Annotation>;
   saveAllAnnotations(annotations: Annotation[]): Promise<void>;
-  removeByCanvasId(canvasId: string, collectionId: string): Promise<void>;
+  removeAllById(ids: string[]): Promise<string[]>;
+  removeByCanvasId(canvasId: string, collectionId: string): Promise<string[]>;
   removeByCollectionId(collectionId: string): Promise<string[]>;
-  removeById(id: string): Promise<void>;
+  removeById(id: string): Promise<string[]>;
   updateAnnotation(annotation: Annotation): Promise<void>;
   updateOrder(annotationId: string, order: number): Promise<void>;
 }

@@ -39,13 +39,14 @@ const annotationsSlice = createSlice({
     removeAnnotationSuccess(state, action: PayloadAction<string>) {
       state.values = state.values.filter((a) => a.id !== action.payload);
     },
-    removeCollectionAnnotationsRequest(_state, _action: PayloadAction<string>) {}, //action.payload = collectionId
-    removeCanvasAnnotationsRequest(
+    removeAllCollectionAnnotationsRequest(_state, _action: PayloadAction<string>) {}, //action.payload = collectionId
+    removeAllCanvasAnnotationsRequest(
       _state,
       _action: PayloadAction<{ canvasId: string; collectionId: string }>,
     ) {},
+    removeAllRegionAnnotationsRequest(_state, _action: PayloadAction<Annotation>) {},
     removeAllAnnotationsSuccess(state, action: PayloadAction<string[]>) {
-      state.values = state.values.filter((a) => !action.payload.includes(a.canvasId ?? ''));
+      state.values = state.values.filter((a) => !action.payload.includes(a.id));
     },
     removeAllAnnotationsFailure(_state, _action) {
       // state.error = action.payload;
@@ -121,10 +122,11 @@ export const {
   saveAnnotationSuccess,
   removeAnnotationRequest,
   removeAnnotationSuccess,
-  removeCollectionAnnotationsRequest,
-  removeCanvasAnnotationsRequest,
+  removeAllCollectionAnnotationsRequest,
+  removeAllCanvasAnnotationsRequest,
   removeAllAnnotationsFailure,
   removeAllAnnotationsSuccess,
+  removeAllRegionAnnotationsRequest,
   fetchAnnotationsByCanvasId,
   fetchAnnotationsSuccess,
   addLinkBetweenAnnotationsRequest,

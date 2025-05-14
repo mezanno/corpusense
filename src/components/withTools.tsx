@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { removeCanvasAnnotationsRequest, syncWithDB } from '@/state/reducers/annotations';
+import { removeAllCanvasAnnotationsRequest, syncWithDB } from '@/state/reducers/annotations';
 import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import { fetchLayoutRequest, fetchOcrRequest, WorkerStatus } from '@/state/reducers/workers';
 import { getAnnotations } from '@/state/selectors/annotations';
@@ -91,7 +91,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const handleDeleteAllAnnotations = () => {
       if (props.collectionId !== undefined) {
         appDispatch(
-          removeCanvasAnnotationsRequest({
+          removeAllCanvasAnnotationsRequest({
             canvasId: props.canvas.id,
             collectionId: props.collectionId,
           }),

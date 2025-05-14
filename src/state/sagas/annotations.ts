@@ -1,15 +1,17 @@
-import { Annotation, getAnnotationType } from '@/data/models/Annotation';
+import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
 import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { contains } from '@/data/utils/annotations';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { isEqual } from 'lodash';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
   removeAllAnnotationsFailure,
   removeAllAnnotationsSuccess,
+  removeAllCanvasAnnotationsRequest,
+  removeAllCollectionAnnotationsRequest,
+  removeAllRegionAnnotationsRequest,
   removeAnnotationRequest,
   removeAnnotationSuccess,
-  removeCanvasAnnotationsRequest,
-  removeCollectionAnnotationsRequest,
   saveAnnotationRequest,
   saveAnnotationSuccess,
   syncWithDB,
@@ -82,35 +84,68 @@ function* handleRemoveAnnotation(action: PayloadAction<string>) {
   }
 }
 
-function* handleRemoveCollectionAnnotations(
+function* handleRemoveAllCollectionAnnotations(
   action: PayloadAction<string>,
 ): Generator<Effect, void, string[]> {
   const collectionId = action.payload;
   try {
     const annotationRepository = getAnnotationRepository();
-    const canvasIds = yield call(
+    const annotationIds = yield call(
       [annotationRepository, annotationRepository.removeByCollectionId],
       collectionId,
     );
-    yield put(removeAllAnnotationsSuccess(canvasIds));
+    yield put(removeAllAnnotationsSuccess(annotationIds));
   } catch (e) {
     console.warn(e);
     yield put(removeAllAnnotationsFailure);
   }
 }
 
-function* handleRemoveCanvasAnnotations(
+function* handleRemoveAllCanvasAnnotations(
   action: PayloadAction<{ canvasId: string; collectionId: string }>,
-): Generator<Effect, void, void> {
+): Generator<Effect, void, string[]> {
   try {
     const { canvasId, collectionId } = action.payload;
     const annotationRepository = getAnnotationRepository();
-    yield call(
+    const annotationIds = yield call(
       [annotationRepository, annotationRepository.removeByCanvasId],
       canvasId,
       collectionId,
     );
-    yield put(removeAllAnnotationsSuccess([canvasId]));
+    yield put(removeAllAnnotationsSuccess(annotationIds));
+  } catch (e) {
+    console.warn(e);
+    yield put(removeAllAnnotationsFailure);
+  }
+}
+
+function* handleRemoveAllRegionAnnotations(
+  action: PayloadAction<Annotation>,
+): Generator<Effect, void, Annotation[]> {
+  const annotation = action.payload;
+  if (getAnnotationType(annotation) !== ElementType.REGION) {
+    throw new Error('Annotation is not a region');
+  }
+  try {
+    const annotationRepository = getAnnotationRepository();
+    const canvasId = annotation.canvasId;
+    const collectionId = annotation.collectionId;
+    if (canvasId !== undefined && collectionId !== undefined) {
+      const annotationsInSameCanvas = yield call(
+        [annotationRepository, annotationRepository.getAnnotationsForCanvas],
+        canvasId,
+        collectionId,
+      );
+      const annotationsIdsToRemove = annotationsInSameCanvas
+        .filter((a) => contains(annotation, a))
+        .map((a) => a.id);
+
+      yield call(
+        [annotationRepository, annotationRepository.removeAllById],
+        annotationsIdsToRemove,
+      );
+      yield put(removeAllAnnotationsSuccess(annotationsIdsToRemove));
+    }
   } catch (e) {
     console.warn(e);
     yield put(removeAllAnnotationsFailure);
@@ -205,8 +240,9 @@ function* handleSyncWithDB(
 export default function* annotationsSaga() {
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotation);
   yield takeEvery(removeAnnotationRequest, handleRemoveAnnotation);
-  yield takeEvery(removeCollectionAnnotationsRequest, handleRemoveCollectionAnnotations);
-  yield takeEvery(removeCanvasAnnotationsRequest, handleRemoveCanvasAnnotations);
+  yield takeEvery(removeAllCollectionAnnotationsRequest, handleRemoveAllCollectionAnnotations);
+  yield takeEvery(removeAllCanvasAnnotationsRequest, handleRemoveAllCanvasAnnotations);
+  yield takeEvery(removeAllRegionAnnotationsRequest, handleRemoveAllRegionAnnotations);
   // yield takeEvery(addLinkBetweenAnnotationsRequest, handleAddLinkBetweenAnnotations);
   // yield takeEvery(removeLinkBetweenAnnotationsRequest, handleRemoveLinkBetweenAnnotations);
   yield takeEvery(updateAnnotationOrderValueRequest, handleUpdateAnnotationOrderValue);
@@ -214,9 +250,9 @@ export default function* annotationsSaga() {
 }
 
 export {
+  handleRemoveAllCanvasAnnotations,
+  handleRemoveAllCollectionAnnotations,
   handleRemoveAnnotation,
-  handleRemoveCanvasAnnotations,
-  handleRemoveCollectionAnnotations,
   handleSaveAnnotation,
   handleUpdateAnnotationOrderValue,
 };

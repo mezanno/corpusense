@@ -1,7 +1,6 @@
 import i18next from 'i18next';
 import { Annotation } from '../../models/Annotation';
 import { db } from './db';
-import { getCollectionRepository } from './dbFactory';
 import { AnnotationRepository } from './types';
 
 export class IndexedDBAnnotationRepository implements AnnotationRepository {
@@ -40,22 +39,35 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     await db.annotations.update(annotationId, { order });
   }
 
-  async removeById(id: string): Promise<void> {
+  async removeById(id: string): Promise<string[]> {
     const annotation = await db.annotations.get(id);
     if (annotation === undefined) {
       throw new Error(i18next.t('error_annotation_not_found'));
     }
     await db.annotations.delete(id);
+    return [id];
+  }
+
+  async removeAllById(ids: string[]): Promise<string[]> {
+    await db.annotations.bulkDelete(ids);
+    return ids;
   }
 
   async removeByCollectionId(collectionId: string) {
-    const canvases = await getCollectionRepository().getCanvasesByCollectionId(collectionId);
-    const canvasIds = canvases.map((canvas) => canvas.id);
+    const annotations = await db.annotations.where('collectionId').equals(collectionId).toArray();
     await db.annotations.where('collectionId').equals(collectionId).delete();
-    return canvasIds;
+    return annotations.map((annotation) => annotation.id);
   }
 
   async removeByCanvasId(canvasId: string, collectionId: string) {
+    const annotations = await db.annotations
+      .where({
+        canvasId,
+        collectionId,
+      })
+      .toArray();
+    const ids = annotations.map((annotation) => annotation.id);
     await db.annotations.where('[canvasId+collectionId]').equals([canvasId, collectionId]).delete();
+    return ids;
   }
 }
