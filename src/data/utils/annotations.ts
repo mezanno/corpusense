@@ -8,11 +8,16 @@ import { getImage } from './canvas';
 
 /**
  * This function checks if the annotation is contained in the annotationContainer
- * @param annotationContainer
- * @param annotation
- * @returns true if the annotation is contained in the annotationContainer
+ * @param annotationContainer The container of the annotation
+ * @param annotation The annotation to check
+ * @returns true if the annotation is contained in the annotationContainer.
+ * If the annotation is the same as the annotationContainer, it returns false
  */
 const contains = (annotationContainer: Annotation, annotation: Annotation) => {
+  if (annotationContainer.id === annotation.id) {
+    return false;
+  }
+
   const container = annotationContainer.target.selector.geometry.bounds;
   const target = annotation.target.selector.geometry.bounds;
   return (
