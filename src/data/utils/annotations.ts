@@ -1,10 +1,27 @@
 import { AnnotationPage, Canvas } from '@iiif/presentation-3';
 import i18next from 'i18next';
-import { createAnnotation, ElementType } from '../models/Annotation';
+import { Annotation, createAnnotation, ElementType } from '../models/Annotation';
 import { convertAnnotationPageToW3CAnnotations } from '../models/converters/iiif';
 import { SelectedCanvas } from '../models/SelectedCanvas';
 import { getAnnotationRepository } from '../repositories/indexeddb/dbFactory';
 import { getImage } from './canvas';
+
+/**
+ * This function checks if the annotation is contained in the annotationContainer
+ * @param annotationContainer
+ * @param annotation
+ * @returns true if the annotation is contained in the annotationContainer
+ */
+const contains = (annotationContainer: Annotation, annotation: Annotation) => {
+  const container = annotationContainer.target.selector.geometry.bounds;
+  const target = annotation.target.selector.geometry.bounds;
+  return (
+    container.minX <= target.minX &&
+    container.minY <= target.minY &&
+    container.maxX >= target.maxX &&
+    container.maxY >= target.maxY
+  );
+};
 
 const generateRegionAnnotationForCanvas = (canvas: Canvas, collectionId: string) => {
   const image = getImage(canvas);
@@ -53,4 +70,9 @@ function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {
   return annotationRepository.saveAllAnnotations(annotationsW3C);
 }
 
-export { generateFirstAnnotation, generateRegionAnnotationForCanvas, importAnnotationFromJson };
+export {
+  contains,
+  generateFirstAnnotation,
+  generateRegionAnnotationForCanvas,
+  importAnnotationFromJson,
+};
