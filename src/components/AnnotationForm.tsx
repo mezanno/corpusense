@@ -163,6 +163,7 @@ const AnnotationForm = ({
               handleOcr={startOcrAsync}
               handleExportText={handleExportText}
               handleDeleteAllAnnotations={handleRemoveAllAnnotationsInside}
+              isRunning={isWorkerRunning}
             />
 
             <Button

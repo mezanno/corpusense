@@ -33,6 +33,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
         handleOcr={handleOcr}
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleExportText={handleExportText}
+        isRunning={false} // TODO: Add logic to determine if a worker is running
       />
     </div>
   );

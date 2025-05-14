@@ -126,6 +126,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
             handleExportText={handleExportText}
             handleDeleteAllAnnotations={handleDeleteAllAnnotations}
             handleLayout={handleStartLayoutAnalysis}
+            isRunning={isWorkerRunning}
           />
 
           <div className='flex items-center space-x-1 rounded-xl border p-2 align-middle'>
