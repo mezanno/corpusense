@@ -7,8 +7,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
-import { Spinner } from './ui/spinner';
+} from '../ui/dropdown-menu';
+import { Spinner } from '../ui/spinner';
 
 export interface MultiOptionsMenuParams {
   name: string;

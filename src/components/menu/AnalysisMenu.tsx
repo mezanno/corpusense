@@ -1,5 +1,5 @@
 import { ScanText, TableProperties, TextSearch } from 'lucide-react';
-import MultiOptionsMenu from './MultiOptionsMenu';
+import MultiOptionsMenu from '../MultiOptionsMenu';
 
 const AnalysisMenu = ({
   isRunning,
