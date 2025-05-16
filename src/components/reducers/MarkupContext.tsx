@@ -3,11 +3,13 @@ import { createContext, useContext, useReducer } from 'react';
 
 export const MARKUP_ACTIONS = {
   SET_RECT: 'SET_RECT',
+  SET_SELECTED: 'SET_SELECTED',
   RENDER: 'RENDER',
 } as const;
 
 export type MarkupAction =
   | { type: typeof MARKUP_ACTIONS.SET_RECT; payload: { index: number; rect: IRect } }
+  | { type: typeof MARKUP_ACTIONS.SET_SELECTED; payload: number }
   | { type: typeof MARKUP_ACTIONS.RENDER };
 
 type WordRect = {
@@ -18,6 +20,7 @@ type WordRect = {
 type MarkupState = {
   text: string;
   wordRects: WordRect[];
+  selected: number[];
 };
 
 const computeRects = (index: number, rect: IRect, wordRects: WordRect[]) => {
@@ -70,6 +73,16 @@ const reducer = (state: MarkupState, action: MarkupAction) => {
         wordRects: computeRects(index, rect, state.wordRects),
       };
     }
+    case MARKUP_ACTIONS.SET_SELECTED: {
+      const index = action.payload;
+      const isSelected = state.selected.includes(index);
+      return {
+        ...state,
+        selected: isSelected
+          ? state.selected.filter((i) => i !== index)
+          : [...state.selected, index],
+      };
+    }
     default:
       return state;
   }
@@ -98,6 +111,7 @@ export const MarkupProvider = ({ text, children }: { text: string; children: Rea
   const initialState = {
     text,
     wordRects: rects,
+    selected: [],
   };
 
   const [state, dispatch] = useReducer(reducer, initialState);

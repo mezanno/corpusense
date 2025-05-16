@@ -1,6 +1,6 @@
-import AnalysisMenu from './AnalysisMenu';
-import DangerousMenu from './DangerousMenu';
-import ExportMenu from './ExportMenu';
+import AnalysisMenu from './menu/AnalysisMenu';
+import DangerousMenu from './menu/DangerousMenu';
+import ExportMenu from './menu/ExportMenu';
 
 const Toolbar = ({
   title,
