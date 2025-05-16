@@ -1,0 +1,114 @@
+import { IRect } from 'konva/lib/types';
+import { createContext, useContext, useReducer } from 'react';
+
+export const MARKUP_ACTIONS = {
+  SET_RECT: 'SET_RECT',
+  RENDER: 'RENDER',
+} as const;
+
+export type MarkupAction =
+  | { type: typeof MARKUP_ACTIONS.SET_RECT; payload: { index: number; rect: IRect } }
+  | { type: typeof MARKUP_ACTIONS.RENDER };
+
+type WordRect = {
+  line: number;
+  rect: IRect;
+};
+
+type MarkupState = {
+  text: string;
+  wordRects: WordRect[];
+};
+
+const computeRects = (index: number, rect: IRect, wordRects: WordRect[]) => {
+  // Update the rect of the current word
+  if (index > 0) {
+    if (wordRects[index].line === wordRects[index - 1].line) {
+      wordRects[index].rect = {
+        ...rect,
+        x: wordRects[index - 1].rect.x + wordRects[index - 1].rect.width,
+        y: wordRects[index - 1].rect.y,
+      };
+    } else {
+      wordRects[index].rect = {
+        ...rect,
+        x: 0,
+        y: wordRects[index - 1].rect.y + wordRects[index - 1].rect.height,
+      };
+    }
+  } else {
+    wordRects[index].rect = rect;
+  }
+  // Update the rects of the words after the current one
+  if (index + 1 < wordRects.length) {
+    for (let i = index + 1; i < wordRects.length; i++) {
+      if (wordRects[i - 1].line === wordRects[i].line) {
+        wordRects[i].rect = {
+          ...wordRects[i].rect,
+          x: wordRects[i - 1].rect.x + wordRects[i - 1].rect.width,
+          y: wordRects[i - 1].rect.y,
+        };
+      } else {
+        wordRects[i].rect = {
+          ...wordRects[i].rect,
+          x: 0,
+          y: wordRects[i - 1].rect.y + wordRects[i - 1].rect.height,
+        };
+      }
+    }
+  }
+
+  return wordRects;
+};
+
+const reducer = (state: MarkupState, action: MarkupAction) => {
+  switch (action.type) {
+    case MARKUP_ACTIONS.SET_RECT: {
+      const { index, rect } = action.payload;
+      return {
+        ...state,
+        wordRects: computeRects(index, rect, state.wordRects),
+      };
+    }
+    default:
+      return state;
+  }
+};
+
+type MarkupContextType = {
+  state: MarkupState;
+  dispatch: React.Dispatch<MarkupAction>;
+};
+
+const MarkupContext = createContext<MarkupContextType | undefined>(undefined);
+
+export const MarkupProvider = ({ text, children }: { text: string; children: React.ReactNode }) => {
+  const lines = text.split('\n');
+
+  let rects: WordRect[] = [];
+  for (let indexLine = 0; indexLine < lines.length; indexLine++) {
+    const line = lines[indexLine];
+    const words = line.split(' ');
+    const lineRects = words.map(() => ({
+      line: indexLine,
+      rect: { x: 0, y: 0, width: 0, height: 0 },
+    }));
+    rects = rects.concat(lineRects);
+  }
+  const initialState = {
+    text,
+    wordRects: rects,
+  };
+
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  return <MarkupContext.Provider value={{ state, dispatch }}>{children}</MarkupContext.Provider>;
+};
+
+export const useMarkupContext = () => {
+  const context = useContext(MarkupContext);
+  if (!context) {
+    throw new Error('useMarkupContext must be used within a MarkupProvider');
+  }
+  return context;
+};

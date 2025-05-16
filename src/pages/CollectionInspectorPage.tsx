@@ -1,6 +1,7 @@
 import CanvasViewer from '@/components/CanvasViewer';
 import CollectionMetadataForm from '@/components/CollectionMetadataForm';
 import CollectionToolbar from '@/components/CollectionToolbar';
+import TextViewer from '@/components/TextViewer';
 import {
   Accordion,
   AccordionContent,
@@ -8,6 +9,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import {
@@ -195,9 +197,18 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel className='ml-1 flex-1 overflow-hidden' minSize={30}>
-          <div className='panel h-full w-full'>
-            <CanvasViewer name={CANVASVIEWER_NAME} colllectionId={collectionId} />
-          </div>
+          <Tabs defaultValue='document' className='panel h-full w-full'>
+            <TabsList>
+              <TabsTrigger value='document'>Vue document</TabsTrigger>
+              <TabsTrigger value='text'>Vue texte</TabsTrigger>
+            </TabsList>
+            <TabsContent value='document'>
+              <CanvasViewer name={CANVASVIEWER_NAME} colllectionId={collectionId} />
+            </TabsContent>
+            <TabsContent value='text'>
+              <TextViewer name={CANVASVIEWER_NAME} collectionId={collectionId} />
+            </TabsContent>
+          </Tabs>
         </ResizablePanel>
       </ResizablePanelGroup>
     </section>
