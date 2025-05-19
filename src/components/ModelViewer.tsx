@@ -1,11 +1,13 @@
 import { DataField, DataModel } from '@/data/models/DataModel';
 import { useAppDispatch } from '@/hooks/hooks';
 import { saveModelRequest } from '@/state/reducers/models';
-import { CirclePlus, CircleX, Save } from 'lucide-react';
+import { CirclePlus, CircleX, Eye, Save } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { analogue } from 'simpler-color';
+import AlertDialogForm from './AlertDialogForm';
 import { ColorPicker } from './ColorPicker';
+import ModelPreview from './ModelPreview';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
@@ -46,12 +48,19 @@ const ModelViewer = ({ model }: { model: DataModel }) => {
           {t('title_active_model')}
           <span className='font-bold'>{model.name}</span>
         </h3>
-        <button title={t('btn_add_datafield')} onClick={handleAddField} className='cursor-pointer'>
+        <button title={t('btn_add_datafield')} onClick={handleAddField} className='soft-button'>
           <CirclePlus color='orange' />
         </button>
-        <button className='cursor-pointer' title={t('btn_save_model')} onClick={handleSave}>
+        <button className='soft-button' title={t('btn_save_model')} onClick={handleSave}>
           <Save color='green' />
         </button>
+        <AlertDialogForm
+          title={t('btn_model_preview')}
+          description={t('info_preview_model')}
+          trigger={<Eye />}
+        >
+          {({ close }) => <ModelPreview close={close} model={model} />}
+        </AlertDialogForm>
       </div>
       {fields.length > 0 ? (
         <Table className='w-full'>

@@ -25,7 +25,7 @@ const AlertDialogForm = ({ children, trigger, title, description }: AlertCollect
   const close = () => setIsOpen(false);
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-      <AlertDialogTrigger className='align-center mt-2 flex cursor-pointer items-center justify-center gap-2 space-x-2 rounded-xl border-2 border-gray-200 p-2 hover:bg-gray-50'>
+      <AlertDialogTrigger className='align-center flex cursor-pointer items-center justify-center gap-2 space-x-2 rounded-xl border-2 border-gray-200 p-2 hover:bg-gray-50'>
         {trigger}
       </AlertDialogTrigger>
       <AlertDialogContent>
