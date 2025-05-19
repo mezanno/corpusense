@@ -1,5 +1,6 @@
 import { Annotation } from '@/data/models/Annotation';
 import { Collection } from '@/data/models/Collection';
+import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
 import { ItemMetadata } from '@/data/models/Metadata';
 import { StoredItem } from '@/data/models/StoredItem';
@@ -13,6 +14,7 @@ const db = new Dexie('mezanno') as Dexie & {
   itemMetadata: EntityTable<ItemMetadata, 'id'>;
   tags: EntityTable<Tag, 'id'>;
   annotations: EntityTable<Annotation, 'id'>;
+  models: EntityTable<DataModel, 'id'>;
 };
 
 db.version(1).stores({
@@ -22,6 +24,7 @@ db.version(1).stores({
   typesList: '&label',
   itemMetadata: '[id+attribute.label]',
   tags: '&id',
+  models: '&id',
   annotations: '&id, canvasId, collectionId, [canvasId+collectionId], order',
 });
 

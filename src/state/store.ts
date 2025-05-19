@@ -5,6 +5,7 @@ import canvasReducer from './reducers/canvas';
 import collectionsReducer from './reducers/collections';
 import exportReducer from './reducers/export';
 import manifestsReducer from './reducers/manifests';
+import modelsReducer from './reducers/models';
 import selectionReducer from './reducers/selection';
 import storedItemsReducer from './reducers/storedItems';
 import tagsReducer from './reducers/tags';
@@ -23,6 +24,7 @@ export const rootReducer = combineReducers({
   export: exportReducer,
   annotations: annotationsReducer,
   workers: workersReducer,
+  models: modelsReducer,
 });
 
 const store = configureStore({

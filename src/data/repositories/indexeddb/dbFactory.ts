@@ -3,6 +3,7 @@ import { IndexedDBCanvasRepository } from './canvas';
 import { IndexedDBCollectionRepository } from './collections';
 import { IndexedDBItemMetadataRepository } from './itemMetadata';
 import { IndexedDBManifestRepository } from './manifest';
+import { IndexedDBModelRepository } from './models';
 import { IndexedDBStoredItemRepository } from './storedItem';
 import { IndexedDBTagRepository } from './tags';
 
@@ -31,4 +32,8 @@ export function getItemMetadataRepository() {
 
 export function getStoredItemRepository() {
   return new IndexedDBStoredItemRepository();
+}
+
+export function getModelRepository() {
+  return new IndexedDBModelRepository();
 }

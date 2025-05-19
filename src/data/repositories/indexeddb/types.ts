@@ -1,6 +1,7 @@
 import { Annotation } from '@/data/models/Annotation';
 import { Collection } from '@/data/models/Collection';
 import { CollectionElement } from '@/data/models/CollectionElement';
+import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
@@ -66,4 +67,11 @@ export interface TagRepository {
   getAllTags(): Promise<Tag[]>;
   createTag(tag: Tag): Promise<Tag>;
   saveTags(tags: Tag[]): Promise<void>;
+}
+
+export interface ModelRepository {
+  getById(id: string): Promise<DataModel>;
+  getAll(): Promise<DataModel[]>;
+  add(model: DataModel): Promise<void>;
+  update(model: DataModel): Promise<void>;
 }
