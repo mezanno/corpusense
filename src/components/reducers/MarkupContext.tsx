@@ -1,20 +1,24 @@
+import { DataField } from '@/data/models/DataModel';
 import { IRect } from 'konva/lib/types';
 import { createContext, useContext, useReducer } from 'react';
 
 export const MARKUP_ACTIONS = {
   SET_RECT: 'SET_RECT',
   SET_SELECTED: 'SET_SELECTED',
+  SET_FIELD_TO_SELECTED: 'SET_FIELD_TO_SELECTED',
   RENDER: 'RENDER',
 } as const;
 
 export type MarkupAction =
   | { type: typeof MARKUP_ACTIONS.SET_RECT; payload: { index: number; rect: IRect } }
   | { type: typeof MARKUP_ACTIONS.SET_SELECTED; payload: number }
+  | { type: typeof MARKUP_ACTIONS.SET_FIELD_TO_SELECTED; payload: DataField }
   | { type: typeof MARKUP_ACTIONS.RENDER };
 
 type WordRect = {
   line: number;
   rect: IRect;
+  field?: DataField;
 };
 
 type MarkupState = {
@@ -81,6 +85,22 @@ const reducer = (state: MarkupState, action: MarkupAction) => {
         selected: isSelected
           ? state.selected.filter((i) => i !== index)
           : [...state.selected, index],
+      };
+    }
+    case MARKUP_ACTIONS.SET_FIELD_TO_SELECTED: {
+      const field = action.payload;
+      return {
+        ...state,
+        wordRects: state.wordRects.map((wordRect, index) => {
+          if (state.selected.includes(index)) {
+            return {
+              ...wordRect,
+              field,
+            };
+          }
+          return wordRect;
+        }),
+        selected: [],
       };
     }
     default:

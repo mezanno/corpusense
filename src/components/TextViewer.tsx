@@ -1,13 +1,19 @@
 import { generateTextFromCanvas } from '@/data/utils/export';
 import { useAppSelector } from '@/hooks/hooks';
 import { getCanvasForComponent } from '@/state/selectors/canvas';
+import { getActiveModel } from '@/state/selectors/models';
 import { Canvas } from '@iiif/presentation-3';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Layer, Stage } from 'react-konva';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import AlertDialogForm from './AlertDialogForm';
+import MarkupContextMenu from './MarkupContextMenu';
+import ModelViewer from './ModelViewer';
+import NewModelForm from './NewModelForm';
 import { MarkupProvider } from './reducers/MarkupContext';
+import SelectModelForm from './SelectModelForm';
 import WordLabel from './WordLabel';
 
 const textToWords = (text: string) => {
@@ -23,6 +29,7 @@ const TextViewer = ({ name, collectionId }: { name: string; collectionId: string
   const [text, setText] = useState<string>('');
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [showMenu, setShowMenu] = useState(false);
+  const model = useAppSelector(getActiveModel);
 
   // Create and cleanup context menu
   useEffect(() => {
@@ -58,8 +65,6 @@ const TextViewer = ({ name, collectionId }: { name: string; collectionId: string
   );
 
   const handleContextMenu = (e: KonvaEventObject<PointerEvent>) => {
-    console.log('Context menu event', e);
-
     e.evt.preventDefault();
     if (e.target === e.target.getStage()) {
       return;
@@ -82,25 +87,46 @@ const TextViewer = ({ name, collectionId }: { name: string; collectionId: string
     <div ref={containerRef} className='h-full w-full'>
       {text !== '' ? (
         <>
-          <AutoSizer ref={containerRef} role='list'>
-            {({ height, width }) => (
-              <Stage
-                width={width}
-                height={height}
-                className='cursor-highlighter'
-                onContextMenu={handleContextMenu}
+          {model === null ? (
+            <div className='panel flex items-center space-x-2'>
+              <div>Aucun modèle de données défini</div>
+              <AlertDialogForm
+                title={t('btn_select_model')}
+                description={t('form_description_select_model')}
+                trigger={t('btn_select_model')}
               >
-                <Layer>
-                  <MarkupProvider text={text}>{labels}</MarkupProvider>
-                </Layer>
-              </Stage>
-            )}
-          </AutoSizer>
-          {showMenu && (
-            <div style={{ position: 'fixed', top: menuPosition.y, left: menuPosition.x }}>
-              <div>Menu 1</div>
+                {({ close }) => <SelectModelForm close={close} />}
+              </AlertDialogForm>
+              <AlertDialogForm
+                title={t('btn_create_model')}
+                description={t('form_description_create_model')}
+                trigger={t('btn_create_model')}
+              >
+                {({ close }) => <NewModelForm close={close} />}
+              </AlertDialogForm>
             </div>
+          ) : (
+            <ModelViewer model={model} />
           )}
+          <MarkupProvider text={text}>
+            <AutoSizer ref={containerRef} role='list'>
+              {({ height, width }) => (
+                <Stage
+                  width={width}
+                  height={height}
+                  className='cursor-highlighter'
+                  onContextMenu={handleContextMenu}
+                >
+                  <Layer>{labels}</Layer>
+                </Stage>
+              )}
+            </AutoSizer>
+            {showMenu && (
+              <div style={{ position: 'fixed', top: menuPosition.y, left: menuPosition.x }}>
+                <MarkupContextMenu />
+              </div>
+            )}
+          </MarkupProvider>
         </>
       ) : (
         <div className='flex h-full w-full items-center justify-center text-2xl text-red-500'>

@@ -8,12 +8,6 @@ type WordLabelProps = {
   index: number;
 };
 
-//#86A69D (vert)
-//#F2B263 (orange)
-//#F2E8DF (light)
-//#F2C6C2  (rose)
-//#F28585 (red)
-
 const WordLabel = ({ word, index }: WordLabelProps) => {
   const { state, dispatch } = useMarkupContext();
   const labelRef = useRef<Konva.Label>(null);
@@ -46,6 +40,13 @@ const WordLabel = ({ word, index }: WordLabelProps) => {
     setIsHovered(true);
   };
 
+  const tagColor =
+    state.wordRects[index].field !== undefined
+      ? state.wordRects[index].field.color
+      : isSelected
+        ? '#F2B263'
+        : '';
+
   return (
     <Label
       x={computedX}
@@ -56,7 +57,7 @@ const WordLabel = ({ word, index }: WordLabelProps) => {
       onMouseLeave={() => setIsHovered(false)}
       onMouseDown={handleMouseDown}
     >
-      <Tag fill={isSelected ? '#F2B263' : ''} />
+      <Tag fill={tagColor} />
       <Text
         text={word}
         fontSize={20}
