@@ -39,7 +39,8 @@ const MultiOptionsMenu = ({
 
   return (
     <div className={`relative ${color}`}>
-      <DropdownMenu>
+      {/* modal={false} : fix a bug with the Dialog+ContextMenu : https://github.com/radix-ui/primitives/issues/1836 */}
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger className='soft-button' title={t(params.name)}>
           {isRunning ? <ClockLoader size={24} /> : params.icon}
         </DropdownMenuTrigger>
