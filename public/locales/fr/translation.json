@@ -2,6 +2,7 @@
   "page_title_manifexplorer": "Manifest Explorer",
   "page_title_collection_manager": "Gestionnaire de collections",
   "page_title_collection_inspector": "Inspecteur de collections",
+  "page_title_configuration": "Paramètres de configuration",
   "nav_application": "Sections",
   "nav_history": "Historique",
   "nav_collections": "Collection(s) ouverte(s)",
@@ -37,6 +38,7 @@
   "btn_detect_layout": "Détection Mise En Page",
   "btn_more_actions": " Plus d'actions",
   "btn_OCR_analyze": "Analyse OCR",
+  "btn_data_extraction": "Extraction de données",
   "btn_get_extract": "Récupérer l'extrait",
   "btn_start_analysis": "Lancer un traitement",
   "btn_dangerous_menu": "Menu pour ceux qui savent ce qu'ils font",
@@ -69,6 +71,7 @@
   "form_description_create_model": "Créez un nouveau modèle de données.",
   "form_description_select_model": "Sélectionnez un modèle de données existant.",
   "form_forcev3": "Si posible, utiliser la version 3 de Gallica",
+  "form_label_mistral_api_key": "Clé API Mistral",
   "title_metadata_gallica": "Métadonnées Gallica",
   "title_metadata_corpusense": "Métadonnées Corpusense",
   "title_metadata_collection": "Métadonnées de la collection",
@@ -85,6 +88,7 @@
   "table_col_title_type": "Type",
   "table_col_title_description": "Description",
   "table_col_title_color": "Couleur",
+  "table_col_title_ia": "Donnée générée",
   "error_unknown": "Erreur inconnue ¯\\_(ツ)_/¯",
   "error_occured": "Une erreur est survenue",
   "error_loading_manifest": "Erreur lors du chargement du manifest : {{error}}",
@@ -140,5 +144,6 @@
   "aria_label_selection_collection": "Sélectionner/déselectionner cette collection",
   "aria_label_thumbnail_canvas": "Aperçu du canvas {{canvas}}",
   "aria_label_tags": "Étiquettes disponibles",
-  "oups": "Oups !"
+  "oups": "Oups !",
+  "ia_generated": ". Générée par IA."
 }

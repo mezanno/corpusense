@@ -15,6 +15,7 @@ import { resetAlert } from '@/state/reducers/export';
 import { resetLastWorkerError } from '@/state/reducers/workers';
 import { getOpenedCollections } from '@/state/selectors/collections';
 import {
+  Bolt,
   ChevronDown,
   CornerDownRight,
   FolderSearch2,
@@ -150,7 +151,12 @@ const LayoutSideBar = () => {
       </SidebarContent>
 
       <SidebarFooter>
-        <div>Corpusense v{import.meta.env.VITE_APP_VERSION}</div>
+        <div className='flex justify-between'>
+          Corpusense v{import.meta.env.VITE_APP_VERSION}
+          <Link to={CorpusenseRoutes.CONFIGURATION} title={t('page_title_configuration')}>
+            <Bolt />
+          </Link>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { CorpusenseRoutes } from './hooks/useAppNavigation';
 import CollectionInspectorPage from './pages/CollectionInspectorPage';
 import CollectionsManagerPage from './pages/CollectionsManagerPage';
+import ConfigurationPage from './pages/ConfigurationPage';
 import Layout from './pages/Layout';
 import ManifestExplorerPage from './pages/ManifestExplorerPage';
 
@@ -21,6 +22,7 @@ function App() {
             element={<CollectionInspectorPage />}
           />
           {/* <Route path='*' element={<div>Oups...</div>} /> */}
+          <Route path={CorpusenseRoutes.CONFIGURATION} element={<ConfigurationPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 export const CorpusenseRoutes = {
   MANIFEST: 'manifest',
   COLLECTIONS: 'collections',
+  CONFIGURATION: 'configuration',
 };
 
 const useAppNavigation = () => {
@@ -23,11 +24,15 @@ const useAppNavigation = () => {
   const goToCollectionExplorer = async (collectionId: string) => {
     await navigate(`/${CorpusenseRoutes.COLLECTIONS}/${collectionId}`);
   };
+  const goToConfiguration = async () => {
+    await navigate(`/${CorpusenseRoutes.CONFIGURATION}`);
+  };
 
   return {
     goToManifestExplorer,
     goToCollectionsManager,
     goToCollectionExplorer,
+    goToConfiguration,
   };
 };
 
