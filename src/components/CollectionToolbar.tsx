@@ -60,7 +60,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleExportText={handleExportText}
         handleExtractData={handleExtractData}
-        isRunning={false} // TODO: Add logic to determine if a worker is running
+        elementId={collectionId}
       />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>

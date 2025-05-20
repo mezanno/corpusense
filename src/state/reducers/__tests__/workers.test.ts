@@ -39,7 +39,7 @@ describe('workers reducer', () => {
   });
 
   it('should handle processSuccess', () => {
-    const action = processSuccess({ canvasId: 'canvas1', result: 'Success Result' });
+    const action = processSuccess({ id: 'canvas1', result: 'Success Result' });
     const state = reducer(workerInitialState, action);
 
     expect(state.workers['canvas1']).toEqual({
@@ -49,7 +49,7 @@ describe('workers reducer', () => {
   });
 
   it('should handle processError', () => {
-    const action = processError({ canvasId: 'canvas1', error: 'Error occurred' });
+    const action = processError({ id: 'canvas1', error: 'Error occurred' });
     const state = reducer(workerInitialState, action);
 
     expect(state.workers['canvas1']).toEqual({

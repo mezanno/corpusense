@@ -1,3 +1,6 @@
+import { useAppSelector } from '@/hooks/hooks';
+import { WorkerStatus } from '@/state/reducers/workers';
+import { getWorker } from '@/state/selectors/workers';
 import { useTranslation } from 'react-i18next';
 import { ClockLoader } from 'react-spinners';
 import {
@@ -23,14 +26,17 @@ export interface MultiOptionsMenuParams {
 
 const MultiOptionsMenu = ({
   params,
-  isRunning,
+  elementId,
   color = 'text-black',
 }: {
   params: MultiOptionsMenuParams;
-  isRunning: boolean;
+  elementId: string; // used to identify the worker associated with the menu
   color?: string;
 }) => {
   const { t } = useTranslation();
+  const worker = useAppSelector((state) => getWorker(state, elementId));
+  const isRunning =
+    worker?.status === WorkerStatus.PENDING || worker?.status === WorkerStatus.PROCESSING;
 
   //if no action is provided, the menu will not be shown
   if (params.items.every((item) => item.action === undefined)) {

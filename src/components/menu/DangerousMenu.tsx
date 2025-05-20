@@ -4,11 +4,11 @@ import { FC } from 'react';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 interface DangerousMenuProps {
-  isRunning: boolean;
+  elementId: string;
   handleDeleteAllAnnotations?: () => void;
 }
 
-const DangerousMenu: FC<DangerousMenuProps> = ({ isRunning, handleDeleteAllAnnotations }) => {
+const DangerousMenu: FC<DangerousMenuProps> = ({ elementId, handleDeleteAllAnnotations }) => {
   const params = {
     name: 'btn_dangerous_menu',
     icon: <OctagonXIcon />,
@@ -22,7 +22,7 @@ const DangerousMenu: FC<DangerousMenuProps> = ({ isRunning, handleDeleteAllAnnot
     ],
   };
 
-  return <MultiOptionsMenu params={params} isRunning={isRunning} color='text-red-500' />;
+  return <MultiOptionsMenu params={params} elementId={elementId} color='text-red-500' />;
 };
 
 export default DangerousMenu;

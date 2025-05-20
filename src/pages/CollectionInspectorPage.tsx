@@ -10,16 +10,15 @@ import {
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import WorkerStatusIcon from '@/components/WorkerStatusIcon';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import {
   addCollectionToHistoryRequest,
   removeElementFromCollectionRequest,
 } from '@/state/reducers/collections';
-import { WorkerStatus } from '@/state/reducers/workers';
 import { isCanvasDisplayed } from '@/state/selectors/canvas';
 import { getCanvasById } from '@/state/selectors/storedItems';
-import { getWorker } from '@/state/selectors/workers';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import { GridStack } from 'gridstack';
@@ -28,7 +27,6 @@ import { CircleX } from 'lucide-react';
 import { createRef, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { BarLoader, ClockLoader } from 'react-spinners';
 
 const CANVASVIEWER_NAME = 'collection-inspector';
 
@@ -45,7 +43,7 @@ const GridThumb = ({
   const idDisplayed = useAppSelector((state) =>
     isCanvasDisplayed(state, canvasId, canvasViewerName),
   );
-  const worker = useAppSelector((state) => getWorker(state, canvasId));
+
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -83,19 +81,7 @@ const GridThumb = ({
         <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
       </button>
 
-      {worker !== undefined && worker?.status == WorkerStatus.PENDING && (
-        <div className='absolute inset-0 flex items-center justify-center'>
-          {/* <CalendarClock size={'small'} width={28} /> */}
-          <BarLoader width={25} />
-        </div>
-      )}
-
-      {worker !== undefined && worker?.status == WorkerStatus.PROCESSING && (
-        <div className='absolute inset-0 flex items-center justify-center'>
-          {/* <Spinner size={'small'} /> */}
-          <ClockLoader size={24} />
-        </div>
-      )}
+      <WorkerStatusIcon elementId={canvasId} />
     </div>
   );
 };

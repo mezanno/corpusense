@@ -53,13 +53,13 @@ function* handleDataAnalysis({
   const text = (yield call(generateTextFromCanvas, canvasId, collectionId)) as string;
   if (text === undefined || text.length === 0) {
     console.log('No text found for this canvas');
-    yield put(processError({ canvasId, error: i18next.t('error_export_no_text') }));
+    yield put(processError({ id: canvasId, error: i18next.t('error_export_no_text') }));
     return;
   }
   const apiKey = localStorage.getItem('mistralApiKey');
   if (apiKey === null) {
     console.log('No Mistral API key found');
-    yield put(processError({ canvasId, error: i18next.t('error_no_mistral_key') }));
+    yield put(processError({ id: canvasId, error: i18next.t('error_no_mistral_key') }));
     return;
   }
 
@@ -96,7 +96,7 @@ function* handleDataAnalysis({
   const data = (yield call([response, 'json'])) as object;
   console.log('Response from Mistral:', data);
 
-  yield put(processSuccess({ canvasId, result: 'toto' }));
+  yield put(processSuccess({ id: canvasId, result: 'toto' }));
 
   if (
     typeof data === 'object' &&
@@ -139,7 +139,7 @@ function* handleFetchLayout({
     const data = yield call([response, 'json']);
     console.log('data: ', data);
 
-    yield put(processSuccess({ canvasId: canvas.id, result: data }));
+    yield put(processSuccess({ id: canvas.id, result: data }));
 
     //convert the result into an array of Annotation
     const annotations = convertEdwinResult(
@@ -152,7 +152,7 @@ function* handleFetchLayout({
     yield put(fetchAnnotationsSuccess(annotations));
   } catch (error) {
     console.error('Error fetching layout:', error);
-    yield put(processError({ canvasId: canvas.id, error: getErrorMessage(error) }));
+    yield put(processError({ id: canvas.id, error: getErrorMessage(error) }));
   }
 }
 
@@ -218,8 +218,7 @@ function* handleFetchOcr({
     console.log(gradioResult.data);
     try {
       const peroResult = peroResultSchema.parse(gradioResult.data);
-      console.log('peroResult: ', peroResult);
-
+      // console.log('peroResult: ', peroResult);
       const annotations = convertPeroTranscriptionsToAnnotations(
         peroResult,
         canvas.id,
@@ -228,20 +227,20 @@ function* handleFetchOcr({
       yield put(fetchAnnotationsSuccess(annotations));
       const annotationRepository = getAnnotationRepository();
       yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
-      yield put(processSuccess({ canvasId: canvas.id, result: 'toto' }));
+      yield put(processSuccess({ id: canvas.id, result: 'toto' }));
     } catch (error) {
       try {
         const peroError = peroResultError.parse(gradioResult.data);
         console.error('peroError: ', peroError[0].result.error);
-        yield put(processError({ canvasId: canvas.id, error: peroError[0].result.error }));
+        yield put(processError({ id: canvas.id, error: peroError[0].result.error }));
       } catch (err) {
         console.error('Error parsing peroResult:', err);
-        yield put(processError({ canvasId: canvas.id, error: getErrorMessage(err) }));
+        yield put(processError({ id: canvas.id, error: getErrorMessage(err) }));
       }
     }
   } catch (error) {
     console.error('handleFetchOcr: ', error);
-    yield put(processError({ canvasId: canvas.id, error: getErrorMessage(error) }));
+    yield put(processError({ id: canvas.id, error: getErrorMessage(error) }));
   }
 }
 
@@ -249,6 +248,8 @@ function* handleStartBatchDataAnalysisProcess(
   action: PayloadAction<fetchBatchDataAnalysisPayload>,
 ): Generator<Effect, void, Canvas[] | string> {
   const { collectionId, model } = action.payload;
+  yield put(processRunning(collectionId));
+
   const collectionRepository = getCollectionRepository();
   const canvases = (yield call(
     [collectionRepository, collectionRepository.getCanvasesByCollectionId],
@@ -271,19 +272,21 @@ function* handleStartBatchDataAnalysisProcess(
     const dataParsed = JSON.parse(dataInCanvas) as unknown[];
     allTheData = [...allTheData, ...dataParsed];
   }
-  console.log('allTheData: ', allTheData);
 
   yield call(
     FileSaver.saveAs,
     new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
     'exported_data.json',
   );
+  yield put(processSuccess({ id: collectionId, result: 'toto' }));
 }
 
 function* handleStartBatchLayoutProcess(
   action: PayloadAction<string>,
 ): Generator<Effect, void, Canvas[]> {
   const collectionId = action.payload;
+  yield put(processRunning(collectionId));
+
   const collectionRepository = getCollectionRepository();
   const canvases = yield call(
     [collectionRepository, collectionRepository.getCanvasesByCollectionId],
@@ -303,12 +306,15 @@ function* handleStartBatchLayoutProcess(
       originalWidth: canvases[i].width ?? 0,
     });
   }
+  yield put(processSuccess({ id: collectionId, result: 'toto' }));
 }
 
 function* handleStartBatchOcrProcess(
   action: PayloadAction<string>,
 ): Generator<Effect, void, Canvas[]> {
   const collectionId = action.payload;
+  yield put(processRunning(collectionId));
+
   const collectionRepository = getCollectionRepository();
   const canvases = yield call(
     [collectionRepository, collectionRepository.getCanvasesByCollectionId],
@@ -333,6 +339,7 @@ function* handleStartBatchOcrProcess(
       //   region: undefined,
       // });
     }
+    yield put(processSuccess({ id: collectionId, result: 'toto' }));
   } catch (error) {
     console.error('Error fetching canvases:', error);
   }

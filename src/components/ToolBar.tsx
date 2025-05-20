@@ -9,7 +9,7 @@ const Toolbar = ({
   handleDeleteAllAnnotations,
   handleExportText,
   handleExtractData,
-  isRunning,
+  elementId,
 }: {
   title?: string;
   handleLayout?: () => void;
@@ -17,7 +17,7 @@ const Toolbar = ({
   handleDeleteAllAnnotations?: () => void;
   handleExportText?: () => void;
   handleExtractData?: () => void;
-  isRunning: boolean;
+  elementId: string;
 }) => {
   return (
     <div className='flex items-center space-x-2'>
@@ -26,13 +26,13 @@ const Toolbar = ({
         handleLayout={handleLayout}
         handleOcr={handleOcr}
         handleExtractData={handleExtractData}
-        isRunning={isRunning}
+        elementId={elementId}
       />
       <DangerousMenu
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
-        isRunning={isRunning}
+        elementId={elementId}
       />
-      <ExportMenu handleExportText={handleExportText} isRunning={isRunning} />
+      <ExportMenu handleExportText={handleExportText} elementId={elementId} />
     </div>
   );
 };

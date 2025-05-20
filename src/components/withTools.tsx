@@ -1,15 +1,13 @@
 import { DataModel } from '@/data/models/DataModel';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useAppDispatch } from '@/hooks/hooks';
 import { removeAllCanvasAnnotationsRequest } from '@/state/reducers/annotations';
 import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import {
   fetchDataAnalysisRequest,
   fetchLayoutRequest,
   fetchOcrRequest,
-  WorkerStatus,
 } from '@/state/reducers/workers';
 import { getAnnotations } from '@/state/selectors/annotations';
-import { getWorker } from '@/state/selectors/workers';
 import { RootState } from '@/state/store';
 import { Move, SquarePen } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
@@ -30,11 +28,6 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const { t } = useTranslation();
     const { cvcState, cvcDispatch } = useContext(ReducerContext);
     const [dialogOpen, setDialogOpen] = useState(false);
-
-    const worker = useAppSelector((state: RootState) =>
-      cvcState?.canvas?.id !== undefined ? getWorker(state, cvcState.canvas.id) : null,
-    );
-    const isWorkerRunning = worker !== null && worker.status === WorkerStatus.PROCESSING;
 
     /** 
      on va surveiller les annotations dans le store pour voir si on doit mettre le statut de sauvegarde à jour
@@ -134,7 +127,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
             handleDeleteAllAnnotations={handleDeleteAllAnnotations}
             handleLayout={handleStartLayoutAnalysis}
             handleExtractData={handleExtractData}
-            isRunning={isWorkerRunning}
+            elementId={cvcState.canvas?.id ?? ''}
           />
 
           <div className='flex items-center space-x-1 rounded-xl border p-2 align-middle'>

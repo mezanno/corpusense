@@ -4,12 +4,11 @@ import {
   ElementType,
   getBodies,
 } from '@/data/models/Annotation';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useAppDispatch } from '@/hooks/hooks';
 import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
 import { removeAllRegionAnnotationsRequest } from '@/state/reducers/annotations';
 import { exportTextOfAnnotationRequest } from '@/state/reducers/export';
 import { fetchOcrRequest } from '@/state/reducers/workers';
-import { getWorker } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas } from '@iiif/presentation-3';
@@ -44,8 +43,6 @@ const AnnotationForm = ({
 }) => {
   const appDispatch = useAppDispatch();
   const modifyAnnotation = useModifyAnnotation();
-  const worker = useAppSelector((state) => getWorker(state, canvas.id));
-  const isWorkerRunning = worker?.status === 'pending';
   const { t } = useTranslation();
 
   const [dialogContent, setDialogContent] = React.useState<string>('');
@@ -163,7 +160,7 @@ const AnnotationForm = ({
               handleOcr={startOcrAsync}
               handleExportText={handleExportText}
               handleDeleteAllAnnotations={handleRemoveAllAnnotationsInside}
-              isRunning={isWorkerRunning}
+              elementId={canvas.id}
             />
 
             <Button

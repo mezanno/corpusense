@@ -2,12 +2,12 @@ import { Puzzle, ScanText, TableProperties, TextSearch } from 'lucide-react';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 const AnalysisMenu = ({
-  isRunning,
+  elementId,
   handleLayout,
   handleOcr,
   handleExtractData,
 }: {
-  isRunning: boolean;
+  elementId: string;
   handleLayout?: () => void;
   handleOcr?: () => void;
   handleExtractData?: () => void;
@@ -35,7 +35,7 @@ const AnalysisMenu = ({
     ],
   };
 
-  return <MultiOptionsMenu params={params} isRunning={isRunning} />;
+  return <MultiOptionsMenu params={params} elementId={elementId} />;
 };
 
 export default AnalysisMenu;

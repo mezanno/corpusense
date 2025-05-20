@@ -17,7 +17,7 @@ export interface WorkerState {
     lastEvent: string;
   };
   workers: Record<
-    string, //canvasId
+    string, //canvasId | collectionId
     {
       result?: string | object;
       status: string;
@@ -80,34 +80,31 @@ export const workerSlice = createSlice({
       _action: PayloadAction<fetchBatchDataAnalysisPayload>,
     ) => {},
     processStart: (state, action: PayloadAction<string>) => {
-      //action.payload is a canvasId
+      //action.payload is a canvasId or collectionId
       state.workers[action.payload] = {
         status: WorkerStatus.PENDING,
       };
     },
     processRunning: (state, action: PayloadAction<string>) => {
-      //action.payload is a canvasId
+      //action.payload is a canvasId or collectionId
       state.workers[action.payload] = {
         status: WorkerStatus.PROCESSING,
         result: '',
         error: '',
       };
     },
-    processSuccess: (
-      state,
-      action: PayloadAction<{ canvasId: string; result: string | object }>,
-    ) => {
+    processSuccess: (state, action: PayloadAction<{ id: string; result: string | object }>) => {
       state.global.lastEvent = i18next.t('info_finish_analysis', {
-        canvas: action.payload.canvasId,
+        canvas: action.payload.id,
       });
-      state.workers[action.payload.canvasId] = {
+      state.workers[action.payload.id] = {
         result: action.payload.result,
         status: WorkerStatus.SUCCESS,
       };
     },
-    processError: (state, action: PayloadAction<{ canvasId: string | null; error: string }>) => {
-      if (action.payload.canvasId !== null) {
-        state.workers[action.payload.canvasId] = {
+    processError: (state, action: PayloadAction<{ id: string | null; error: string }>) => {
+      if (action.payload.id !== null) {
+        state.workers[action.payload.id] = {
           status: WorkerStatus.ERROR,
           error: action.payload.error,
         };
@@ -121,7 +118,7 @@ export const workerSlice = createSlice({
       state.global.lastEvent = '';
     },
     resetCanvasProcess: (state, action: PayloadAction<string>) => {
-      //action.payload is a canvasId
+      //action.payload is a canvasId or collectionId
       state.workers[action.payload] = {
         result: '',
         status: WorkerStatus.IDLE,

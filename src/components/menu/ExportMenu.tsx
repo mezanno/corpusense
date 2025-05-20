@@ -2,10 +2,10 @@ import { ScrollText, SendHorizonal } from 'lucide-react';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 const ExportMenu = ({
-  isRunning,
+  elementId,
   handleExportText,
 }: {
-  isRunning: boolean;
+  elementId: string;
   handleExportText?: () => void;
 }) => {
   const params = {
@@ -20,7 +20,7 @@ const ExportMenu = ({
       },
     ],
   };
-  return <MultiOptionsMenu params={params} isRunning={isRunning} />;
+  return <MultiOptionsMenu params={params} elementId={elementId} />;
 };
 
 export default ExportMenu;
