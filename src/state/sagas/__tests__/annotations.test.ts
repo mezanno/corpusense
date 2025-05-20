@@ -140,11 +140,11 @@ describe('annotations saga', () => {
       .run();
   });
 
-  it('should handle removeAllAnnotations and dispatch removeAllAnnotationsSuccess', () => {
+  it('should handle removeAllCollectionAnnotationsRequest and dispatch removeAllAnnotationsSuccess', () => {
     const collectionId = 'collection1';
     const mockCanvasIds = ['canvas1', 'canvas2'];
     const mockRepository = {
-      removeAllAnnotations: vi.fn().mockResolvedValue(mockCanvasIds),
+      removeByCollectionId: vi.fn().mockResolvedValue(mockCanvasIds),
     };
     (getAnnotationRepository as Mock).mockReturnValue(mockRepository);
 
@@ -153,7 +153,7 @@ describe('annotations saga', () => {
       removeAllCollectionAnnotationsRequest(collectionId),
     )
       .provide([
-        [call([mockRepository, mockRepository.removeAllAnnotations], collectionId), mockCanvasIds],
+        [call([mockRepository, mockRepository.removeByCollectionId], collectionId), mockCanvasIds],
       ])
       .put(removeAllAnnotationsSuccess(mockCanvasIds))
       .run();
