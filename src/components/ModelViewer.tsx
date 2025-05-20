@@ -8,6 +8,7 @@ import { analogue } from 'simpler-color';
 import AlertDialogForm from './AlertDialogForm';
 import { ColorPicker } from './ColorPicker';
 import ModelPreview from './ModelPreview';
+import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
@@ -69,6 +70,7 @@ const ModelViewer = ({ model }: { model: DataModel }) => {
               <TableHead>{t('table_col_title_name')}</TableHead>
               <TableHead>{t('table_col_title_type')}</TableHead>
               <TableHead>{t('table_col_title_description')}</TableHead>
+              <TableHead>{t('table_col_title_ia')}</TableHead>
               <TableHead>{t('table_col_title_color')}</TableHead>
               <TableHead>{t('table_col_title_actions')}</TableHead>
             </TableRow>
@@ -103,6 +105,14 @@ const ModelViewer = ({ model }: { model: DataModel }) => {
                     value={field.description}
                     placeholder={t('form_label_datafield_description')}
                     onChange={(e) => updateFields(index, { description: e.target.value })}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Checkbox
+                    checked={field.generated ?? false}
+                    onCheckedChange={(checked) =>
+                      updateFields(index, { generated: Boolean(checked) })
+                    }
                   />
                 </TableCell>
                 <TableCell>

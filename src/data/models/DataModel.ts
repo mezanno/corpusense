@@ -2,6 +2,7 @@ export interface DataField {
   name: string;
   type: string;
   description?: string;
+  generated?: boolean;
   color: string;
 }
 
