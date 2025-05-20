@@ -8,6 +8,7 @@ const Toolbar = ({
   handleOcr,
   handleDeleteAllAnnotations,
   handleExportText,
+  handleExtractData,
   isRunning,
 }: {
   title?: string;
@@ -15,12 +16,18 @@ const Toolbar = ({
   handleOcr?: () => void;
   handleDeleteAllAnnotations?: () => void;
   handleExportText?: () => void;
+  handleExtractData?: () => void;
   isRunning: boolean;
 }) => {
   return (
     <div className='flex items-center space-x-2'>
       {title !== undefined && <h2 className='text-md'>{title}</h2>}
-      <AnalysisMenu handleLayout={handleLayout} handleOcr={handleOcr} isRunning={isRunning} />
+      <AnalysisMenu
+        handleLayout={handleLayout}
+        handleOcr={handleOcr}
+        handleExtractData={handleExtractData}
+        isRunning={isRunning}
+      />
       <DangerousMenu
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         isRunning={isRunning}

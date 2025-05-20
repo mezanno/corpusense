@@ -1,14 +1,16 @@
-import { ScanText, TableProperties, TextSearch } from 'lucide-react';
+import { Puzzle, ScanText, TableProperties, TextSearch } from 'lucide-react';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 const AnalysisMenu = ({
   isRunning,
   handleLayout,
   handleOcr,
+  handleExtractData,
 }: {
   isRunning: boolean;
   handleLayout?: () => void;
   handleOcr?: () => void;
+  handleExtractData?: () => void;
 }) => {
   const params = {
     name: 'btn_start_analysis',
@@ -24,6 +26,11 @@ const AnalysisMenu = ({
         name: 'btn_OCR_analyze',
         icon: <ScanText />,
         action: handleOcr,
+      },
+      {
+        name: 'btn_data_extraction',
+        icon: <Puzzle />,
+        action: handleExtractData,
       },
     ],
   };

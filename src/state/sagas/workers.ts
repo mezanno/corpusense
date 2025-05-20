@@ -1,3 +1,21 @@
+import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
+import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
+import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
+import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
+import {
+  getAnnotationRepository,
+  getCollectionRepository,
+} from '@/data/repositories/indexeddb/dbFactory';
+import { getImage } from '@/data/utils/canvas';
+import { generateTextFromCanvas } from '@/data/utils/export';
+import { generateSchema } from '@/data/utils/model';
+import { getErrorMessage } from '@/utils/utils';
+import { Client } from '@gradio/client';
+import { Canvas } from '@iiif/presentation-3';
+import { PayloadAction } from '@reduxjs/toolkit';
+import FileSaver from 'file-saver';
+import i18next from 'i18next';
+import { PredictReturn } from 'node_modules/@gradio/client/dist/types';
 import {
   all,
   call,
@@ -8,25 +26,14 @@ import {
   PutEffect,
   takeLatest,
 } from 'redux-saga/effects';
-
-import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
-import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
-import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
-import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
-import {
-  getAnnotationRepository,
-  getCollectionRepository,
-} from '@/data/repositories/indexeddb/dbFactory';
-import { getImage } from '@/data/utils/canvas';
-import { getErrorMessage } from '@/utils/utils';
-import { Client } from '@gradio/client';
-import { Canvas } from '@iiif/presentation-3';
-import { PayloadAction } from '@reduxjs/toolkit';
-import { PredictReturn } from 'node_modules/@gradio/client/dist/types';
 import { fetchAnnotationsSuccess } from '../reducers/annotations';
 import {
+  fetchBatchDataAnalysisPayload,
+  fetchBatchDataAnalysisRequest,
   fetchBatchLayoutRequest,
   fetchBatchOcrRequest,
+  fetchDataAnalysisPayload,
+  fetchDataAnalysisRequest,
   fetchLayoutPayload,
   fetchLayoutRequest,
   fetchOcrPayload,
@@ -36,6 +43,76 @@ import {
   processStart,
   processSuccess,
 } from '../reducers/workers';
+
+function* handleDataAnalysis({
+  canvasId,
+  collectionId,
+  model,
+}: fetchDataAnalysisPayload): Generator<Effect, string | void, string | Response | object> {
+  yield put(processRunning(canvasId));
+  const text = (yield call(generateTextFromCanvas, canvasId, collectionId)) as string;
+  if (text === undefined || text.length === 0) {
+    console.log('No text found for this canvas');
+    yield put(processError({ canvasId, error: i18next.t('error_export_no_text') }));
+    return;
+  }
+  const apiKey = localStorage.getItem('mistralApiKey');
+  if (apiKey === null) {
+    console.log('No Mistral API key found');
+    yield put(processError({ canvasId, error: i18next.t('error_no_mistral_key') }));
+    return;
+  }
+
+  const schema = generateSchema(model);
+  console.log('Schema generated:', schema);
+  const body = {
+    model: 'ministral-8b-latest',
+    messages: [
+      {
+        role: 'system',
+        // content: `Voici une liste de données textuelles présentées dans ce format :\n\n${schema}\n\nRetourne moi cette liste qui correspond aux données présentes dans ce texte (sous forme d'un fichier JSON). Pour chaque élément, peux-tu ajouter un indice de confiance entre 0 et 1. Si un élément ne te semble pas pertient, garde-le et donne-lui un indice de confiance de 0.`,
+        content: `Voici une liste de données textuelles présentées correspondant à ce format :\n\n${schema}\n\nRetourne moi la liste données présentes dans ce texte sous forme d'une table JSON bien structurée. Pour chaque élément, tu ajouteras un indice de confiance entre 0 et 1. Si un élément ne te semble pas pertient, garde-le et donne-lui un indice de confiance de 0. La réponse ne doit contenir que le JSON, sans explication ni commentaire.`,
+      },
+      {
+        role: 'user',
+        content: text,
+      },
+    ],
+    temperature: 0,
+    max_tokens: text.length * 2,
+    response_format: { type: 'json_object' },
+  };
+
+  const response = (yield call(() =>
+    fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    }),
+  )) as Response;
+  const data = (yield call([response, 'json'])) as object;
+  console.log('Response from Mistral:', data);
+
+  yield put(processSuccess({ canvasId, result: 'toto' }));
+
+  if (
+    typeof data === 'object' &&
+    data !== null &&
+    'choices' in data &&
+    Array.isArray(data.choices) &&
+    data.choices.length > 0 &&
+    'message' in data.choices[0]
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const message = data.choices[0].message as object;
+    if ('content' in message && typeof message.content === 'string') {
+      return message.content;
+    }
+  }
+}
 
 function* handleFetchLayout({
   canvas,
@@ -168,6 +245,41 @@ function* handleFetchOcr({
   }
 }
 
+function* handleStartBatchDataAnalysisProcess(
+  action: PayloadAction<fetchBatchDataAnalysisPayload>,
+): Generator<Effect, void, Canvas[] | string> {
+  const { collectionId, model } = action.payload;
+  const collectionRepository = getCollectionRepository();
+  const canvases = (yield call(
+    [collectionRepository, collectionRepository.getCanvasesByCollectionId],
+    collectionId,
+  )) as Canvas[];
+  if (canvases === undefined || canvases.length === 0) {
+    // yield put(processError({ error: 'No canvases found' }));
+    return;
+  }
+  for (const canvas of canvases) {
+    yield put(processStart(canvas.id));
+  }
+  let allTheData: unknown[] = [];
+  for (let i = 0; i < canvases.length; i++) {
+    const dataInCanvas = (yield call(handleDataAnalysis, {
+      canvasId: canvases[i].id,
+      collectionId,
+      model,
+    })) as string;
+    const dataParsed = JSON.parse(dataInCanvas) as unknown[];
+    allTheData = [...allTheData, ...dataParsed];
+  }
+  console.log('allTheData: ', allTheData);
+
+  yield call(
+    FileSaver.saveAs,
+    new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
+    'exported_data.json',
+  );
+}
+
 function* handleStartBatchLayoutProcess(
   action: PayloadAction<string>,
 ): Generator<Effect, void, Canvas[]> {
@@ -234,9 +346,15 @@ function* handleStartOcrProcess(action: PayloadAction<fetchOcrPayload>) {
   yield fork(handleFetchOcr, action.payload);
 }
 
+function* handleDataAnalysisProcess(action: PayloadAction<fetchDataAnalysisPayload>) {
+  yield fork(handleDataAnalysis, action.payload);
+}
+
 export default function* workerSaga() {
   yield takeLatest(fetchLayoutRequest, handleStartProcess);
   yield takeLatest(fetchOcrRequest, handleStartOcrProcess);
   yield takeLatest(fetchBatchOcrRequest, handleStartBatchOcrProcess);
   yield takeLatest(fetchBatchLayoutRequest, handleStartBatchLayoutProcess);
+  yield takeLatest(fetchDataAnalysisRequest, handleDataAnalysisProcess);
+  yield takeLatest(fetchBatchDataAnalysisRequest, handleStartBatchDataAnalysisProcess);
 }

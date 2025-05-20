@@ -1,13 +1,22 @@
+import { DataModel } from '@/data/models/DataModel';
 import { useAppDispatch } from '@/hooks/hooks';
 import { removeAllCollectionAnnotationsRequest } from '@/state/reducers/annotations';
 import { exportTextOfCollectionRequest } from '@/state/reducers/export';
-import { fetchBatchLayoutRequest, fetchBatchOcrRequest } from '@/state/reducers/workers';
+import {
+  fetchBatchDataAnalysisRequest,
+  fetchBatchLayoutRequest,
+  fetchBatchOcrRequest,
+} from '@/state/reducers/workers';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import SelectModelForm from './SelectModelForm';
 import Toolbar from './ToolBar';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 
 const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleOcr = () => {
     appDispatch(fetchBatchOcrRequest(collectionId));
@@ -25,6 +34,23 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
     appDispatch(exportTextOfCollectionRequest(collectionId));
   };
 
+  const handleExtractData = () => {
+    setDialogOpen(true);
+  };
+
+  const close = (model: DataModel) => {
+    setDialogOpen(false);
+
+    if (collectionId !== undefined) {
+      appDispatch(
+        fetchBatchDataAnalysisRequest({
+          collectionId: collectionId,
+          model,
+        }),
+      );
+    }
+  };
+
   return (
     <div className='panel'>
       <Toolbar
@@ -33,8 +59,18 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
         handleOcr={handleOcr}
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleExportText={handleExportText}
+        handleExtractData={handleExtractData}
         isRunning={false} // TODO: Add logic to determine if a worker is running
       />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('title_generate_data')}</DialogTitle>
+            <DialogDescription>{t('description_select_model')}</DialogDescription>
+          </DialogHeader>
+          <SelectModelForm close={close} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import { DataModel } from '@/data/models/DataModel';
 import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import i18next from 'i18next';
@@ -45,6 +46,16 @@ export interface fetchLayoutPayload {
   originalWidth: number;
 }
 
+export interface fetchDataAnalysisPayload {
+  canvasId: string;
+  collectionId: string;
+  model: DataModel;
+}
+export interface fetchBatchDataAnalysisPayload {
+  collectionId: string;
+  model: DataModel;
+}
+
 export const workerSlice = createSlice({
   name: 'worker',
   initialState: workerInitialState,
@@ -63,6 +74,11 @@ export const workerSlice = createSlice({
       //action.payload is a collectionId
       state.global.lastEvent = i18next.t('info_start_ocr', { canvas: action.payload });
     },
+    fetchDataAnalysisRequest: (_state, _action: PayloadAction<fetchDataAnalysisPayload>) => {},
+    fetchBatchDataAnalysisRequest: (
+      _state,
+      _action: PayloadAction<fetchBatchDataAnalysisPayload>,
+    ) => {},
     processStart: (state, action: PayloadAction<string>) => {
       //action.payload is a canvasId
       state.workers[action.payload] = {
@@ -120,6 +136,8 @@ export const {
   fetchBatchLayoutRequest,
   fetchOcrRequest,
   fetchBatchOcrRequest,
+  fetchDataAnalysisRequest,
+  fetchBatchDataAnalysisRequest,
   processError,
   processSuccess,
   processRunning,

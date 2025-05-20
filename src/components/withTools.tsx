@@ -1,7 +1,13 @@
+import { DataModel } from '@/data/models/DataModel';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { removeAllCanvasAnnotationsRequest } from '@/state/reducers/annotations';
 import { exportTextOfCanvasRequest } from '@/state/reducers/export';
-import { fetchLayoutRequest, fetchOcrRequest, WorkerStatus } from '@/state/reducers/workers';
+import {
+  fetchDataAnalysisRequest,
+  fetchLayoutRequest,
+  fetchOcrRequest,
+  WorkerStatus,
+} from '@/state/reducers/workers';
 import { getAnnotations } from '@/state/selectors/annotations';
 import { getWorker } from '@/state/selectors/workers';
 import { RootState } from '@/state/store';
@@ -12,7 +18,9 @@ import { useSelector } from 'react-redux';
 import { ReducerContext } from './CanvasViewer';
 import { CanvasViewerContentProps } from './CanvasViewerContent';
 import { ACTIONS } from './reducers/CanvasViewerContentReducer';
+import SelectModelForm from './SelectModelForm';
 import Toolbar from './ToolBar';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 
@@ -21,6 +29,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const appDispatch = useAppDispatch();
     const { t } = useTranslation();
     const { cvcState, cvcDispatch } = useContext(ReducerContext);
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     const worker = useAppSelector((state: RootState) =>
       cvcState?.canvas?.id !== undefined ? getWorker(state, cvcState.canvas.id) : null,
@@ -86,6 +95,10 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       }
     };
 
+    const handleExtractData = () => {
+      setDialogOpen(true);
+    };
+
     const handleDeleteAllAnnotations = () => {
       if (props.collectionId !== undefined) {
         appDispatch(
@@ -97,16 +110,30 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       }
     };
 
+    const close = (model: DataModel) => {
+      setDialogOpen(false);
+
+      if (props.collectionId !== undefined) {
+        appDispatch(
+          fetchDataAnalysisRequest({
+            canvasId: props.canvas.id,
+            collectionId: props.collectionId,
+            model,
+          }),
+        );
+      }
+    };
+
     return (
       <div className='flex h-full w-full flex-col'>
         <h4 className='w-full border-b-1 text-center text-sm italic'>{props.canvas?.id}</h4>
-
         <div className='m-1 flex h-auto w-full gap-2 space-x-2'>
           <Toolbar
             handleOcr={handleStartOcrAnalysis}
             handleExportText={handleExportText}
             handleDeleteAllAnnotations={handleDeleteAllAnnotations}
             handleLayout={handleStartLayoutAnalysis}
+            handleExtractData={handleExtractData}
             isRunning={isWorkerRunning}
           />
 
@@ -133,8 +160,17 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
             </Button>
           )} */}
         </div>
-
         <WrappedComponent {...(props as T)} />
+
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t('title_generate_data')}</DialogTitle>
+              <DialogDescription>{t('description_select_model')}</DialogDescription>
+            </DialogHeader>
+            <SelectModelForm close={close} />
+          </DialogContent>
+        </Dialog>
       </div>
     );
   };
