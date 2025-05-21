@@ -1,6 +1,7 @@
 import CanvasViewer from '@/components/CanvasViewer';
 import CollectionMetadataForm from '@/components/CollectionMetadataForm';
 import CollectionToolbar from '@/components/CollectionToolbar';
+import ModelButtons from '@/components/ModelButtons';
 import TextViewer from '@/components/TextViewer';
 import {
   Accordion,
@@ -24,7 +25,7 @@ import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
 import { CircleX } from 'lucide-react';
-import { createRef, useCallback, useEffect, useRef } from 'react';
+import { createRef, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 
@@ -87,14 +88,14 @@ const GridThumb = ({
 };
 
 const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) => {
+  const { t } = useTranslation();
   const activeCollection = useAppSelector((state) =>
     state.collections.values.find((elt) => elt.id === collectionId),
   );
 
   const gridRef = useRef(null);
   const refs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
-
-  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState('document');
 
   if (activeCollection?.content) {
     if (Object.keys(refs.current).length !== activeCollection.content.length) {
@@ -183,11 +184,19 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel className='ml-1 flex-1 overflow-hidden' minSize={30}>
-          <Tabs defaultValue='document' className='panel h-full w-full'>
-            <TabsList>
-              <TabsTrigger value='document'>Vue document</TabsTrigger>
-              <TabsTrigger value='text'>Vue texte</TabsTrigger>
-            </TabsList>
+          <Tabs
+            defaultValue='document'
+            className='panel h-full w-full'
+            value={activeTab}
+            onValueChange={setActiveTab}
+          >
+            <div className='flex w-full justify-between'>
+              <TabsList>
+                <TabsTrigger value='document'>Vue document</TabsTrigger>
+                <TabsTrigger value='text'>Vue texte</TabsTrigger>
+              </TabsList>
+              {activeTab === 'text' && <ModelButtons />}
+            </div>
             <TabsContent value='document'>
               <CanvasViewer name={CANVASVIEWER_NAME} colllectionId={collectionId} />
             </TabsContent>

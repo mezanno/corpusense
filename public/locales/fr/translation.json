@@ -106,7 +106,7 @@
   "error_canvas_not_found": "Le canvas n'a pas été trouvé",
   "error_image_not_found": "Le canvas ne contient pas d'image",
   "error_model_not_found": "Le modèle de données n'a pas été trouvé",
-  "error_model_undefined": "Aucun modèle de données n'a été défini. Actions possibles :",
+  "error_model_undefined": "Aucun modèle de données n'a été défini.",
   "error_parse_manifest": "Erreur lors de l'analyse du manifest",
   "error_nothing_toshow": "Rien à afficher",
   "error_id_collection_invalid": "Oups ! L'ID de la collection est invalide !",

@@ -2,15 +2,13 @@ import { DataField } from '@/data/models/DataModel';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { saveModelRequest } from '@/state/reducers/models';
 import { getActiveModel } from '@/state/selectors/models';
-import { ArrowLeftRight, CirclePlus, CircleX, Eye, Save } from 'lucide-react';
+import { CirclePlus, CircleX, Eye, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { analogue } from 'simpler-color';
 import AlertDialogForm from './AlertDialogForm';
 import { ColorPicker } from './ColorPicker';
 import ModelPreview from './ModelPreview';
-import NewModelForm from './NewModelForm';
-import SelectModelForm from './SelectModelForm';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
@@ -32,25 +30,7 @@ const ModelViewer = () => {
   }, [model]);
 
   if (model === null) {
-    return (
-      <div className='panel flex items-center space-x-2'>
-        <div>{t('error_model_undefined')}</div>
-        <AlertDialogForm
-          title={t('btn_select_model')}
-          description={t('form_description_select_model')}
-          trigger={t('btn_select_model')}
-        >
-          {({ close }) => <SelectModelForm close={close} />}
-        </AlertDialogForm>
-        <AlertDialogForm
-          title={t('btn_create_model')}
-          description={t('form_description_create_model')}
-          trigger={t('btn_create_model')}
-        >
-          {({ close }) => <NewModelForm close={close} />}
-        </AlertDialogForm>
-      </div>
-    );
+    return <div className='panel text-red-500'>{t('error_model_undefined')}</div>;
   }
 
   const handleAddField = () => {
@@ -93,13 +73,6 @@ const ModelViewer = () => {
           trigger={<Eye />}
         >
           {({ close }) => <ModelPreview close={close} model={model} />}
-        </AlertDialogForm>
-        <AlertDialogForm
-          title={t('btn_select_model')}
-          description={t('form_description_select_model')}
-          trigger={<ArrowLeftRight />}
-        >
-          {({ close }) => <SelectModelForm close={close} />}
         </AlertDialogForm>
       </div>
       {fields.length > 0 ? (
