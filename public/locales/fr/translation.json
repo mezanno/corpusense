@@ -29,6 +29,7 @@
   "btn_create_export": "Générer un export",
   "btn_create_model": "Créer un modèle",
   "btn_select_model": "Sélectionner un modèle",
+  "btn_save_model": "Enregistrer le modèle",
   "btn_download_export": "Télécharger l'export",
   "btn_import_collection": "Importer une collection",
   "btn_export_collection": "Exporter la/les collection(s)",
