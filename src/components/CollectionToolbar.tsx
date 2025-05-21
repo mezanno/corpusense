@@ -9,7 +9,7 @@ import {
 } from '@/state/reducers/workers';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import SelectModelForm from './SelectModelForm';
+import SelectModelForm from './textviewer/SelectModelForm';
 import Toolbar from './ToolBar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 

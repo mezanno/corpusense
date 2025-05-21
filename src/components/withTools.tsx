@@ -16,7 +16,7 @@ import { useSelector } from 'react-redux';
 import { ReducerContext } from './CanvasViewer';
 import { CanvasViewerContentProps } from './CanvasViewerContent';
 import { ACTIONS } from './reducers/CanvasViewerContentReducer';
-import SelectModelForm from './SelectModelForm';
+import SelectModelForm from './textviewer/SelectModelForm';
 import Toolbar from './ToolBar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Label } from './ui/label';

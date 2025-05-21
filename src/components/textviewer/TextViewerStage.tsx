@@ -1,8 +1,8 @@
 import { KonvaEventObject } from 'konva/lib/Node';
 import { ReactNode, useEffect, useState } from 'react';
 import { Layer, Stage } from 'react-konva';
-import MarkupContextMenu from './MarkupContextMenu';
-import { useMarkupContext } from './reducers/MarkupContext';
+import MarkupContextMenu from '../MarkupContextMenu';
+import { useMarkupContext } from '../reducers/MarkupContext';
 
 const TextViewerStage = ({ labels }: { labels: ReactNode }) => {
   const { state } = useMarkupContext();

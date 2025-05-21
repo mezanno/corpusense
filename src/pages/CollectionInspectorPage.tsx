@@ -1,8 +1,8 @@
 import CanvasViewer from '@/components/CanvasViewer';
 import CollectionMetadataForm from '@/components/CollectionMetadataForm';
 import CollectionToolbar from '@/components/CollectionToolbar';
-import ModelButtons from '@/components/ModelButtons';
-import TextViewer from '@/components/TextViewer';
+import ModelButtons from '@/components/textviewer/ModelButtons';
+import TextViewer from '@/components/textviewer/TextViewer';
 import {
   Accordion,
   AccordionContent,

@@ -1,7 +1,7 @@
 import { ArrowRightLeft, Grid2X2Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import AlertDialogForm from './AlertDialogForm';
-import NewModelForm from './NewModelForm';
+import AlertDialogForm from '../AlertDialogForm';
+import NewModelForm from '../NewModelForm';
 import SelectModelForm from './SelectModelForm';
 
 const ModelButtons = () => {
