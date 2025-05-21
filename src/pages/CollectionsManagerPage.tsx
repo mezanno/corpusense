@@ -163,7 +163,7 @@ const CollectionsManagerPage = () => {
 
   return (
     <div className='flex h-full w-full flex-col items-center space-y-4 rounded-2xl border-1 bg-white'>
-      <section className='ml-2 flex w-full space-x-2'>
+      <section className='mt-2 ml-4 flex w-full space-x-2'>
         <AlertDialogForm
           title={t('btn_create_collection')}
           description={t('description_create_collection')}

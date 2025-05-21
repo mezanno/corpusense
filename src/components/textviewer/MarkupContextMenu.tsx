@@ -1,7 +1,7 @@
 import { DataField } from '@/data/models/DataModel';
 import { useAppSelector } from '@/hooks/hooks';
 import { getActiveModel } from '@/state/selectors/models';
-import { useMarkupContext } from './reducers/MarkupContext';
+import { useMarkupContext } from '../reducers/MarkupContext';
 
 const MarkupContextMenu = () => {
   const model = useAppSelector(getActiveModel);

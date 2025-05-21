@@ -6,9 +6,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { MarkupProvider } from '../reducers/MarkupContext';
-import WordLabel from '../WordLabel';
 import ModelViewer from './ModelViewer';
 import TextViewerStage from './TextViewerStage';
+import WordLabel from './WordLabel';
 
 const textToWords = (text: string) => {
   const lines = text.split('\n');

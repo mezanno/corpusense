@@ -1,7 +1,7 @@
 import Konva from 'konva';
 import { useEffect, useRef, useState } from 'react';
 import { Label, Tag, Text } from 'react-konva';
-import { MARKUP_ACTIONS, useMarkupContext } from './reducers/MarkupContext';
+import { MARKUP_ACTIONS, useMarkupContext } from '../reducers/MarkupContext';
 
 type WordLabelProps = {
   word: string;
