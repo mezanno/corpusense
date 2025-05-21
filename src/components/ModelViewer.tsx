@@ -2,7 +2,7 @@ import { DataField } from '@/data/models/DataModel';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { saveModelRequest } from '@/state/reducers/models';
 import { getActiveModel } from '@/state/selectors/models';
-import { CirclePlus, CircleX, Eye, Save } from 'lucide-react';
+import { ArrowLeftRight, CirclePlus, CircleX, Eye, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { analogue } from 'simpler-color';
@@ -93,6 +93,13 @@ const ModelViewer = () => {
           trigger={<Eye />}
         >
           {({ close }) => <ModelPreview close={close} model={model} />}
+        </AlertDialogForm>
+        <AlertDialogForm
+          title={t('btn_select_model')}
+          description={t('form_description_select_model')}
+          trigger={<ArrowLeftRight />}
+        >
+          {({ close }) => <SelectModelForm close={close} />}
         </AlertDialogForm>
       </div>
       {fields.length > 0 ? (
