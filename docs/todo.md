@@ -11,7 +11,5 @@
 - tags dans le tableau de listes : ajouter un espace vertical
 - ajouter un bouton permettant de passer une annotation en premier/dernier (ordre)
 - agrandir les miniatures
-- vue texte :- peindre le texte -
 - supprimer les annotations d'un certain type
-- dans la vue d'une collection : l'image doit prendre toute la hauteur (redécoupage)
-- revoir isRunning lorsqu'un worker est lancé (les workers doivent pouvoir être associé à n'importe quel id (collection, canvas, annotation))
+- bug export texte : si on exporte le texte d'un canvas qui possède plusieurs régions et que les OCR n'ont pas été fait en même temps, l'ordre repars à 0 à chaque région.

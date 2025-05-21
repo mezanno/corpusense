@@ -8,4 +8,5 @@ Tifenn souhaite étudier la place des femmes dans les métiers du cinéma franç
 2. **Créer des collections** : une fois qu'elle a ajouté les manifests dans l'application, elle peut créer des collections. Une collection est un ensemble de canvas. Elle va ainsi sélectionner les canvas qui vont contenir un certain type de données et les ajouter à une collection.
 3. **Nettoyer les données** : l'étape suivante consiste à nettoyer les collections des éléments indésirables (page de pub par exemple) et à ajuster les zones de recherches (ne garder que la moitié d'un canvas par exemple). Par défaut la zone de recherche d'un canvas englobe le canvas dans sa totalité.
 4. **OCR** : lorsque les zones de recherche sont définies, Tifenn à la possiblité de lancer un traitement OCR sur l'ensemble de la collection ou sur un canvas en particulier. Ceci va lui permettre de récupérer le texte de la collection (ou du canvas).
-5. **Editer le texte** : grâce au texte extrait par l'analyse OCR,
+5. **Editer le texte** : à partir du texte extrait par l'analyse OCR, Tifenn va définir le modèle de données qui organise ce texte. Ceci fait, elle va pouvoir générer des données structurées.
+   6
