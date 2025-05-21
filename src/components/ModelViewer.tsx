@@ -11,6 +11,7 @@ import { ColorPicker } from './ColorPicker';
 import ModelPreview from './ModelPreview';
 import NewModelForm from './NewModelForm';
 import SelectModelForm from './SelectModelForm';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -95,76 +96,83 @@ const ModelViewer = () => {
         </AlertDialogForm>
       </div>
       {fields.length > 0 ? (
-        <Table className='w-full'>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('table_col_title_name')}</TableHead>
-              <TableHead>{t('table_col_title_type')}</TableHead>
-              <TableHead>{t('table_col_title_description')}</TableHead>
-              <TableHead>{t('table_col_title_ia')}</TableHead>
-              <TableHead>{t('table_col_title_color')}</TableHead>
-              <TableHead>{t('table_col_title_actions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {fields.map((field, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <Input
-                    value={field.name}
-                    placeholder={t('form_label_datafield_name')}
-                    onChange={(e) => updateFields(index, { name: e.target.value })}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Select
-                    key={field.type}
-                    value={field.type}
-                    onValueChange={(value) => updateFields(index, { type: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={'Type de données'} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='string'>Texte</SelectItem>
-                      <SelectItem value='number'>Nombre</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  <Input
-                    value={field.description}
-                    placeholder={t('form_label_datafield_description')}
-                    onChange={(e) => updateFields(index, { description: e.target.value })}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Checkbox
-                    checked={field.generated ?? false}
-                    onCheckedChange={(checked) =>
-                      updateFields(index, { generated: Boolean(checked) })
-                    }
-                  />
-                </TableCell>
-                <TableCell>
-                  <ColorPicker
-                    value={field.color}
-                    onChange={(v) => updateFields(index, { color: v })}
-                  />
-                </TableCell>
-                <TableCell className='flex justify-center space-x-2'>
-                  <button
-                    title={t('btn_delete_datafield')}
-                    className='cursor-pointer'
-                    onClick={() => setFields((prev) => prev.filter((_, i) => i !== index))}
-                  >
-                    <CircleX />
-                  </button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <Accordion asChild type='single' collapsible className='w-full' defaultValue='datafields'>
+          <AccordionItem value='datafields'>
+            <AccordionTrigger>{t('btn_datafields')}</AccordionTrigger>
+            <AccordionContent>
+              <Table className='w-full'>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('table_col_title_name')}</TableHead>
+                    <TableHead>{t('table_col_title_type')}</TableHead>
+                    <TableHead>{t('table_col_title_description')}</TableHead>
+                    <TableHead>{t('table_col_title_ia')}</TableHead>
+                    <TableHead>{t('table_col_title_color')}</TableHead>
+                    <TableHead>{t('table_col_title_actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {fields.map((field, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <Input
+                          value={field.name}
+                          placeholder={t('form_label_datafield_name')}
+                          onChange={(e) => updateFields(index, { name: e.target.value })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          key={field.type}
+                          value={field.type}
+                          onValueChange={(value) => updateFields(index, { type: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={'Type de données'} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value='string'>Texte</SelectItem>
+                            <SelectItem value='number'>Nombre</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={field.description}
+                          placeholder={t('form_label_datafield_description')}
+                          onChange={(e) => updateFields(index, { description: e.target.value })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Checkbox
+                          checked={field.generated ?? false}
+                          onCheckedChange={(checked) =>
+                            updateFields(index, { generated: Boolean(checked) })
+                          }
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <ColorPicker
+                          value={field.color}
+                          onChange={(v) => updateFields(index, { color: v })}
+                        />
+                      </TableCell>
+                      <TableCell className='flex justify-center space-x-2'>
+                        <button
+                          title={t('btn_delete_datafield')}
+                          className='cursor-pointer'
+                          onClick={() => setFields((prev) => prev.filter((_, i) => i !== index))}
+                        >
+                          <CircleX />
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       ) : (
         <div>{t('info_empty_model')}</div>
       )}
