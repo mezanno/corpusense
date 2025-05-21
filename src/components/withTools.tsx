@@ -131,19 +131,17 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
           />
 
           <div className='flex items-center space-x-1 rounded-xl border p-2 align-middle'>
+            <Label className='flex items-center gap-1'>
+              <Move size={16} />
+              {t('btn_toggle_mode_view')}
+            </Label>
             <Switch
               id='viewer-mode'
               onCheckedChange={() => cvcDispatch({ type: ACTIONS.TOGGLE_MODE })}
             />
-            <span className='ml-1'>
-              {cvcState?.mode === 'draw' ? <SquarePen size={16} /> : <Move size={16} />}
-            </span>
-            <Label htmlFor='viewer-mode' className='flex items-center'>
-              <span>
-                {cvcState?.mode === 'draw'
-                  ? t('btn_toggle_mode_annotate')
-                  : t('btn_toggle_mode_view')}
-              </span>
+            <Label className='flex items-center gap-1'>
+              {t('btn_toggle_mode_annotate')}
+              <SquarePen size={16} />{' '}
             </Label>
           </div>
           {/* {cvcState.somethingHasChanged && (
