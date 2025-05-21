@@ -25,6 +25,10 @@ type MarkupState = {
   text: string;
   wordRects: WordRect[];
   selected: number[];
+  stage: {
+    width: number;
+    height: number;
+  };
 };
 
 const computeRects = (index: number, rect: IRect, wordRects: WordRect[]) => {
@@ -72,9 +76,16 @@ const reducer = (state: MarkupState, action: MarkupAction) => {
   switch (action.type) {
     case MARKUP_ACTIONS.SET_RECT: {
       const { index, rect } = action.payload;
+      const rects = computeRects(index, rect, state.wordRects);
+      const maxWidth = Math.max(...rects.map((r) => r.rect.x + r.rect.width));
+      const maxHeight = Math.max(...rects.map((r) => r.rect.y + r.rect.height));
       return {
         ...state,
-        wordRects: computeRects(index, rect, state.wordRects),
+        wordRects: rects,
+        stage: {
+          width: maxWidth,
+          height: maxHeight,
+        },
       };
     }
     case MARKUP_ACTIONS.SET_SELECTED: {
@@ -132,6 +143,10 @@ export const MarkupProvider = ({ text, children }: { text: string; children: Rea
     text,
     wordRects: rects,
     selected: [],
+    stage: {
+      width: 0,
+      height: 0,
+    },
   };
 
   const [state, dispatch] = useReducer(reducer, initialState);
