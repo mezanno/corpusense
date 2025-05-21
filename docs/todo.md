@@ -13,3 +13,7 @@
 - agrandir les miniatures
 - supprimer les annotations d'un certain type
 - bug export texte : si on exporte le texte d'un canvas qui possède plusieurs régions et que les OCR n'ont pas été fait en même temps, l'ordre repars à 0 à chaque région.
+- ajouter des exemples lors de la recherche de données structurées
+- enregistrer le surlignage des mots quelques parts
+- modifier taille police à Konva
+-
