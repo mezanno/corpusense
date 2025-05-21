@@ -1,6 +1,7 @@
-import { DataField, DataModel } from '@/data/models/DataModel';
-import { useAppDispatch } from '@/hooks/hooks';
+import { DataField } from '@/data/models/DataModel';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { saveModelRequest } from '@/state/reducers/models';
+import { getActiveModel } from '@/state/selectors/models';
 import { CirclePlus, CircleX, Eye, Save } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +9,8 @@ import { analogue } from 'simpler-color';
 import AlertDialogForm from './AlertDialogForm';
 import { ColorPicker } from './ColorPicker';
 import ModelPreview from './ModelPreview';
+import NewModelForm from './NewModelForm';
+import SelectModelForm from './SelectModelForm';
 import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -15,11 +18,33 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 
 const baseColor = '#a4d6f6';
 
-const ModelViewer = ({ model }: { model: DataModel }) => {
+const ModelViewer = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
+  const model = useAppSelector(getActiveModel);
+  const [fields, setFields] = useState(model?.fields ?? []);
 
-  const [fields, setFields] = useState(model.fields);
+  if (model === null) {
+    return (
+      <div className='panel flex items-center space-x-2'>
+        <div>{t('error_model_undefined')}</div>
+        <AlertDialogForm
+          title={t('btn_select_model')}
+          description={t('form_description_select_model')}
+          trigger={t('btn_select_model')}
+        >
+          {({ close }) => <SelectModelForm close={close} />}
+        </AlertDialogForm>
+        <AlertDialogForm
+          title={t('btn_create_model')}
+          description={t('form_description_create_model')}
+          trigger={t('btn_create_model')}
+        >
+          {({ close }) => <NewModelForm close={close} />}
+        </AlertDialogForm>
+      </div>
+    );
+  }
 
   const handleAddField = () => {
     const nextColor =
