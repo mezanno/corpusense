@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { saveModelRequest } from '@/state/reducers/models';
 import { getActiveModel } from '@/state/selectors/models';
 import { CirclePlus, CircleX, Eye, Save } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { analogue } from 'simpler-color';
 import AlertDialogForm from './AlertDialogForm';
@@ -23,6 +23,12 @@ const ModelViewer = () => {
   const appDispatch = useAppDispatch();
   const model = useAppSelector(getActiveModel);
   const [fields, setFields] = useState(model?.fields ?? []);
+
+  useEffect(() => {
+    if (model) {
+      setFields(model.fields);
+    }
+  }, [model]);
 
   if (model === null) {
     return (
