@@ -1,31 +1,25 @@
-import { generateTextFromCanvas } from '@/data/utils/export';
+import { Annotation, ElementType } from '@/data/models/Annotation';
+import { getAnnotationsByType } from '@/data/utils/annotations';
 import { useAppSelector } from '@/hooks/hooks';
 import { getCanvasForComponent } from '@/state/selectors/canvas';
 import { Canvas } from '@iiif/presentation-3';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { MarkupProvider } from '../reducers/MarkupContext';
 import ModelViewer from './ModelViewer';
 import TextViewerStage from './TextViewerStage';
-import WordLabel from './WordLabel';
-
-const textToWords = (text: string) => {
-  const lines = text.split('\n');
-  const words = lines.map((line) => line.split(' '));
-  return words.flat();
-};
 
 const TextViewer = ({ name, collectionId }: { name: string; collectionId: string }) => {
   const { t } = useTranslation();
   const canvas = useAppSelector(getCanvasForComponent(name)) as Canvas;
   const containerRef = useRef(null);
-  const [text, setText] = useState<string>('');
+  const [text, setText] = useState<Annotation[]>([]);
 
   useEffect(() => {
     const getText = async () => {
-      const generatedText = await generateTextFromCanvas(canvas.id, collectionId);
-      setText(generatedText);
+      const lines = await getAnnotationsByType(ElementType.LINE, canvas.id, collectionId);
+      setText(lines);
     };
 
     if (canvas !== undefined) {
@@ -33,25 +27,16 @@ const TextViewer = ({ name, collectionId }: { name: string; collectionId: string
     }
   }, [canvas]);
 
-  const words = textToWords(text);
-  const labels = useMemo(
-    () =>
-      words.map((word, index) => {
-        return <WordLabel key={index} index={index} word={word} />;
-      }),
-    [text],
-  );
-
   return (
     <div ref={containerRef} className='h-full w-full'>
-      {text !== '' ? (
+      {text.length > 0 ? (
         <>
           <ModelViewer />
-          <MarkupProvider text={text}>
+          <MarkupProvider>
             <AutoSizer ref={containerRef} role='list'>
               {({ height, width }) => (
                 <div style={{ width: width, height: height }} className='overflow-auto'>
-                  <TextViewerStage labels={labels} />
+                  <TextViewerStage text={text} />
                 </div>
               )}
             </AutoSizer>

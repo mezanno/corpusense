@@ -1,13 +1,18 @@
+import { Annotation } from '@/data/models/Annotation';
+import { useAppSelector } from '@/hooks/hooks';
+import { hasActiveModel } from '@/state/selectors/models';
 import { KonvaEventObject } from 'konva/lib/Node';
-import { ReactNode, useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Layer, Stage } from 'react-konva';
-import { useMarkupContext } from '../reducers/MarkupContext';
+import { MARKUP_ACTIONS, useMarkupContext } from '../reducers/MarkupContext';
 import MarkupContextMenu from './MarkupContextMenu';
+import WordLabel from './WordLabel';
 
-const TextViewerStage = ({ labels }: { labels: ReactNode }) => {
-  const { state } = useMarkupContext();
+const TextViewerStage = ({ text }: { text: Annotation[] }) => {
+  const { state, dispatch } = useMarkupContext();
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [showMenu, setShowMenu] = useState(false);
+  const hasModel = useAppSelector(hasActiveModel);
 
   // Create and cleanup context menu
   useEffect(() => {
@@ -21,6 +26,13 @@ const TextViewerStage = ({ labels }: { labels: ReactNode }) => {
       window.removeEventListener('click', handleWindowClick);
     };
   }, []);
+
+  useEffect(() => {
+    dispatch({
+      type: MARKUP_ACTIONS.SET_TEXT,
+      payload: text,
+    });
+  }, [text]);
 
   const handleContextMenu = (e: KonvaEventObject<PointerEvent>) => {
     e.evt.preventDefault();
@@ -41,12 +53,20 @@ const TextViewerStage = ({ labels }: { labels: ReactNode }) => {
     setShowMenu(true);
   };
 
+  const labels = useMemo(
+    () =>
+      state.wordRects.map((wordRect, index) => {
+        return <WordLabel key={`${index}-${wordRect.word}`} index={index} word={wordRect.word} />;
+      }),
+    [state.wordRects],
+  );
+
   return (
     <>
       <Stage
         width={state.stage.width}
         height={state.stage.height}
-        className='cursor-highlighter'
+        className={hasModel ? 'cursor-highlighter' : ''}
         onContextMenu={handleContextMenu}
       >
         <Layer>{labels}</Layer>
