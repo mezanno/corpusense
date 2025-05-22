@@ -18,17 +18,20 @@ const MarkupContextMenu = () => {
   return (
     <div className='panel shadow'>
       <div className='flex items-center justify-between gap-2'>
-        {model.fields.map((field, index) => (
-          <button
-            key={index}
-            className='soft-button'
-            style={{ backgroundColor: field.color }}
-            color='black'
-            onClick={() => handleSetField(field)}
-          >
-            {field.name}
-          </button>
-        ))}
+        {model.fields.map(
+          (field, index) =>
+            field.generated !== true && (
+              <button
+                key={index}
+                className='soft-button'
+                style={{ backgroundColor: field.color }}
+                color='black'
+                onClick={() => handleSetField(field)}
+              >
+                {field.name}
+              </button>
+            ),
+        )}
       </div>
     </div>
   );
