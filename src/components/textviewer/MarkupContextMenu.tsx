@@ -29,7 +29,6 @@ const MarkupContextMenu = () => {
             {field.name}
           </button>
         ))}
-        <div>Autre</div>
       </div>
     </div>
   );
