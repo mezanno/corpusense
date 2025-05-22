@@ -21,6 +21,7 @@ type WordRect = {
   rect: IRect;
   field?: DataField;
   word: string;
+  annotationId: string;
 };
 
 type MarkupState = {
@@ -74,15 +75,17 @@ const computeRects = (index: number, rect: IRect, wordRects: WordRect[]) => {
   return wordRects;
 };
 
-const init = (text: Annotation[]) => {
+const initState = (text: Annotation[]) => {
   let rects: WordRect[] = [];
   for (let indexLine = 0; indexLine < text.length; indexLine++) {
+    const annotationId = text[indexLine].id;
     const line = getAnnotationText(text[indexLine]);
     const words = line.split(' ');
     const lineRects = words.map((word) => ({
       line: indexLine,
       rect: { x: 0, y: 0, width: 0, height: 0 },
       word,
+      annotationId,
     }));
     rects = rects.concat(lineRects);
   }
@@ -100,9 +103,7 @@ const init = (text: Annotation[]) => {
 const reducer = (state: MarkupState, action: MarkupAction) => {
   switch (action.type) {
     case MARKUP_ACTIONS.SET_TEXT: {
-      console.log('SET_TEXT ', action.payload);
-
-      return init(action.payload);
+      return initState(action.payload);
     }
     case MARKUP_ACTIONS.SET_RECT: {
       const { index, rect } = action.payload;
@@ -166,9 +167,7 @@ export const MarkupProvider = ({ children }: { children: React.ReactNode }) => {
       height: 0,
     },
   };
-
   const [state, dispatch] = useReducer(reducer, initialState);
-
   return <MarkupContext.Provider value={{ state, dispatch }}>{children}</MarkupContext.Provider>;
 };
 
