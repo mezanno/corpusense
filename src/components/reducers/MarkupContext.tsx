@@ -16,12 +16,13 @@ export type MarkupAction =
   | { type: typeof MARKUP_ACTIONS.SET_FIELD_TO_SELECTED; payload: DataField }
   | { type: typeof MARKUP_ACTIONS.SET_TEXT; payload: Annotation[] };
 
-type WordRect = {
+export type WordRect = {
   line: number;
   rect: IRect;
   field?: DataField;
   word: string;
   annotationId: string;
+  annotationWordIndex: number; // index of the word in the annotation
 };
 
 type MarkupState = {
@@ -81,11 +82,12 @@ const initState = (text: Annotation[]) => {
     const annotationId = text[indexLine].id;
     const line = getAnnotationText(text[indexLine]);
     const words = line.split(' ');
-    const lineRects = words.map((word) => ({
+    const lineRects = words.map((word, index) => ({
       line: indexLine,
       rect: { x: 0, y: 0, width: 0, height: 0 },
       word,
       annotationId,
+      annotationWordIndex: index,
     }));
     rects = rects.concat(lineRects);
   }

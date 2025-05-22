@@ -4,6 +4,7 @@ import { IndexedDBCollectionRepository } from './collections';
 import { IndexedDBItemMetadataRepository } from './itemMetadata';
 import { IndexedDBManifestRepository } from './manifest';
 import { IndexedDBModelRepository } from './models';
+import { IndexedDBNamedEntityRepository } from './namedEntities';
 import { IndexedDBStoredItemRepository } from './storedItem';
 import { IndexedDBTagRepository } from './tags';
 
@@ -36,4 +37,8 @@ export function getStoredItemRepository() {
 
 export function getModelRepository() {
   return new IndexedDBModelRepository();
+}
+
+export function getNamedEntityRepository() {
+  return new IndexedDBNamedEntityRepository();
 }

@@ -3,6 +3,7 @@ import { Collection } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
 import { ItemMetadata } from '@/data/models/Metadata';
+import { NamedEntity } from '@/data/models/NamedEntity';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
 import Dexie, { type EntityTable } from 'dexie';
@@ -15,6 +16,7 @@ const db = new Dexie('mezanno') as Dexie & {
   tags: EntityTable<Tag, 'id'>;
   annotations: EntityTable<Annotation, 'id'>;
   models: EntityTable<DataModel, 'id'>;
+  namedEntities: EntityTable<NamedEntity, 'id'>;
 };
 
 db.version(1).stores({
@@ -26,6 +28,7 @@ db.version(1).stores({
   tags: '&id',
   models: '&id',
   annotations: '&id, canvasId, collectionId, [canvasId+collectionId], order',
+  namedEntities: '&id, annotationIds, type.id',
 });
 
 export { db };

@@ -1,11 +1,13 @@
 import { DataField } from '@/data/models/DataModel';
-import { useAppSelector } from '@/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { addEntityRequest } from '@/state/reducers/namedEntities';
 import { getActiveModel } from '@/state/selectors/models';
 import { useMarkupContext } from '../reducers/MarkupContext';
 
 const MarkupContextMenu = () => {
   const model = useAppSelector(getActiveModel);
-  const { dispatch } = useMarkupContext();
+  const appDispatch = useAppDispatch();
+  const { state, dispatch } = useMarkupContext();
 
   if (!model) {
     return null;
@@ -13,6 +15,9 @@ const MarkupContextMenu = () => {
 
   const handleSetField = (field: DataField) => {
     dispatch({ type: 'SET_FIELD_TO_SELECTED', payload: field });
+
+    const selectedWordRects = state.wordRects.filter((_, index) => state.selected.includes(index));
+    appDispatch(addEntityRequest({ rects: selectedWordRects, type: field }));
   };
 
   return (

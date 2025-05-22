@@ -45,6 +45,7 @@ const defaultPreloadedState: RootState = {
   },
   workers: workerInitialState,
   models: modelsInitialState,
+  entities: [],
 };
 
 export const getPreloadedState = (partialState: Partial<RootState> = {}): RootState => {

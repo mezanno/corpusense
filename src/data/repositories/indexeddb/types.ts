@@ -4,6 +4,7 @@ import { CollectionElement } from '@/data/models/CollectionElement';
 import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
+import { NamedEntity } from '@/data/models/NamedEntity';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
@@ -74,4 +75,9 @@ export interface ModelRepository {
   getAll(): Promise<DataModel[]>;
   add(model: DataModel): Promise<void>;
   update(model: DataModel): Promise<void>;
+}
+
+export interface NamedEntityRepository {
+  getByAnnotationId(annotationId: string): Promise<NamedEntity[]>;
+  add(entity: NamedEntity): Promise<void>;
 }

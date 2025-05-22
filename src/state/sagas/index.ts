@@ -4,6 +4,7 @@ import collectionsSaga, { fetchAllCollections } from './collections';
 import exportSaga from './export';
 import manifestsSaga, { loadHistorySaga } from './manifests';
 import modelsSaga, { fetchModels } from './models';
+import namedEntitiesSaga from './namedEntities';
 import selectionSaga from './selection';
 import { loadStoredElements } from './storedItems';
 import tagsSaga, { fetchAllTags } from './tags';
@@ -31,6 +32,7 @@ function getRootSaga() {
       annotationsSaga,
       workerSaga,
       modelsSaga,
+      namedEntitiesSaga,
     ];
     yield all(sagas.map((saga) => spawn(launchSaga, saga)));
     yield fork(fetchAllCollections); //load collections at startup
