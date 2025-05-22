@@ -1,6 +1,6 @@
 import { AnnotationPage, Canvas } from '@iiif/presentation-3';
 import i18next from 'i18next';
-import { Annotation, createAnnotation, ElementType } from '../models/Annotation';
+import { Annotation, createAnnotation, ElementType, getAnnotationType } from '../models/Annotation';
 import { convertAnnotationPageToW3CAnnotations } from '../models/converters/iiif';
 import { SelectedCanvas } from '../models/SelectedCanvas';
 import { getAnnotationRepository } from '../repositories/indexeddb/dbFactory';
@@ -66,6 +66,15 @@ function generateFirstAnnotation(
   return annotations.filter((elt) => elt !== null);
 }
 
+async function getAnnotationsByType(type: ElementType, canvasId: string, collectionId: string) {
+  const annotations = await getAnnotationRepository().getAnnotationsForCanvas(
+    canvasId,
+    collectionId,
+  );
+
+  return annotations.filter((annotation) => getAnnotationType(annotation) === type);
+}
+
 function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {
   console.log(`importAnnotationFromJson in - ${collectionId}: `, aPage);
   const annotationsW3C = convertAnnotationPageToW3CAnnotations(aPage, collectionId);
@@ -79,5 +88,6 @@ export {
   contains,
   generateFirstAnnotation,
   generateRegionAnnotationForCanvas,
+  getAnnotationsByType,
   importAnnotationFromJson,
 };
