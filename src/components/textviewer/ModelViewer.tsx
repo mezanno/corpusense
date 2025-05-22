@@ -6,6 +6,7 @@ import { CirclePlus, CircleX, Eye, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { analogue } from 'simpler-color';
+import { v4 as uuid } from 'uuid';
 import AlertDialogForm from '../AlertDialogForm';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { Checkbox } from '../ui/checkbox';
@@ -14,7 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { ColorPicker } from './ColorPicker';
 import ModelPreview from './ModelPreview';
-
 const baseColor = '#a4d6f6';
 
 const ModelViewer = () => {
@@ -36,7 +36,7 @@ const ModelViewer = () => {
   const handleAddField = () => {
     const nextColor =
       fields.length === 0 ? baseColor : analogue(fields[fields.length - 1].color, 2);
-    setFields([...fields, { name: '', type: '', description: '', color: nextColor }]);
+    setFields([...fields, { id: uuid(), name: '', type: '', description: '', color: nextColor }]);
   };
 
   const handleSave = () => {
