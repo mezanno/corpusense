@@ -1,4 +1,5 @@
 export interface DataField {
+  id: string;
   name: string;
   type: string;
   description?: string;
