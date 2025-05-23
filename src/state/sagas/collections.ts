@@ -1,5 +1,6 @@
 import { Annotation } from '@/data/models/Annotation';
 import { Collection, ExportedCollection } from '@/data/models/Collection';
+import { NamedEntity } from '@/data/models/NamedEntity';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { StoredItem } from '@/data/models/StoredItem';
 import {
@@ -7,6 +8,7 @@ import {
   getCanvasRepository,
   getCollectionRepository,
   getManifestRepository,
+  getNamedEntityRepository,
   getStoredItemRepository,
   getTagRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
@@ -45,6 +47,7 @@ import {
   updateCollectionRequest,
   updateCollectionSuccess,
 } from '../reducers/collections';
+import { loadEntitiesSuccess } from '../reducers/namedEntities';
 import { setStoredItems } from '../reducers/storedItems';
 import { loadStoredElements } from './storedItems';
 
@@ -327,7 +330,7 @@ function* handleImportOneCollection(
 
 function* handleLoadCollection(
   action: PayloadAction<string>,
-): Generator<Effect, void, Collection[] | StoredItem[] | Canvas | Annotation[]> {
+): Generator<Effect, void, Collection[] | StoredItem[] | Canvas | Annotation[] | NamedEntity[]> {
   try {
     const collectionRepository = getCollectionRepository();
     const canvasRepository = getCanvasRepository();
@@ -385,6 +388,17 @@ function* handleLoadCollection(
       collectionId,
     )) as Annotation[];
     yield put(fetchAnnotationsSuccess(annotations));
+
+    //load the entities of the collection
+    const annotationsIds = annotations.map((annotation) => annotation.id);
+    console.log('Loading entities for annotations: ', annotationsIds);
+
+    const namedEntityRepository = getNamedEntityRepository();
+    const namedEntities = (yield call(
+      [namedEntityRepository, namedEntityRepository.getNamedEntitiesByAnnotationsIds],
+      annotationsIds,
+    )) as NamedEntity[];
+    yield put(loadEntitiesSuccess(namedEntities));
   } catch (e) {
     console.log('error', e);
     yield put(setError(e));

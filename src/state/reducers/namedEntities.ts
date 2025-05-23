@@ -19,8 +19,8 @@ export const entitySlice = createSlice({
       return newState;
     },
     loadEntitiesRequest: (_state, _action: PayloadAction<string>) => {},
-    loadEntitiesSuccess: (state, action: PayloadAction<NamedEntity[]>) => {
-      return state.concat(action.payload);
+    loadEntitiesSuccess: (_state, action: PayloadAction<NamedEntity[]>) => {
+      return action.payload;
     },
   },
 });
