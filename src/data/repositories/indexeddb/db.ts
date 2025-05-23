@@ -28,7 +28,7 @@ db.version(1).stores({
   tags: '&id',
   models: '&id',
   annotations: '&id, canvasId, collectionId, [canvasId+collectionId], order',
-  namedEntities: '&id, annotationIds, type.id',
+  namedEntities: '&id, *annotationIds, type.id',
 });
 
 export { db };

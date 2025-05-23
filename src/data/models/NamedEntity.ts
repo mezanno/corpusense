@@ -7,5 +7,5 @@ export interface NamedEntity {
   dataFieldId: string;
   value: string;
   selector: NamedEntitySelector[];
-  annotationsIds: string[]; //used by dexie for better performance
+  annotationIds: string[]; //used by dexie for better performance
 }

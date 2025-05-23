@@ -79,5 +79,6 @@ export interface ModelRepository {
 
 export interface NamedEntityRepository {
   getByAnnotationId(annotationId: string): Promise<NamedEntity[]>;
+  getNamedEntitiesByAnnotationsIds(annotationIds: string[]): Promise<NamedEntity[]>;
   add(entity: NamedEntity): Promise<void>;
 }

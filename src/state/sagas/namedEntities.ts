@@ -45,7 +45,7 @@ function* handleAddEntity(action: PayloadAction<AddEntityPayload>): Generator<Ef
       },
       [] as NamedEntity['selector'],
     ),
-    annotationsIds: uniq(rects.map((rect) => rect.annotationId)),
+    annotationIds: uniq(rects.map((rect) => rect.annotationId)),
   };
   const namedEntityRepository = getNamedEntityRepository();
   yield call([namedEntityRepository, namedEntityRepository.add], newNamedEntity);
