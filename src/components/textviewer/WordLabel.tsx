@@ -1,5 +1,5 @@
 import { useAppSelector } from '@/hooks/hooks';
-import { hasActiveModel } from '@/state/selectors/models';
+import { getDatafieldById, hasActiveModel } from '@/state/selectors/models';
 import Konva from 'konva';
 import { useEffect, useRef, useState } from 'react';
 import { Label, Tag, Text } from 'react-konva';
@@ -19,6 +19,11 @@ const WordLabel = ({ word, index }: WordLabelProps) => {
   const computedX = state.wordRects[index].rect.x;
   const computedY = state.wordRects[index].rect.y;
   const isSelected = state.selected.includes(index);
+
+  const dataFieldId = state.wordRects[index].dataFieldId;
+  const dataField = useAppSelector((s) =>
+    dataFieldId !== undefined ? getDatafieldById(s, dataFieldId) : null,
+  );
 
   useEffect(() => {
     /*
@@ -63,12 +68,7 @@ const WordLabel = ({ word, index }: WordLabelProps) => {
     setIsHovered(true);
   };
 
-  const tagColor =
-    state.wordRects[index].field !== undefined
-      ? state.wordRects[index].field.color
-      : isSelected
-        ? '#F2B263'
-        : '';
+  const tagColor = dataField !== null ? dataField.color : isSelected ? '#F2B263' : '';
 
   return (
     <Label

@@ -1,5 +1,7 @@
 import { Annotation, getAnnotationText } from '@/data/models/Annotation';
-import { DataField } from '@/data/models/DataModel';
+import { NamedEntity } from '@/data/models/NamedEntity';
+import { useAppSelector } from '@/hooks/hooks';
+import { getEntities } from '@/state/selectors/namedEntity';
 import { IRect } from 'konva/lib/types';
 import { createContext, useContext, useEffect, useReducer } from 'react';
 
@@ -13,13 +15,16 @@ export const MARKUP_ACTIONS = {
 export type MarkupAction =
   | { type: typeof MARKUP_ACTIONS.SET_RECT; payload: { index: number; rect: IRect } }
   | { type: typeof MARKUP_ACTIONS.SET_SELECTED; payload: number }
-  | { type: typeof MARKUP_ACTIONS.SET_FIELD_TO_SELECTED; payload: DataField }
-  | { type: typeof MARKUP_ACTIONS.SET_TEXT; payload: Annotation[] };
+  | { type: typeof MARKUP_ACTIONS.SET_FIELD_TO_SELECTED; payload: string }
+  | {
+      type: typeof MARKUP_ACTIONS.SET_TEXT;
+      payload: { annotations: Annotation[]; entities: NamedEntity[] };
+    };
 
 export type WordRect = {
   line: number;
   rect: IRect;
-  field?: DataField;
+  dataFieldId?: string;
   word: string;
   annotationId: string;
   annotationWordIndex: number; // index of the word in the annotation
@@ -76,23 +81,30 @@ const computeRects = (index: number, rect: IRect, wordRects: WordRect[]) => {
   return wordRects;
 };
 
-const initState = (text: Annotation[]) => {
+// console.log('Word Rect:', wordRect);
+
+const initState = (annotations: Annotation[], entities: NamedEntity[]) => {
   let rects: WordRect[] = [];
-  for (let indexLine = 0; indexLine < text.length; indexLine++) {
-    const annotationId = text[indexLine].id;
-    const line = getAnnotationText(text[indexLine]);
+  for (let indexLine = 0; indexLine < annotations.length; indexLine++) {
+    const annotationId = annotations[indexLine].id;
+    const line = getAnnotationText(annotations[indexLine]);
     const words = line.split(' ');
+    // const dataFieldId =
+    // console.log('Entity for word:', dataFieldId);
     const lineRects = words.map((word, index) => ({
       line: indexLine,
       rect: { x: 0, y: 0, width: 0, height: 0 },
       word,
       annotationId,
       annotationWordIndex: index,
+      dataFieldId: entities.find((e) =>
+        e.selector.some((sel) => sel.annotationId === annotationId && sel.indexes.includes(index)),
+      )?.dataFieldId,
     }));
     rects = rects.concat(lineRects);
   }
   return {
-    text,
+    text: annotations,
     wordRects: rects,
     selected: [],
     stage: {
@@ -105,7 +117,7 @@ const initState = (text: Annotation[]) => {
 const reducer = (state: MarkupState, action: MarkupAction) => {
   switch (action.type) {
     case MARKUP_ACTIONS.SET_TEXT: {
-      return initState(action.payload);
+      return initState(action.payload.annotations, action.payload.entities);
     }
     case MARKUP_ACTIONS.SET_RECT: {
       const { index, rect } = action.payload;
@@ -167,11 +179,11 @@ export const MarkupProvider = ({
   children: React.ReactNode;
   text: Annotation[];
 }) => {
+  const entities = useAppSelector(getEntities);
+  const [state, dispatch] = useReducer(reducer, initState(text, entities));
   useEffect(() => {
-    dispatch({ type: MARKUP_ACTIONS.SET_TEXT, payload: text });
+    dispatch({ type: MARKUP_ACTIONS.SET_TEXT, payload: { annotations: text, entities } });
   }, [text]);
-
-  const [state, dispatch] = useReducer(reducer, initState(text));
 
   return <MarkupContext.Provider value={{ state, dispatch }}>{children}</MarkupContext.Provider>;
 };

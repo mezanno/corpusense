@@ -14,7 +14,7 @@ const MarkupContextMenu = () => {
   }
 
   const handleSetField = (field: DataField) => {
-    dispatch({ type: 'SET_FIELD_TO_SELECTED', payload: field });
+    dispatch({ type: 'SET_FIELD_TO_SELECTED', payload: field.id });
 
     const selectedWordRects = state.wordRects.filter((_, index) => state.selected.includes(index));
     appDispatch(addEntityRequest({ rects: selectedWordRects, type: field }));
