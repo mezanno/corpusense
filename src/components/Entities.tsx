@@ -1,6 +1,6 @@
 import { Annotation } from '@/data/models/Annotation';
 import { useAppSelector } from '@/hooks/hooks';
-import { getEntitiesByAnnotationId } from '@/state/selectors/entities';
+import { getEntitiesByAnnotationId } from '@/state/selectors/namedEntity';
 import { useTranslation } from 'react-i18next';
 import EntityViewer from './EntityViewer';
 
