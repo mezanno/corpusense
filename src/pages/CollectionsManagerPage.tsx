@@ -56,7 +56,7 @@ const CollectionTableRow = ({
   };
 
   const handleOnClick = async (id: string) => {
-    await navigation.goToCollectionExplorer(id);
+    await navigation.goToCollectionInspector(id);
   };
 
   // const handleExport = (event: React.MouseEvent<HTMLButtonElement | MouseEvent>, id: string) => {

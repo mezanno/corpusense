@@ -21,7 +21,7 @@ const useAppNavigation = () => {
   const goToCollectionsManager = async () => {
     await navigate(`/${CorpusenseRoutes.COLLECTIONS}`);
   };
-  const goToCollectionExplorer = async (collectionId: string) => {
+  const goToCollectionInspector = async (collectionId: string) => {
     await navigate(`/${CorpusenseRoutes.COLLECTIONS}/${collectionId}`);
   };
   const goToConfiguration = async () => {
@@ -31,7 +31,7 @@ const useAppNavigation = () => {
   return {
     goToManifestExplorer,
     goToCollectionsManager,
-    goToCollectionExplorer,
+    goToCollectionInspector,
     goToConfiguration,
   };
 };
