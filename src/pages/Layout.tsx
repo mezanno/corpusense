@@ -49,8 +49,6 @@ import {
 const LayoutSideBar = () => {
   const { t } = useTranslation();
   const openedCollections = useAppSelector(getOpenedCollections);
-  console.log('openedCollections: ', openedCollections);
-
   const navigation = useAppNavigation();
   const dispatch = useAppDispatch();
 

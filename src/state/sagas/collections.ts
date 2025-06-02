@@ -391,8 +391,6 @@ function* handleLoadCollection(
 
     //load the entities of the collection
     const annotationsIds = annotations.map((annotation) => annotation.id);
-    console.log('Loading entities for annotations: ', annotationsIds);
-
     const namedEntityRepository = getNamedEntityRepository();
     const namedEntities = (yield call(
       [namedEntityRepository, namedEntityRepository.getNamedEntitiesByAnnotationsIds],
