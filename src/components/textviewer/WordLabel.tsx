@@ -21,12 +21,28 @@ const WordLabel = ({ word, index }: WordLabelProps) => {
   const isSelected = state.selected.includes(index);
 
   useEffect(() => {
-    if (labelRef.current) {
-      dispatch({
-        type: MARKUP_ACTIONS.SET_RECT,
-        payload: { index, rect: labelRef.current.getClientRect() },
+    /*
+     * We need to use setTimeout and requestAnimationFrame due to a display bug with StrictMode + Konva.
+     * Delay the rect calculation to ensure Konva has completed layout.
+     * setTimeout waits for the current call stack to clear,
+     * then requestAnimationFrame ensures the DOM is ready before measuring.
+     */
+    let raf: number;
+    const timeout = window.setTimeout(() => {
+      raf = requestAnimationFrame(() => {
+        if (labelRef.current) {
+          dispatch({
+            type: MARKUP_ACTIONS.SET_RECT,
+            payload: { index, rect: labelRef.current.getClientRect() },
+          });
+        }
       });
-    }
+    }, 30);
+
+    return () => {
+      clearTimeout(timeout);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {

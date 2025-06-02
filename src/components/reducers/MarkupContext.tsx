@@ -1,7 +1,7 @@
 import { Annotation, getAnnotationText } from '@/data/models/Annotation';
 import { DataField } from '@/data/models/DataModel';
 import { IRect } from 'konva/lib/types';
-import { createContext, useContext, useReducer } from 'react';
+import { createContext, useContext, useEffect, useReducer } from 'react';
 
 export const MARKUP_ACTIONS = {
   SET_RECT: 'SET_RECT',
@@ -96,8 +96,8 @@ const initState = (text: Annotation[]) => {
     wordRects: rects,
     selected: [],
     stage: {
-      width: 0,
-      height: 0,
+      width: 2000,
+      height: 2000,
     },
   };
 };
@@ -112,6 +112,7 @@ const reducer = (state: MarkupState, action: MarkupAction) => {
       const rects = computeRects(index, rect, state.wordRects);
       const maxWidth = Math.max(...rects.map((r) => r.rect.x + r.rect.width));
       const maxHeight = Math.max(...rects.map((r) => r.rect.y + r.rect.height));
+
       return {
         ...state,
         wordRects: rects,
@@ -159,17 +160,19 @@ type MarkupContextType = {
 
 const MarkupContext = createContext<MarkupContextType | undefined>(undefined);
 
-export const MarkupProvider = ({ children }: { children: React.ReactNode }) => {
-  const initialState = {
-    text: [],
-    wordRects: [],
-    selected: [],
-    stage: {
-      width: 0,
-      height: 0,
-    },
-  };
-  const [state, dispatch] = useReducer(reducer, initialState);
+export const MarkupProvider = ({
+  children,
+  text,
+}: {
+  children: React.ReactNode;
+  text: Annotation[];
+}) => {
+  useEffect(() => {
+    dispatch({ type: MARKUP_ACTIONS.SET_TEXT, payload: text });
+  }, [text]);
+
+  const [state, dispatch] = useReducer(reducer, initState(text));
+
   return <MarkupContext.Provider value={{ state, dispatch }}>{children}</MarkupContext.Provider>;
 };
 
