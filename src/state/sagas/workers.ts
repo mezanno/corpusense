@@ -269,8 +269,10 @@ function* handleStartBatchDataAnalysisProcess(
       collectionId,
       model,
     })) as string;
-    const dataParsed = JSON.parse(dataInCanvas) as unknown[];
-    allTheData = [...allTheData, ...dataParsed];
+    if (dataInCanvas !== undefined) {
+      const dataParsed = JSON.parse(dataInCanvas) as unknown[];
+      allTheData = [...allTheData, ...dataParsed];
+    }
   }
 
   yield call(
