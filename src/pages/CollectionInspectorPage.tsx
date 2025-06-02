@@ -13,7 +13,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import WorkerStatusIcon from '@/components/WorkerStatusIcon';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { setCanvasFromComponent } from '@/state/reducers/canvas';
+import { reset, setCanvasFromComponent } from '@/state/reducers/canvas';
 import {
   addCollectionToHistoryRequest,
   removeElementFromCollectionRequest,
@@ -89,6 +89,7 @@ const GridThumb = ({
 
 const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
+  const appDispatch = useAppDispatch();
   const activeCollection = useAppSelector((state) =>
     state.collections.values.find((elt) => elt.id === collectionId),
   );
@@ -106,6 +107,10 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
       });
     }
   }
+
+  useEffect(() => {
+    appDispatch(reset('collection-inspector')); // Reset the canvas state when the component mounts
+  }, []);
 
   useEffect(() => {
     if (activeCollection?.content && gridRef.current !== null) {
