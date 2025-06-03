@@ -138,9 +138,6 @@ function* handleFetchLayout({
     }
     const data = yield call([response, 'json']);
     console.log('data: ', data);
-
-    yield put(processSuccess({ id: canvas.id, result: data }));
-
     //convert the result into an array of Annotation
     const annotations = convertEdwinResult(
       data as unknown as EdwinBox[],
@@ -150,6 +147,9 @@ function* handleFetchLayout({
     );
     //and send it to the redux store
     yield put(fetchAnnotationsSuccess(annotations));
+    const annotationRepository = getAnnotationRepository();
+    yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
+    yield put(processSuccess({ id: canvas.id, result: data }));
   } catch (error) {
     console.error('Error fetching layout:', error);
     yield put(processError({ id: canvas.id, error: getErrorMessage(error) }));
