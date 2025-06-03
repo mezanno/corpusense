@@ -1,7 +1,9 @@
 import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
 import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { contains } from '@/data/utils/annotations';
+import { getErrorMessage } from '@/utils/utils';
 import { PayloadAction } from '@reduxjs/toolkit';
+import { t } from 'i18next';
 import { isEqual } from 'lodash';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
@@ -97,7 +99,7 @@ function* handleRemoveAllCollectionAnnotations(
     yield put(removeAllAnnotationsSuccess(annotationIds));
   } catch (e) {
     console.warn(e);
-    yield put(removeAllAnnotationsFailure);
+    yield put(removeAllAnnotationsFailure(getErrorMessage(e)));
   }
 }
 
@@ -115,7 +117,7 @@ function* handleRemoveAllCanvasAnnotations(
     yield put(removeAllAnnotationsSuccess(annotationIds));
   } catch (e) {
     console.warn(e);
-    yield put(removeAllAnnotationsFailure);
+    yield put(removeAllAnnotationsFailure(getErrorMessage(e)));
   }
 }
 
@@ -124,7 +126,8 @@ function* handleRemoveAllRegionAnnotations(
 ): Generator<Effect, void, Annotation[]> {
   const annotation = action.payload;
   if (getAnnotationType(annotation) !== ElementType.REGION) {
-    throw new Error('Annotation is not a region');
+    yield put(removeAllAnnotationsFailure(t('error_annotation_is_not_region')));
+    return;
   }
   try {
     const annotationRepository = getAnnotationRepository();
@@ -148,7 +151,7 @@ function* handleRemoveAllRegionAnnotations(
     }
   } catch (e) {
     console.warn(e);
-    yield put(removeAllAnnotationsFailure);
+    yield put(removeAllAnnotationsFailure(getErrorMessage(e)));
   }
 }
 

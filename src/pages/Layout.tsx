@@ -10,6 +10,7 @@ import {
 import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
+import { resetErrror } from '@/state/reducers/annotations';
 import { removeFromOpenedCollections, resetLastError } from '@/state/reducers/collections';
 import { resetAlert } from '@/state/reducers/export';
 import { resetLastWorkerError } from '@/state/reducers/workers';
@@ -164,6 +165,7 @@ const Layout = () => {
   const { newCollectionEvent } = useAppSelector((state) => state.collections);
   const { error, lastEvent } = useAppSelector((state) => state.workers.global);
   const { lastExportError, lastExportStatus } = useAppSelector((state) => state.export);
+  const lastAnnotationError = useAppSelector((state) => state.annotations.error);
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -187,6 +189,13 @@ const Layout = () => {
       dispatch(resetLastWorkerError());
     }
   }, [lastEvent]);
+
+  useEffect(() => {
+    if (lastAnnotationError !== '') {
+      toast.error(lastAnnotationError);
+      dispatch(resetErrror());
+    }
+  }, [lastAnnotationError]);
 
   useEffect(() => {
     if (lastExportStatus === 'ERROR' && lastExportError !== '') {

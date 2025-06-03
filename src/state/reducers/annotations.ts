@@ -48,8 +48,8 @@ const annotationsSlice = createSlice({
     removeAllAnnotationsSuccess(state, action: PayloadAction<string[]>) {
       state.values = state.values.filter((a) => !action.payload.includes(a.id));
     },
-    removeAllAnnotationsFailure(_state, _action) {
-      // state.error = action.payload;
+    removeAllAnnotationsFailure(state, action: PayloadAction<string>) {
+      state.error = action.payload;
     },
     fetchAnnotationsByCanvasId(state, _action: PayloadAction<string>) {
       state.isLoading = true;
@@ -81,6 +81,9 @@ const annotationsSlice = createSlice({
       }
     },
     syncWithDB(_state, _action: PayloadAction<{ canvasId: string; collectionId: string }>) {},
+    resetErrror(state) {
+      state.error = '';
+    },
   },
 });
 
@@ -99,5 +102,6 @@ export const {
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
   syncWithDB,
+  resetErrror,
 } = annotationsSlice.actions;
 export default annotationsSlice.reducer;
