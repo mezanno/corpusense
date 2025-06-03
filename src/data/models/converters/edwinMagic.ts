@@ -19,7 +19,7 @@ function convertEdwinToAnnotation(
   if (type === 'TITLE_LEVEL_1' || type === 'TITLE_LEVEL_2') {
     type = 'ENTRY';
   } else if (type === 'SECTION_LEVEL_1' || type === 'SECTION_LEVEL_2') {
-    type = 'SECTION';
+    type = 'REGION';
   } else if (type === 'COLUMN_LEVEL_1' || type === 'COLUMN_LEVEL_2') {
     type = 'COLUMN';
   }
