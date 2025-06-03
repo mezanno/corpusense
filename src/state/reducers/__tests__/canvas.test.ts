@@ -28,7 +28,7 @@ describe('canvas reducer', () => {
         },
       },
     };
-    const action = reset('canvas1');
+    const action = reset('component1');
     //@ts-expect-error stateWithValues
     const state = reducer(stateWithValues, action);
 

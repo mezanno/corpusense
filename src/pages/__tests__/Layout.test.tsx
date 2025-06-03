@@ -4,7 +4,7 @@ import * as useManifest from '@/hooks/useManifest';
 import { RootState } from '@/state/store';
 import '@testing-library/jest-dom';
 import { describe, it, vi } from 'vitest';
-import Layout from './Layout';
+import Layout from '../Layout';
 
 vi.mock('@/hooks/useManifest', async (original) => {
   const actual = await original<typeof useManifest>();

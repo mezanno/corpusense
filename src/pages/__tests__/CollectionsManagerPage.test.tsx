@@ -6,7 +6,7 @@ import { RootState } from '@/state/store';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import CollectionsManagerPage from './CollectionsManagerPage';
+import CollectionsManagerPage from '../CollectionsManagerPage';
 
 vi.mock('@/hooks/hooks', async (original) => {
   const actual = await original<typeof useAppDispatch>();
@@ -100,8 +100,6 @@ describe('CollectionsManagerPage', () => {
     const btn = screen.getByRole('button', { name: 'btn_create_collection' });
     expect(btn).toBeInTheDocument();
     await userEvent.click(btn);
-
-    console.log(screen.debug());
 
     //le formulaire est visible
     const textboxVisible = screen.getByRole('textbox', { name: 'form_label_collection_name' });

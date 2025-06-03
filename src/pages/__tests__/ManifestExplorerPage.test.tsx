@@ -5,7 +5,7 @@ import { RootState } from '@/state/store';
 import { Manifest } from '@iiif/presentation-3';
 import { screen } from '@testing-library/react';
 import { afterAll, describe, expect, it, vi } from 'vitest';
-import ManifestExplorerPage from './ManifestExplorerPage';
+import ManifestExplorerPage from '../ManifestExplorerPage';
 
 describe('ManifestExplorerPage', () => {
   afterAll(() => {
