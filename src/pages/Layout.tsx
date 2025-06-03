@@ -191,7 +191,7 @@ const Layout = () => {
   }, [lastEvent]);
 
   useEffect(() => {
-    if (lastAnnotationError !== '') {
+    if (lastAnnotationError !== undefined && lastAnnotationError !== '') {
       toast.error(lastAnnotationError);
       dispatch(resetErrror());
     }
