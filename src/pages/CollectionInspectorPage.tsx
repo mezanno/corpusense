@@ -168,7 +168,7 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
               </Accordion>
               <CollectionToolbar collectionId={collectionId} />
               <div className='panel h-full w-full overflow-hidden'>
-                <div className='flex w-fit flex-wrap content-start items-start gap-2 overflow-y-auto'>
+                <div className='flex h-full w-fit flex-wrap content-start items-start gap-2 overflow-y-auto'>
                   {activeCollection.content.map((item) => (
                     <div key={item.canvasId} ref={refs.current[item.canvasId]} className='flex p-1'>
                       <GridThumb
@@ -222,10 +222,7 @@ const CollectionInspectorPage = () => {
 
   useEffect(() => {
     if (collectionId !== undefined) {
-      console.log('CollectionInspectorPage', collectionId);
-
       dispatch(addCollectionToHistoryRequest(collectionId));
-      // dispatch(reset());
     }
   }, [collectionId]);
 
