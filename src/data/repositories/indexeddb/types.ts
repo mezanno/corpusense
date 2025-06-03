@@ -1,4 +1,4 @@
-import { Annotation } from '@/data/models/Annotation';
+import { Annotation, ElementType } from '@/data/models/Annotation';
 import { Collection } from '@/data/models/Collection';
 import { CollectionElement } from '@/data/models/CollectionElement';
 import { DataModel } from '@/data/models/DataModel';
@@ -12,6 +12,11 @@ import { Canvas, Manifest } from '@iiif/presentation-3';
 
 export interface AnnotationRepository {
   getAnnotationsForCanvas(canvasId: string, collectionId: string): Promise<Annotation[]>;
+  getAnnotationsForCanvasByType(
+    canvasId: string,
+    collectionId: string,
+    type: ElementType,
+  ): Promise<Annotation[]>;
   getAnnotationsForCollection(collectionId: string): Promise<Annotation[]>;
   getById(id: string): Promise<Annotation>;
   saveAllAnnotations(annotations: Annotation[]): Promise<void>;

@@ -1,12 +1,21 @@
 import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
-import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
+import {
+  getAnnotationRepository,
+  getCollectionRepository,
+} from '@/data/repositories/indexeddb/dbFactory';
 import { contains } from '@/data/utils/annotations';
 import { getErrorMessage } from '@/utils/utils';
+import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { t } from 'i18next';
 import { isEqual } from 'lodash';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
+import { v4 as uuid } from 'uuid';
 import {
+  duplicateAnnotationsEach2PagesRequest,
+  duplicateAnnotationsSuccess,
+  duplicateAnnotationsToAllPagesRequest,
+  fetchAnnotationsSuccess,
   removeAllAnnotationsFailure,
   removeAllAnnotationsSuccess,
   removeAllCanvasAnnotationsRequest,
@@ -171,6 +180,108 @@ function* handleUpdateAnnotationOrderValue(
   }
 }
 
+function* handleDuplicateAnnotationsToAllPages(
+  action: PayloadAction<{ canvasId: string; collectionId: string }>,
+): Generator<Effect, void, Canvas[]> {
+  const { canvasId, collectionId } = action.payload;
+  try {
+    const collectionRepository = getCollectionRepository();
+    const canvasOfCollection = yield call(
+      [collectionRepository, collectionRepository.getCanvasesByCollectionId],
+      collectionId,
+    );
+    const canvasIds = canvasOfCollection.map((c) => c.id);
+    yield call(handleDuplicateAnnotationsToPages, {
+      canvasId,
+      collectionId,
+      canvasIds,
+    });
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
+function* handleDuplicateAnnotationsEach2Pages(
+  action: PayloadAction<{ canvasId: string; collectionId: string }>,
+): Generator<Effect, void, Canvas[]> {
+  const { canvasId, collectionId } = action.payload;
+  try {
+    const collectionRepository = getCollectionRepository();
+    const canvasOfCollection = yield call(
+      [collectionRepository, collectionRepository.getCanvasesByCollectionId],
+      collectionId,
+    );
+    const canvasIds = canvasOfCollection.map((c) => c.id);
+    const positionOfCanvas = canvasIds.findIndex((id) => id === canvasId);
+    const canvasesIdsToDuplicateTo =
+      positionOfCanvas % 2 === 0
+        ? canvasIds.filter((_, index) => index % 2 === 0)
+        : canvasIds.filter((_, index) => index % 2 !== 0);
+
+    yield call(handleDuplicateAnnotationsToPages, {
+      canvasId,
+      collectionId,
+      canvasIds: canvasesIdsToDuplicateTo,
+    });
+
+    yield put(duplicateAnnotationsSuccess());
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
+function* handleDuplicateAnnotationsToPages({
+  canvasId,
+  collectionId,
+  canvasIds,
+}: {
+  canvasId: string;
+  collectionId: string;
+  canvasIds: string[];
+}): Generator<Effect, void, Annotation[]> {
+  try {
+    //1st step: get all (region) annotations of the canvas
+    const annotationRepository = getAnnotationRepository();
+    const annotations = yield call(
+      [annotationRepository, annotationRepository.getAnnotationsForCanvasByType],
+      canvasId,
+      collectionId,
+      ElementType.REGION,
+    );
+
+    if (annotations.length > 0) {
+      for (const id of canvasIds) {
+        if (id !== canvasId) {
+          //3rd step: remove the region annotations that are already on the canvases
+          const regions = yield call(
+            [annotationRepository, annotationRepository.getAnnotationsForCanvasByType],
+            id,
+            collectionId,
+            ElementType.REGION,
+          );
+          const annotationIds = regions.map((r) => r.id);
+          yield call([annotationRepository, annotationRepository.removeAllById], annotationIds);
+          yield put(removeAllAnnotationsSuccess(annotationIds));
+
+          //4th step: duplicate the annotations to the other canvases
+          const duplicatedAnnotations = annotations.map((a) => ({
+            ...a,
+            id: uuid(), // reset the id to create new annotations
+            canvasId: id, // set the canvasId to the current canvas
+          }));
+          yield call(
+            [annotationRepository, annotationRepository.saveAllAnnotations],
+            duplicatedAnnotations,
+          );
+          yield put(fetchAnnotationsSuccess(duplicatedAnnotations));
+        }
+      }
+    }
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
 function* handleSyncWithDB(
   action: PayloadAction<{ canvasId: string; collectionId: string }>,
 ): Generator<Effect, void, Annotation[]> {
@@ -191,6 +302,8 @@ export default function* annotationsSaga() {
   yield takeEvery(removeAllCanvasAnnotationsRequest, handleRemoveAllCanvasAnnotations);
   yield takeEvery(removeAllRegionAnnotationsRequest, handleRemoveAllRegionAnnotations);
   yield takeEvery(updateAnnotationOrderValueRequest, handleUpdateAnnotationOrderValue);
+  yield takeEvery(duplicateAnnotationsToAllPagesRequest, handleDuplicateAnnotationsToAllPages);
+  yield takeEvery(duplicateAnnotationsEach2PagesRequest, handleDuplicateAnnotationsEach2Pages);
   yield takeLatest(syncWithDB, handleSyncWithDB);
 }
 

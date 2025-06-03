@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import { Annotation } from '../../models/Annotation';
+import { Annotation, ElementType, getAnnotationType } from '../../models/Annotation';
 import { db } from './db';
 import { AnnotationRepository } from './types';
 
@@ -19,6 +19,17 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
         collectionId,
       })
       .sortBy('order');
+  }
+
+  async getAnnotationsForCanvasByType(canvasId: string, collectionId: string, type: ElementType) {
+    // return db.annotations
+    //   .where({
+    //     canvasId,
+    //     collectionId,
+    //   })
+    //   .sortBy('order');
+    const canvasAnnotations = await this.getAnnotationsForCanvas(canvasId, collectionId);
+    return canvasAnnotations.filter((annotation) => getAnnotationType(annotation) === type);
   }
 
   async getAnnotationsForCollection(collectionId: string) {

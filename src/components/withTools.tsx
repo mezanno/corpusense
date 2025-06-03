@@ -1,20 +1,26 @@
+import { ElementType } from '@/data/models/Annotation';
 import { DataModel } from '@/data/models/DataModel';
 import { useAppDispatch } from '@/hooks/hooks';
-import { removeAllCanvasAnnotationsRequest } from '@/state/reducers/annotations';
+import {
+  duplicateAnnotationsEach2PagesRequest,
+  duplicateAnnotationsToAllPagesRequest,
+  removeAllCanvasAnnotationsRequest,
+} from '@/state/reducers/annotations';
 import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import {
   fetchDataAnalysisRequest,
   fetchLayoutRequest,
   fetchOcrRequest,
 } from '@/state/reducers/workers';
-import { getAnnotations } from '@/state/selectors/annotations';
+import { getAnnotationsByType } from '@/state/selectors/annotations';
 import { RootState } from '@/state/store';
 import { Move, SquarePen } from 'lucide-react';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { ReducerContext } from './CanvasViewer';
 import { CanvasViewerContentProps } from './CanvasViewerContent';
+import LayoutMenu from './menu/LayoutMenu';
 import { ACTIONS } from './reducers/CanvasViewerContentReducer';
 import SelectModelForm from './textviewer/SelectModelForm';
 import Toolbar from './ToolBar';
@@ -32,16 +38,22 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     /** 
      on va surveiller les annotations dans le store pour voir si on doit mettre le statut de sauvegarde à jour
      */
-    const annotationsInStore = useSelector((state: RootState) =>
-      getAnnotations(state, cvcState.canvas?.id ?? '', props.collectionId ?? ''),
+    const regionAnnotations = useSelector((state: RootState) =>
+      getAnnotationsByType(
+        state,
+        cvcState.canvas?.id ?? '',
+        props.collectionId ?? '',
+        ElementType.REGION,
+      ),
     );
+
     const [isLookingForLayout, setIsLookingForLayout] = useState(false);
-    useEffect(() => {
-      if (isLookingForLayout) {
-        setIsLookingForLayout(false);
-        cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: true });
-      }
-    }, [annotationsInStore]);
+    // useEffect(() => {
+    //   if (isLookingForLayout) {
+    //     setIsLookingForLayout(false);
+    //     cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: true });
+    //   }
+    // }, [annotationsInStore]);
     /**
      * Fin bloc de code pour surveiller les annotations
      */
@@ -103,6 +115,28 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       }
     };
 
+    const handleDuplicateRegionToAllPages = () => {
+      if (props.collectionId !== undefined) {
+        appDispatch(
+          duplicateAnnotationsToAllPagesRequest({
+            canvasId: props.canvas.id,
+            collectionId: props.collectionId,
+          }),
+        );
+      }
+    };
+
+    const handleDuplicateRegionEach2 = () => {
+      if (props.collectionId !== undefined) {
+        appDispatch(
+          duplicateAnnotationsEach2PagesRequest({
+            canvasId: props.canvas.id,
+            collectionId: props.collectionId,
+          }),
+        );
+      }
+    };
+
     const close = (model: DataModel) => {
       setDialogOpen(false);
 
@@ -150,6 +184,13 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
               Something Has Changed!
             </Button>
           )} */}
+          {regionAnnotations.length > 0 && (
+            <LayoutMenu
+              elementId={cvcState.canvas?.id ?? ''}
+              handleDuplicateToAll={handleDuplicateRegionToAllPages}
+              handleDuplicateEach2={handleDuplicateRegionEach2}
+            />
+          )}
         </div>
         <WrappedComponent {...(props as T)} />
 

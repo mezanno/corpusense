@@ -1,9 +1,11 @@
 import { Annotation } from '@/data/models/Annotation';
+import i18n from '@/i18n';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 type AnnotationState = {
   values: Annotation[];
   error?: string;
+  event?: string;
   isLoading: boolean;
   deleted: Annotation;
   updated: Annotation;
@@ -80,9 +82,23 @@ const annotationsSlice = createSlice({
         annotation.order = action.payload.value;
       }
     },
+    duplicateAnnotationsToAllPagesRequest(
+      _state,
+      _action: PayloadAction<{ canvasId: string; collectionId: string }>,
+    ) {},
+    duplicateAnnotationsEach2PagesRequest(
+      _state,
+      _action: PayloadAction<{ canvasId: string; collectionId: string }>,
+    ) {},
+    duplicateAnnotationsSuccess(state) {
+      state.event = i18n.t('toast_duplicate_success');
+    },
     syncWithDB(_state, _action: PayloadAction<{ canvasId: string; collectionId: string }>) {},
     resetErrror(state) {
       state.error = '';
+    },
+    resetEvent(state) {
+      state.event = '';
     },
   },
 });
@@ -101,7 +117,11 @@ export const {
   fetchAnnotationsSuccess,
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
+  duplicateAnnotationsToAllPagesRequest,
+  duplicateAnnotationsEach2PagesRequest,
+  duplicateAnnotationsSuccess,
   syncWithDB,
   resetErrror,
+  resetEvent,
 } = annotationsSlice.actions;
 export default annotationsSlice.reducer;
