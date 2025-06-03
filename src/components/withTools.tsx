@@ -35,9 +35,6 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const { cvcState, cvcDispatch } = useContext(ReducerContext);
     const [dialogOpen, setDialogOpen] = useState(false);
 
-    /** 
-     on va surveiller les annotations dans le store pour voir si on doit mettre le statut de sauvegarde à jour
-     */
     const regionAnnotations = useSelector((state: RootState) =>
       getAnnotationsByType(
         state,
@@ -46,17 +43,6 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
         ElementType.REGION,
       ),
     );
-
-    const [isLookingForLayout, setIsLookingForLayout] = useState(false);
-    // useEffect(() => {
-    //   if (isLookingForLayout) {
-    //     setIsLookingForLayout(false);
-    //     cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: true });
-    //   }
-    // }, [annotationsInStore]);
-    /**
-     * Fin bloc de code pour surveiller les annotations
-     */
 
     const handleStartLayoutAnalysis = () => {
       if (
@@ -71,7 +57,6 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
             originalWidth: cvcState.image.width ?? 0,
           }),
         );
-        setIsLookingForLayout(true);
       }
     };
 
@@ -79,15 +64,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       if (cvcState?.image?.id !== undefined && props.collectionId !== undefined) {
         appDispatch(fetchOcrRequest({ canvas: props.canvas, collectionId: props.collectionId }));
       }
-      setIsLookingForLayout(true);
     };
-
-    // const handleSave = () => {
-    //   if (props.collectionId !== undefined) {
-    //     appDispatch(syncWithDB({ canvasId: props.canvas.id, collectionId: props.collectionId }));
-    //     cvcDispatch({ type: ACTIONS.SOMETHING_HAS_CHANGED, payload: false });
-    //   }
-    // };
 
     const handleExportText = () => {
       if (props.collectionId !== undefined) {
@@ -178,12 +155,6 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
               <SquarePen size={16} />{' '}
             </Label>
           </div>
-          {/* {cvcState.somethingHasChanged && (
-            <Button onClick={handleSave}>
-              <Save />
-              Something Has Changed!
-            </Button>
-          )} */}
           {regionAnnotations.length > 0 && (
             <LayoutMenu
               elementId={cvcState.canvas?.id ?? ''}
