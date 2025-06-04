@@ -50,7 +50,8 @@ function* handleDataAnalysis({
   model,
 }: fetchDataAnalysisPayload): Generator<Effect, string | void, string | Response | object> {
   yield put(processRunning(canvasId));
-  const text = (yield call(generateTextFromCanvas, canvasId, collectionId)) as string;
+  let text = (yield call(generateTextFromCanvas, canvasId, collectionId)) as string;
+  text = text.replace('"', ''); //.replace('«', '').replace('»', '');
   if (text === undefined || text.length === 0) {
     console.log('No text found for this canvas');
     yield put(processError({ id: canvasId, error: i18next.t('error_export_no_text') }));
@@ -64,7 +65,9 @@ function* handleDataAnalysis({
   }
 
   const schema = generateSchema(model);
-  console.log('Schema generated:', schema);
+  // console.log('Schema generated:', schema);
+  console.log('Text length: ', text.length);
+
   const body = {
     model: 'ministral-8b-latest',
     messages: [
@@ -109,6 +112,8 @@ function* handleDataAnalysis({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const message = data.choices[0].message as object;
     if ('content' in message && typeof message.content === 'string') {
+      console.log('Response length : ', message.content.length);
+
       return message.content;
     }
   }
@@ -270,8 +275,13 @@ function* handleStartBatchDataAnalysisProcess(
       model,
     })) as string;
     if (dataInCanvas !== undefined) {
-      const dataParsed = JSON.parse(dataInCanvas) as unknown[];
-      allTheData = [...allTheData, ...dataParsed];
+      try {
+        const dataParsed = JSON.parse(dataInCanvas) as unknown[];
+        allTheData = [...allTheData, ...dataParsed];
+      } catch (error) {
+        //TODO: on fait quoi lorsque le json est invalide ?
+        console.error('Error parsing dataInCanvas:', error);
+      }
     }
   }
 
