@@ -1,5 +1,6 @@
 import {
   Annotation,
+  createAnnotation,
   duplicateAnnotation,
   ElementType,
   getAnnotationType,
@@ -13,13 +14,14 @@ import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { t } from 'i18next';
-import { isEqual } from 'lodash';
+import { groupBy, isEqual, maxBy, minBy } from 'lodash';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
   duplicateAnnotationsEach2PagesRequest,
   duplicateAnnotationsSuccess,
   duplicateAnnotationsToAllPagesRequest,
   fetchAnnotationsSuccess,
+  recomputeRegionsRequest,
   removeAllAnnotationsFailure,
   removeAllAnnotationsSuccess,
   removeAllCanvasAnnotationsRequest,
@@ -290,6 +292,70 @@ function* handleDuplicateAnnotationsToPages({
   }
 }
 
+function* handleRecomputeRegions(
+  action: PayloadAction<string>,
+): Generator<Effect, void, Annotation[]> {
+  const collectionId = action.payload;
+
+  const annotationRepository = getAnnotationRepository();
+  const annotations = yield call(
+    [annotationRepository, annotationRepository.getAnnotationsForCollection],
+    collectionId,
+  );
+  const lines = groupBy(
+    annotations.filter((a) => getAnnotationType(a) === ElementType.LINE),
+    'canvasId',
+  );
+  let removedAnnotations: string[] = [];
+  const newRegionsAnnotations: Annotation[] = [];
+  for (const [canvasId, canvasLines] of Object.entries(lines)) {
+    if (canvasLines.length > 0) {
+      //remove the region annotations that are already on the canvases
+      const regions = yield call(
+        [annotationRepository, annotationRepository.getAnnotationsForCanvasByType],
+        canvasId,
+        collectionId,
+        ElementType.REGION,
+      );
+      const annotationIds = regions.map((r) => r.id);
+      removedAnnotations = [...removedAnnotations, ...annotationIds];
+      yield call([annotationRepository, annotationRepository.removeAllById], annotationIds);
+
+      //compute the coordinates of the new region annotation
+      const minX = minBy(canvasLines, (l) => l.target.selector.geometry.bounds.minX)?.target
+        .selector.geometry.bounds.minX;
+      const minY = minBy(canvasLines, (l) => l.target.selector.geometry.bounds.minY)?.target
+        .selector.geometry.bounds.minY;
+      const maxX = maxBy(canvasLines, (l) => l.target.selector.geometry.bounds.maxX)?.target
+        .selector.geometry.bounds.maxX;
+      const maxY = maxBy(canvasLines, (l) => l.target.selector.geometry.bounds.maxY)?.target
+        .selector.geometry.bounds.maxY;
+      if (minX !== undefined && minY !== undefined && maxX !== undefined && maxY !== undefined) {
+        const region = createAnnotation({
+          order: 0,
+          canvasId,
+          collectionId,
+          type: ElementType.REGION,
+          value: '',
+          minX,
+          minY,
+          maxX,
+          maxY,
+        });
+        newRegionsAnnotations.push(region);
+      }
+    }
+  }
+  if (newRegionsAnnotations.length > 0) {
+    yield call(
+      [annotationRepository, annotationRepository.saveAllAnnotations],
+      newRegionsAnnotations,
+    );
+  }
+  yield put(removeAllAnnotationsSuccess(removedAnnotations));
+  yield put(fetchAnnotationsSuccess(newRegionsAnnotations));
+}
+
 function* handleSyncWithDB(
   action: PayloadAction<{ canvasId: string; collectionId: string }>,
 ): Generator<Effect, void, Annotation[]> {
@@ -312,6 +378,7 @@ export default function* annotationsSaga() {
   yield takeEvery(updateAnnotationOrderValueRequest, handleUpdateAnnotationOrderValue);
   yield takeEvery(duplicateAnnotationsToAllPagesRequest, handleDuplicateAnnotationsToAllPages);
   yield takeEvery(duplicateAnnotationsEach2PagesRequest, handleDuplicateAnnotationsEach2Pages);
+  yield takeEvery(recomputeRegionsRequest, handleRecomputeRegions);
   yield takeLatest(syncWithDB, handleSyncWithDB);
 }
 

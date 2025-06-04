@@ -93,6 +93,7 @@ const annotationsSlice = createSlice({
     duplicateAnnotationsSuccess(state) {
       state.event = i18n.t('toast_duplicate_success');
     },
+    recomputeRegionsRequest(_state, _action: PayloadAction<string>) {},
     syncWithDB(_state, _action: PayloadAction<{ canvasId: string; collectionId: string }>) {},
     resetErrror(state) {
       state.error = '';
@@ -120,6 +121,7 @@ export const {
   duplicateAnnotationsToAllPagesRequest,
   duplicateAnnotationsEach2PagesRequest,
   duplicateAnnotationsSuccess,
+  recomputeRegionsRequest,
   syncWithDB,
   resetErrror,
   resetEvent,

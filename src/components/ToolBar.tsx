@@ -7,6 +7,7 @@ const Toolbar = ({
   handleLayout,
   handleOcr,
   handleDeleteAllAnnotations,
+  handleRecomputeRegions,
   handleExportText,
   handleExtractData,
   elementId,
@@ -15,6 +16,7 @@ const Toolbar = ({
   handleLayout?: () => void;
   handleOcr?: () => void;
   handleDeleteAllAnnotations?: () => void;
+  handleRecomputeRegions?: () => void;
   handleExportText?: () => void;
   handleExtractData?: () => void;
   elementId: string;
@@ -30,6 +32,7 @@ const Toolbar = ({
       />
       <DangerousMenu
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
+        handleRecomputeRegions={handleRecomputeRegions}
         elementId={elementId}
       />
       <ExportMenu handleExportText={handleExportText} elementId={elementId} />

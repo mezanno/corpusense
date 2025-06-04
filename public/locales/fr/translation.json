@@ -45,6 +45,7 @@
   "btn_dangerous_menu": "Menu pour ceux qui savent ce qu'ils font",
   "btn_export_menu": "Exports",
   "btn_reset_annotations": "Supprimer toutes les annotations",
+  "btn_reset_regions": "Recalculer les régions",
   "btn_export_text": "Exporter le texte",
   "btn_add_datafield": "Ajouter un champ au modèle",
   "btn_delete_datafield": "Supprimer le champ",

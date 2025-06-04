@@ -1,6 +1,9 @@
 import { DataModel } from '@/data/models/DataModel';
 import { useAppDispatch } from '@/hooks/hooks';
-import { removeAllCollectionAnnotationsRequest } from '@/state/reducers/annotations';
+import {
+  recomputeRegionsRequest,
+  removeAllCollectionAnnotationsRequest,
+} from '@/state/reducers/annotations';
 import { exportTextOfCollectionRequest } from '@/state/reducers/export';
 import {
   fetchBatchDataAnalysisRequest,
@@ -28,6 +31,10 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
 
   const handleDeleteAllAnnotations = () => {
     appDispatch(removeAllCollectionAnnotationsRequest(collectionId));
+  };
+
+  const handleRecomputeRegions = () => {
+    appDispatch(recomputeRegionsRequest(collectionId));
   };
 
   const handleExportText = () => {
@@ -60,6 +67,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleExportText={handleExportText}
         handleExtractData={handleExtractData}
+        handleRecomputeRegions={handleRecomputeRegions}
         elementId={collectionId}
       />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
