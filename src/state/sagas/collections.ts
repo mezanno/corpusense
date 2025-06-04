@@ -49,6 +49,7 @@ import {
 } from '../reducers/collections';
 import { loadEntitiesSuccess } from '../reducers/namedEntities';
 import { setStoredItems } from '../reducers/storedItems';
+import { handleRemoveAllCollectionAnnotations } from './annotations';
 import { loadStoredElements } from './storedItems';
 
 function* fetchAllCollections(): Generator<
@@ -119,6 +120,8 @@ function* handleRemoveCollection(
       payload,
     );
     yield call([collectionRepository, collectionRepository.remove], collectionToRemove);
+
+    yield call(handleRemoveAllCollectionAnnotations, action); //delete the annotations of the collection
     yield put(removeCollectionSuccess(payload));
   } catch (e) {
     console.log('error', e);
