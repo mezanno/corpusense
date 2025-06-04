@@ -169,7 +169,8 @@ const AnnotationForm = ({
           </form>
         </Form>
       </div>
-      <div className='w-1/2'>
+      <div className='w-1/2 flex-col'>
+        <div className='w-full text-right font-light'>{selected[0].annotation.id}</div>
         <div className='flex items-center justify-end space-x-2'>
           <Toolbar
             handleOcr={startOcrAsync}
@@ -177,7 +178,6 @@ const AnnotationForm = ({
             handleDeleteAllAnnotations={handleRemoveAllAnnotationsInside}
             elementId={canvas.id}
           />
-
           <Button
             title={t('btn_delete_annotation')}
             variant='destructive'
