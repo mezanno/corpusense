@@ -37,9 +37,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
   }
 
   async saveAllAnnotations(annotations: Annotation[]) {
-    for (const annotation of annotations) {
-      await db.annotations.put(annotation);
-    }
+    await db.annotations.bulkPut(annotations);
   }
 
   async updateAnnotation(annotation: Annotation) {
