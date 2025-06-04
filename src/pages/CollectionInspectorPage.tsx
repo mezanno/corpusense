@@ -1,6 +1,7 @@
 import CanvasViewer from '@/components/CanvasViewer';
 import CollectionMetadataForm from '@/components/CollectionMetadataForm';
 import CollectionToolbar from '@/components/CollectionToolbar';
+import GridThumb from '@/components/GridThumb';
 import ModelButtons from '@/components/textviewer/ModelButtons';
 import TextViewer from '@/components/textviewer/TextViewer';
 import {
@@ -11,81 +12,16 @@ import {
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import WorkerStatusIcon from '@/components/WorkerStatusIcon';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { reset, setCanvasFromComponent } from '@/state/reducers/canvas';
-import {
-  addCollectionToHistoryRequest,
-  removeElementFromCollectionRequest,
-} from '@/state/reducers/collections';
-import { isCanvasDisplayed } from '@/state/selectors/canvas';
-import { getCanvasById } from '@/state/selectors/storedItems';
-import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
-import { Thumbnail } from '@samvera/clover-iiif/primitives';
+import { reset } from '@/state/reducers/canvas';
+import { addCollectionToHistoryRequest } from '@/state/reducers/collections';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
-import { CircleX } from 'lucide-react';
-import { createRef, useCallback, useEffect, useRef, useState } from 'react';
+import { createRef, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 
 const CANVASVIEWER_NAME = 'collection-inspector';
-
-const GridThumb = ({
-  canvasId,
-  collectionId,
-  canvasViewerName,
-}: {
-  canvasId: string;
-  collectionId: string;
-  canvasViewerName: string;
-}) => {
-  const canvas = useAppSelector((state) => getCanvasById(state, canvasId)) as Canvas;
-  const idDisplayed = useAppSelector((state) =>
-    isCanvasDisplayed(state, canvasId, canvasViewerName),
-  );
-
-  const dispatch = useAppDispatch();
-  const { t } = useTranslation();
-
-  const handleOnClick = () => {
-    if (canvas !== undefined) {
-      dispatch(setCanvasFromComponent({ componentId: canvasViewerName, canvas, collectionId }));
-    }
-  };
-
-  const handleDelete = useCallback(() => {
-    console.log('Delete', canvasId);
-    dispatch(removeElementFromCollectionRequest({ collectionId: collectionId, canvasId }));
-  }, [canvasId]);
-
-  if (canvas === undefined) {
-    return <div aria-errormessage='Error while loading canvas'>Error while loading canvas</div>;
-  }
-  const thumbnail = canvas.thumbnail as IIIFExternalWebResource[];
-
-  return (
-    <div
-      className={`group relative cursor-pointer rounded-md p-1 shadow transition hover:scale-110 ${idDisplayed ? 'bg-amber-400' : 'bg-amber-100'} `}
-      onClick={handleOnClick}
-    >
-      <Thumbnail
-        thumbnail={thumbnail}
-        style={{ width: '100px', height: '100px', objectFit: 'contain' }}
-        className='w-fit'
-        aria-label='canvas thumbnail'
-      />
-      <button
-        className='absolute top-0 right-0 flex cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 hover:scale-110'
-        title={t('btn_delete_collection')}
-      >
-        <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
-      </button>
-
-      <WorkerStatusIcon elementId={canvasId} />
-    </div>
-  );
-};
 
 const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
