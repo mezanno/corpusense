@@ -138,6 +138,20 @@ export const createAnnotationFromExistingAnnotation = ({
   };
 };
 
+export const duplicateAnnotation = (annotation: Annotation, canvasId?: string): Annotation => {
+  const newId = uuid();
+  return {
+    ...annotation,
+    id: newId,
+    canvasId: canvasId ?? annotation.canvasId,
+    bodies: createBodies(
+      getAnnotationType(annotation),
+      getAnnotationValue(annotation) ?? '',
+      newId,
+    ),
+  };
+};
+
 export const createBodies = (type: ElementType, value: string, annotationId: string) => {
   return [
     {

@@ -1,4 +1,9 @@
-import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
+import {
+  Annotation,
+  duplicateAnnotation,
+  ElementType,
+  getAnnotationType,
+} from '@/data/models/Annotation';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -10,7 +15,6 @@ import { PayloadAction } from '@reduxjs/toolkit';
 import { t } from 'i18next';
 import { isEqual } from 'lodash';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
-import { v4 as uuid } from 'uuid';
 import {
   duplicateAnnotationsEach2PagesRequest,
   duplicateAnnotationsSuccess,
@@ -250,6 +254,8 @@ function* handleDuplicateAnnotationsToPages({
     );
 
     if (annotations.length > 0) {
+      let duplicatedAnnotations: Annotation[] = [];
+      let removedAnnotations: string[] = [];
       for (const id of canvasIds) {
         if (id !== canvasId) {
           //3rd step: remove the region annotations that are already on the canvases
@@ -260,22 +266,24 @@ function* handleDuplicateAnnotationsToPages({
             ElementType.REGION,
           );
           const annotationIds = regions.map((r) => r.id);
+          removedAnnotations = [...removedAnnotations, ...annotationIds];
           yield call([annotationRepository, annotationRepository.removeAllById], annotationIds);
-          yield put(removeAllAnnotationsSuccess(annotationIds));
 
           //4th step: duplicate the annotations to the other canvases
-          const duplicatedAnnotations = annotations.map((a) => ({
-            ...a,
-            id: uuid(), // reset the id to create new annotations
-            canvasId: id, // set the canvasId to the current canvas
-          }));
-          yield call(
-            [annotationRepository, annotationRepository.saveAllAnnotations],
-            duplicatedAnnotations,
-          );
-          yield put(fetchAnnotationsSuccess(duplicatedAnnotations));
+          duplicatedAnnotations = [
+            ...duplicatedAnnotations,
+            ...annotations.map((a) => duplicateAnnotation(a, id)),
+          ];
         }
       }
+      if (duplicatedAnnotations.length > 0) {
+        yield call(
+          [annotationRepository, annotationRepository.saveAllAnnotations],
+          duplicatedAnnotations,
+        );
+      }
+      yield put(removeAllAnnotationsSuccess(removedAnnotations));
+      yield put(fetchAnnotationsSuccess(duplicatedAnnotations));
     }
   } catch (e) {
     console.warn(e);
