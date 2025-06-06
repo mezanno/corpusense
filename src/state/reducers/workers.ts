@@ -1,4 +1,5 @@
 import { DataModel } from '@/data/models/DataModel';
+import { Worker, WorkerScope } from '@/data/models/Worker';
 import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import i18next from 'i18next';
@@ -54,6 +55,16 @@ export interface fetchDataAnalysisPayload {
 export interface fetchBatchDataAnalysisPayload {
   collectionId: string;
   model: DataModel;
+}
+export interface PluginParams {
+  scope: WorkerScope;
+  workerId?: string;
+  [key: string]: unknown;
+}
+
+export interface StartWorkerProcessPayload {
+  workerName: string;
+  params: PluginParams;
 }
 
 export const workerSlice = createSlice({
@@ -125,6 +136,8 @@ export const workerSlice = createSlice({
         error: '',
       };
     },
+    startWorkerProcess: (_state, _action: PayloadAction<StartWorkerProcessPayload>) => {},
+    setWorkerStatus: (_state, _action: PayloadAction<Worker>) => {},
   },
 });
 
@@ -142,5 +155,7 @@ export const {
   resetLastWorkerError,
   resetLastEvent,
   resetCanvasProcess,
+  startWorkerProcess,
+  setWorkerStatus,
 } = workerSlice.actions;
 export default workerSlice.reducer;

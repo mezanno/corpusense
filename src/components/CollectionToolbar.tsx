@@ -6,9 +6,9 @@ import {
 } from '@/state/reducers/annotations';
 import { exportTextOfCollectionRequest } from '@/state/reducers/export';
 import {
-  fetchBatchDataAnalysisRequest,
   fetchBatchLayoutRequest,
   fetchBatchOcrRequest,
+  startWorkerProcess,
 } from '@/state/reducers/workers';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -50,9 +50,12 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
 
     if (collectionId !== undefined) {
       appDispatch(
-        fetchBatchDataAnalysisRequest({
-          collectionId: collectionId,
-          model,
+        startWorkerProcess({
+          workerName: 'mistral',
+          params: {
+            scope: { collectionId },
+            model,
+          },
         }),
       );
     }

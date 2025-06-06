@@ -23,7 +23,7 @@ function* launchSaga(saga: () => Generator) {
 
 function getRootSaga() {
   return function* rootSaga() {
-    const sagas = [
+    const coreSagas = [
       manifestsSaga,
       collectionsSaga,
       tagsSaga,
@@ -34,7 +34,8 @@ function getRootSaga() {
       modelsSaga,
       namedEntitiesSaga,
     ];
-    yield all(sagas.map((saga) => spawn(launchSaga, saga)));
+
+    yield all(coreSagas.map((saga) => spawn(launchSaga, saga)));
     yield fork(fetchAllCollections); //load collections at startup
     yield fork(loadHistorySaga); //load history at startup
     yield fork(loadStoredElements); //load stored elements at startup

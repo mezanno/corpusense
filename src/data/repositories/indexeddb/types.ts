@@ -5,9 +5,11 @@ import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { NamedEntity } from '@/data/models/NamedEntity';
+import { Result } from '@/data/models/Result';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
+import { Worker } from '@/data/models/Worker';
 import { Canvas, Manifest } from '@iiif/presentation-3';
 
 export interface AnnotationRepository {
@@ -86,4 +88,13 @@ export interface NamedEntityRepository {
   getByAnnotationId(annotationId: string): Promise<NamedEntity[]>;
   getNamedEntitiesByAnnotationsIds(annotationIds: string[]): Promise<NamedEntity[]>;
   add(entity: NamedEntity): Promise<void>;
+}
+
+export interface ResultRepository {
+  addResult(result: Result): Promise<void>;
+}
+
+export interface WorkerRepository {
+  add(worker: Worker): Promise<void>;
+  update(worker: Worker): Promise<void>;
 }

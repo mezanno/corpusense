@@ -5,8 +5,10 @@ import { IndexedDBItemMetadataRepository } from './itemMetadata';
 import { IndexedDBManifestRepository } from './manifest';
 import { IndexedDBModelRepository } from './models';
 import { IndexedDBNamedEntityRepository } from './namedEntities';
+import { IndexedDBResultRepository } from './results';
 import { IndexedDBStoredItemRepository } from './storedItem';
 import { IndexedDBTagRepository } from './tags';
+import { IndexedDBWorkerRepository } from './workers';
 
 export function getAnnotationRepository() {
   return new IndexedDBAnnotationRepository();
@@ -41,4 +43,12 @@ export function getModelRepository() {
 
 export function getNamedEntityRepository() {
   return new IndexedDBNamedEntityRepository();
+}
+
+export function getResultRepository() {
+  return new IndexedDBResultRepository();
+}
+
+export function getWorkerRepository() {
+  return new IndexedDBWorkerRepository();
 }
