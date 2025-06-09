@@ -1,6 +1,7 @@
 import { Combine, MessageSquareOff, OctagonXIcon } from 'lucide-react';
 
 import { FC } from 'react';
+import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 interface DangerousMenuProps {
@@ -14,18 +15,19 @@ const DangerousMenu: FC<DangerousMenuProps> = ({
   handleDeleteAllAnnotations,
   handleRecomputeRegions,
 }) => {
+  const { t } = useTranslation();
   const params = {
     name: 'btn_dangerous_menu',
     icon: <OctagonXIcon />,
     info: 'info_dangerous_menu',
     items: [
       {
-        name: 'btn_reset_annotations',
+        name: t('btn_reset_annotations'),
         icon: <MessageSquareOff />,
         action: handleDeleteAllAnnotations,
       },
       {
-        name: 'btn_reset_regions',
+        name: t('btn_reset_regions'),
         icon: <Combine />,
         action: handleRecomputeRegions,
       },

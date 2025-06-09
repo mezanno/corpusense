@@ -1,4 +1,5 @@
 import { Puzzle, ScanText, TableProperties, TextSearch } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 const AnalysisMenu = ({
@@ -12,23 +13,24 @@ const AnalysisMenu = ({
   handleOcr?: () => void;
   handleExtractData?: () => void;
 }) => {
+  const { t } = useTranslation();
   const params = {
     name: 'btn_start_analysis',
     icon: <TextSearch />,
     info: 'info_start_analysis',
     items: [
       {
-        name: 'btn_detect_layout',
+        name: t('btn_detect_layout'),
         icon: <TableProperties />,
         action: handleLayout,
       },
       {
-        name: 'btn_OCR_analyze',
+        name: t('btn_OCR_analyze'),
         icon: <ScanText />,
         action: handleOcr,
       },
       {
-        name: 'btn_data_extraction',
+        name: t('btn_data_extraction'),
         icon: <Puzzle />,
         action: handleExtractData,
       },

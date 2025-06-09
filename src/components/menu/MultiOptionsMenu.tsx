@@ -67,7 +67,7 @@ const MultiOptionsMenu = ({
             .map((item, index) => (
               <DropdownMenuItem key={index} disabled={isRunning} onClick={item.action}>
                 {item.icon}
-                {t(item.name)}
+                {item.name}
               </DropdownMenuItem>
             ))}
         </DropdownMenuContent>
