@@ -155,7 +155,6 @@ function* handleFetchOcr({
     console.log(gradioResult.data);
     try {
       const peroResult = peroResultSchema.parse(gradioResult.data);
-      // console.log('peroResult: ', peroResult);
       const annotations = convertPeroTranscriptionsToAnnotations(
         peroResult,
         canvas.id,
@@ -234,10 +233,6 @@ function* handleStartBatchOcrProcess(
       yield all(
         batch.map((canvas) => call(handleFetchOcr, { canvas, collectionId, region: undefined })),
       );
-      // yield fork(handleFetchOcr, {
-      //   canvas: canvases[i],
-      //   region: undefined,
-      // });
     }
     yield put(processSuccess({ id: collectionId, result: 'toto' }));
   } catch (error) {
@@ -252,10 +247,6 @@ function* handleStartProcess(action: PayloadAction<fetchLayoutPayload>) {
 function* handleStartOcrProcess(action: PayloadAction<fetchOcrPayload>) {
   yield fork(handleFetchOcr, action.payload);
 }
-
-// function* handleDataAnalysisProcess(action: PayloadAction<fetchDataAnalysisPayload>) {
-//   yield fork(handleDataAnalysis, action.payload);
-// }
 
 function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPayload>) {
   const { workerName, params } = action.payload;
@@ -321,8 +312,6 @@ export default function* workerSaga() {
   yield takeLatest(fetchOcrRequest, handleStartOcrProcess);
   yield takeLatest(fetchBatchOcrRequest, handleStartBatchOcrProcess);
   yield takeLatest(fetchBatchLayoutRequest, handleStartBatchLayoutProcess);
-  // yield takeLatest(fetchDataAnalysisRequest, handleDataAnalysisProcess);
-  // yield takeLatest(fetchBatchDataAnalysisRequest, handleStartBatchDataAnalysisProcess);
   yield takeEvery(startWorkerProcess, handleStartWorkerProcess);
   yield takeEvery(exportWorkerResultRequest, handleExportWorkerResult);
 }
