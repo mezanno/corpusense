@@ -44,6 +44,7 @@
   "btn_start_analysis": "Lancer un traitement",
   "btn_dangerous_menu": "Menu pour ceux qui savent ce qu'ils font",
   "btn_export_menu": "Exports",
+  "btn_export_result": "Exporter le résultat de {{name}}",
   "btn_reset_annotations": "Supprimer toutes les annotations",
   "btn_reset_regions": "Recalculer les régions",
   "btn_export_text": "Exporter le texte",

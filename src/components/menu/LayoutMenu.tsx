@@ -1,12 +1,15 @@
+import { WorkerScope } from '@/data/models/Worker';
 import { Copy, Layers, Layers2 } from 'lucide-react';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 const LayoutMenu = ({
   elementId,
+  scope,
   handleDuplicateToAll,
   handleDuplicateEach2,
 }: {
   elementId: string;
+  scope: WorkerScope;
   handleDuplicateToAll?: () => void;
   handleDuplicateEach2?: () => void;
 }) => {
@@ -28,7 +31,7 @@ const LayoutMenu = ({
     ],
   };
 
-  return <MultiOptionsMenu params={params} elementId={elementId} />;
+  return <MultiOptionsMenu params={params} elementId={elementId} scope={scope} />;
 };
 
 export default LayoutMenu;

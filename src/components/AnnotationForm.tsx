@@ -177,6 +177,7 @@ const AnnotationForm = ({
             handleExportText={handleExportText}
             handleDeleteAllAnnotations={handleRemoveAllAnnotationsInside}
             elementId={canvas.id}
+            scope={{ annotationId: selected[0].annotation.id }}
           />
           <Button
             title={t('btn_delete_annotation')}

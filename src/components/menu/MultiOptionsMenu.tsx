@@ -1,3 +1,4 @@
+import { WorkerScope } from '@/data/models/Worker';
 import { useAppSelector } from '@/hooks/hooks';
 import { WorkerStatus } from '@/state/reducers/workers';
 import { getWorker } from '@/state/selectors/workers';
@@ -27,10 +28,12 @@ export interface MultiOptionsMenuParams {
 const MultiOptionsMenu = ({
   params,
   elementId,
+  scope,
   color = 'text-black',
 }: {
   params: MultiOptionsMenuParams;
   elementId: string; // used to identify the worker associated with the menu
+  scope: WorkerScope;
   color?: string;
 }) => {
   const { t } = useTranslation();

@@ -139,6 +139,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
             handleLayout={handleStartLayoutAnalysis}
             handleExtractData={handleExtractData}
             elementId={cvcState.canvas?.id ?? ''}
+            scope={{ canvasId: cvcState.canvas?.id ?? '', collectionId: props.collectionId ?? '' }}
           />
 
           <div className='flex items-center space-x-1 rounded-xl border p-2 align-middle'>
@@ -160,6 +161,10 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
               elementId={cvcState.canvas?.id ?? ''}
               handleDuplicateToAll={handleDuplicateRegionToAllPages}
               handleDuplicateEach2={handleDuplicateRegionEach2}
+              scope={{
+                canvasId: cvcState.canvas?.id ?? '',
+                collectionId: props.collectionId ?? '',
+              }}
             />
           )}
         </div>

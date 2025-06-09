@@ -1,17 +1,20 @@
 import { Combine, MessageSquareOff, OctagonXIcon } from 'lucide-react';
 
+import { WorkerScope } from '@/data/models/Worker';
 import { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 interface DangerousMenuProps {
   elementId: string;
+  scope: WorkerScope;
   handleDeleteAllAnnotations?: () => void;
   handleRecomputeRegions?: () => void;
 }
 
 const DangerousMenu: FC<DangerousMenuProps> = ({
   elementId,
+  scope,
   handleDeleteAllAnnotations,
   handleRecomputeRegions,
 }) => {
@@ -34,7 +37,9 @@ const DangerousMenu: FC<DangerousMenuProps> = ({
     ],
   };
 
-  return <MultiOptionsMenu params={params} elementId={elementId} color='text-red-500' />;
+  return (
+    <MultiOptionsMenu params={params} elementId={elementId} scope={scope} color='text-red-500' />
+  );
 };
 
 export default DangerousMenu;

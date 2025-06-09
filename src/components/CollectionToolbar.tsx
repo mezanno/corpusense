@@ -1,4 +1,5 @@
 import { DataModel } from '@/data/models/DataModel';
+import { Worker } from '@/data/models/Worker';
 import { useAppDispatch } from '@/hooks/hooks';
 import {
   recomputeRegionsRequest,
@@ -6,6 +7,7 @@ import {
 } from '@/state/reducers/annotations';
 import { exportTextOfCollectionRequest } from '@/state/reducers/export';
 import {
+  exportWorkerResultRequest,
   fetchBatchLayoutRequest,
   fetchBatchOcrRequest,
   startWorkerProcess,
@@ -45,6 +47,10 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
     setDialogOpen(true);
   };
 
+  const handleExportResult = (worker: Worker) => {
+    appDispatch(exportWorkerResultRequest(worker));
+  };
+
   const close = (model: DataModel) => {
     setDialogOpen(false);
 
@@ -71,7 +77,9 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
         handleExportText={handleExportText}
         handleExtractData={handleExtractData}
         handleRecomputeRegions={handleRecomputeRegions}
+        handleExportResult={handleExportResult}
         elementId={collectionId}
+        scope={{ collectionId }}
       />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>

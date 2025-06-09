@@ -1,14 +1,17 @@
+import { WorkerScope } from '@/data/models/Worker';
 import { Puzzle, ScanText, TableProperties, TextSearch } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 const AnalysisMenu = ({
   elementId,
+  scope,
   handleLayout,
   handleOcr,
   handleExtractData,
 }: {
   elementId: string;
+  scope: WorkerScope;
   handleLayout?: () => void;
   handleOcr?: () => void;
   handleExtractData?: () => void;
@@ -37,7 +40,7 @@ const AnalysisMenu = ({
     ],
   };
 
-  return <MultiOptionsMenu params={params} elementId={elementId} />;
+  return <MultiOptionsMenu params={params} elementId={elementId} scope={scope} />;
 };
 
 export default AnalysisMenu;

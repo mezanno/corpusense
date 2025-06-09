@@ -1,3 +1,4 @@
+import { Worker, WorkerScope } from '@/data/models/Worker';
 import AnalysisMenu from './menu/AnalysisMenu';
 import DangerousMenu from './menu/DangerousMenu';
 import ExportMenu from './menu/ExportMenu';
@@ -10,7 +11,9 @@ const Toolbar = ({
   handleRecomputeRegions,
   handleExportText,
   handleExtractData,
+  handleExportResult,
   elementId,
+  scope,
 }: {
   title?: string;
   handleLayout?: () => void;
@@ -19,7 +22,9 @@ const Toolbar = ({
   handleRecomputeRegions?: () => void;
   handleExportText?: () => void;
   handleExtractData?: () => void;
+  handleExportResult?: (worker: Worker) => void;
   elementId: string;
+  scope: WorkerScope;
 }) => {
   return (
     <div className='flex items-center space-x-2'>
@@ -29,13 +34,20 @@ const Toolbar = ({
         handleOcr={handleOcr}
         handleExtractData={handleExtractData}
         elementId={elementId}
+        scope={scope}
       />
       <DangerousMenu
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleRecomputeRegions={handleRecomputeRegions}
         elementId={elementId}
+        scope={scope}
       />
-      <ExportMenu handleExportText={handleExportText} elementId={elementId} />
+      <ExportMenu
+        handleExportText={handleExportText}
+        handleExportResult={handleExportResult}
+        elementId={elementId}
+        scope={scope}
+      />
     </div>
   );
 };
