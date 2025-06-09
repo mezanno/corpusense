@@ -1,4 +1,5 @@
 import { DataModel } from '@/data/models/DataModel';
+import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { isCanvasScope, isCollectionScope } from '@/data/models/Worker';
 import {
   getCollectionRepository,
@@ -9,8 +10,8 @@ import { generateSchema } from '@/data/utils/model';
 import { Canvas } from '@iiif/presentation-3';
 import FileSaver from 'file-saver';
 import i18next from 'i18next';
+import { json2csv } from 'json-2-csv';
 import { call, Effect, put } from 'redux-saga/effects';
-import { v4 as uuid } from 'uuid';
 import {
   PluginParams,
   processError,
@@ -88,8 +89,7 @@ export function* startSingleMistralAnalysisProcess(
     if ('content' in message && typeof message.content === 'string') {
       console.log('Response length : ', message.content.length);
       //save the result in the IndexedDB
-      const result = {
-        id: uuid(),
+      const result: ResultCreateDTO = {
         scope: { canvasId, collectionId },
         workerId,
         value: message.content,
@@ -185,4 +185,33 @@ export default function* mistralSaga(params: PluginParams) {
   } else {
     console.log('`Mistral plugin saga started for annotation scope', scope.annotationId);
   }
+}
+
+export function* exportResult(results: Result[]) {
+  if (results.length === 0) {
+    console.warn('No results to export from Mistral plugin');
+    return;
+  }
+  let allTheData: unknown[] = [];
+  for (let i = 0; i < results.length; i++) {
+    try {
+      const dataParsed = JSON.parse(results[i].value as string) as unknown[];
+      allTheData = [...allTheData, ...dataParsed];
+    } catch (error) {
+      //TODO: on fait quoi lorsque le json est invalide ?
+      console.error('Error parsing dataInCanvas:', error);
+    }
+  }
+  yield call(
+    FileSaver.saveAs,
+    new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
+    'exported_data.json',
+  );
+
+  const csv = json2csv(allTheData as object[]);
+  yield call(
+    FileSaver.saveAs,
+    new Blob([csv], { type: 'text/plain;charset=utf-8' }),
+    'exported_data.csv',
+  );
 }

@@ -2,10 +2,12 @@ import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annota
 import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
-import { WorkerStatus } from '@/data/models/Worker';
+import { Result } from '@/data/models/Result';
+import { Worker, WorkerStatus } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
+  getResultRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
@@ -28,6 +30,7 @@ import {
 import { v4 as uuid } from 'uuid';
 import { fetchAnnotationsSuccess } from '../reducers/annotations';
 import {
+  exportWorkerResultRequest,
   fetchBatchLayoutRequest,
   fetchBatchOcrRequest,
   fetchLayoutPayload,
@@ -38,6 +41,8 @@ import {
   processRunning,
   processStart,
   processSuccess,
+  setResults,
+  setWorkers,
   setWorkerStatus,
   startWorkerProcess,
   StartWorkerProcessPayload,
@@ -260,7 +265,7 @@ function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPaylo
   }
   const workerRepository = getWorkerRepository();
   const saga = pluginSagas[workerName];
-  const worker = {
+  let worker = {
     id: uuid(),
     name: workerName,
     scope: params.scope,
@@ -272,16 +277,43 @@ function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPaylo
     yield put(setWorkerStatus(worker));
 
     params.workerId = worker.id;
-    yield call(saga, params);
+    yield call(saga.run, params);
 
-    worker.status = WorkerStatus.COMPLETED;
+    worker = { ...worker, status: WorkerStatus.COMPLETED };
     yield call([workerRepository, workerRepository.update], worker);
   } catch (error) {
     console.error(`Error in plugin saga for ${workerName}:`, error);
-    worker.status = WorkerStatus.ERROR;
+    worker = { ...worker, status: WorkerStatus.ERROR };
     yield call([workerRepository, workerRepository.update], worker);
   }
   yield put(setWorkerStatus(worker));
+}
+
+function* handleExportWorkerResult(
+  action: PayloadAction<Worker>,
+): Generator<Effect, void, Result[]> {
+  const worker = action.payload;
+  const resultRepository = getResultRepository();
+  const results = yield call([resultRepository, resultRepository.selectByWorkerId], worker.id);
+  if (results.length === 0) {
+    //TODO! afficher message d'erreur dans l'UI
+    console.warn(`No results found for worker ${worker.id}`);
+    return;
+  }
+  const saga = pluginSagas[worker.name];
+  if (saga !== undefined && saga !== null && saga.export) {
+    yield call(saga.export, results);
+  }
+}
+
+function* fetchWorkers(): Generator<Effect, void, Worker[] | Result[]> {
+  const workerRepository = getWorkerRepository();
+  const workers = (yield call([workerRepository, workerRepository.selectAll])) as Worker[];
+  yield put(setWorkers(workers));
+
+  const resultRepository = getResultRepository();
+  const results = (yield call([resultRepository, resultRepository.selectAll])) as Result[];
+  yield put(setResults(results));
 }
 
 export default function* workerSaga() {
@@ -292,4 +324,7 @@ export default function* workerSaga() {
   // yield takeLatest(fetchDataAnalysisRequest, handleDataAnalysisProcess);
   // yield takeLatest(fetchBatchDataAnalysisRequest, handleStartBatchDataAnalysisProcess);
   yield takeEvery(startWorkerProcess, handleStartWorkerProcess);
+  yield takeEvery(exportWorkerResultRequest, handleExportWorkerResult);
 }
+
+export { fetchWorkers };

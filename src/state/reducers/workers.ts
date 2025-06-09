@@ -1,4 +1,5 @@
 import { DataModel } from '@/data/models/DataModel';
+import { Result } from '@/data/models/Result';
 import { Worker, WorkerScope } from '@/data/models/Worker';
 import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
@@ -25,6 +26,8 @@ export interface WorkerState {
       error?: string;
     }
   >;
+  newWorker: Worker[];
+  results: Result[];
 }
 
 export const workerInitialState: WorkerState = {
@@ -33,6 +36,8 @@ export const workerInitialState: WorkerState = {
     lastEvent: '',
   },
   workers: {},
+  newWorker: [],
+  results: [],
 };
 
 export interface fetchOcrPayload {
@@ -137,7 +142,23 @@ export const workerSlice = createSlice({
       };
     },
     startWorkerProcess: (_state, _action: PayloadAction<StartWorkerProcessPayload>) => {},
-    setWorkerStatus: (_state, _action: PayloadAction<Worker>) => {},
+    setWorkerStatus: (state, action: PayloadAction<Worker>) => {
+      if (state.newWorker.find((w) => w.id === action.payload.id)) {
+        // If the worker already exists, update it
+        const index = state.newWorker.findIndex((w) => w.id === action.payload.id);
+        state.newWorker[index] = action.payload;
+      } else {
+        // If the worker does not exist, add it
+        state.newWorker.push(action.payload);
+      }
+    },
+    setWorkers: (state, action: PayloadAction<Worker[]>) => {
+      state.newWorker = action.payload;
+    },
+    setResults: (state, action: PayloadAction<Result[]>) => {
+      state.results = action.payload;
+    },
+    exportWorkerResultRequest: (_state, _action: PayloadAction<Worker>) => {}, // action.payload is a workerId
   },
 });
 
@@ -157,5 +178,8 @@ export const {
   resetCanvasProcess,
   startWorkerProcess,
   setWorkerStatus,
+  setWorkers,
+  setResults,
+  exportWorkerResultRequest,
 } = workerSlice.actions;
 export default workerSlice.reducer;

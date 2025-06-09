@@ -8,7 +8,7 @@ import namedEntitiesSaga from './namedEntities';
 import selectionSaga from './selection';
 import { loadStoredElements } from './storedItems';
 import tagsSaga, { fetchAllTags } from './tags';
-import workerSaga from './workers';
+import workerSaga, { fetchWorkers } from './workers';
 
 function* launchSaga(saga: () => Generator) {
   while (true) {
@@ -41,6 +41,7 @@ function getRootSaga() {
     yield fork(loadStoredElements); //load stored elements at startup
     yield fork(fetchAllTags); //load types list at startup
     yield fork(fetchModels); //load models at startup
+    yield fork(fetchWorkers); //load workers at startup
   };
 }
 
