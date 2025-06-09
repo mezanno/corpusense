@@ -28,7 +28,7 @@ export function* startSingleMistralAnalysisProcess(
   model: DataModel,
   workerId: string,
 ): Generator<Effect, string | void, string | Response | object> {
-  yield put(processRunning(canvasId));
+  yield put(processRunning({ collectionId, canvasId }));
   let text = (yield call(generateTextFromCanvas, canvasId, collectionId)) as string;
   text = text.replace('"', ''); //.replace('«', '').replace('»', '');
   if (text === undefined || text.length === 0) {
@@ -74,7 +74,7 @@ export function* startSingleMistralAnalysisProcess(
   const data = (yield call([response, 'json'])) as object;
   console.log('Response from Mistral:', data);
 
-  yield put(processSuccess({ id: canvasId, result: 'toto' }));
+  yield put(processSuccess({ collectionId, canvasId }));
 
   if (
     typeof data === 'object' &&
@@ -112,7 +112,7 @@ function* startBatchMistralAnalysisProcess(
     `Mistral plugin saga started for collection ${collectionId} with model ${model.name}`,
   );
 
-  yield put(processRunning(collectionId));
+  yield put(processRunning({ collectionId }));
 
   const collectionRepository = getCollectionRepository();
   const canvases = (yield call(
@@ -124,7 +124,7 @@ function* startBatchMistralAnalysisProcess(
     return;
   }
   for (const canvas of canvases) {
-    yield put(processStart(canvas.id));
+    yield put(processStart({ collectionId, canvasId: canvas.id }));
   }
   let allTheData: unknown[] = [];
   for (let i = 0; i < canvases.length; i++) {
@@ -153,7 +153,7 @@ function* startBatchMistralAnalysisProcess(
     new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
     'exported_data.json',
   );
-  yield put(processSuccess({ id: collectionId, result: 'toto' }));
+  yield put(processSuccess({ collectionId }));
 }
 
 //type guard to check if params has scope and model

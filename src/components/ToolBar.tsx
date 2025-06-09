@@ -12,7 +12,6 @@ const Toolbar = ({
   handleExportText,
   handleExtractData,
   handleExportResult,
-  elementId,
   scope,
 }: {
   title?: string;
@@ -23,7 +22,6 @@ const Toolbar = ({
   handleExportText?: () => void;
   handleExtractData?: () => void;
   handleExportResult?: (worker: Worker) => void;
-  elementId: string;
   scope: WorkerScope;
 }) => {
   return (
@@ -33,19 +31,16 @@ const Toolbar = ({
         handleLayout={handleLayout}
         handleOcr={handleOcr}
         handleExtractData={handleExtractData}
-        elementId={elementId}
         scope={scope}
       />
       <DangerousMenu
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleRecomputeRegions={handleRecomputeRegions}
-        elementId={elementId}
         scope={scope}
       />
       <ExportMenu
         handleExportText={handleExportText}
         handleExportResult={handleExportResult}
-        elementId={elementId}
         scope={scope}
       />
     </div>

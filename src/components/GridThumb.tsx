@@ -75,7 +75,7 @@ const GridThumb = ({
         )}
       </div>
 
-      <WorkerStatusIcon elementId={canvasId} />
+      <WorkerStatusIcon scope={{ collectionId, canvasId }} />
     </div>
   );
 };

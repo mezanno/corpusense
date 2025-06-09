@@ -138,7 +138,6 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
             handleDeleteAllAnnotations={handleDeleteAllAnnotations}
             handleLayout={handleStartLayoutAnalysis}
             handleExtractData={handleExtractData}
-            elementId={cvcState.canvas?.id ?? ''}
             scope={{ canvasId: cvcState.canvas?.id ?? '', collectionId: props.collectionId ?? '' }}
           />
 
@@ -158,7 +157,6 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
           </div>
           {regionAnnotations.length > 0 && (
             <LayoutMenu
-              elementId={cvcState.canvas?.id ?? ''}
               handleDuplicateToAll={handleDuplicateRegionToAllPages}
               handleDuplicateEach2={handleDuplicateRegionEach2}
               scope={{

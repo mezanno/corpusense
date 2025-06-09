@@ -1,3 +1,4 @@
+import { isSameScope, WorkerStatus } from '@/data/models/Worker';
 import { Canvas } from '@iiif/presentation-3';
 import reducer, {
   fetchLayoutRequest,
@@ -5,10 +6,8 @@ import reducer, {
   processRunning,
   processStart,
   processSuccess,
-  resetCanvasProcess,
   resetLastWorkerError,
   workerInitialState,
-  WorkerStatus,
 } from '../workers';
 
 describe('workers reducer', () => {
@@ -21,41 +20,38 @@ describe('workers reducer', () => {
   });
 
   it('should handle processStart', () => {
-    const action = processStart('canvas1');
+    const scope = { collectionId: 'collectionId' };
+    const action = processStart(scope);
     const state = reducer(workerInitialState, action);
 
-    expect(state.workers['canvas1']).toEqual({ status: WorkerStatus.PENDING });
+    expect(state.status.find((s) => isSameScope(s.scope, scope))).toEqual({
+      scope,
+      status: WorkerStatus.WAITING,
+    });
   });
 
   it('should handle processRunning', () => {
-    const action = processRunning('canvas1');
+    const scope = { collectionId: 'collectionId' };
+    const action = processRunning(scope);
     const state = reducer(workerInitialState, action);
-
-    expect(state.workers['canvas1']).toEqual({
-      status: WorkerStatus.PROCESSING,
-      result: '',
-      error: '',
+    expect(state.status.find((s) => isSameScope(s.scope, scope))).toEqual({
+      scope,
+      status: WorkerStatus.INPROGRESS,
     });
   });
 
   it('should handle processSuccess', () => {
-    const action = processSuccess({ id: 'canvas1', result: 'Success Result' });
+    const scope = { collectionId: 'collectionId' };
+    const action = processSuccess(scope);
     const state = reducer(workerInitialState, action);
 
-    expect(state.workers['canvas1']).toEqual({
-      status: WorkerStatus.SUCCESS,
-      result: 'Success Result',
-    });
+    expect(state.status.find((s) => isSameScope(s.scope, scope))).toBeUndefined();
   });
 
   it('should handle processError', () => {
     const action = processError({ id: 'canvas1', error: 'Error occurred' });
     const state = reducer(workerInitialState, action);
 
-    expect(state.workers['canvas1']).toEqual({
-      status: WorkerStatus.ERROR,
-      error: 'Error occurred',
-    });
     expect(state.global.error).toBe('Error occurred');
   });
 
@@ -68,22 +64,5 @@ describe('workers reducer', () => {
     const state = reducer(stateWithError, action);
 
     expect(state.global.error).toBe('');
-  });
-
-  it('should handle resetCanvasProcess', () => {
-    const stateWithCanvas = {
-      ...workerInitialState,
-      workers: {
-        canvas1: { status: WorkerStatus.PROCESSING, result: 'Result', error: '' },
-      },
-    };
-    const action = resetCanvasProcess('canvas1');
-    const state = reducer(stateWithCanvas, action);
-
-    expect(state.workers['canvas1']).toEqual({
-      status: WorkerStatus.IDLE,
-      result: '',
-      error: '',
-    });
   });
 });

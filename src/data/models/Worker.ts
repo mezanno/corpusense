@@ -1,4 +1,5 @@
 export enum WorkerStatus {
+  WAITING = 'waiting',
   INPROGRESS = 'inprogress',
   COMPLETED = 'completed',
   ERROR = 'error',

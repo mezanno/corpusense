@@ -4,13 +4,11 @@ import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 const AnalysisMenu = ({
-  elementId,
   scope,
   handleLayout,
   handleOcr,
   handleExtractData,
 }: {
-  elementId: string;
   scope: WorkerScope;
   handleLayout?: () => void;
   handleOcr?: () => void;
@@ -40,7 +38,7 @@ const AnalysisMenu = ({
     ],
   };
 
-  return <MultiOptionsMenu params={params} elementId={elementId} scope={scope} />;
+  return <MultiOptionsMenu params={params} scope={scope} />;
 };
 
 export default AnalysisMenu;

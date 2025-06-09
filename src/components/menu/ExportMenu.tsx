@@ -6,12 +6,10 @@ import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 const ExportMenu = ({
-  elementId,
   scope,
   handleExportText,
   handleExportResult,
 }: {
-  elementId: string;
   scope: WorkerScope;
   handleExportText?: () => void;
   handleExportResult?: (worker: Worker) => void;
@@ -39,7 +37,7 @@ const ExportMenu = ({
     info: 'info_export_menu',
     items,
   };
-  return <MultiOptionsMenu params={params} elementId={elementId} scope={scope} />;
+  return <MultiOptionsMenu params={params} scope={scope} />;
 };
 
 export default ExportMenu;

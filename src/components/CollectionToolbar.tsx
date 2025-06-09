@@ -78,7 +78,6 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
         handleExtractData={handleExtractData}
         handleRecomputeRegions={handleRecomputeRegions}
         handleExportResult={handleExportResult}
-        elementId={collectionId}
         scope={{ collectionId }}
       />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

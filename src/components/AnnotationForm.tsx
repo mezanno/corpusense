@@ -176,7 +176,6 @@ const AnnotationForm = ({
             handleOcr={startOcrAsync}
             handleExportText={handleExportText}
             handleDeleteAllAnnotations={handleRemoveAllAnnotationsInside}
-            elementId={canvas.id}
             scope={{ annotationId: selected[0].annotation.id }}
           />
           <Button

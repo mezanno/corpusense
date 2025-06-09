@@ -1,21 +1,21 @@
+import { WorkerScope, WorkerStatus } from '@/data/models/Worker';
 import { useAppSelector } from '@/hooks/hooks';
-import { WorkerStatus } from '@/state/reducers/workers';
-import { getWorker } from '@/state/selectors/workers';
+import { getStatus } from '@/state/selectors/workers';
 import { ClipLoader, GridLoader } from 'react-spinners';
 
-const WorkerStatusIcon = ({ elementId }: { elementId: string }) => {
-  const worker = useAppSelector((state) => getWorker(state, elementId));
+const WorkerStatusIcon = ({ scope }: { scope: WorkerScope }) => {
+  const worker = useAppSelector((state) => getStatus(state, scope));
   if (worker === undefined) {
     return null;
   }
-  if (worker?.status == WorkerStatus.PENDING) {
+  if (worker?.status == WorkerStatus.WAITING) {
     return (
       <div className='absolute inset-0 flex items-center justify-center'>
         <ClipLoader size={20} />
       </div>
     );
   }
-  if (worker?.status == WorkerStatus.PROCESSING) {
+  if (worker?.status == WorkerStatus.INPROGRESS) {
     return (
       <div className='absolute inset-0 flex items-center justify-center'>
         <GridLoader size={10} />

@@ -62,7 +62,7 @@ function* handleFetchLayout({
       return;
     }
 
-    yield put(processRunning(canvas.id));
+    yield put(processRunning({ collectionId, canvasId: canvas.id }));
     const image = getImage(canvas);
 
     const response: Response = yield call(
@@ -86,7 +86,7 @@ function* handleFetchLayout({
     yield put(fetchAnnotationsSuccess(annotations));
     const annotationRepository = getAnnotationRepository();
     yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
-    yield put(processSuccess({ id: canvas.id, result: data }));
+    yield put(processSuccess({ collectionId, canvasId: canvas.id }));
   } catch (error) {
     console.error('Error fetching layout:', error);
     yield put(processError({ id: canvas.id, error: getErrorMessage(error) }));
@@ -106,7 +106,7 @@ function* handleFetchOcr({
     // yield put(processError({ url: canvas.id, error: 'Canvas or region is undefined' }));
     return;
   }
-  yield put(processRunning(canvas.id));
+  yield put(processRunning({ collectionId, canvasId: canvas.id }));
 
   try {
     const image = getImage(canvas);
@@ -163,7 +163,7 @@ function* handleFetchOcr({
       yield put(fetchAnnotationsSuccess(annotations));
       const annotationRepository = getAnnotationRepository();
       yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
-      yield put(processSuccess({ id: canvas.id, result: 'toto' }));
+      yield put(processSuccess({ collectionId, canvasId: canvas.id }));
     } catch (error) {
       try {
         const peroError = peroResultError.parse(gradioResult.data);
@@ -184,7 +184,7 @@ function* handleStartBatchLayoutProcess(
   action: PayloadAction<string>,
 ): Generator<Effect, void, Canvas[]> {
   const collectionId = action.payload;
-  yield put(processRunning(collectionId));
+  yield put(processRunning({ collectionId }));
 
   const collectionRepository = getCollectionRepository();
   const canvases = yield call(
@@ -196,7 +196,7 @@ function* handleStartBatchLayoutProcess(
     return;
   }
   for (const canvas of canvases) {
-    yield put(processStart(canvas.id));
+    yield put(processStart({ collectionId, canvasId: canvas.id }));
   }
   for (let i = 0; i < canvases.length; i++) {
     yield call(handleFetchLayout, {
@@ -205,14 +205,14 @@ function* handleStartBatchLayoutProcess(
       originalWidth: canvases[i].width ?? 0,
     });
   }
-  yield put(processSuccess({ id: collectionId, result: 'toto' }));
+  yield put(processSuccess({ collectionId }));
 }
 
 function* handleStartBatchOcrProcess(
   action: PayloadAction<string>,
 ): Generator<Effect, void, Canvas[]> {
   const collectionId = action.payload;
-  yield put(processRunning(collectionId));
+  yield put(processRunning({ collectionId }));
 
   const collectionRepository = getCollectionRepository();
   const canvases = yield call(
@@ -224,7 +224,7 @@ function* handleStartBatchOcrProcess(
     return;
   }
   for (const canvas of canvases) {
-    yield put(processStart(canvas.id));
+    yield put(processStart({ collectionId, canvasId: canvas.id }));
   }
   const batchSize = 10; // Number of canvases to process in parallel
   try {
@@ -234,7 +234,7 @@ function* handleStartBatchOcrProcess(
         batch.map((canvas) => call(handleFetchOcr, { canvas, collectionId, region: undefined })),
       );
     }
-    yield put(processSuccess({ id: collectionId, result: 'toto' }));
+    yield put(processSuccess({ collectionId }));
   } catch (error) {
     console.error('Error fetching canvases:', error);
   }
