@@ -10,4 +10,8 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
   async update(worker: Worker): Promise<void> {
     await db.workers.put(worker);
   }
+
+  async selectAll(): Promise<Worker[]> {
+    return await db.workers.toArray();
+  }
 }

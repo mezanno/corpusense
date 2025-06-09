@@ -5,7 +5,7 @@ import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { NamedEntity } from '@/data/models/NamedEntity';
-import { Result } from '@/data/models/Result';
+import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
@@ -91,10 +91,13 @@ export interface NamedEntityRepository {
 }
 
 export interface ResultRepository {
-  addResult(result: Result): Promise<void>;
+  addResult(result: ResultCreateDTO): Promise<void>;
+  selectAll(): Promise<Result[]>;
+  selectByWorkerId(workerId: string): Promise<Result[]>;
 }
 
 export interface WorkerRepository {
   add(worker: Worker): Promise<void>;
   update(worker: Worker): Promise<void>;
+  selectAll(): Promise<Worker[]>;
 }

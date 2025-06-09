@@ -28,3 +28,16 @@ export function isCanvasScope(scope: WorkerScope): scope is CanvasScope {
 export function isAnnotationScope(scope: WorkerScope): scope is AnnotationScope {
   return 'annotationId' in scope;
 }
+
+export function isSameScope(s1: WorkerScope, s2: WorkerScope): boolean {
+  if (isCollectionScope(s1) && isCollectionScope(s2)) {
+    return s1.collectionId === s2.collectionId;
+  }
+  if (isCanvasScope(s1) && isCanvasScope(s2)) {
+    return s1.canvasId === s2.canvasId && s1.collectionId === s2.collectionId;
+  }
+  if (isAnnotationScope(s1) && isAnnotationScope(s2)) {
+    return s1.annotationId === s2.annotationId;
+  }
+  return false;
+}
