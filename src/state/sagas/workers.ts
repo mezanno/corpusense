@@ -47,9 +47,9 @@ import {
   startWorkerProcess,
   StartWorkerProcessPayload,
 } from '../reducers/workers';
-import { loadPluginSagas, PluginSaga } from './plugins/loader';
+import { loadWorkerPlugins, WorkerPlugin } from './plugins/loader';
 
-const pluginSagas: Record<string, PluginSaga> = loadPluginSagas();
+const workerPlugins: Record<string, WorkerPlugin> = loadWorkerPlugins();
 
 function* handleFetchLayout({
   canvas,
@@ -250,12 +250,12 @@ function* handleStartOcrProcess(action: PayloadAction<fetchOcrPayload>) {
 
 function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPayload>) {
   const { workerName, params } = action.payload;
-  if (pluginSagas[workerName] === undefined) {
+  if (workerPlugins[workerName] === undefined) {
     console.warn(`No plugin saga found for ${workerName}`);
     return;
   }
   const workerRepository = getWorkerRepository();
-  const saga = pluginSagas[workerName];
+  const saga = workerPlugins[workerName];
   let worker = {
     id: uuid(),
     name: workerName,
@@ -291,7 +291,7 @@ function* handleExportWorkerResult(
     console.warn(`No results found for worker ${worker.id}`);
     return;
   }
-  const saga = pluginSagas[worker.name];
+  const saga = workerPlugins[worker.name];
   if (saga !== undefined && saga !== null && saga.export) {
     yield call(saga.export, results);
   }

@@ -7,18 +7,18 @@ import {
 } from '@/data/repositories/indexeddb/dbFactory';
 import { generateTextFromCanvas } from '@/data/utils/export';
 import { generateSchema } from '@/data/utils/model';
-import { Canvas } from '@iiif/presentation-3';
-import FileSaver from 'file-saver';
-import i18next from 'i18next';
-import { json2csv } from 'json-2-csv';
-import { call, Effect, put } from 'redux-saga/effects';
 import {
   PluginParams,
   processError,
   processRunning,
   processStart,
   processSuccess,
-} from '../../reducers/workers';
+} from '@/state/reducers/workers';
+import { Canvas } from '@iiif/presentation-3';
+import FileSaver from 'file-saver';
+import i18next from 'i18next';
+import { json2csv } from 'json-2-csv';
+import { call, Effect, put } from 'redux-saga/effects';
 
 export const pluginName = 'mistral';
 
