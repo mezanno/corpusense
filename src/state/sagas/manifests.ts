@@ -4,7 +4,6 @@ import {
   getItemMetadataRepository,
   getManifestRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { fetchJson } from '@/data/utils/manifest';
 import { convertJsonToManifest } from '@/utils/manifest';
 import { getErrorMessage, onlyLettersAndNumbers } from '@/utils/utils';
 import { Manifest } from '@iiif/presentation-3';
@@ -25,6 +24,10 @@ import {
   setHistory,
   updateHistorySuccess,
 } from '../reducers/manifests';
+import { ImporterPlugin, loadImporterPlugins } from './plugins/loader';
+
+const importerPlugins: Record<string, ImporterPlugin> = loadImporterPlugins();
+const keys = Object.keys(importerPlugins);
 
 /**
  * Side effect to fetch a manifest from a URL. First, it checks if the manifest is already
@@ -36,13 +39,20 @@ function* handleFetchManifestFromURL(action: {
   payload: FetchManifestPayload;
 }): Generator<Effect, void, Manifest> {
   const url = action.payload.manifestId;
-  const forceV3 = action.payload.forceV3;
+  // const forceV3 = action.payload.forceV3;
   try {
     const manifestRepository = getManifestRepository();
     const manifest = yield call([manifestRepository, manifestRepository.getManifest], url);
     yield call(handleFetchManifest, { storedManifest: manifest });
   } catch (error) {
-    yield call(handleFetchManifest, { fetchFunction: () => fetchJson(url, forceV3) });
+    const importerKey = keys.find((key) => url.includes(key));
+    const importer =
+      importerKey !== undefined ? importerPlugins[importerKey] : importerPlugins['default'];
+    if (importer !== undefined && importer !== null) {
+      yield call(handleFetchManifest, { fetchFunction: () => importer.import(url) });
+    }
+
+    // yield call(handleFetchManifest, { fetchFunction: () => gallicaImporter(url, forceV3) });
   }
 }
 
