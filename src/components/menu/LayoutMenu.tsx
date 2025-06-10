@@ -1,5 +1,6 @@
 import { WorkerScope } from '@/data/models/Worker';
 import { Copy, Layers, Layers2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 const LayoutMenu = ({
@@ -11,18 +12,19 @@ const LayoutMenu = ({
   handleDuplicateToAll?: () => void;
   handleDuplicateEach2?: () => void;
 }) => {
+  const { t } = useTranslation();
   const params = {
     name: 'btn_duplicate_regions',
     icon: <Copy />,
     info: 'info_duplicate_menu',
     items: [
       {
-        name: 'btn_duplicate_regions_all',
+        name: t('btn_duplicate_regions_all'),
         icon: <Layers />,
         action: handleDuplicateToAll,
       },
       {
-        name: 'btn_duplicate_regions_each2',
+        name: t('btn_duplicate_regions_each2'),
         icon: <Layers2 />,
         action: handleDuplicateEach2,
       },
