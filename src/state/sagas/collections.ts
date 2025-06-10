@@ -368,13 +368,15 @@ function* handleLoadCollection(
     if (contentToAdd.length > 0) {
       for (const content of contentToAdd) {
         const manifestRepository = getManifestRepository();
-        const canvas = (yield call(
-          [manifestRepository, manifestRepository.getCanvases],
-          content.manifestId,
-          content.canvasId,
-        )) as Canvas;
-        if (canvas !== undefined) {
+        try {
+          const canvas = (yield call(
+            [manifestRepository, manifestRepository.getCanvases],
+            content.manifestId,
+            content.canvasId,
+          )) as Canvas;
           yield call([canvasRepository, canvasRepository.add], canvas);
+        } catch (e) {
+          console.warn('Error loading canvas', content.canvasId, e);
         }
       }
       const newStoredItems = (yield call([
