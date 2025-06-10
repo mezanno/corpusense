@@ -26,7 +26,7 @@ export function* startSingleMistralAnalysisProcess(
   canvasId: string,
   collectionId: string,
   model: DataModel,
-  workerId: string,
+  workerName: string,
 ): Generator<Effect, string | void, string | Response | object> {
   yield put(processRunning({ collectionId, canvasId }));
   let text = (yield call(generateTextFromCanvas, canvasId, collectionId)) as string;
@@ -91,7 +91,7 @@ export function* startSingleMistralAnalysisProcess(
       //save the result in the IndexedDB
       const result: ResultCreateDTO = {
         scope: { canvasId, collectionId },
-        workerId,
+        workerName,
         value: message.content,
       };
       const resultRepository = getResultRepository();
@@ -106,7 +106,7 @@ export function* startSingleMistralAnalysisProcess(
 function* startBatchMistralAnalysisProcess(
   collectionId: string,
   model: DataModel,
-  workerId: string,
+  workerName: string,
 ): Generator<Effect, void, Canvas[] | string> {
   console.log(
     `Mistral plugin saga started for collection ${collectionId} with model ${model.name}`,
@@ -134,7 +134,7 @@ function* startBatchMistralAnalysisProcess(
         canvases[i].id,
         collectionId,
         model,
-        workerId,
+        workerName,
       )) as string;
       try {
         const dataParsed = JSON.parse(dataInCanvas) as unknown[];
@@ -157,8 +157,10 @@ function* startBatchMistralAnalysisProcess(
 }
 
 //type guard to check if params has scope and model
-function hasScopeAndModel(params: PluginParams): params is PluginParams & { model: DataModel } {
-  return 'scope' in params && 'model' in params;
+function hasScopeAndModel(
+  params: PluginParams,
+): params is PluginParams & { model: DataModel } & { workerName: string } {
+  return 'scope' in params && 'model' in params && 'workerName' in params;
 }
 
 //entry point for the Mistral plugin saga (default export)
@@ -167,20 +169,20 @@ export default function* mistralSaga(params: PluginParams) {
     console.log('Invalid parameters for Mistral plugin saga:', params);
     throw new Error('Invalid parameters for Mistral plugin saga');
   }
-  const { scope, model, workerId } = params;
-  if (workerId === undefined) {
-    console.warn('No workerId provided for Mistral plugin saga');
-    throw new Error('No workerId provided for Mistral plugin saga');
+  const { scope, model, workerName } = params;
+  if (workerName === undefined) {
+    console.warn('No workerName provided for Mistral plugin saga');
+    throw new Error('No workerName provided for Mistral plugin saga');
   }
   if (isCollectionScope(scope)) {
-    yield call(startBatchMistralAnalysisProcess, scope.collectionId, model, workerId);
+    yield call(startBatchMistralAnalysisProcess, scope.collectionId, model, workerName);
   } else if (isCanvasScope(scope)) {
     yield call(
       startSingleMistralAnalysisProcess,
       scope.canvasId,
       scope.collectionId,
       model,
-      workerId,
+      workerName,
     );
   } else {
     console.log('`Mistral plugin saga started for annotation scope', scope.annotationId);

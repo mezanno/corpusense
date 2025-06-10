@@ -267,7 +267,7 @@ function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPaylo
     yield call([workerRepository, workerRepository.add], worker);
     yield put(setWorkerStatus(worker));
 
-    params.workerId = worker.id;
+    params.workerName = worker.name;
     yield call(saga.run, params);
 
     worker = { ...worker, status: WorkerStatus.COMPLETED };
@@ -285,7 +285,7 @@ function* handleExportWorkerResult(
 ): Generator<Effect, void, Result[]> {
   const worker = action.payload;
   const resultRepository = getResultRepository();
-  const results = yield call([resultRepository, resultRepository.selectByWorkerId], worker.id);
+  const results = yield call([resultRepository, resultRepository.selectByWorkerName], worker.name);
   if (results.length === 0) {
     //TODO! afficher message d'erreur dans l'UI
     console.warn(`No results found for worker ${worker.id}`);
