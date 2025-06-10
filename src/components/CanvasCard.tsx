@@ -13,6 +13,7 @@ import {
 } from './ui/context-menu';
 
 import { Collection } from '@/data/models/Collection';
+import { getImageForThumbnail } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import {
   addSelectionToCollectionRequest,
@@ -50,9 +51,9 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
   const selected: boolean = useAppSelector(isSelected(index, canvas.id));
 
   const inputCollectionName = useRef(null);
-
-  //TODO : gérer le cas où canvas.thumbnail est undefined
-  const thumbnail = canvas.thumbnail as IIIFExternalWebResource[];
+  const thumbnail = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
+    getImageForThumbnail(canvas, 200),
+  ];
 
   const dispatch = useAppDispatch();
 

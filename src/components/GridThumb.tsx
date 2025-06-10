@@ -1,5 +1,6 @@
 import WorkerStatusIcon from '@/components/WorkerStatusIcon';
 import { ElementType } from '@/data/models/Annotation';
+import { getImageForThumbnail } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import { removeElementFromCollectionRequest } from '@/state/reducers/collections';
@@ -44,10 +45,14 @@ const GridThumb = ({
     dispatch(removeElementFromCollectionRequest({ collectionId: collectionId, canvasId }));
   }, [canvasId]);
 
+  //! mieux gérer le cas où canvas est undefined
   if (canvas === undefined) {
     return <div aria-errormessage='Error while loading canvas'>Error while loading canvas</div>;
   }
-  const thumbnail = canvas.thumbnail as IIIFExternalWebResource[];
+
+  const thumbnail = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
+    getImageForThumbnail(canvas, 300),
+  ];
 
   return (
     <div

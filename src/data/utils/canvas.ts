@@ -9,4 +9,17 @@ const getImage = (canvas: Canvas): IIIFExternalWebResource => {
   return image;
 };
 
-export { getImage };
+const getImageForThumbnail = (canvas: Canvas, maxWidth: number = 150): IIIFExternalWebResource => {
+  let image = getImage(canvas);
+
+  const regex = /\/full\/\d+,\d+\/0\/[a-z]+\.jpg$/;
+  if (image.id !== undefined && !regex.test(image.id)) {
+    image = {
+      ...image,
+      id: image.id.replace(/\/full\/(\d+,|\d+,\d+|full)/, `/full/${maxWidth},`),
+    };
+  }
+  return image;
+};
+
+export { getImage, getImageForThumbnail };
