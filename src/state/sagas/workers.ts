@@ -11,6 +11,7 @@ import {
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
+import i18n from '@/i18n';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
 import { Canvas } from '@iiif/presentation-3';
@@ -29,6 +30,7 @@ import {
 } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
 import { fetchAnnotationsSuccess } from '../reducers/annotations';
+import { pushInfo } from '../reducers/events';
 import {
   exportWorkerResultRequest,
   fetchBatchLayoutRequest,
@@ -56,6 +58,7 @@ function* handleFetchLayout({
   collectionId,
   originalWidth,
 }: fetchLayoutPayload): Generator<CallEffect | PutEffect, void, Response> {
+  yield put(pushInfo(i18n.t('info_start_layout', { canvas })));
   try {
     if (canvas === undefined) {
       // yield put(processError({ url: canvas.id, error: 'Canvas or region is undefined' }));
@@ -102,6 +105,7 @@ function* handleFetchOcr({
   void,
   Client | PredictReturn | Annotation[]
 > {
+  yield put(pushInfo(i18n.t('info_start_ocr', { canvas })));
   if (canvas === undefined) {
     // yield put(processError({ url: canvas.id, error: 'Canvas or region is undefined' }));
     return;

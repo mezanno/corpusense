@@ -10,11 +10,10 @@ import {
 import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
-import { resetErrror, resetEvent } from '@/state/reducers/annotations';
-import { removeFromOpenedCollections, resetLastError } from '@/state/reducers/collections';
-import { resetAlert } from '@/state/reducers/export';
-import { resetLastWorkerError } from '@/state/reducers/workers';
+import { removeFromOpenedCollections } from '@/state/reducers/collections';
+import { resetLastEvent } from '@/state/reducers/events';
 import { getOpenedCollections } from '@/state/selectors/collections';
+import { getLastErrorEvent, getLastInfoEvent } from '@/state/selectors/events';
 import {
   Bolt,
   ChevronDown,
@@ -162,55 +161,31 @@ const LayoutSideBar = () => {
 };
 
 const Layout = () => {
-  const { newCollectionEvent } = useAppSelector((state) => state.collections);
-  const { error, lastEvent } = useAppSelector((state) => state.workers.global);
-  const { lastExportError, lastExportStatus } = useAppSelector((state) => state.export);
-  const lastAnnotationError = useAppSelector((state) => state.annotations.error);
-  const lastAnnotationEvent = useAppSelector((state) => state.annotations.event);
+  // const { lastExportError, lastExportStatus } = useAppSelector((state) => state.export);
+  const lastInfo = useAppSelector(getLastInfoEvent);
+  const lastError = useAppSelector(getLastErrorEvent);
   const dispatch = useAppDispatch();
-  const { t } = useTranslation();
 
   useEffect(() => {
-    if (newCollectionEvent) {
-      toast.success(t('toast_collection_created'));
-      dispatch(resetLastError());
+    if (lastInfo !== undefined) {
+      toast.success(lastInfo.message);
+      dispatch(resetLastEvent());
     }
-  }, [newCollectionEvent]);
+  }, [lastInfo]);
 
   useEffect(() => {
-    if (error && error !== '') {
-      toast.error(`${t('toast_error')} : ${error}`);
-      dispatch(resetLastWorkerError());
+    if (lastError !== undefined) {
+      toast.error(lastError.message);
+      dispatch(resetLastEvent());
     }
-  }, [error]);
+  }, [lastError]);
 
-  useEffect(() => {
-    if (lastEvent && lastEvent !== '') {
-      toast.info(lastEvent);
-      dispatch(resetLastWorkerError());
-    }
-  }, [lastEvent]);
-
-  useEffect(() => {
-    if (lastAnnotationError !== undefined && lastAnnotationError !== '') {
-      toast.error(lastAnnotationError);
-      dispatch(resetErrror());
-    }
-  }, [lastAnnotationError]);
-
-  useEffect(() => {
-    if (lastAnnotationEvent !== undefined && lastAnnotationEvent !== '') {
-      toast.info(lastAnnotationEvent);
-      dispatch(resetEvent());
-    }
-  }, [lastAnnotationEvent]);
-
-  useEffect(() => {
-    if (lastExportStatus === 'ERROR' && lastExportError !== '') {
-      toast.error(t(lastExportError));
-      dispatch(resetAlert());
-    }
-  }, [lastExportStatus]);
+  // useEffect(() => {
+  //   if (lastExportStatus === 'ERROR' && lastExportError !== '') {
+  //     toast.error(t(lastExportError));
+  //     dispatch(resetAlert());
+  //   }
+  // }, [lastExportStatus]);
 
   return (
     <SidebarProvider className='h-full w-full'>

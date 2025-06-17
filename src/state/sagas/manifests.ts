@@ -4,11 +4,12 @@ import {
   getItemMetadataRepository,
   getManifestRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
+import i18n from '@/i18n';
 import { convertJsonToManifest } from '@/utils/manifest';
 import { getErrorMessage, onlyLettersAndNumbers } from '@/utils/utils';
 import { Manifest } from '@iiif/presentation-3';
-import i18next from 'i18next';
 import { call, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
+import { pushError } from '../reducers/events';
 import {
   fetchManifestError,
   fetchManifestFromArkRequest,
@@ -27,6 +28,8 @@ import {
 import { ImporterPlugin, loadImporterPlugins } from './plugins/loader';
 
 const importerPlugins: Record<string, ImporterPlugin> = loadImporterPlugins();
+
+// const importerPlugins: Record<string, ImporterPlugin> = loadImporterPlugins();
 const keys = Object.keys(importerPlugins);
 
 /**
@@ -45,11 +48,17 @@ function* handleFetchManifestFromURL(action: {
     const manifest = yield call([manifestRepository, manifestRepository.getManifest], url);
     yield call(handleFetchManifest, { storedManifest: manifest });
   } catch (error) {
+    // If the manifest is not found in IndexedDB, we try to fetch it from the URL
     const importerKey = keys.find((key) => url.includes(key));
     const importer =
       importerKey !== undefined ? importerPlugins[importerKey] : importerPlugins['default'];
     if (importer !== undefined && importer !== null) {
-      yield call(handleFetchManifest, { fetchFunction: () => importer.import(url) });
+      try {
+        yield call(handleFetchManifest, { fetchFunction: () => importer.import(url) });
+      } catch (err) {
+        yield put(fetchManifestError());
+        yield put(pushError(i18n.t('error_loading_manifest', { error: getErrorMessage(err) })));
+      }
     }
 
     // yield call(handleFetchManifest, { fetchFunction: () => gallicaImporter(url, forceV3) });
@@ -59,15 +68,17 @@ function* handleFetchManifestFromURL(action: {
 /**
  * Side effect to fetch a manifest from an Ark reference. It constructs the URL using the Ark reference
  * and fetches the manifest from the URL.
+ * TODO: il faudrait pouvoir s'adapter à d'autres ark que ceux de Gallica. Infos : https://arks.org/ark:/12148 https://n2t-dev.n2t.net/e/n2t_apidoc.html
  * @remarks If the Ark reference contains invalid characters, it dispatches an error action.
  * @param action The action containing the Ark reference to fetch the manifest from.
  */
 function* handleFetchManifestFromArk(action: { payload: string }) {
   if (!onlyLettersAndNumbers(action.payload)) {
-    yield put(fetchManifestError(i18next.t('error_ark_invalid')));
+    yield put(fetchManifestError());
+    yield put(pushError(i18n.t('error_ark_invalid')));
   }
   //build the URL based on old Gallica API
-  const url = `https://gallica.bnf.fr/iiif/ark:/12148/${action.payload}/manifest.json`;
+  const url = `https://gallica.bnf.fr/iiif/ark:/${action.payload}/manifest.json`;
   yield call(handleFetchManifestFromURL, { payload: { manifestId: url } });
 }
 
@@ -93,61 +104,56 @@ function* handleFetchManifest({
   fetchFunction?: () => Promise<object> | object;
   storedManifest?: Manifest;
 }): Generator<Effect, void, Manifest | ItemMetadataAttribute[] | History> {
-  try {
-    let manifest: Manifest;
-    if (fetchFunction) {
-      const data = yield call(fetchFunction);
-      if (
-        '@context' in data &&
-        data['@context'] === 'http://iiif.io/api/presentation/3/context.json'
-      ) {
-        manifest = data;
-      } else {
-        manifest = convertJsonToManifest(data);
-      }
-    } else if (storedManifest !== undefined) {
-      manifest = storedManifest;
+  let manifest: Manifest;
+  if (fetchFunction) {
+    const data = yield call(fetchFunction);
+    if (
+      '@context' in data &&
+      data['@context'] === 'http://iiif.io/api/presentation/3/context.json'
+    ) {
+      manifest = data;
     } else {
-      yield put(fetchManifestError(i18next.t('error_no_manifest_method')));
-      return;
+      manifest = convertJsonToManifest(data);
     }
+  } else if (storedManifest !== undefined) {
+    manifest = storedManifest;
+  } else {
+    throw new Error(i18n.t('error_no_manifest_method'));
+  }
 
-    //load the metadata
-    const manifestRepository = getManifestRepository();
-    const result = yield call(
-      [manifestRepository, manifestRepository.loadMetadataForManifest],
-      manifest.id,
-    );
-    const metadata: ItemMetadataAttribute[] = Array.isArray(result) ? result : [];
+  //load the metadata
+  const manifestRepository = getManifestRepository();
+  const result = yield call(
+    [manifestRepository, manifestRepository.loadMetadataForManifest],
+    manifest.id,
+  );
+  const metadata: ItemMetadataAttribute[] = Array.isArray(result) ? result : [];
 
-    yield put(
-      fetchManifestSuccess({
-        content: manifest,
-        metadata,
-      }),
-    );
+  yield put(
+    fetchManifestSuccess({
+      content: manifest,
+      metadata,
+    }),
+  );
 
-    //save the manifest to indexedDB
-    if (storedManifest === undefined) {
-      try {
-        yield call([manifestRepository, manifestRepository.saveManifest], manifest);
-      } catch (error) {
-        console.warn('Error saving manifest to indexedDB', error);
-      }
-    }
-
-    //add the manifest to the history
+  //save the manifest to indexedDB
+  if (storedManifest === undefined) {
     try {
-      const addedHistory = (yield call(
-        [manifestRepository, manifestRepository.addToHistory],
-        manifest.id,
-      )) as History;
-      yield put(updateHistorySuccess(addedHistory));
+      yield call([manifestRepository, manifestRepository.saveManifest], manifest);
     } catch (error) {
-      console.warn('Error adding url to indexedDB history: ', error);
+      console.warn('Error saving manifest to indexedDB', error);
     }
+  }
+
+  //add the manifest to the history
+  try {
+    const addedHistory = (yield call(
+      [manifestRepository, manifestRepository.addToHistory],
+      manifest.id,
+    )) as History;
+    yield put(updateHistorySuccess(addedHistory));
   } catch (error) {
-    yield put(fetchManifestError(getErrorMessage(error)));
+    console.warn('Error adding url to indexedDB history: ', error);
   }
 }
 

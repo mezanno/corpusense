@@ -16,14 +16,16 @@ import {
   generateTextFromCanvas,
   ManifestExport,
 } from '@/data/utils/export';
+import i18n from '@/i18n';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import FileSaver from 'file-saver';
 import JSZIP from 'jszip';
 import { call, CallEffect, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
+import { pushInfo } from '../reducers/events';
 import {
-  exportError,
+  // exportError,
   exportMultipleCollectionsRequest,
   exportRequest,
   exportSuccess,
@@ -171,7 +173,7 @@ function* handleExportTextOfCanvas(
     console.log('Text generated:', text);
     if (text === undefined || text.length === 0) {
       console.log('No text found for this canvas');
-      yield put(exportError('error_export_no_text'));
+      yield put(pushInfo(i18n.t('error_export_no_text')));
       return;
     }
     yield call(
@@ -193,7 +195,7 @@ function* handleExportTextOfAnnotation(
     console.log('Text generated:', text);
     if (text === undefined || text.length === 0) {
       console.log('No text found for this canvas');
-      yield put(exportError('error_export_no_text'));
+      yield put(pushInfo(i18n.t('error_export_no_text')));
       return;
     }
     yield call(

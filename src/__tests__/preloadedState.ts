@@ -1,4 +1,5 @@
 import { Annotation } from '@/data/models/Annotation';
+import { eventsInitialState } from '@/state/reducers/events';
 import { modelsInitialState } from '@/state/reducers/models';
 import { workerInitialState } from '@/state/reducers/workers';
 import { RootState } from '@/state/store';
@@ -7,7 +8,6 @@ const defaultPreloadedState: RootState = {
   manifests: {
     history: [],
     isLoading: false,
-    lastError: null,
     loadedData: null,
     isLoaded: false,
   },
@@ -16,8 +16,6 @@ const defaultPreloadedState: RootState = {
   },
   collections: {
     values: [],
-    lastError: '',
-    newCollectionEvent: false,
     openedCollections: [],
   },
   selection: {
@@ -46,6 +44,7 @@ const defaultPreloadedState: RootState = {
   workers: workerInitialState,
   models: modelsInitialState,
   entities: [],
+  events: eventsInitialState,
 };
 
 export const getPreloadedState = (partialState: Partial<RootState> = {}): RootState => {

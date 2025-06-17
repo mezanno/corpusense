@@ -5,7 +5,6 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface ManifestState {
   isLoading: boolean;
-  lastError: string | null;
   loadedData: {
     content: Manifest;
     metadata: ItemMetadataAttribute[];
@@ -16,7 +15,6 @@ export interface ManifestState {
 
 const initialState: ManifestState = {
   isLoading: false,
-  lastError: '',
   loadedData: null,
   history: [],
   isLoaded: false,
@@ -24,7 +22,6 @@ const initialState: ManifestState = {
 
 const loadingState: Omit<ManifestState, 'history'> = {
   isLoading: true,
-  lastError: '',
   loadedData: null,
   isLoaded: false,
 };
@@ -54,9 +51,8 @@ export const manifestsSlice = createSlice({
       applyLoadingState(state),
     fetchManifestFromArkRequest: (state, _action: PayloadAction<string>) =>
       applyLoadingState(state),
-    fetchManifestError: (state, action: PayloadAction<string>) => {
+    fetchManifestError: (state, _action: PayloadAction<string>) => {
       state.isLoading = false;
-      state.lastError = action.payload;
     },
     fetchManifestSuccess: (
       state,
@@ -83,9 +79,6 @@ export const manifestsSlice = createSlice({
       if (state.loadedData === null) return;
       state.loadedData.metadata = action.payload.metadata;
     },
-    resetLastError: (state) => {
-      state.lastError = '';
-    },
   },
 });
 
@@ -101,6 +94,5 @@ export const {
   updateHistorySuccess,
   saveMetadataRequest,
   saveMetadataSuccess,
-  resetLastError,
 } = manifestsSlice.actions;
 export default manifestsSlice.reducer;

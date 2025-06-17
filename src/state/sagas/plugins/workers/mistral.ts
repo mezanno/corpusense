@@ -7,6 +7,7 @@ import {
 } from '@/data/repositories/indexeddb/dbFactory';
 import { generateTextFromCanvas } from '@/data/utils/export';
 import { generateSchema } from '@/data/utils/model';
+import i18n from '@/i18n';
 import {
   PluginParams,
   processError,
@@ -16,7 +17,6 @@ import {
 } from '@/state/reducers/workers';
 import { Canvas } from '@iiif/presentation-3';
 import FileSaver from 'file-saver';
-import i18next from 'i18next';
 import { json2csv } from 'json-2-csv';
 import { call, Effect, put } from 'redux-saga/effects';
 
@@ -33,13 +33,13 @@ export function* startSingleMistralAnalysisProcess(
   text = text.replace('"', ''); //.replace('«', '').replace('»', '');
   if (text === undefined || text.length === 0) {
     console.log('No text found for this canvas');
-    yield put(processError({ id: canvasId, error: i18next.t('error_export_no_text') }));
+    yield put(processError({ id: canvasId, error: i18n.t('error_export_no_text') }));
     return;
   }
   const apiKey = localStorage.getItem('mistralApiKey');
   if (apiKey === null) {
     console.log('No Mistral API key found');
-    yield put(processError({ id: canvasId, error: i18next.t('error_no_mistral_key') }));
+    yield put(processError({ id: canvasId, error: i18n.t('error_no_mistral_key') }));
     return;
   }
 
@@ -49,7 +49,7 @@ export function* startSingleMistralAnalysisProcess(
     messages: [
       {
         role: 'system',
-        content: `Voici une liste de données textuelles présentées correspondant à ce format :\n\n${schema}\n\nRetourne moi la liste données présentes dans ce texte sous forme d'une table JSON bien structurée. Pour chaque élément, tu ajouteras un indice de confiance entre 0 et 1. Si un élément ne te semble pas pertient, garde-le et donne-lui un indice de confiance de 0. La réponse ne doit contenir que le JSON, sans explication ni commentaire.`,
+        content: `Voici une liste de données textuelles présentées correspondant à ce format :\n\n${schema}\n\nRetourne moi la liste données présentes dans ce texte sous forme d'une table JSON bien structurée. Pour chaque élément, tu ajouteras un indice de confiance (valeur comprise entre 0 et 1, 0 pour confiance minimale et 1 pour la confiance maximale). Si un élément ne te semble pas pertient, garde-le et donne-lui un indice de confiance de 0. La réponse ne doit contenir que le JSON, sans explication ni commentaire.`,
       },
       {
         role: 'user',

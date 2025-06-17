@@ -14,9 +14,10 @@ import {
 } from '@/data/repositories/indexeddb/dbFactory';
 import { generateFirstAnnotation, importAnnotationFromJson } from '@/data/utils/annotations';
 import { generateCollectionContent } from '@/data/utils/collections';
+import i18n from '@/i18n';
+import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
-import i18next from 'i18next';
 import JSZip from 'jszip';
 import {
   call,
@@ -43,10 +44,10 @@ import {
   removeElementFromCollectionRequest,
   removeElementFromCollectionSuccess,
   setCollections,
-  setError,
   updateCollectionRequest,
   updateCollectionSuccess,
 } from '../reducers/collections';
+import { pushError, pushInfo } from '../reducers/events';
 import { loadEntitiesSuccess } from '../reducers/namedEntities';
 import { setStoredItems } from '../reducers/storedItems';
 import { handleRemoveAllCollectionAnnotations } from './annotations';
@@ -78,9 +79,9 @@ function* handleCreateCollection(action: PayloadAction<string>) {
     const collectionRepository = getCollectionRepository();
     yield call([collectionRepository, collectionRepository.insertCollection], newCollection);
     yield put(createCollectionSuccess(newCollection));
+    yield put(pushInfo(i18n.t('toast_collection_created')));
   } catch (e) {
-    console.log('error', e);
-    yield put(setError(e));
+    yield put(pushError(getErrorMessage(e)));
   }
 }
 
@@ -88,7 +89,7 @@ function* handleUpdateCollection(action: PayloadAction<Collection>) {
   const { id, name, tags, content } = action.payload;
   try {
     if (id === undefined) {
-      yield put(setError(i18next.t('error_collection_not_found')));
+      // yield put(setError(i18next.t('error_collection_not_found')));
       return;
     }
     const collectionRepository = getCollectionRepository();
@@ -100,8 +101,7 @@ function* handleUpdateCollection(action: PayloadAction<Collection>) {
 
     yield put(updateCollectionSuccess(action.payload));
   } catch (e) {
-    console.log('error', e);
-    yield put(setError(e));
+    yield put(pushError(getErrorMessage(e)));
   }
 }
 
@@ -124,8 +124,7 @@ function* handleRemoveCollection(
     yield call(handleRemoveAllCollectionAnnotations, action); //delete the annotations of the collection
     yield put(removeCollectionSuccess(payload));
   } catch (e) {
-    console.log('error', e);
-    yield put(setError(e));
+    yield put(pushError(getErrorMessage(e)));
   }
 }
 
@@ -170,8 +169,7 @@ function* handleAddSelectionToCollection(
     yield call(loadStoredElements); //TODO: ? est-ce nécessaire de tout recharger ?
     yield put(addSelectionToCollectionSuccess(collection));
   } catch (e) {
-    console.log('error', e);
-    yield put(setError(e));
+    yield put(pushError(getErrorMessage(e)));
   }
 }
 
@@ -206,9 +204,9 @@ function* handleCreateCollectionWithSelection(
     }
     yield call(loadStoredElements); //il faut appeler le saga pour mettre à jour le state //TODO: ? est-ce nécessaire de tout recharger ?
     yield put(createCollectionSuccess(newCollection));
+    yield put(pushInfo(i18n.t('toast_collection_created')));
   } catch (e) {
-    console.log('error', e);
-    yield put(setError(e));
+    yield put(pushError(getErrorMessage(e)));
   }
 
   return newCollection;
@@ -227,8 +225,7 @@ function* handleRemoveElementFromCollection(
     );
     yield put(removeElementFromCollectionSuccess(updatedCollection));
   } catch (e) {
-    console.log('error', e);
-    yield put(setError(e));
+    yield put(pushError(getErrorMessage(e)));
   }
 }
 
@@ -248,8 +245,7 @@ function* handleImportMultipleCollections(
           type: importOneCollectionRequest.type,
         });
       } catch (e) {
-        console.log('error', e);
-        yield put(setError(e));
+        yield put(pushError(getErrorMessage(e)));
       }
     }
   }
@@ -319,7 +315,7 @@ function* handleImportOneCollection(
   });
   const newCollection = result as unknown as Collection;
   if (newCollection.id === undefined) {
-    yield put(setError(i18next.t('error_collection_not_found')));
+    yield put(pushError(i18n.t('error_collection_not_found')));
     return;
   }
   const collectionRepository = getCollectionRepository();
@@ -350,7 +346,7 @@ function* handleLoadCollection(
     //get the collection to load
     const collectionToLoad = collections.find((collection) => collection.id === collectionId);
     if (collectionToLoad === undefined) {
-      yield put(setError(i18next.t('error_collection_not_found')));
+      yield put(pushError(i18n.t('error_collection_not_found')));
       return;
     }
 
@@ -403,8 +399,7 @@ function* handleLoadCollection(
     )) as NamedEntity[];
     yield put(loadEntitiesSuccess(namedEntities));
   } catch (e) {
-    console.log('error', e);
-    yield put(setError(e));
+    yield put(pushError(getErrorMessage(e)));
   }
 }
 

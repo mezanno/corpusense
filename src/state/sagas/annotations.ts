@@ -10,6 +10,7 @@ import {
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { contains } from '@/data/utils/annotations';
+import i18n from '@/i18n';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
@@ -18,11 +19,9 @@ import { groupBy, isEqual, maxBy, minBy } from 'lodash';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
   duplicateAnnotationsEach2PagesRequest,
-  duplicateAnnotationsSuccess,
   duplicateAnnotationsToAllPagesRequest,
   fetchAnnotationsSuccess,
   recomputeRegionsRequest,
-  removeAllAnnotationsFailure,
   removeAllAnnotationsSuccess,
   removeAllCanvasAnnotationsRequest,
   removeAllCollectionAnnotationsRequest,
@@ -35,6 +34,7 @@ import {
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
 } from '../reducers/annotations';
+import { pushError, pushInfo } from '../reducers/events';
 import { getAnnotations } from '../selectors/annotations';
 
 /**
@@ -114,7 +114,7 @@ function* handleRemoveAllCollectionAnnotations(
     yield put(removeAllAnnotationsSuccess(annotationIds));
   } catch (e) {
     console.warn(e);
-    yield put(removeAllAnnotationsFailure(getErrorMessage(e)));
+    yield put(pushError(getErrorMessage(e)));
   }
 }
 
@@ -132,7 +132,7 @@ function* handleRemoveAllCanvasAnnotations(
     yield put(removeAllAnnotationsSuccess(annotationIds));
   } catch (e) {
     console.warn(e);
-    yield put(removeAllAnnotationsFailure(getErrorMessage(e)));
+    yield put(pushError(getErrorMessage(e)));
   }
 }
 
@@ -141,7 +141,7 @@ function* handleRemoveAllRegionAnnotations(
 ): Generator<Effect, void, Annotation[]> {
   const annotation = action.payload;
   if (getAnnotationType(annotation) !== ElementType.REGION) {
-    yield put(removeAllAnnotationsFailure(t('error_annotation_is_not_region')));
+    yield put(pushError(t('error_annotation_is_not_region')));
     return;
   }
   try {
@@ -166,7 +166,7 @@ function* handleRemoveAllRegionAnnotations(
     }
   } catch (e) {
     console.warn(e);
-    yield put(removeAllAnnotationsFailure(getErrorMessage(e)));
+    yield put(pushError(getErrorMessage(e)));
   }
 }
 
@@ -230,7 +230,7 @@ function* handleDuplicateAnnotationsEach2Pages(
       canvasIds: canvasesIdsToDuplicateTo,
     });
 
-    yield put(duplicateAnnotationsSuccess());
+    yield put(pushInfo(i18n.t('toast_duplicate_success')));
   } catch (e) {
     console.warn(e);
   }

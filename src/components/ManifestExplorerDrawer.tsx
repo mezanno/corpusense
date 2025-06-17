@@ -167,7 +167,7 @@ const ManifestArkForm = ({ handleClose }: handleCloseProps) => {
               <FormItem className='flex w-full items-center justify-center'>
                 <FormLabel className='w-auto text-right'>{t('form_label_ark')}</FormLabel>
                 <FormControl className='w-1/2'>
-                  <Input {...field} placeholder='xxx1234567890' />
+                  <Input {...field} placeholder='12345/xxx1234567890' />
                 </FormControl>
                 <FormMessage />
               </FormItem>

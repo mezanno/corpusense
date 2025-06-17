@@ -47,7 +47,6 @@ describe('ManifestExplorerPage', () => {
       ...getPreloadedState(),
       manifests: {
         ...getPreloadedState().manifests,
-        lastError: 'Manifest invalide',
       },
     };
 

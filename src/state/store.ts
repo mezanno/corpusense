@@ -3,6 +3,7 @@ import createSagaMiddleware from 'redux-saga';
 import annotationsReducer from './reducers/annotations';
 import canvasReducer from './reducers/canvas';
 import collectionsReducer from './reducers/collections';
+import eventsReducer from './reducers/events';
 import exportReducer from './reducers/export';
 import manifestsReducer from './reducers/manifests';
 import modelsReducer from './reducers/models';
@@ -27,6 +28,7 @@ export const rootReducer = combineReducers({
   workers: workersReducer,
   models: modelsReducer,
   entities: entityReducer,
+  events: eventsReducer,
 });
 
 const store = configureStore({

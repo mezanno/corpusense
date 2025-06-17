@@ -3,12 +3,7 @@ import { Result } from '@/data/models/Result';
 import { isSameScope, Worker, WorkerScope, WorkerStatus } from '@/data/models/Worker';
 import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import i18next from 'i18next';
 export interface WorkerState {
-  global: {
-    error: string;
-    lastEvent: string;
-  };
   status: {
     scope: WorkerScope;
     status: WorkerStatus;
@@ -18,10 +13,6 @@ export interface WorkerState {
 }
 
 export const workerInitialState: WorkerState = {
-  global: {
-    error: '',
-    lastEvent: '',
-  },
   status: [],
   workers: [],
   results: [],
@@ -63,19 +54,13 @@ export const workerSlice = createSlice({
   name: 'worker',
   initialState: workerInitialState,
   reducers: {
-    fetchLayoutRequest: (state, action: PayloadAction<fetchLayoutPayload>) => {
-      state.global.lastEvent = i18next.t('info_start_layout', { canvas: action.payload.canvas });
-    },
-    fetchBatchLayoutRequest: (state, action: PayloadAction<string>) => {
+    fetchLayoutRequest: (_state, _action: PayloadAction<fetchLayoutPayload>) => {},
+    fetchBatchLayoutRequest: (_state, _action: PayloadAction<string>) => {
       //action.payload is a collectionId
-      state.global.lastEvent = i18next.t('info_start_ocr', { canvas: action.payload });
     },
-    fetchOcrRequest: (state, action: PayloadAction<fetchOcrPayload>) => {
-      state.global.lastEvent = i18next.t('info_start_ocr', { canvas: action.payload.canvas.id });
-    },
-    fetchBatchOcrRequest: (state, action: PayloadAction<string>) => {
+    fetchOcrRequest: (_state, _action: PayloadAction<fetchOcrPayload>) => {},
+    fetchBatchOcrRequest: (_state, _action: PayloadAction<string>) => {
       //action.payload is a collectionId
-      state.global.lastEvent = i18next.t('info_start_ocr', { canvas: action.payload });
     },
     fetchDataAnalysisRequest: (_state, _action: PayloadAction<fetchDataAnalysisPayload>) => {},
     fetchBatchDataAnalysisRequest: (
@@ -105,20 +90,14 @@ export const workerSlice = createSlice({
       const scope = action.payload;
       state.status = state.status.filter((s) => !isSameScope(s.scope, scope));
     },
-    processError: (state, action: PayloadAction<{ id: string | null; error: string }>) => {
-      // if (action.payload.id !== null) {
-      //   state.workers[action.payload.id] = {
-      //     status: WorkerStatus.ERROR,
-      //     error: action.payload.error,
-      //   };
-      // }
-      state.global.error = action.payload.error;
-    },
-    resetLastWorkerError: (state) => {
-      state.global.error = '';
-    },
-    resetLastEvent: (state) => {
-      state.global.lastEvent = '';
+    processError: (_state, action: PayloadAction<{ id: string | null; error: string }>) => {
+      if (action.payload.id !== null) {
+        // state.workers[action.payload.id] = {
+        //   status: WorkerStatus.ERROR,
+        //   error: action.payload.error,
+        // };
+      }
+      // state.global.error = action.payload.error;
     },
     startWorkerProcess: (_state, _action: PayloadAction<StartWorkerProcessPayload>) => {},
     setWorkerStatus: (state, action: PayloadAction<Worker>) => {
@@ -152,8 +131,6 @@ export const {
   processSuccess,
   processRunning,
   processStart,
-  resetLastWorkerError,
-  resetLastEvent,
   startWorkerProcess,
   setWorkerStatus,
   setWorkers,

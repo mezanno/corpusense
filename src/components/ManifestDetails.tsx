@@ -8,7 +8,6 @@ import {
 import { Label, Metadata, Summary, Thumbnail } from '@samvera/clover-iiif/primitives';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ErrorDialog from './ErrorDialog';
 import Loading from './Loading';
 import './metadata.css';
 import MetadataTable from './MetadataTable';
@@ -37,7 +36,7 @@ const ManifestDetails = () => {
       className='flex h-full w-full flex-col items-center justify-center space-y-2 p-2'
       aria-label='manifest details'
     >
-      <ErrorDialog />
+      {/* <ErrorDialog /> */}
       {!isLoaded || manifest === null ? (
         <NoManifestToShow />
       ) : (

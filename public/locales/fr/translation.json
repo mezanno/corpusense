@@ -71,7 +71,7 @@
   "form_label_type": "Type",
   "form_label_value": "Valeur",
   "form_label_manifesturl": "URL du manifest",
-  "form_label_ark": "Identifiant ARK - ark:/1248/",
+  "form_label_ark": "Identifiant ARK - ark:/",
   "form_label_manifest_content": "Contenu du manifest",
   "form_label_datafield_name": "Nom du champ",
   "form_label_datafield_description": "Description du champ",

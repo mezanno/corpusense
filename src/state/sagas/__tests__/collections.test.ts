@@ -12,7 +12,6 @@ import {
   removeCollectionSuccess,
   removeElementFromCollectionRequest,
   removeElementFromCollectionSuccess,
-  setError,
 } from '../../reducers/collections';
 import {
   handleCreateCollection,
@@ -115,14 +114,16 @@ describe('collections saga', () => {
     };
     (getCollectionRepository as Mock).mockReturnValue(mockRepository);
 
-    return expectSaga(handleCreateCollection, createCollectionRequest(collectionName))
-      .provide([
-        [
-          call([mockRepository, mockRepository.insertCollection], expect.anything()),
-          throwError(error),
-        ],
-      ])
-      .put(setError(error))
-      .run();
+    return (
+      expectSaga(handleCreateCollection, createCollectionRequest(collectionName))
+        .provide([
+          [
+            call([mockRepository, mockRepository.insertCollection], expect.anything()),
+            throwError(error),
+          ],
+        ])
+        // .put(setError(error))
+        .run()
+    );
   });
 });

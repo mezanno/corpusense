@@ -1,11 +1,8 @@
 import { Annotation } from '@/data/models/Annotation';
-import i18n from '@/i18n';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 type AnnotationState = {
   values: Annotation[];
-  error?: string;
-  event?: string;
   isLoading: boolean;
   deleted: Annotation;
   updated: Annotation;
@@ -50,9 +47,6 @@ const annotationsSlice = createSlice({
     removeAllAnnotationsSuccess(state, action: PayloadAction<string[]>) {
       state.values = state.values.filter((a) => !action.payload.includes(a.id));
     },
-    removeAllAnnotationsFailure(state, action: PayloadAction<string>) {
-      state.error = action.payload;
-    },
     fetchAnnotationsByCanvasId(state, _action: PayloadAction<string>) {
       state.isLoading = true;
       state.values = [];
@@ -90,17 +84,8 @@ const annotationsSlice = createSlice({
       _state,
       _action: PayloadAction<{ canvasId: string; collectionId: string }>,
     ) {},
-    duplicateAnnotationsSuccess(state) {
-      state.event = i18n.t('toast_duplicate_success');
-    },
     recomputeRegionsRequest(_state, _action: PayloadAction<string>) {},
     syncWithDB(_state, _action: PayloadAction<{ canvasId: string; collectionId: string }>) {},
-    resetErrror(state) {
-      state.error = '';
-    },
-    resetEvent(state) {
-      state.event = '';
-    },
   },
 });
 
@@ -111,7 +96,6 @@ export const {
   removeAnnotationSuccess,
   removeAllCollectionAnnotationsRequest,
   removeAllCanvasAnnotationsRequest,
-  removeAllAnnotationsFailure,
   removeAllAnnotationsSuccess,
   removeAllRegionAnnotationsRequest,
   fetchAnnotationsByCanvasId,
@@ -120,10 +104,7 @@ export const {
   updateAnnotationOrderValueSuccess,
   duplicateAnnotationsToAllPagesRequest,
   duplicateAnnotationsEach2PagesRequest,
-  duplicateAnnotationsSuccess,
   recomputeRegionsRequest,
   syncWithDB,
-  resetErrror,
-  resetEvent,
 } = annotationsSlice.actions;
 export default annotationsSlice.reducer;
