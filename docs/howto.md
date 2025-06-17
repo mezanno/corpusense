@@ -1,5 +1,12 @@
 # Manuel d'utilisation
 
+## Configuration
+
+Pour pouvoir utiliser l'extraction de données dans Corpusense (Mistral), il faut enregistrer sa clé API Mistral. Pour cela, cliquer sur le bouton **Paramètres de configuration** en bas à gauche de l'écran qui ouvre la page de configuration.
+![Capture d'écran de Gallica](./images/corpusense_btt_parameters.png)
+Il suffit ensuite de saisir la clé dans le champ texte **Clé API Mistral** et de cliquer sur le bouotn **Enregistrer**.
+![Capture d'écran de Gallica](./images/corpusense_apikey_mistral.png){height=150}
+
 ## Ouvrir un manifest
 
 Corpusense permet l'ouverture d'un manifest IIIF de 4 façons différentes :
@@ -9,9 +16,9 @@ Corpusense permet l'ouverture d'un manifest IIIF de 4 façons différentes :
 - grâce au numéro ARK d'un contenu sur Gallica
 - en copiant le contenu du manifest
 
-### A partir de Gallica
+### A partir d'un fournisseur IIIF
 
-Pour pouvoir ouvrir un manifest dans Corpusense directement depuis Gallica, il faut d'abord installer l'extension _Open in IIIF Viewer_ (<https://github.com/2SC1815J/open-in-iiif-viewer>) dans le navigateur (Firefox ou Chrome uniquement).
+Pour pouvoir ouvrir un manifest dans Corpusense directement depuis un fournisseur IIIF (par exemple Gallica), il faut d'abord installer l'extension _Open in IIIF Viewer_ (<https://github.com/2SC1815J/open-in-iiif-viewer>) dans le navigateur (Firefox ou Chrome uniquement).
 Après configuration, ce dernier pourra ouvrir une instance de l'application à l'adresse : <https://mezanno.xyz/corpusense-dev/manifest?manifestId=[url_manifest]&forceV3=true> ([url_manifest] = <https://gallica.bnf.fr/iiif/ark:/12148/bd6t543024772/manifest.json> par exemple).
 ![Capture d'écran de Gallica](./images/gallica.png){width=640}
 
