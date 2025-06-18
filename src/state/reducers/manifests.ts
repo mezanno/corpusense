@@ -51,7 +51,7 @@ export const manifestsSlice = createSlice({
       applyLoadingState(state),
     fetchManifestFromArkRequest: (state, _action: PayloadAction<string>) =>
       applyLoadingState(state),
-    fetchManifestError: (state, _action: PayloadAction<string>) => {
+    fetchManifestError: (state) => {
       state.isLoading = false;
     },
     fetchManifestSuccess: (
