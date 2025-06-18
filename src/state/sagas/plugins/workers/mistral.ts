@@ -7,7 +7,7 @@ import {
 } from '@/data/repositories/indexeddb/dbFactory';
 import { generateTextFromCanvas } from '@/data/utils/export';
 import { generateSchema } from '@/data/utils/model';
-import i18n from '@/i18n';
+import { pushError } from '@/state/reducers/events';
 import {
   PluginParams,
   processError,
@@ -15,6 +15,7 @@ import {
   processStart,
   processSuccess,
 } from '@/state/reducers/workers';
+import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
@@ -52,13 +53,15 @@ export function* startSingleMistralAnalysisProcess(
   text = text.replace('"', ''); //.replace('«', '').replace('»', '');
   if (text === undefined || text.length === 0) {
     console.log('No text found for this canvas');
-    yield put(processError({ id: canvasId, error: i18n.t('error_export_no_text') }));
+    // yield put(processError({ id: canvasId, error: i18n.t('error_export_no_text') }));
+    yield put(processError({ collectionId, canvasId }));
     return;
   }
   const apiKey = localStorage.getItem('mistralApiKey');
   if (apiKey === null) {
     console.log('No Mistral API key found');
-    yield put(processError({ id: canvasId, error: i18n.t('error_no_mistral_key') }));
+    // yield put(processError({ id: canvasId, error: i18n.t('error_no_mistral_key') }));
+    yield put(processError({ collectionId, canvasId }));
     return;
   }
 
@@ -157,15 +160,12 @@ function* startBatchMistralAnalysisProcess(
         workerName,
         isRecovering,
       )) as string;
-      try {
-        const dataParsed = JSON.parse(dataInCanvas) as unknown[];
-        allTheData = [...allTheData, ...dataParsed];
-      } catch (error) {
-        //TODO: on fait quoi lorsque le json est invalide ?
-        console.error('Error parsing dataInCanvas:', error);
-      }
+      const dataParsed = JSON.parse(dataInCanvas) as unknown[];
+      allTheData = [...allTheData, ...dataParsed];
     } catch (error) {
       console.warn('Error processing canvas:', canvases[i].id, error);
+      yield put(processError({ collectionId, canvasId: canvases[i].id }));
+      yield put(pushError(`Error processing canvas: ${getErrorMessage(error)}`));
     }
   }
 

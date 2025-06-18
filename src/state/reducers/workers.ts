@@ -90,14 +90,14 @@ export const workerSlice = createSlice({
       const scope = action.payload;
       state.status = state.status.filter((s) => !isSameScope(s.scope, scope));
     },
-    processError: (_state, action: PayloadAction<{ id: string | null; error: string }>) => {
-      if (action.payload.id !== null) {
-        // state.workers[action.payload.id] = {
-        //   status: WorkerStatus.ERROR,
-        //   error: action.payload.error,
-        // };
+    processError: (state, action: PayloadAction<WorkerScope>) => {
+      const scope = action.payload;
+      const existing = state.status.find((s) => isSameScope(s.scope, scope));
+      if (existing) {
+        existing.status = WorkerStatus.ERROR;
+      } else {
+        state.status.push({ scope, status: WorkerStatus.ERROR });
       }
-      // state.global.error = action.payload.error;
     },
     startWorkerProcess: (_state, _action: PayloadAction<StartWorkerProcessPayload>) => {},
     setWorkerStatus: (state, action: PayloadAction<Worker>) => {

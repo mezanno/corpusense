@@ -30,7 +30,7 @@ import {
 } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
 import { fetchAnnotationsSuccess } from '../reducers/annotations';
-import { pushInfo } from '../reducers/events';
+import { pushError, pushInfo } from '../reducers/events';
 import {
   exportWorkerResultRequest,
   fetchBatchLayoutRequest,
@@ -93,7 +93,7 @@ function* handleFetchLayout({
     yield put(processSuccess({ collectionId, canvasId: canvas.id }));
   } catch (error) {
     console.error('Error fetching layout:', error);
-    yield put(processError({ id: canvas.id, error: getErrorMessage(error) }));
+    yield put(processError({ collectionId, canvasId: canvas.id }));
   }
 }
 
@@ -173,15 +173,18 @@ function* handleFetchOcr({
       try {
         const peroError = peroResultError.parse(gradioResult.data);
         console.error('peroError: ', peroError[0].result.error);
-        yield put(processError({ id: canvas.id, error: peroError[0].result.error }));
+        // yield put(processError({ id: canvas.id, error: peroError[0].result.error }));
+        yield put(processError({ collectionId, canvasId: canvas.id }));
       } catch (err) {
         console.error('Error parsing peroResult:', err);
-        yield put(processError({ id: canvas.id, error: getErrorMessage(err) }));
+        // yield put(processError({ id: canvas.id, error: getErrorMessage(err) }));
+        yield put(processError({ collectionId, canvasId: canvas.id }));
       }
     }
   } catch (error) {
     console.error('handleFetchOcr: ', error);
-    yield put(processError({ id: canvas.id, error: getErrorMessage(error) }));
+    // yield put(processError({ id: canvas.id, error: getErrorMessage(error) }));
+    yield put(processError({ collectionId, canvasId: canvas.id }));
   }
 }
 
@@ -291,6 +294,7 @@ function* startWorker(worker: Worker, isRecovering = false) {
     console.error(`Error in plugin saga for ${worker.name}:`, error);
     worker = { ...worker, status: WorkerStatus.ERROR };
     yield call([workerRepository, workerRepository.update], worker);
+    yield put(pushError(`Error in plugin saga for ${worker.name}: ${getErrorMessage(error)}`));
   }
   yield put(setWorkerStatus(worker));
 }
