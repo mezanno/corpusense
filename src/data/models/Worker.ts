@@ -1,8 +1,11 @@
+import { PluginParams } from '@/state/reducers/workers';
+
 export enum WorkerStatus {
-  WAITING = 'waiting',
-  INPROGRESS = 'inprogress',
-  COMPLETED = 'completed',
-  ERROR = 'error',
+  WAITING = 'waiting', // Worker is waiting to be processed
+  INPROGRESS = 'inprogress', // Worker is currently being processed
+  UNFINISHED = 'unfinished', // Worker has been processed but not completed
+  COMPLETED = 'completed', // Worker has been successfully completed
+  ERROR = 'error', // Worker encountered an error during processing
 }
 
 export interface Worker {
@@ -11,6 +14,7 @@ export interface Worker {
   scope: WorkerScope;
   status: WorkerStatus;
   createdAt: Date;
+  params: PluginParams;
 }
 
 export type CollectionScope = { collectionId: string };
