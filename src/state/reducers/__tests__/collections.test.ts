@@ -118,13 +118,12 @@ describe('collections reducer', () => {
   });
 
   it('should handle resetLastError', () => {
-    const initialStateWithError = {
-      ...initialState,
-      lastError: 'An error occurred',
-    };
+    // const initialStateWithError = {
+    //   ...initialState,
+    //   lastError: 'An error occurred',
+    // };
     // const action = resetLastError();
     // const state = reducer(initialStateWithError, action);
-
     // expect(state.newCollectionEvent).toBe(false);
   });
 });

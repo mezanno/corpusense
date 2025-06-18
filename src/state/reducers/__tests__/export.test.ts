@@ -34,11 +34,10 @@ describe('export reducer', () => {
   });
 
   it('should handle exportError', () => {
-    const errorMessage = 'An error occurred';
+    // const errorMessage = 'An error occurred';
     // const action = exportError(errorMessage);
     // //@ts-expect-error initialState incompatible
     // const state = reducer(initialState, action);
-
     // expect(state.lastExportError).toBe(errorMessage);
     // expect(state.lastExportStatus).toBe('ERROR');
   });
@@ -68,15 +67,14 @@ describe('export reducer', () => {
   });
 
   it('should handle resetAlert', () => {
-    const stateWithAlert = {
-      ...initialState,
-      lastExportDate: new Date(),
-      lastExportStatus: 'OK',
-    };
+    // const stateWithAlert = {
+    //   ...initialState,
+    //   lastExportDate: new Date(),
+    //   lastExportStatus: 'OK',
+    // };
     // const action = resetAlert();
     // //@ts-expect-error initialState incompatible
     // const state = reducer(stateWithAlert, action);
-
     // expect(state.lastExportDate).toBeNull();
     // expect(state.lastExportStatus).toBe('UNKNOWN');
   });

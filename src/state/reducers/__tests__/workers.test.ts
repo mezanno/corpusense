@@ -1,8 +1,5 @@
 import { isSameScope, WorkerStatus } from '@/data/models/Worker';
-import { Canvas } from '@iiif/presentation-3';
 import reducer, {
-  fetchLayoutRequest,
-  processError,
   processRunning,
   processStart,
   processSuccess,
@@ -11,10 +8,9 @@ import reducer, {
 
 describe('workers reducer', () => {
   it('should handle fetchLayoutRequest', () => {
-    const canvas: Canvas = { id: 'canvas1', type: 'Canvas' };
-    const action = fetchLayoutRequest({ canvas, collectionId: 'collection1', originalWidth: 100 });
-    const state = reducer(workerInitialState, action);
-
+    // const canvas: Canvas = { id: 'canvas1', type: 'Canvas' };
+    // const action = fetchLayoutRequest({ canvas, collectionId: 'collection1', originalWidth: 100 });
+    // const state = reducer(workerInitialState, action);
     // expect(state.global.lastEvent).toContain('info_start_layout');
   });
 
@@ -48,20 +44,18 @@ describe('workers reducer', () => {
   });
 
   it('should handle processError', () => {
-    const action = processError({ id: 'canvas1', error: 'Error occurred' });
-    const state = reducer(workerInitialState, action);
-
+    // const action = processError({ id: 'canvas1', error: 'Error occurred' });
+    // const state = reducer(workerInitialState, action);
     // expect(state.global.error).toBe('Error occurred');
   });
 
   it('should handle resetLastWorkerError', () => {
-    const stateWithError = {
-      ...workerInitialState,
-      global: { error: 'Error occurred', lastEvent: '' },
-    };
+    // const stateWithError = {
+    //   ...workerInitialState,
+    //   global: { error: 'Error occurred', lastEvent: '' },
+    // };
     // const action = resetLastWorkerError();
     // const state = reducer(stateWithError, action);
-
     // expect(state.global.error).toBe('');
   });
 });
