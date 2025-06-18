@@ -33,7 +33,7 @@ db.version(1).stores({
   models: '&id',
   annotations: '&id, canvasId, collectionId, [canvasId+collectionId], order',
   namedEntities: '&id, *annotationIds, type.id',
-  results: '++id, workerName',
+  results: '++id, workerName, [scopeKey+workerName]',
   workers: '&id, name, status, scope',
 });
 

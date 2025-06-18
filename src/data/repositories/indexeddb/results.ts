@@ -1,10 +1,15 @@
-import { Result, ResultCreateDTO } from '@/data/models/Result';
+import { getScopeKey, Result, ResultCreateDTO } from '@/data/models/Result';
+import { WorkerScope } from '@/data/models/Worker';
 import { db } from './db';
 import { ResultRepository } from './types';
 
 export class IndexedDBResultRepository implements ResultRepository {
   async addResult(result: ResultCreateDTO): Promise<void> {
-    await db.results.add(result);
+    const newResult = {
+      ...result,
+      scopeKey: getScopeKey(result.scope),
+    };
+    await db.results.add(newResult);
   }
 
   async selectAll(): Promise<Result[]> {
@@ -13,5 +18,15 @@ export class IndexedDBResultRepository implements ResultRepository {
 
   async selectByWorkerName(workerName: string): Promise<Result[]> {
     return await db.results.where('workerName').equals(workerName).sortBy('id');
+  }
+
+  async selectByScopeAndWorkerName(scope: WorkerScope, workerName: string): Promise<Result> {
+    const result = await db.results
+      .where({ scopeKey: getScopeKey(scope), workerName: workerName })
+      .first();
+    if (result === undefined) {
+      throw new Error(`No result found`);
+    }
+    return result;
   }
 }
