@@ -1,3 +1,4 @@
+import { importerPlugins } from '@/App';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import {
@@ -25,11 +26,7 @@ import {
   setHistory,
   updateHistorySuccess,
 } from '../reducers/manifests';
-import { ImporterPlugin, loadImporterPlugins } from './plugins/loader';
 
-const importerPlugins: Record<string, ImporterPlugin> = loadImporterPlugins();
-
-// const importerPlugins: Record<string, ImporterPlugin> = loadImporterPlugins();
 const keys = Object.keys(importerPlugins);
 
 /**
