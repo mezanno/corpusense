@@ -1,5 +1,6 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
+import { dateConverterMiddleware } from './middlewares/dateConverterMiddleware';
 import annotationsReducer from './reducers/annotations';
 import canvasReducer from './reducers/canvas';
 import collectionsReducer from './reducers/collections';
@@ -34,7 +35,7 @@ export const rootReducer = combineReducers({
 const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ thunk: false }).concat(sagaMiddleware),
+    getDefaultMiddleware({ thunk: false }).concat(sagaMiddleware).concat(dateConverterMiddleware),
   devTools: true,
 });
 
