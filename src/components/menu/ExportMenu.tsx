@@ -19,7 +19,6 @@ const ExportMenu = ({
   const workers = useAppSelector((state) =>
     getWorkersByStatus(state, scope, WorkerStatus.COMPLETED),
   );
-  console.log('ExportMenu workers:', workers);
   const items = workers.map((worker) => ({
     name: t('btn_export_result', { name: worker.name }),
     icon: <Download />,

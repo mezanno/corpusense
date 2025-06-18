@@ -1,5 +1,6 @@
 import { ElementType } from '@/data/models/Annotation';
 import { DataModel } from '@/data/models/DataModel';
+import { Worker } from '@/data/models/Worker';
 import { useAppDispatch } from '@/hooks/hooks';
 import {
   duplicateAnnotationsEach2PagesRequest,
@@ -8,9 +9,10 @@ import {
 } from '@/state/reducers/annotations';
 import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import {
-  fetchDataAnalysisRequest,
+  exportWorkerResultRequest,
   fetchLayoutRequest,
   fetchOcrRequest,
+  startWorkerProcess,
 } from '@/state/reducers/workers';
 import { getAnnotationsByType } from '@/state/selectors/annotations';
 import { RootState } from '@/state/store';
@@ -81,6 +83,10 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       setDialogOpen(true);
     };
 
+    const handleExportResult = (worker: Worker) => {
+      appDispatch(exportWorkerResultRequest(worker));
+    };
+
     const handleDeleteAllAnnotations = () => {
       if (props.collectionId !== undefined) {
         appDispatch(
@@ -119,10 +125,13 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
 
       if (props.collectionId !== undefined) {
         appDispatch(
-          fetchDataAnalysisRequest({
-            canvasId: props.canvas.id,
-            collectionId: props.collectionId,
-            model,
+          startWorkerProcess({
+            workerName: 'mistral',
+            params: {
+              scope: { canvasId: props.canvas.id, collectionId: props.collectionId },
+              model,
+              workerName: 'mistral',
+            },
           }),
         );
       }
@@ -138,6 +147,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
             handleDeleteAllAnnotations={handleDeleteAllAnnotations}
             handleLayout={handleStartLayoutAnalysis}
             handleExtractData={handleExtractData}
+            handleExportResult={handleExportResult}
             scope={{ canvasId: cvcState.canvas?.id ?? '', collectionId: props.collectionId ?? '' }}
           />
 
