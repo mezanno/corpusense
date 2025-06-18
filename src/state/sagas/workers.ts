@@ -43,6 +43,7 @@ import {
   processRunning,
   processStart,
   processSuccess,
+  recoverWorkerRequest,
   setResults,
   setWorkers,
   setWorkerStatus,
@@ -258,30 +259,45 @@ function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPaylo
     console.warn(`No plugin saga found for ${workerName}`);
     return;
   }
-  const workerRepository = getWorkerRepository();
-  const saga = workerPlugins[workerName];
-  let worker = {
+
+  const worker = {
     id: uuid(),
     name: workerName,
     scope: params.scope,
     status: WorkerStatus.INPROGRESS,
     createdAt: new Date(),
+    params,
   };
-  try {
-    yield call([workerRepository, workerRepository.add], worker);
-    yield put(setWorkerStatus(worker));
 
-    params.workerName = worker.name;
-    yield call(saga.run, params);
+  yield call(startWorker, worker);
+}
+
+function* startWorker(worker: Worker, isRecovering = false) {
+  const workerRepository = getWorkerRepository();
+  const saga = workerPlugins[worker.name];
+  try {
+    if (isRecovering) {
+      worker = { ...worker, status: WorkerStatus.INPROGRESS };
+      yield call([workerRepository, workerRepository.update], worker);
+    } else {
+      yield call([workerRepository, workerRepository.add], worker);
+    }
+    yield put(setWorkerStatus(worker));
+    yield call(saga.run, isRecovering, worker.params);
 
     worker = { ...worker, status: WorkerStatus.COMPLETED };
     yield call([workerRepository, workerRepository.update], worker);
   } catch (error) {
-    console.error(`Error in plugin saga for ${workerName}:`, error);
+    console.error(`Error in plugin saga for ${worker.name}:`, error);
     worker = { ...worker, status: WorkerStatus.ERROR };
     yield call([workerRepository, workerRepository.update], worker);
   }
   yield put(setWorkerStatus(worker));
+}
+
+function* handleRecoverWorker(action: PayloadAction<Worker>) {
+  const worker = action.payload;
+  yield call(startWorker, worker, true);
 }
 
 function* handleExportWorkerResult(
@@ -318,6 +334,7 @@ export default function* workerSaga() {
   yield takeLatest(fetchBatchLayoutRequest, handleStartBatchLayoutProcess);
   yield takeEvery(startWorkerProcess, handleStartWorkerProcess);
   yield takeEvery(exportWorkerResultRequest, handleExportWorkerResult);
+  yield takeEvery(recoverWorkerRequest, handleRecoverWorker);
 }
 
 export { fetchWorkers };

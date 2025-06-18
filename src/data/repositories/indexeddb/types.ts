@@ -9,7 +9,7 @@ import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
-import { Worker } from '@/data/models/Worker';
+import { Worker, WorkerScope } from '@/data/models/Worker';
 import { Canvas, Manifest } from '@iiif/presentation-3';
 
 export interface AnnotationRepository {
@@ -94,6 +94,7 @@ export interface ResultRepository {
   addResult(result: ResultCreateDTO): Promise<void>;
   selectAll(): Promise<Result[]>;
   selectByWorkerName(workerId: string): Promise<Result[]>;
+  selectByScopeAndWorkerName(scope: WorkerScope, workerName: string): Promise<Result>;
 }
 
 export interface WorkerRepository {

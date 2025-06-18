@@ -10,6 +10,7 @@ import {
   exportWorkerResultRequest,
   fetchBatchLayoutRequest,
   fetchBatchOcrRequest,
+  recoverWorkerRequest,
   startWorkerProcess,
 } from '@/state/reducers/workers';
 import { useState } from 'react';
@@ -51,6 +52,10 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
     appDispatch(exportWorkerResultRequest(worker));
   };
 
+  const handleRecoverWorker = (worker: Worker) => {
+    appDispatch(recoverWorkerRequest(worker));
+  };
+
   const close = (model: DataModel) => {
     setDialogOpen(false);
 
@@ -61,6 +66,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
           params: {
             scope: { collectionId },
             model,
+            workerName: 'mistral',
           },
         }),
       );
@@ -78,6 +84,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
         handleExtractData={handleExtractData}
         handleRecomputeRegions={handleRecomputeRegions}
         handleExportResult={handleExportResult}
+        handleRecoverWorker={handleRecoverWorker}
         scope={{ collectionId }}
       />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

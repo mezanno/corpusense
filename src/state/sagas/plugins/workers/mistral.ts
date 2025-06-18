@@ -27,7 +27,26 @@ export function* startSingleMistralAnalysisProcess(
   collectionId: string,
   model: DataModel,
   workerName: string,
-): Generator<Effect, string | void, string | Response | object> {
+  isRecovering: boolean,
+): Generator<Effect, string | void | object, string | Response | object | Result> {
+  // Check if the process is recovering
+  if (isRecovering) {
+    //check if there is already a result for this canvas
+    const resultRepository = getResultRepository();
+    try {
+      //if there is a result, return it and if not, selectByScopeAndWorkerName will throw an error
+      const existingResult = (yield call(
+        [resultRepository, resultRepository.selectByScopeAndWorkerName],
+        { collectionId, canvasId },
+        workerName,
+      )) as Result;
+      yield put(processSuccess({ collectionId, canvasId }));
+      return existingResult.value;
+    } catch (error) {
+      /* empty */
+    }
+  }
+
   yield put(processRunning({ collectionId, canvasId }));
   let text = (yield call(generateTextFromCanvas, canvasId, collectionId)) as string;
   text = text.replace('"', ''); //.replace('«', '').replace('»', '');
@@ -107,6 +126,7 @@ function* startBatchMistralAnalysisProcess(
   collectionId: string,
   model: DataModel,
   workerName: string,
+  isRecovering: boolean,
 ): Generator<Effect, void, Canvas[] | string> {
   console.log(
     `Mistral plugin saga started for collection ${collectionId} with model ${model.name}`,
@@ -135,6 +155,7 @@ function* startBatchMistralAnalysisProcess(
         collectionId,
         model,
         workerName,
+        isRecovering,
       )) as string;
       try {
         const dataParsed = JSON.parse(dataInCanvas) as unknown[];
@@ -164,7 +185,7 @@ function hasScopeAndModel(
 }
 
 //entry point for the Mistral plugin saga (default export)
-export default function* mistralSaga(params: PluginParams) {
+export default function* mistralSaga(isRecovering: boolean, params: PluginParams) {
   if (!hasScopeAndModel(params)) {
     console.log('Invalid parameters for Mistral plugin saga:', params);
     throw new Error('Invalid parameters for Mistral plugin saga');
@@ -175,7 +196,13 @@ export default function* mistralSaga(params: PluginParams) {
     throw new Error('No workerName provided for Mistral plugin saga');
   }
   if (isCollectionScope(scope)) {
-    yield call(startBatchMistralAnalysisProcess, scope.collectionId, model, workerName);
+    yield call(
+      startBatchMistralAnalysisProcess,
+      scope.collectionId,
+      model,
+      workerName,
+      isRecovering,
+    );
   } else if (isCanvasScope(scope)) {
     yield call(
       startSingleMistralAnalysisProcess,
@@ -183,6 +210,7 @@ export default function* mistralSaga(params: PluginParams) {
       scope.collectionId,
       model,
       workerName,
+      isRecovering,
     );
   } else {
     console.log('`Mistral plugin saga started for annotation scope', scope.annotationId);

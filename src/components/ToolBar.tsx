@@ -2,6 +2,7 @@ import { Worker, WorkerScope } from '@/data/models/Worker';
 import AnalysisMenu from './menu/AnalysisMenu';
 import DangerousMenu from './menu/DangerousMenu';
 import ExportMenu from './menu/ExportMenu';
+import UnfinishedWorkerMenu from './menu/UnfinishedWorkerMenu';
 
 const Toolbar = ({
   title,
@@ -12,6 +13,7 @@ const Toolbar = ({
   handleExportText,
   handleExtractData,
   handleExportResult,
+  handleRecoverWorker,
   scope,
 }: {
   title?: string;
@@ -22,6 +24,7 @@ const Toolbar = ({
   handleExportText?: () => void;
   handleExtractData?: () => void;
   handleExportResult?: (worker: Worker) => void;
+  handleRecoverWorker?: (worker: Worker) => void;
   scope: WorkerScope;
 }) => {
   return (
@@ -33,6 +36,7 @@ const Toolbar = ({
         handleExtractData={handleExtractData}
         scope={scope}
       />
+      <UnfinishedWorkerMenu scope={scope} handleRecoverWorker={handleRecoverWorker} />
       <DangerousMenu
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleRecomputeRegions={handleRecomputeRegions}

@@ -117,6 +117,7 @@ export const workerSlice = createSlice({
       state.results = action.payload;
     },
     exportWorkerResultRequest: (_state, _action: PayloadAction<Worker>) => {}, // action.payload is a workerId
+    recoverWorkerRequest: (_state, _action: PayloadAction<Worker>) => {}, // action.payload is a workerId
   },
 });
 
@@ -136,5 +137,6 @@ export const {
   setWorkers,
   setResults,
   exportWorkerResultRequest,
+  recoverWorkerRequest,
 } = workerSlice.actions;
 export default workerSlice.reducer;
