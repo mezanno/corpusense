@@ -152,7 +152,7 @@ const reducer = (state: MarkupState, action: MarkupAction) => {
           if (state.selected.includes(index)) {
             return {
               ...wordRect,
-              field,
+              dataFieldId: field,
             };
           }
           return wordRect;

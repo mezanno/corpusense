@@ -21,7 +21,6 @@ const WordLabel = ({ word, index }: WordLabelProps) => {
   const isSelected = state.selected.includes(index);
 
   const dataFieldId = state.wordRects[index].dataFieldId;
-  console.log('dataFieldId ', dataFieldId);
   const dataField = useAppSelector((s) =>
     dataFieldId !== undefined ? getDatafieldById(s, dataFieldId) : null,
   );
