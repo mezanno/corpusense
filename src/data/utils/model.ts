@@ -22,10 +22,25 @@ const generatePreview = (model: DataModel) => {
 };
 
 const generateSchema = (model: DataModel) => {
+  const modelWithConfidfidence = {
+    ...model,
+    fields: [
+      ...model.fields,
+      {
+        id: 'confiance',
+        name: 'confiance',
+        type: 'number',
+        description:
+          '(valeur comprise entre 0 et 1, 0 pour confiance minimale et 1 pour la confiance maximale). Si un élément ne te semble pas pertient, garde-le et donne-lui un indice de confiance de 0. ',
+        generated: true,
+        color: '#000000',
+      },
+    ],
+  };
   const schema = {
     type: 'object',
     properties: {
-      ...model.fields.reduce(
+      ...modelWithConfidfidence.fields.reduce(
         (acc, field) => {
           acc[field.name] = {
             type: field.type,

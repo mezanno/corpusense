@@ -71,7 +71,7 @@ export function* startSingleMistralAnalysisProcess(
     messages: [
       {
         role: 'system',
-        content: `Voici une liste de données textuelles présentées correspondant à ce format :\n\n${schema}\n\nRetourne moi la liste données présentes dans ce texte sous forme d'une table JSON bien structurée. Pour chaque élément, tu ajouteras un indice de confiance (valeur comprise entre 0 et 1, 0 pour confiance minimale et 1 pour la confiance maximale). Si un élément ne te semble pas pertient, garde-le et donne-lui un indice de confiance de 0. La réponse ne doit contenir que le JSON, sans explication ni commentaire.`,
+        content: `Voici une liste de données textuelles présentées correspondant à ce format :\n\n${schema}\n\nRetourne moi la liste données présentes dans ce texte sous forme d'une table JSON bien structurée. La réponse ne doit contenir que le JSON, sans explication ni commentaire.`,
       },
       {
         role: 'user',
