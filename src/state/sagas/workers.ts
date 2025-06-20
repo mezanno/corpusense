@@ -111,6 +111,19 @@ function* handleFetchOcr({
     // yield put(processError({ url: canvas.id, error: 'Canvas or region is undefined' }));
     return;
   }
+  // Check if the canvas has already been processed
+  const annotationRepository = getAnnotationRepository();
+  const existingAnnotations = (yield call(
+    [annotationRepository, annotationRepository.getAnnotationsForCanvasByType],
+    canvas.id,
+    collectionId,
+    ElementType.LINE,
+  )) as Annotation[];
+  if (existingAnnotations.length > 0) {
+    console.log('Canvas already processed for OCR, skipping:', canvas.id);
+    yield put(processSuccess({ collectionId, canvasId: canvas.id }));
+    return;
+  }
   yield put(processRunning({ collectionId, canvasId: canvas.id }));
 
   try {
@@ -118,7 +131,6 @@ function* handleFetchOcr({
 
     let regions = JSON.stringify([]);
     if (region === undefined || region === null) {
-      const annotationRepository = getAnnotationRepository();
       const annotations = (yield call(
         [annotationRepository, annotationRepository.getAnnotationsForCanvas],
         canvas.id,
@@ -166,7 +178,6 @@ function* handleFetchOcr({
         collectionId,
       );
       yield put(fetchAnnotationsSuccess(annotations));
-      const annotationRepository = getAnnotationRepository();
       yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
       yield put(processSuccess({ collectionId, canvasId: canvas.id }));
     } catch (error) {
