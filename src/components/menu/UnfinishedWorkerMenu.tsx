@@ -1,6 +1,6 @@
 import { Worker, WorkerScope, WorkerStatus } from '@/data/models/Worker';
 import { useAppSelector } from '@/hooks/hooks';
-import { getWorkersByStatus } from '@/state/selectors/workers';
+import { getWorkersByScopeAndStatus } from '@/state/selectors/workers';
 import { Hourglass, LoaderCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
@@ -15,7 +15,7 @@ const UnfinishedWorkerMenu = ({
   const { t } = useTranslation();
 
   const workers = useAppSelector((state) =>
-    getWorkersByStatus(state, scope, WorkerStatus.INPROGRESS),
+    getWorkersByScopeAndStatus(state, scope, WorkerStatus.INPROGRESS),
   );
 
   const items = workers.map((worker) => ({

@@ -1,6 +1,6 @@
 import { Worker, WorkerScope, WorkerStatus } from '@/data/models/Worker';
 import { useAppSelector } from '@/hooks/hooks';
-import { getWorkersByStatus } from '@/state/selectors/workers';
+import { getWorkersByScopeAndStatus } from '@/state/selectors/workers';
 import { Download, SendHorizonal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
@@ -17,7 +17,7 @@ const ExportMenu = ({
   const { t } = useTranslation();
 
   const workers = useAppSelector((state) =>
-    getWorkersByStatus(state, scope, WorkerStatus.COMPLETED),
+    getWorkersByScopeAndStatus(state, scope, WorkerStatus.COMPLETED),
   );
   const items = workers.map((worker) => ({
     name: t('btn_export_result', { name: worker.name }),
