@@ -52,8 +52,8 @@ const computeRects = (index: number, rect: IRect, wordRects: WordRect[]) => {
     } else {
       wordRects[index].rect = {
         ...rect,
-        x: 0,
-        y: wordRects[index - 1].rect.y + wordRects[index - 1].rect.height,
+        x: 2,
+        y: wordRects[index - 1].rect.y + wordRects[index - 1].rect.height + 3, //+3 = margin between lines
       };
     }
   } else {

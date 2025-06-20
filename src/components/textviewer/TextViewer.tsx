@@ -33,7 +33,7 @@ const TextViewer = ({ name, collectionId }: { name: string; collectionId: string
         <>
           <ModelViewer />
           <MarkupProvider text={text}>
-            <AutoSizer ref={containerRef} role='list'>
+            <AutoSizer ref={containerRef} role='list' className='mt-2 ml-1'>
               {({ height, width }) => (
                 <div style={{ width: width, height: height }} className='overflow-auto'>
                   <TextViewerStage />
