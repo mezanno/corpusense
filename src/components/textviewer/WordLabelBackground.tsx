@@ -1,30 +1,40 @@
+import { useAppSelector } from '@/hooks/hooks';
+import { getDatafieldById } from '@/state/selectors/models';
 import { Group, Line, Rect } from 'react-konva';
+import { useMarkupContext } from '../reducers/MarkupContext';
 
 const WordLabelBackground = ({
   x,
   y,
   width,
   height,
-  showTop,
-  showRight,
-  showBottom,
-  showLeft,
-  color,
+  word,
+  index,
 }: {
   x: number;
   y: number;
   width: number;
   height: number;
-  showTop: boolean;
-  showRight: boolean;
-  showBottom: boolean;
-  showLeft: boolean;
-  color: string;
+  word: string;
+  index: number;
 }) => {
+  const { state, dispatch } = useMarkupContext();
+  const isSelected = state.selected.includes(index);
+  const dataFieldId = state.wordRects[index].dataFieldId;
+  const dataField = useAppSelector((s) =>
+    dataFieldId !== undefined ? getDatafieldById(s, dataFieldId) : null,
+  );
+
   const borderColor = 'black';
-  const borderWidth = 2;
+  const borderWidth = 1;
 
   const lines = [];
+
+  const showTop = dataField !== null;
+  const showRight = dataField !== null;
+  const showBottom = dataField !== null;
+  const showLeft = dataField !== null;
+  const color = dataField !== null ? dataField.color : '';
 
   if (showTop) {
     lines.push(
@@ -65,6 +75,25 @@ const WordLabelBackground = ({
         points={[x, y, x, y + height]}
         stroke={borderColor}
         strokeWidth={borderWidth}
+      />,
+    );
+  }
+
+  if (isSelected) {
+    lines.push(
+      <Line
+        key='selected_bottom'
+        points={[x, y + height + 2, x + width, y + height + 2]}
+        stroke='red'
+        strokeWidth={2}
+        dash={[5, 5]}
+      />,
+      <Line
+        key='selected_top'
+        points={[x, y - 2, x + width, y - 2]}
+        stroke='red'
+        strokeWidth={2}
+        dash={[5, 5]}
       />,
     );
   }
