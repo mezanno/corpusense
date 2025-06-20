@@ -1,4 +1,5 @@
 import { Annotation, getAnnotationText } from '@/data/models/Annotation';
+import { DataField } from '@/data/models/DataModel';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { useAppSelector } from '@/hooks/hooks';
 import { getEntities } from '@/state/selectors/namedEntity';
@@ -15,7 +16,7 @@ export const MARKUP_ACTIONS = {
 export type MarkupAction =
   | { type: typeof MARKUP_ACTIONS.SET_RECT; payload: { index: number; rect: IRect } }
   | { type: typeof MARKUP_ACTIONS.SET_SELECTED; payload: number }
-  | { type: typeof MARKUP_ACTIONS.SET_FIELD_TO_SELECTED; payload: string }
+  | { type: typeof MARKUP_ACTIONS.SET_FIELD_TO_SELECTED; payload: DataField | undefined }
   | {
       type: typeof MARKUP_ACTIONS.SET_TEXT;
       payload: { annotations: Annotation[]; entities: NamedEntity[] };
@@ -152,7 +153,7 @@ const reducer = (state: MarkupState, action: MarkupAction) => {
           if (state.selected.includes(index)) {
             return {
               ...wordRect,
-              dataFieldId: field,
+              dataFieldId: field !== undefined ? field.id : undefined,
             };
           }
           return wordRect;

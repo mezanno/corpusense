@@ -59,6 +59,7 @@
   "btn_duplicate_regions": "Dupliquer les régions",
   "btn_duplicate_regions_all": "Appliquer les régions sur toutes les pages",
   "btn_duplicate_regions_each2": "Appliquer les régions 1 page sur 2",
+  "btn_field_clear": "Retirer l'étiquette",
   "form_placeholder_key": "Une clé",
   "form_placeholder_value": "Une valeur",
   "form_placeholder_collection_name": "Ma collection",
