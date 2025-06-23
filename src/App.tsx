@@ -6,6 +6,7 @@ import CollectionsManagerPage from './pages/CollectionsManagerPage';
 import ConfigurationPage from './pages/ConfigurationPage';
 import Layout from './pages/Layout';
 import ManifestExplorerPage from './pages/ManifestExplorerPage';
+import ModelsManagerPage from './pages/ModelsManagerPage';
 import { ImporterPlugin, loadImporterPlugins } from './state/sagas/plugins/loader';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/strict-boolean-expressions
@@ -33,6 +34,7 @@ function App() {
             path={`${CorpusenseRoutes.COLLECTIONS}/:collectionId`}
             element={<CollectionInspectorPage />}
           />
+          <Route path={CorpusenseRoutes.MODELS} element={<ModelsManagerPage />} />
           {/* <Route path='*' element={<div>Oups...</div>} /> */}
           <Route path={CorpusenseRoutes.CONFIGURATION} element={<ConfigurationPage />} />
         </Route>

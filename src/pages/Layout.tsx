@@ -17,6 +17,7 @@ import { getLastErrorEvent, getLastInfoEvent } from '@/state/selectors/events';
 import {
   Bolt,
   ChevronDown,
+  Container,
   CornerDownRight,
   FolderSearch2,
   List,
@@ -73,6 +74,11 @@ const LayoutSideBar = () => {
                 title: t('page_title_collection_manager'),
                 url: CorpusenseRoutes.COLLECTIONS,
                 icon: List,
+              },
+              {
+                title: t('page_title_models_manager'),
+                url: CorpusenseRoutes.MODELS,
+                icon: Container,
               },
             ].map((item) => (
               <SidebarMenuItem key={item.title}>
