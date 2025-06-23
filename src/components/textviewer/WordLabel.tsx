@@ -84,14 +84,7 @@ const WordLabel = ({ word, index }: WordLabelProps) => {
       onMouseLeave={() => setIsHovered(false)}
       onMouseDown={handleMouseDown}
     >
-      <WordLabelBackground
-        x={0}
-        y={0}
-        width={size.width}
-        height={size.height}
-        word={word}
-        index={index}
-      />
+      <WordLabelBackground x={0} y={0} width={size.width} height={size.height} index={index} />
       <Text
         ref={textRef}
         text={word}
