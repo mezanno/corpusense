@@ -12,8 +12,10 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { removeModelRequest, setActiveModel } from '@/state/reducers/models';
 import { getModels } from '@/state/selectors/models';
 import { Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const ModelsManagerPage = () => {
+  const { t } = useTranslation();
   const models = useAppSelector(getModels);
   const appDispatch = useAppDispatch();
 
@@ -27,7 +29,7 @@ const ModelsManagerPage = () => {
 
   return (
     <div>
-      <div className='panel'>
+      <div className='panel mb-1'>
         <Table>
           <TableHeader>
             <TableRow>
@@ -48,8 +50,8 @@ const ModelsManagerPage = () => {
                       event.stopPropagation();
                       handleRemoveModel(model.id);
                     }}
-                    // title={t('btn_delete')}
-                    // aria-label={t('btn_delete')}
+                    title={t('btn_delete')}
+                    aria-label={t('btn_delete')}
                   >
                     <Trash2 />
                   </Button>
@@ -59,9 +61,7 @@ const ModelsManagerPage = () => {
           </TableBody>
         </Table>
       </div>
-      <div className='panel mt-1'>
-        <ModelViewer />
-      </div>
+      <ModelViewer />
     </div>
   );
 };
