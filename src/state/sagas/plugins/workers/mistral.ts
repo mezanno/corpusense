@@ -23,6 +23,8 @@ import { call, Effect, put } from 'redux-saga/effects';
 
 export const pluginName = 'mistral';
 
+export const DEFAULT_PROMPT = `Voici une liste de données textuelles présentées correspondant à ce format :\n\n{{schema}}\n\nRetourne moi la liste données présentes dans ce texte sous forme d'une table JSON bien structurée. La réponse ne doit contenir que le JSON, sans explication ni commentaire.`;
+
 export function* startSingleMistralAnalysisProcess(
   canvasId: string,
   collectionId: string,
@@ -64,6 +66,13 @@ export function* startSingleMistralAnalysisProcess(
     yield put(processError({ collectionId, canvasId }));
     return;
   }
+
+  const prompt =
+    localStorage.getItem('prompt')?.replace('{{schema}}', generateSchema(model)) ??
+    DEFAULT_PROMPT.replace('{{schema}}', generateSchema(model));
+  // const prompt = localStorage.getItem('prompt')?.replace('{{schema}}') ?? DEFAULT_PROMPT;
+  console.log(`Using prompt: ${prompt}`);
+  console.log(`text : ${text}`);
 
   const schema = generateSchema(model);
   const body = {
