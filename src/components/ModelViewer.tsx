@@ -7,14 +7,14 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { analogue } from 'simpler-color';
 import { v4 as uuid } from 'uuid';
-import AlertDialogForm from '../AlertDialogForm';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
-import { Checkbox } from '../ui/checkbox';
-import { Input } from '../ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-import { ColorPicker } from './ColorPicker';
-import ModelPreview from './ModelPreview';
+import AlertDialogForm from './AlertDialogForm';
+import { ColorPicker } from './textviewer/ColorPicker';
+import ModelPreview from './textviewer/ModelPreview';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
+import { Checkbox } from './ui/checkbox';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 const baseColor = '#a4d6f6';
 
 const ModelViewer = () => {

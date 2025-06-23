@@ -1,4 +1,4 @@
-import ModelViewer from '@/components/textviewer/ModelViewer';
+import ModelViewer from '@/components/ModelViewer';
 import { Button } from '@/components/ui/button';
 import {
   Table,

@@ -6,8 +6,8 @@ import { Canvas } from '@iiif/presentation-3';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import ModelViewer from '../ModelViewer';
 import { MarkupProvider } from '../reducers/MarkupContext';
-import ModelViewer from './ModelViewer';
 import TextViewerStage from './TextViewerStage';
 
 const TextViewer = ({ name, collectionId }: { name: string; collectionId: string }) => {
