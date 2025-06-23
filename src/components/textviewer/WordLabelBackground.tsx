@@ -8,34 +8,40 @@ const WordLabelBackground = ({
   y,
   width,
   height,
-  word,
   index,
 }: {
   x: number;
   y: number;
   width: number;
   height: number;
-  word: string;
   index: number;
 }) => {
-  const { state, dispatch } = useMarkupContext();
+  const { state } = useMarkupContext();
   const isSelected = state.selected.includes(index);
   const dataFieldId = state.wordRects[index].dataFieldId;
   const dataField = useAppSelector((s) =>
     dataFieldId !== undefined ? getDatafieldById(s, dataFieldId) : null,
   );
 
+  //compute which border to show
+  const showTop = dataField !== null;
+  const showBottom = dataField !== null;
+  const showLeft =
+    state.wordRects[index - 1] === undefined ||
+    (dataFieldId !== undefined && state.wordRects[index - 1]?.dataFieldId !== dataFieldId);
+  const showRight =
+    (dataFieldId !== undefined &&
+      state.wordRects[index + 1]?.dataFieldId !== dataFieldId &&
+      state.wordRects[index + 1]?.line === state.wordRects[index].line) ||
+    (dataFieldId !== undefined &&
+      state.wordRects[index + 1]?.dataFieldId !== dataFieldId &&
+      state.wordRects[index + 1]?.line !== state.wordRects[index].line);
+
+  const color = dataField !== null ? dataField.color : '';
   const borderColor = 'black';
   const borderWidth = 1;
 
   const lines = [];
-
-  const showTop = dataField !== null;
-  const showRight = dataField !== null;
-  const showBottom = dataField !== null;
-  const showLeft = dataField !== null;
-  const color = dataField !== null ? dataField.color : '';
-
   if (showTop) {
     lines.push(
       <Line
