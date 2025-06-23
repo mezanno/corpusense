@@ -13,8 +13,10 @@ import ModelPreview from './textviewer/ModelPreview';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
+import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { Textarea } from './ui/textarea';
 const baseColor = '#a4d6f6';
 
 const ModelViewer = () => {
@@ -22,10 +24,12 @@ const ModelViewer = () => {
   const appDispatch = useAppDispatch();
   const model = useAppSelector(getActiveModel);
   const [fields, setFields] = useState(model?.fields ?? []);
+  const [description, setDescription] = useState('');
 
   useEffect(() => {
     if (model) {
       setFields(model.fields);
+      setDescription(model.description ?? '');
     }
   }, [model]);
 
@@ -42,7 +46,7 @@ const ModelViewer = () => {
   const handleSave = () => {
     const newFields = fields.filter((f) => f.name !== '' && f.type !== '');
     setFields(newFields);
-    const updatedModel = { ...model, fields: newFields };
+    const updatedModel = { ...model, fields: newFields, description: description.trim() };
     appDispatch(saveModelRequest(updatedModel));
   };
 
@@ -74,6 +78,15 @@ const ModelViewer = () => {
         >
           {({ close }) => <ModelPreview close={close} model={model} />}
         </AlertDialogForm>
+      </div>
+      <div className='m-2 flex w-full items-center justify-center'>
+        <Label htmlFor='description'>{t('form_label_model_description')}</Label>
+        <Textarea
+          id='description'
+          className='ml-2 max-w-3/4 min-w-1/2'
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
       </div>
       {fields.length > 0 ? (
         <Accordion asChild type='single' collapsible className='w-full' defaultValue='datafields'>
