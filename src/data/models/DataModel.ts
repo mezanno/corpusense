@@ -4,6 +4,7 @@ export interface DataField {
   type: string;
   description?: string;
   generated?: boolean;
+  isArray?: boolean;
   color: string;
 }
 

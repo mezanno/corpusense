@@ -102,6 +102,7 @@
   "table_col_title_collection_info": "Informations",
   "table_col_title_name": "Nom",
   "table_col_title_type": "Type",
+  "table_col_title_isArray": "[tableau]",
   "table_col_title_description": "Description",
   "table_col_title_color": "Couleur",
   "table_col_title_ia": "Donnée inférée",

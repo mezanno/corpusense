@@ -98,6 +98,7 @@ const ModelViewer = () => {
                   <TableRow>
                     <TableHead>{t('table_col_title_name')}</TableHead>
                     <TableHead>{t('table_col_title_type')}</TableHead>
+                    <TableHead>{t('table_col_title_isArray')}</TableHead>
                     <TableHead>{t('table_col_title_description')}</TableHead>
                     <TableHead>{t('table_col_title_ia')}</TableHead>
                     <TableHead>{t('table_col_title_color')}</TableHead>
@@ -128,6 +129,14 @@ const ModelViewer = () => {
                             <SelectItem value='number'>Nombre</SelectItem>
                           </SelectContent>
                         </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Checkbox
+                          checked={field.isArray ?? false}
+                          onCheckedChange={(checked) =>
+                            updateFields(index, { isArray: Boolean(checked) })
+                          }
+                        />
                       </TableCell>
                       <TableCell>
                         <Input
