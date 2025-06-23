@@ -21,4 +21,8 @@ export class IndexedDBModelRepository implements ModelRepository {
   async update(model: DataModel): Promise<void> {
     await db.models.put(model);
   }
+
+  async delete(id: string): Promise<void> {
+    await db.models.delete(id);
+  }
 }

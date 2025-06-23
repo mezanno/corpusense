@@ -1,5 +1,6 @@
 import { DataField, DataModel, DataModelCreateDTO } from '@/data/models/DataModel';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { remove } from 'lodash';
 
 interface ModelsState {
   storedModels: DataModel[];
@@ -38,6 +39,14 @@ export const modelsSlice = createSlice({
         state.activeModel = action.payload;
       }
     },
+    removeModelRequest: (_state, _action: PayloadAction<string>) => {}, //payload is modelId
+    removeModelSuccess: (_state, _action: PayloadAction<string>) => {
+      const modelId = _action.payload;
+      remove(_state.storedModels, (model) => model.id === modelId);
+      if (_state.activeModel?.id === modelId) {
+        _state.activeModel = null; // Clear active model if it was removed
+      }
+    },
   },
 });
 
@@ -50,5 +59,7 @@ export const {
   createModelSuccess,
   saveModelRequest,
   saveModelSuccess,
+  removeModelRequest,
+  removeModelSuccess,
 } = modelsSlice.actions;
 export default modelsSlice.reducer;

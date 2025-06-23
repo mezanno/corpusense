@@ -82,6 +82,7 @@ export interface ModelRepository {
   getAll(): Promise<DataModel[]>;
   add(model: DataModel): Promise<void>;
   update(model: DataModel): Promise<void>;
+  delete(id: string): Promise<void>;
 }
 
 export interface NamedEntityRepository {

@@ -6,6 +6,8 @@ import { v4 as uuid } from 'uuid';
 import {
   createModelRequest,
   createModelSuccess,
+  removeModelRequest,
+  removeModelSuccess,
   saveModelRequest,
   saveModelSuccess,
   setModels,
@@ -36,9 +38,16 @@ function* handleSaveModel(action: PayloadAction<DataModel>) {
   yield put(saveModelSuccess(action.payload));
 }
 
+function* handleRemoveModel(action: PayloadAction<string>) {
+  const modelRespository = getModelRepository();
+  yield call([modelRespository, modelRespository.delete], action.payload);
+  yield put(removeModelSuccess(action.payload));
+}
+
 export default function* modelsSaga() {
   yield takeEvery(createModelRequest, handleCreateModel);
   yield takeEvery(saveModelRequest, handleSaveModel);
+  yield takeEvery(removeModelRequest, handleRemoveModel);
 }
 
 export { fetchModels };
