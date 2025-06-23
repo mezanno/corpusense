@@ -104,7 +104,7 @@
   "table_col_title_type": "Type",
   "table_col_title_description": "Description",
   "table_col_title_color": "Couleur",
-  "table_col_title_ia": "Donnée générée",
+  "table_col_title_ia": "Donnée inférée",
   "error_unknown": "Erreur inconnue ¯\\_(ツ)_/¯",
   "error_occured": "Une erreur est survenue",
   "error_loading_manifest": "Erreur lors du chargement du manifest : {{error}}",
