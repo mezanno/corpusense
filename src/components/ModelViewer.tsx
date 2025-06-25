@@ -2,7 +2,7 @@ import { DataField } from '@/data/models/DataModel';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { saveModelRequest } from '@/state/reducers/models';
 import { getActiveModel } from '@/state/selectors/models';
-import { CirclePlus, CircleX, Eye, Save } from 'lucide-react';
+import { CircleArrowDown, CircleArrowUp, CirclePlus, CircleX, Eye, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { analogue } from 'simpler-color';
@@ -54,6 +54,24 @@ const ModelViewer = () => {
     setFields((prev) => {
       const updatedFields = [...prev];
       updatedFields[index] = { ...updatedFields[index], ...newValue };
+      return updatedFields;
+    });
+  };
+
+  const handleSwapFields = (index: number, direction: 'up' | 'down') => {
+    setFields((prev) => {
+      const updatedFields = [...prev];
+      if (direction === 'up' && index > 0) {
+        [updatedFields[index - 1], updatedFields[index]] = [
+          updatedFields[index],
+          updatedFields[index - 1],
+        ];
+      } else if (direction === 'down' && index < updatedFields.length - 1) {
+        [updatedFields[index + 1], updatedFields[index]] = [
+          updatedFields[index],
+          updatedFields[index + 1],
+        ];
+      }
       return updatedFields;
     });
   };
@@ -159,7 +177,25 @@ const ModelViewer = () => {
                           onChange={(v) => updateFields(index, { color: v })}
                         />
                       </TableCell>
-                      <TableCell className='flex justify-center space-x-2'>
+                      <TableCell className='flex space-x-2'>
+                        {index > 0 && (
+                          <button
+                            className='cursor-pointer'
+                            title={t('btn_moveup_datafield')}
+                            onClick={() => handleSwapFields(index, 'up')}
+                          >
+                            <CircleArrowUp />
+                          </button>
+                        )}
+                        {index < fields.length - 1 && (
+                          <button
+                            className='cursor-pointer'
+                            title={t('btn_movedown_datafield')}
+                            onClick={() => handleSwapFields(index, 'down')}
+                          >
+                            <CircleArrowDown />
+                          </button>
+                        )}
                         <button
                           title={t('btn_delete_datafield')}
                           className='cursor-pointer'
