@@ -1,12 +1,12 @@
 import { Combine, MessageSquareOff, OctagonXIcon } from 'lucide-react';
 
-import { WorkerScope } from '@/data/models/Worker';
+import { Scope } from '@/data/models/Scope';
 import { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 interface DangerousMenuProps {
-  scope: WorkerScope;
+  scope: Scope;
   handleDeleteAllAnnotations?: () => void;
   handleRecomputeRegions?: () => void;
 }

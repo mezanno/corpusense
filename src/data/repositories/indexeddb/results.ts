@@ -1,5 +1,5 @@
 import { Result, ResultCreateDTO } from '@/data/models/Result';
-import { WorkerScope } from '@/data/models/Worker';
+import { Scope } from '@/data/models/Scope';
 import { db } from './db';
 import { ResultRepository } from './types';
 import { getScopeKey } from './utils';
@@ -21,7 +21,7 @@ export class IndexedDBResultRepository implements ResultRepository {
     return await db.results.where('workerName').equals(workerName).sortBy('id');
   }
 
-  async selectByScopeAndWorkerName(scope: WorkerScope, workerName: string): Promise<Result> {
+  async selectByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result> {
     const result = await db.results
       .where({ scopeKey: getScopeKey(scope), workerName: workerName })
       .first();

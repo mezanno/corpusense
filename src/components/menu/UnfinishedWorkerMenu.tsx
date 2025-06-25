@@ -1,4 +1,5 @@
-import { Worker, WorkerScope, WorkerStatus } from '@/data/models/Worker';
+import { Scope } from '@/data/models/Scope';
+import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { useAppSelector } from '@/hooks/hooks';
 import { getWorkersByScopeAndStatus } from '@/state/selectors/workers';
 import { Hourglass, LoaderCircle } from 'lucide-react';
@@ -9,7 +10,7 @@ const UnfinishedWorkerMenu = ({
   scope,
   handleRecoverWorker,
 }: {
-  scope: WorkerScope;
+  scope: Scope;
   handleRecoverWorker?: (worker: Worker) => void;
 }) => {
   const { t } = useTranslation();

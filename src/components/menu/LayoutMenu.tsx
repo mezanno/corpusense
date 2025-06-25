@@ -1,4 +1,4 @@
-import { WorkerScope } from '@/data/models/Worker';
+import { Scope } from '@/data/models/Scope';
 import { Copy, Layers, Layers2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
@@ -8,7 +8,7 @@ const LayoutMenu = ({
   handleDuplicateToAll,
   handleDuplicateEach2,
 }: {
-  scope: WorkerScope;
+  scope: Scope;
   handleDuplicateToAll?: () => void;
   handleDuplicateEach2?: () => void;
 }) => {

@@ -1,4 +1,5 @@
-import { Worker, WorkerCreateDTO, WorkerScope, WorkerStatus } from '@/data/models/Worker';
+import { Scope } from '@/data/models/Scope';
+import { Worker, WorkerCreateDTO, WorkerStatus } from '@/data/models/Worker';
 import { v4 as uuid } from 'uuid';
 import { db } from './db';
 import { WorkerRepository } from './types';
@@ -8,7 +9,7 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     return await db.workers.toArray();
   }
 
-  async selectByNameAndScope(workerName: string, scope: WorkerScope): Promise<Worker | undefined> {
+  async selectByNameAndScope(workerName: string, scope: Scope): Promise<Worker | undefined> {
     return await db.workers.where({ scopeKey: getScopeKey(scope), name: workerName }).first();
   }
 

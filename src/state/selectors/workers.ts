@@ -1,8 +1,9 @@
-import { isSameScope, Worker, WorkerScope, WorkerStatus } from '@/data/models/Worker';
+import { isSameScope, Scope } from '@/data/models/Scope';
+import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
-export const isWorkerRunning = (state: RootState, scope: WorkerScope) => {
+export const isWorkerRunning = (state: RootState, scope: Scope) => {
   return state.workers.status.find((s) => isSameScope(s.scope, scope)) !== undefined;
 };
 
@@ -12,7 +13,7 @@ export const isWorkerRunning = (state: RootState, scope: WorkerScope) => {
 //  * @param id CanvasId
 //  * @returns
 //  */
-export const getStatus = (state: RootState, scope: WorkerScope) => {
+export const getStatus = (state: RootState, scope: Scope) => {
   return state.workers.status.find((s) => isSameScope(s.scope, scope));
 };
 
@@ -21,8 +22,8 @@ export const getWorkers = (state: RootState) => state.workers.workers;
 export const getWorkersByScopeAndStatus = createSelector(
   [
     (state: RootState) => state.workers.workers,
-    (_state: RootState, scope: WorkerScope) => scope,
-    (_state: RootState, _scope: WorkerScope, status: WorkerStatus) => status,
+    (_state: RootState, scope: Scope) => scope,
+    (_state: RootState, _scope: Scope, status: WorkerStatus) => status,
   ],
   (workers, scope, status): Worker[] => {
     return Object.values(workers)

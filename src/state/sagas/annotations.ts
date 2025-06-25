@@ -94,7 +94,9 @@ function* handleSaveAnnotation(
 function* handleRemoveAnnotation(action: PayloadAction<string>) {
   try {
     const annotationRepository = getAnnotationRepository();
-    yield call([annotationRepository, annotationRepository.removeById], action.payload);
+    yield call([annotationRepository, annotationRepository.removeByScope], {
+      annotationId: action.payload,
+    });
     yield put(removeAnnotationSuccess(action.payload));
   } catch (e) {
     console.warn(e);
@@ -107,10 +109,9 @@ function* handleRemoveAllCollectionAnnotations(
   const collectionId = action.payload;
   try {
     const annotationRepository = getAnnotationRepository();
-    const annotationIds = yield call(
-      [annotationRepository, annotationRepository.removeByCollectionId],
+    const annotationIds = yield call([annotationRepository, annotationRepository.removeByScope], {
       collectionId,
-    );
+    });
     yield put(removeAllAnnotationsSuccess(annotationIds));
   } catch (e) {
     console.warn(e);
@@ -124,11 +125,10 @@ function* handleRemoveAllCanvasAnnotations(
   try {
     const { canvasId, collectionId } = action.payload;
     const annotationRepository = getAnnotationRepository();
-    const annotationIds = yield call(
-      [annotationRepository, annotationRepository.removeByCanvasId],
+    const annotationIds = yield call([annotationRepository, annotationRepository.removeByScope], {
       canvasId,
       collectionId,
-    );
+    });
     yield put(removeAllAnnotationsSuccess(annotationIds));
   } catch (e) {
     console.warn(e);

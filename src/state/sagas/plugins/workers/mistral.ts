@@ -1,6 +1,7 @@
 import { DataModel } from '@/data/models/DataModel';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
-import { isCanvasScope, isCollectionScope, Worker } from '@/data/models/Worker';
+import { isCanvasScope, isCollectionScope } from '@/data/models/Scope';
+import { Worker } from '@/data/models/Worker';
 import {
   getCollectionRepository,
   getResultRepository,

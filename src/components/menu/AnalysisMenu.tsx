@@ -1,4 +1,4 @@
-import { WorkerScope } from '@/data/models/Worker';
+import { Scope } from '@/data/models/Scope';
 import { Puzzle, ScanText, TableProperties, TextSearch } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
@@ -9,7 +9,7 @@ const AnalysisMenu = ({
   handleOcr,
   handleExtractData,
 }: {
-  scope: WorkerScope;
+  scope: Scope;
   handleLayout?: () => void;
   handleOcr?: () => void;
   handleExtractData?: () => void;

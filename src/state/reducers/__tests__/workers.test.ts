@@ -1,4 +1,5 @@
-import { isSameScope, WorkerStatus } from '@/data/models/Worker';
+import { isSameScope } from '@/data/models/Scope';
+import { WorkerStatus } from '@/data/models/Worker';
 import reducer, {
   processRunning,
   processStart,

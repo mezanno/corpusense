@@ -1,4 +1,5 @@
-import { Worker, WorkerScope, WorkerStatus } from '@/data/models/Worker';
+import { Scope } from '@/data/models/Scope';
+import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { useAppSelector } from '@/hooks/hooks';
 import { getWorkersByScopeAndStatus } from '@/state/selectors/workers';
 import { Download, SendHorizonal } from 'lucide-react';
@@ -10,7 +11,7 @@ const ExportMenu = ({
   handleExportText,
   handleExportResult,
 }: {
-  scope: WorkerScope;
+  scope: Scope;
   handleExportText?: () => void;
   handleExportResult?: (worker: Worker) => void;
 }) => {

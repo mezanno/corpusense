@@ -1,4 +1,5 @@
-import { Worker, WorkerScope } from '@/data/models/Worker';
+import { Scope } from '@/data/models/Scope';
+import { Worker } from '@/data/models/Worker';
 import AnalysisMenu from './menu/AnalysisMenu';
 import DangerousMenu from './menu/DangerousMenu';
 import ExportMenu from './menu/ExportMenu';
@@ -25,7 +26,7 @@ const Toolbar = ({
   handleExtractData?: () => void;
   handleExportResult?: (worker: Worker) => void;
   handleRecoverWorker?: (worker: Worker) => void;
-  scope: WorkerScope;
+  scope: Scope;
 }) => {
   return (
     <div className='flex items-center space-x-2'>

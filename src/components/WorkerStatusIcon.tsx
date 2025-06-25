@@ -1,9 +1,10 @@
-import { WorkerScope, WorkerStatus } from '@/data/models/Worker';
+import { Scope } from '@/data/models/Scope';
+import { WorkerStatus } from '@/data/models/Worker';
 import { useAppSelector } from '@/hooks/hooks';
 import { getStatus } from '@/state/selectors/workers';
 import { ClipLoader, GridLoader } from 'react-spinners';
 
-const WorkerStatusIcon = ({ scope }: { scope: WorkerScope }) => {
+const WorkerStatusIcon = ({ scope }: { scope: Scope }) => {
   const worker = useAppSelector((state) => getStatus(state, scope));
   if (worker === undefined) {
     return null;

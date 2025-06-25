@@ -1,11 +1,12 @@
 import { DataModel } from '@/data/models/DataModel';
 import { Result } from '@/data/models/Result';
-import { isSameScope, Worker, WorkerScope, WorkerStatus } from '@/data/models/Worker';
+import { isSameScope, Scope } from '@/data/models/Scope';
+import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export interface WorkerState {
   status: {
-    scope: WorkerScope;
+    scope: Scope;
     status: WorkerStatus;
   }[];
   workers: Worker[];
@@ -40,7 +41,7 @@ export interface fetchBatchDataAnalysisPayload {
   model: DataModel;
 }
 export interface PluginParams {
-  scope: WorkerScope;
+  scope: Scope;
   workerId?: string;
   [key: string]: unknown;
 }
@@ -67,7 +68,7 @@ export const workerSlice = createSlice({
       _state,
       _action: PayloadAction<fetchBatchDataAnalysisPayload>,
     ) => {},
-    processStart: (state, action: PayloadAction<WorkerScope>) => {
+    processStart: (state, action: PayloadAction<Scope>) => {
       const scope = action.payload;
       const existing = state.status.find((s) => isSameScope(s.scope, scope));
       if (existing) {
@@ -76,7 +77,7 @@ export const workerSlice = createSlice({
         state.status.push({ scope, status: WorkerStatus.WAITING });
       }
     },
-    processRunning: (state, action: PayloadAction<WorkerScope>) => {
+    processRunning: (state, action: PayloadAction<Scope>) => {
       const scope = action.payload;
       const existing = state.status.find((s) => isSameScope(s.scope, scope));
       if (existing) {
@@ -85,12 +86,12 @@ export const workerSlice = createSlice({
         state.status.push({ scope, status: WorkerStatus.INPROGRESS });
       }
     },
-    processSuccess: (state, action: PayloadAction<WorkerScope>) => {
+    processSuccess: (state, action: PayloadAction<Scope>) => {
       //when the process if finish with success, remove it
       const scope = action.payload;
       state.status = state.status.filter((s) => !isSameScope(s.scope, scope));
     },
-    processError: (state, action: PayloadAction<WorkerScope>) => {
+    processError: (state, action: PayloadAction<Scope>) => {
       const scope = action.payload;
       const existing = state.status.find((s) => isSameScope(s.scope, scope));
       if (existing) {

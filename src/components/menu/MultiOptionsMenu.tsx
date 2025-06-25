@@ -1,4 +1,4 @@
-import { WorkerScope } from '@/data/models/Worker';
+import { Scope } from '@/data/models/Scope';
 import { useAppSelector } from '@/hooks/hooks';
 import { isWorkerRunning } from '@/state/selectors/workers';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +30,7 @@ const MultiOptionsMenu = ({
   color = 'text-black',
 }: {
   params: MultiOptionsMenuParams;
-  scope: WorkerScope;
+  scope: Scope;
   color?: string;
 }) => {
   const { t } = useTranslation();

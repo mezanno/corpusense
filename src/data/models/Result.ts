@@ -1,8 +1,8 @@
-import { WorkerScope } from './Worker';
+import { Scope } from './Scope';
 
 export interface Result {
   id: number;
-  scope: WorkerScope;
+  scope: Scope;
   scopeKey: string; //needed for indexeddb
   workerName: string;
   workerId: string;
@@ -10,7 +10,7 @@ export interface Result {
 }
 
 export interface ResultCreateDTO {
-  scope: WorkerScope;
+  scope: Scope;
   workerName: string;
   workerId: string;
   value: object | string;
