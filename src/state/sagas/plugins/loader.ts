@@ -1,7 +1,9 @@
 import { Result } from '@/data/models/Result';
+import { Worker } from '@/data/models/Worker';
 
 export type WorkerPlugin = { run: WorkerRunFunction; export?: WorkerExportFunction };
 export type WorkerRunFunction = (
+  worker: Worker,
   isRecovering: boolean, // indicates if the worker is being recovered or not
   params?: Record<string, unknown>,
 ) => Generator;

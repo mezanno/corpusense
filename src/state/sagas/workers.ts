@@ -3,7 +3,7 @@ import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagi
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
 import { Result } from '@/data/models/Result';
-import { Worker, WorkerStatus } from '@/data/models/Worker';
+import { isWorker, Worker, WorkerCreateDTO, WorkerStatus } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -28,7 +28,6 @@ import {
   takeEvery,
   takeLatest,
 } from 'redux-saga/effects';
-import { v4 as uuid } from 'uuid';
 import { fetchAnnotationsSuccess } from '../reducers/annotations';
 import { pushError, pushInfo } from '../reducers/events';
 import {
@@ -44,6 +43,7 @@ import {
   processStart,
   processSuccess,
   recoverWorkerRequest,
+  removeWorkerRequest,
   setResults,
   setWorkers,
   setWorkerStatus,
@@ -275,44 +275,65 @@ function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPaylo
   }
 
   const worker = {
-    id: uuid(),
     name: workerName,
     scope: params.scope,
-    status: WorkerStatus.INPROGRESS,
-    createdAt: new Date(),
     params,
   };
 
   yield call(startWorker, worker);
 }
 
-function* startWorker(worker: Worker, isRecovering = false) {
+function* startWorker(worker: Worker | WorkerCreateDTO) {
   const workerRepository = getWorkerRepository();
   const saga = workerPlugins[worker.name];
-  try {
-    if (isRecovering) {
-      worker = { ...worker, status: WorkerStatus.INPROGRESS };
-      yield call([workerRepository, workerRepository.update], worker);
-    } else {
-      yield call([workerRepository, workerRepository.add], worker);
-    }
-    yield put(setWorkerStatus(worker));
-    yield call(saga.run, isRecovering, worker.params);
 
-    worker = { ...worker, status: WorkerStatus.COMPLETED };
-    yield call([workerRepository, workerRepository.update], worker);
+  let currentWorker: Worker | undefined = undefined;
+  const isRecovering = isWorker(worker);
+  try {
+    if (isWorker(worker)) {
+      //if worker is already a Worker instance, it means it is being recovered
+      const changes = { status: WorkerStatus.INPROGRESS };
+      yield call([workerRepository, workerRepository.patch], worker.id, changes);
+      currentWorker = worker;
+    } else {
+      //else, if it's a WorkerCreateDTO, we need to create a new worker
+      //but we delete previous worker with same name and same scope if it exists
+      const existingWorker = (yield call(
+        [workerRepository, workerRepository.selectByNameAndScope],
+        worker.name,
+        worker.scope,
+      )) as Worker | undefined;
+      if (existingWorker !== undefined) {
+        yield call([workerRepository, workerRepository.delete], existingWorker);
+        yield put(removeWorkerRequest(existingWorker));
+      }
+      //then, create a new worker
+      currentWorker = (yield call([workerRepository, workerRepository.add], worker)) as Worker;
+    }
+    //update the store
+    yield put(setWorkerStatus(currentWorker));
+    //and start the saga
+    yield call(saga.run, currentWorker, isRecovering, worker.params);
+
+    const changes = { status: WorkerStatus.COMPLETED };
+    yield call([workerRepository, workerRepository.patch], currentWorker.id, changes);
   } catch (error) {
     console.error(`Error in plugin saga for ${worker.name}:`, error);
-    worker = { ...worker, status: WorkerStatus.ERROR };
-    yield call([workerRepository, workerRepository.update], worker);
-    yield put(pushError(`Error in plugin saga for ${worker.name}: ${getErrorMessage(error)}`));
+    if (currentWorker !== undefined) {
+      const changes = { status: WorkerStatus.ERROR };
+      yield call([workerRepository, workerRepository.patch], currentWorker.id, changes);
+      yield put(pushError(`Error in plugin saga for ${worker.name}: ${getErrorMessage(error)}`));
+    }
   }
-  yield put(setWorkerStatus(worker));
+  if (currentWorker !== undefined) {
+    currentWorker = { ...currentWorker, status: WorkerStatus.COMPLETED };
+    yield put(setWorkerStatus(currentWorker));
+  }
 }
 
 function* handleRecoverWorker(action: PayloadAction<Worker>) {
   const worker = action.payload;
-  yield call(startWorker, worker, true);
+  yield call(startWorker, worker);
 }
 
 function* handleExportWorkerResult(

@@ -1,6 +1,6 @@
 import { DataModel } from '@/data/models/DataModel';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
-import { isCanvasScope, isCollectionScope } from '@/data/models/Worker';
+import { isCanvasScope, isCollectionScope, Worker } from '@/data/models/Worker';
 import {
   getCollectionRepository,
   getResultRepository,
@@ -29,7 +29,7 @@ export function* startSingleMistralAnalysisProcess(
   canvasId: string,
   collectionId: string,
   model: DataModel,
-  workerName: string,
+  worker: Worker,
   isRecovering: boolean,
 ): Generator<Effect, string | void | object, string | Response | object | Result> {
   // Check if the process is recovering
@@ -41,7 +41,7 @@ export function* startSingleMistralAnalysisProcess(
       const existingResult = (yield call(
         [resultRepository, resultRepository.selectByScopeAndWorkerName],
         { collectionId, canvasId },
-        workerName,
+        worker.name,
       )) as Result;
       yield put(processSuccess({ collectionId, canvasId }));
       return existingResult.value;
@@ -76,7 +76,7 @@ export function* startSingleMistralAnalysisProcess(
 
   const schema = generateSchema(model);
   const body = {
-    model: 'ministral-8b-latest',
+    model: 'mistral-medium-latest',
     messages: [
       {
         role: 'system',
@@ -122,7 +122,8 @@ export function* startSingleMistralAnalysisProcess(
       //save the result in the IndexedDB
       const result: ResultCreateDTO = {
         scope: { canvasId, collectionId },
-        workerName,
+        workerName: worker.name,
+        workerId: worker.id,
         value: message.content,
       };
       const resultRepository = getResultRepository();
@@ -137,7 +138,7 @@ export function* startSingleMistralAnalysisProcess(
 function* startBatchMistralAnalysisProcess(
   collectionId: string,
   model: DataModel,
-  workerName: string,
+  worker: Worker,
   isRecovering: boolean,
 ): Generator<Effect, void, Canvas[] | string> {
   console.log(
@@ -166,7 +167,7 @@ function* startBatchMistralAnalysisProcess(
         canvases[i].id,
         collectionId,
         model,
-        workerName,
+        worker,
         isRecovering,
       )) as string;
       const dataParsed = JSON.parse(dataInCanvas) as unknown[];
@@ -187,38 +188,27 @@ function* startBatchMistralAnalysisProcess(
 }
 
 //type guard to check if params has scope and model
-function hasScopeAndModel(
-  params: PluginParams,
-): params is PluginParams & { model: DataModel } & { workerName: string } {
-  return 'scope' in params && 'model' in params && 'workerName' in params;
+function hasScopeAndModel(params: PluginParams): params is PluginParams & { model: DataModel } {
+  return 'scope' in params && 'model' in params;
 }
 
 //entry point for the Mistral plugin saga (default export)
-export default function* mistralSaga(isRecovering: boolean, params: PluginParams) {
+export default function* mistralSaga(worker: Worker, isRecovering: boolean, params: PluginParams) {
   if (!hasScopeAndModel(params)) {
     console.log('Invalid parameters for Mistral plugin saga:', params);
     throw new Error('Invalid parameters for Mistral plugin saga');
   }
-  const { scope, model, workerName } = params;
-  if (workerName === undefined) {
-    console.warn('No workerName provided for Mistral plugin saga');
-    throw new Error('No workerName provided for Mistral plugin saga');
-  }
+  const { scope, model } = params;
+
   if (isCollectionScope(scope)) {
-    yield call(
-      startBatchMistralAnalysisProcess,
-      scope.collectionId,
-      model,
-      workerName,
-      isRecovering,
-    );
+    yield call(startBatchMistralAnalysisProcess, scope.collectionId, model, worker, isRecovering);
   } else if (isCanvasScope(scope)) {
     yield call(
       startSingleMistralAnalysisProcess,
       scope.canvasId,
       scope.collectionId,
       model,
-      workerName,
+      worker,
       isRecovering,
     );
   } else {

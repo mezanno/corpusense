@@ -1,7 +1,8 @@
-import { getScopeKey, Result, ResultCreateDTO } from '@/data/models/Result';
+import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { WorkerScope } from '@/data/models/Worker';
 import { db } from './db';
 import { ResultRepository } from './types';
+import { getScopeKey } from './utils';
 
 export class IndexedDBResultRepository implements ResultRepository {
   async addResult(result: ResultCreateDTO): Promise<void> {

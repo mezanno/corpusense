@@ -23,7 +23,7 @@ const db = new Dexie('mezanno') as Dexie & {
   workers: EntityTable<Worker, 'id'>;
 };
 
-db.version(1).stores({
+db.version(2).stores({
   collections: '&id, name, *tags.id',
   history: '&url',
   storedItems: '&id',
@@ -33,8 +33,8 @@ db.version(1).stores({
   models: '&id',
   annotations: '&id, canvasId, collectionId, [canvasId+collectionId], order',
   namedEntities: '&id, *annotationIds, type.id',
-  results: '++id, workerName, [scopeKey+workerName]',
-  workers: '&id, name, status, scope',
+  results: '++id, workerName, workerId, [scopeKey+workerName]',
+  workers: '&id, name, status, [scopeKey+name]',
 });
 
 export { db };

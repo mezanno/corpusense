@@ -12,9 +12,20 @@ export interface Worker {
   id: string;
   name: string;
   scope: WorkerScope;
+  scopeKey: string; //needed for indexeddb
   status: WorkerStatus;
   createdAt: Date;
   params: PluginParams;
+}
+
+export interface WorkerCreateDTO {
+  name: string;
+  scope: WorkerScope;
+  params: PluginParams;
+}
+
+export function isWorker(obj: Worker | WorkerCreateDTO): obj is Worker {
+  return 'id' in obj && 'scopeKey' in obj && 'status' in obj && 'createdAt' in obj;
 }
 
 export type CollectionScope = { collectionId: string };
