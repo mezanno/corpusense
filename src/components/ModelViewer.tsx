@@ -157,7 +157,7 @@ const ModelViewer = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Input
+                        <Textarea
                           value={field.description}
                           placeholder={t('form_label_datafield_description')}
                           onChange={(e) => updateFields(index, { description: e.target.value })}
@@ -177,32 +177,34 @@ const ModelViewer = () => {
                           onChange={(v) => updateFields(index, { color: v })}
                         />
                       </TableCell>
-                      <TableCell className='flex space-x-2'>
-                        {index > 0 && (
+                      <TableCell>
+                        <div className='flex space-x-1'>
+                          {index > 0 && (
+                            <button
+                              className='cursor-pointer'
+                              title={t('btn_moveup_datafield')}
+                              onClick={() => handleSwapFields(index, 'up')}
+                            >
+                              <CircleArrowUp />
+                            </button>
+                          )}
+                          {index < fields.length - 1 && (
+                            <button
+                              className='cursor-pointer'
+                              title={t('btn_movedown_datafield')}
+                              onClick={() => handleSwapFields(index, 'down')}
+                            >
+                              <CircleArrowDown />
+                            </button>
+                          )}
                           <button
+                            title={t('btn_delete_datafield')}
                             className='cursor-pointer'
-                            title={t('btn_moveup_datafield')}
-                            onClick={() => handleSwapFields(index, 'up')}
+                            onClick={() => setFields((prev) => prev.filter((_, i) => i !== index))}
                           >
-                            <CircleArrowUp />
+                            <CircleX />
                           </button>
-                        )}
-                        {index < fields.length - 1 && (
-                          <button
-                            className='cursor-pointer'
-                            title={t('btn_movedown_datafield')}
-                            onClick={() => handleSwapFields(index, 'down')}
-                          >
-                            <CircleArrowDown />
-                          </button>
-                        )}
-                        <button
-                          title={t('btn_delete_datafield')}
-                          className='cursor-pointer'
-                          onClick={() => setFields((prev) => prev.filter((_, i) => i !== index))}
-                        >
-                          <CircleX />
-                        </button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
