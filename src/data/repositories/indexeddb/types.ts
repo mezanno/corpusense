@@ -6,10 +6,11 @@ import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
+import { Scope } from '@/data/models/Scope';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
-import { Worker, WorkerScope } from '@/data/models/Worker';
+import { Worker } from '@/data/models/Worker';
 import { Canvas, Manifest } from '@iiif/presentation-3';
 
 export interface AnnotationRepository {
@@ -23,9 +24,7 @@ export interface AnnotationRepository {
   getById(id: string): Promise<Annotation>;
   saveAllAnnotations(annotations: Annotation[]): Promise<void>;
   removeAllById(ids: string[]): Promise<string[]>;
-  removeByCanvasId(canvasId: string, collectionId: string): Promise<string[]>;
-  removeByCollectionId(collectionId: string): Promise<string[]>;
-  removeById(id: string): Promise<string[]>;
+  removeByScope(scope: Scope): Promise<string[]>;
   updateAnnotation(annotation: Annotation): Promise<void>;
   updateOrder(annotationId: string, order: number): Promise<void>;
 }
@@ -89,13 +88,14 @@ export interface NamedEntityRepository {
   getByAnnotationId(annotationId: string): Promise<NamedEntity[]>;
   getNamedEntitiesByAnnotationsIds(annotationIds: string[]): Promise<NamedEntity[]>;
   add(entity: NamedEntity): Promise<void>;
+  removeByAnnotationIds(annotationIds: string[]): Promise<void>;
 }
 
 export interface ResultRepository {
   addResult(result: ResultCreateDTO): Promise<void>;
   selectAll(): Promise<Result[]>;
   selectByWorkerName(workerId: string): Promise<Result[]>;
-  selectByScopeAndWorkerName(scope: WorkerScope, workerName: string): Promise<Result>;
+  selectByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result>;
 }
 
 export interface WorkerRepository {
@@ -104,5 +104,5 @@ export interface WorkerRepository {
   update(worker: Worker): Promise<void>;
   patch(id: string, changes: Partial<Worker>): Promise<void>;
   selectAll(): Promise<Worker[]>;
-  selectByNameAndScope(workerName: string, scope: WorkerScope): Promise<Worker | undefined>;
+  selectByNameAndScope(workerName: string, scope: Scope): Promise<Worker | undefined>;
 }

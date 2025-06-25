@@ -1,3 +1,4 @@
+import { isAnnotationScope, isCanvasScope, isCollectionScope, Scope } from '@/data/models/Scope';
 import i18next from 'i18next';
 import { Annotation, ElementType, getAnnotationType } from '../../models/Annotation';
 import { db } from './db';
@@ -48,35 +49,21 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     await db.annotations.update(annotationId, { order });
   }
 
-  async removeById(id: string): Promise<string[]> {
-    const annotation = await db.annotations.get(id);
-    if (annotation === undefined) {
-      throw new Error(i18next.t('error_annotation_not_found'));
-    }
-    await db.annotations.delete(id);
-    return [id];
-  }
-
   async removeAllById(ids: string[]): Promise<string[]> {
     await db.annotations.bulkDelete(ids);
     return ids;
   }
 
-  async removeByCollectionId(collectionId: string) {
-    const annotations = await db.annotations.where('collectionId').equals(collectionId).toArray();
-    await db.annotations.where('collectionId').equals(collectionId).delete();
-    return annotations.map((annotation) => annotation.id);
-  }
-
-  async removeByCanvasId(canvasId: string, collectionId: string) {
-    const annotations = await db.annotations
-      .where({
-        canvasId,
-        collectionId,
-      })
-      .toArray();
-    const ids = annotations.map((annotation) => annotation.id);
-    await db.annotations.where('[canvasId+collectionId]').equals([canvasId, collectionId]).delete();
-    return ids;
+  async removeByScope(scope: Scope): Promise<string[]> {
+    if (isAnnotationScope(scope)) {
+      return this.removeAllById([scope.annotationId]);
+    } else if (isCanvasScope(scope)) {
+      const annotations = await this.getAnnotationsForCanvas(scope.canvasId, scope.collectionId);
+      return this.removeAllById(annotations.map((annotation) => annotation.id));
+    } else if (isCollectionScope(scope)) {
+      const annotations = await this.getAnnotationsForCollection(scope.collectionId);
+      return this.removeAllById(annotations.map((annotation) => annotation.id));
+    }
+    return [];
   }
 }
