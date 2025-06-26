@@ -56,11 +56,16 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     });
   }
 
-  async saveCollectionContent(collection: Collection, selection: SelectedCanvas[]): Promise<void> {
+  async saveCollectionContent(
+    collection: Collection,
+    selection: SelectedCanvas[],
+    manifestId: string,
+  ): Promise<void> {
     await db.transaction('rw', db.storedItems, db.collections, async () => {
       const canvasesToStore = selection.map((elt) => ({
         id: elt.canvas.id,
         content: elt.canvas,
+        parentId: manifestId,
       }));
       //on utilie bulkPut pour éviter les doublons et éviter une erreur si un doublon existe (avec bulkAdd, une erreur est levée au premier doublon rencontré)
       await db.storedItems.bulkPut(canvasesToStore);

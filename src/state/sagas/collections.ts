@@ -161,6 +161,7 @@ function* handleAddSelectionToCollection(
       [collectionRepository, collectionRepository.saveCollectionContent],
       collection,
       selection,
+      manifestId,
     );
 
     const firstAnnotations = generateFirstAnnotation(selection, collectionId, existingCanvasIds);
@@ -195,6 +196,7 @@ function* handleCreateCollectionWithSelection(
       [collectionRepository, collectionRepository.saveCollectionContent],
       newCollection,
       selection,
+      manifestId,
     );
     if (id === undefined) {
       //if an id was provided, it means it is an import, so we don't need to create the first annotations
@@ -284,7 +286,7 @@ function* handleImportOneCollection(
     const canvas = items[i];
     const isCanvasStored = yield call([canvasRepository, canvasRepository.exists], canvas.id);
     if (!isCanvasStored) {
-      yield call([canvasRepository, canvasRepository.add], canvas);
+      yield call([canvasRepository, canvasRepository.add], canvas, manifest.id);
     }
     selectedCanvas.push({
       canvas,
@@ -370,7 +372,7 @@ function* handleLoadCollection(
             content.manifestId,
             content.canvasId,
           )) as Canvas;
-          yield call([canvasRepository, canvasRepository.add], canvas);
+          yield call([canvasRepository, canvasRepository.add], canvas, content.manifestId);
         } catch (e) {
           console.warn('Error loading canvas', content.canvasId, e);
         }

@@ -31,7 +31,7 @@ export interface AnnotationRepository {
 export interface CanvasRepository {
   getCanvasById(id: string): Promise<Canvas>;
   exists(id: string): Promise<boolean>;
-  add(canvas: Canvas): Promise<void>;
+  add(canvas: Canvas, manifestId: string): Promise<void>;
 }
 
 export interface CollectionRepository {
@@ -39,7 +39,11 @@ export interface CollectionRepository {
   getCollectionById(id: string): Promise<Collection>;
   getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]>;
   insertCollection(collection: Collection): Promise<void>;
-  saveCollectionContent(collection: Collection, selection: SelectedCanvas[]): Promise<void>;
+  saveCollectionContent(
+    collection: Collection,
+    selection: SelectedCanvas[],
+    manifestId: string,
+  ): Promise<void>;
   update(
     id: string,
     { name, tags, content }: { name: string; tags: string[]; content: CollectionElement[] },
