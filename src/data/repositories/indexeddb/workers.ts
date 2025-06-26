@@ -19,7 +19,7 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
       id: uuid(),
       scopeKey: getScopeKey(worker.scope),
       status: WorkerStatus.INPROGRESS,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     };
     await db.workers.add(newWorker);
     return newWorker;

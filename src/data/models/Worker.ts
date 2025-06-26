@@ -15,7 +15,7 @@ export interface Worker {
   scope: Scope;
   scopeKey: string; //needed for indexeddb
   status: WorkerStatus;
-  createdAt: Date;
+  createdAt: string; // ISO date string
   params: PluginParams;
 }
 

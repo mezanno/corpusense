@@ -19,7 +19,6 @@ const useAddAnnotation = () => {
       type: ElementType.REGION,
       value: '',
     });
-    console.log('useAddAnnotation');
     dispatch(saveAnnotationRequest(newAnnotation));
   };
 };
