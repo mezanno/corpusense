@@ -2,6 +2,7 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import createSagaMiddleware from 'redux-saga';
 import { dateConverterMiddleware } from './middlewares/dateConverterMiddleware';
 import annotationsReducer from './reducers/annotations';
+import authReducer from './reducers/auth';
 import canvasReducer from './reducers/canvas';
 import collectionsReducer from './reducers/collections';
 import eventsReducer from './reducers/events';
@@ -30,6 +31,7 @@ export const rootReducer = combineReducers({
   models: modelsReducer,
   entities: entityReducer,
   events: eventsReducer,
+  auth: authReducer,
 });
 
 const store = configureStore({

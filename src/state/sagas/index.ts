@@ -1,5 +1,6 @@
 import { all, call, fork, spawn } from 'redux-saga/effects';
 import annotationsSaga from './annotations';
+import authSaga from './auth';
 import collectionsSaga, { fetchAllCollections } from './collections';
 import exportSaga from './export';
 import manifestsSaga, { loadHistorySaga } from './manifests';
@@ -33,6 +34,7 @@ function getRootSaga() {
       workerSaga,
       modelsSaga,
       namedEntitiesSaga,
+      authSaga,
     ];
 
     yield all(coreSagas.map((saga) => spawn(launchSaga, saga)));

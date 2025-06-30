@@ -1,4 +1,5 @@
 import { Annotation } from '@/data/models/Annotation';
+import { authInitialState } from '@/state/reducers/auth';
 import { eventsInitialState } from '@/state/reducers/events';
 import { modelsInitialState } from '@/state/reducers/models';
 import { workerInitialState } from '@/state/reducers/workers';
@@ -45,6 +46,7 @@ const defaultPreloadedState: RootState = {
   models: modelsInitialState,
   entities: [],
   events: eventsInitialState,
+  auth: authInitialState,
 };
 
 export const getPreloadedState = (partialState: Partial<RootState> = {}): RootState => {
