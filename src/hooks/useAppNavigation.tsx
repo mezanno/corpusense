@@ -5,6 +5,7 @@ export const CorpusenseRoutes = {
   COLLECTIONS: 'collections',
   CONFIGURATION: 'configuration',
   MODELS: 'models',
+  STORAGE: 'storage',
 };
 
 const useAppNavigation = () => {
@@ -31,6 +32,9 @@ const useAppNavigation = () => {
   const goToModelsManager = async () => {
     await navigate(`/${CorpusenseRoutes.MODELS}`);
   };
+  const goToStorage = async () => {
+    await navigate(`/${CorpusenseRoutes.STORAGE}`);
+  };
 
   return {
     goToManifestExplorer,
@@ -38,6 +42,7 @@ const useAppNavigation = () => {
     goToCollectionInspector,
     goToConfiguration,
     goToModelsManager,
+    goToStorage,
   };
 };
 
