@@ -18,6 +18,7 @@ import { connectedUser } from '@/state/selectors/auth';
 import { getOpenedCollections } from '@/state/selectors/collections';
 import { getLastErrorEvent, getLastInfoEvent } from '@/state/selectors/events';
 import {
+  Archive,
   Bolt,
   ChevronDown,
   Container,
@@ -123,7 +124,7 @@ const LayoutSideBar = () => {
                 {
                   title: t('page_title_storage'),
                   url: CorpusenseRoutes.STORAGE,
-                  icon: Container,
+                  icon: Archive,
                 },
               ].map((item) => (
                 <SidebarMenuItem key={item.title}>
