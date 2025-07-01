@@ -3,9 +3,12 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/utils/config';
 import { generateManifest } from '@/utils/manifest';
 import { Manifest } from '@iiif/presentation-3';
+import { PostgrestError } from '@supabase/supabase-js';
+import { Archive } from 'lucide-react';
 // import imageBlobReduce from 'image-blob-reduce';
 import * as pdfjsLib from 'pdfjs-dist';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -96,28 +99,66 @@ async function uploadManifestToSupabase(folder: string, manifest: Manifest) {
   }
 }
 
+//TODO : il est possible de générer les types à partir de supabase : npx supabase gen types typescript --project-id <project-id> > supabase-types.ts
+type UserFile = {
+  id: string;
+  name: string;
+  bucket_id: string;
+  owner: string;
+  created_at: string;
+  updated_at: string;
+  // Ajoute d'autres champs si tu les exposes depuis la vue
+};
+
 const StoragePage = () => {
+  const { t } = useTranslation();
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [manifestUrl, setManifestUrl] = useState<string | null>(null);
-  // const [filename, setFilename] = useState<string>('');
-  //   useEffect(() => {
-  //     const fetchStorageData = async () => {
-  //       try {
-  //         // const { data, error } = await supabase.storage.listBuckets();
-  //         // const { data, error } = await supabase.storage.getBucket('corpusense');
-  //         const { data, error } = await supabase.storage.from('corpusense').list();
-  //         if (error) {
-  //           console.error('Error fetching storage data:', error);
-  //         } else {
-  //           console.log('Storage data:', data);
-  //         }
-  //       } catch (err) {
-  //         console.error('Unexpected error:', err);
-  //       }
-  //     };
+  const [existingManifests, setExistingManifests] = useState<string[]>([]);
 
-  //     void fetchStorageData();
-  //   }, []);
+  //TODO: refactor this to use a custom hook
+  useEffect(() => {
+    const fetchStorageData = async () => {
+      try {
+        //TODO: handle user authentication and error handling properly
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          console.error('Erreur utilisateur :', userError);
+          return;
+        }
+        const {
+          data: userFiles,
+          error,
+        }: { data: UserFile[] | null; error: PostgrestError | null } = await supabase
+          .from('user_files') //user_files is a view because storage.objects is not accessible directly
+          .select()
+          .eq('bucket_id', 'corpusense')
+          .like('name', '%manifest.json')
+          .eq('owner', user.id);
+        if (error) {
+          console.error('Error fetching storage data:', error);
+        } else {
+          console.log('Storage data:', userFiles);
+        }
+
+        if (userFiles !== null && userFiles.length > 0) {
+          const urls = userFiles.map((file) => {
+            const { data } = supabase.storage.from('corpusense').getPublicUrl(file.name);
+            return data.publicUrl;
+          });
+          setExistingManifests(urls);
+        }
+      } catch (err) {
+        console.error('Unexpected error:', err);
+      }
+    };
+
+    void fetchStorageData();
+  }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -162,6 +203,22 @@ const StoragePage = () => {
 
   return (
     <div className='panel h-full w-full flex-col space-y-2'>
+      <h1 className='flex items-center text-2xl font-bold'>
+        <Archive className='mr-2' /> {t('page_title_storage')}
+      </h1>
+      <h2 className='text-lg'>Documents existants</h2>
+      <div className='text-sm text-blue-600'>
+        {existingManifests.length > 0 ? (
+          existingManifests.map((url, index) => (
+            <div key={index} className='mb-2'>
+              <a href={url}>{url}</a>
+            </div>
+          ))
+        ) : (
+          <p>Aucun document trouvé.</p>
+        )}
+      </div>
+      <h2 className='text-lg'>Ajouter un document</h2>
       <Input type='file' accept='application/pdf' onChange={handleFileChange} />
       <Button onClick={handleLoadPdf}>Upload</Button>
       {manifestUrl !== null && (
