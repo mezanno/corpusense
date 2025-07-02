@@ -3,11 +3,11 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/utils/config';
 import { generateManifest } from '@/utils/manifest';
 import { Manifest } from '@iiif/presentation-3';
-import { PostgrestError } from '@supabase/supabase-js';
 import { Archive } from 'lucide-react';
 // import imageBlobReduce from 'image-blob-reduce';
+import { useUserManifests } from '@/hooks/useUserManifests';
 import * as pdfjsLib from 'pdfjs-dist';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -99,66 +99,11 @@ async function uploadManifestToSupabase(folder: string, manifest: Manifest) {
   }
 }
 
-//TODO : il est possible de générer les types à partir de supabase : npx supabase gen types typescript --project-id <project-id> > supabase-types.ts
-type UserFile = {
-  id: string;
-  name: string;
-  bucket_id: string;
-  owner: string;
-  created_at: string;
-  updated_at: string;
-  // Ajoute d'autres champs si tu les exposes depuis la vue
-};
-
 const StoragePage = () => {
   const { t } = useTranslation();
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [manifestUrl, setManifestUrl] = useState<string | null>(null);
-  const [existingManifests, setExistingManifests] = useState<string[]>([]);
-
-  //TODO: refactor this to use a custom hook
-  useEffect(() => {
-    const fetchStorageData = async () => {
-      try {
-        //TODO: handle user authentication and error handling properly
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
-
-        if (userError || !user) {
-          console.error('Erreur utilisateur :', userError);
-          return;
-        }
-        const {
-          data: userFiles,
-          error,
-        }: { data: UserFile[] | null; error: PostgrestError | null } = await supabase
-          .from('user_files') //user_files is a view because storage.objects is not accessible directly
-          .select()
-          .eq('bucket_id', 'corpusense')
-          .like('name', '%manifest.json')
-          .eq('owner', user.id);
-        if (error) {
-          console.error('Error fetching storage data:', error);
-        } else {
-          console.log('Storage data:', userFiles);
-        }
-
-        if (userFiles !== null && userFiles.length > 0) {
-          const urls = userFiles.map((file) => {
-            const { data } = supabase.storage.from('corpusense').getPublicUrl(file.name);
-            return data.publicUrl;
-          });
-          setExistingManifests(urls);
-        }
-      } catch (err) {
-        console.error('Unexpected error:', err);
-      }
-    };
-
-    void fetchStorageData();
-  }, []);
+  const { existingManifests, loading, error } = useUserManifests();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -208,7 +153,11 @@ const StoragePage = () => {
       </h1>
       <h2 className='text-lg'>Documents existants</h2>
       <div className='text-sm text-blue-600'>
-        {existingManifests.length > 0 ? (
+        {loading ? (
+          <p>Chargement...</p>
+        ) : error ? (
+          <p>Erreur lors du chargement.</p>
+        ) : existingManifests.length > 0 ? (
           existingManifests.map((url, index) => (
             <div key={index} className='mb-2'>
               <a href={url}>{url}</a>
