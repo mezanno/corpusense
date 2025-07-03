@@ -8,6 +8,7 @@ import { Archive } from 'lucide-react';
 import { useUserManifests } from '@/hooks/useUserManifests';
 import * as pdfjsLib from 'pdfjs-dist';
 import { useState } from 'react';
+import Fireworks from 'react-canvas-confetti/dist/presets/fireworks';
 import { useTranslation } from 'react-i18next';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -173,6 +174,7 @@ const StoragePage = () => {
       {manifestUrl !== null && (
         <div className='mt-4'>
           <h2> 🥳 T&apos;es un winner ! Ton document est en ligne : {manifestUrl}</h2>
+          <Fireworks autorun={{ speed: 2, duration: 4 }} />
         </div>
       )}
     </div>
