@@ -1,4 +1,4 @@
-import { DataModel, DataModelCreateDTO } from '@/data/models/DataModel';
+import { DataField, DataModel, DataModelCreateDTO } from '@/data/models/DataModel';
 import { getModelRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, Effect, put, takeEvery } from 'redux-saga/effects';
@@ -19,13 +19,23 @@ function* fetchModels(): Generator<Effect, void, DataModel[]> {
   yield put(setModels(models));
 }
 
-function* handleCreateModel(action: PayloadAction<DataModelCreateDTO>) {
+function* handleCreateModel(
+  action: PayloadAction<DataModelCreateDTO>,
+): Generator<Effect, void, DataModel> {
   const id = uuid();
+  const { name, description, fromModelId } = action.payload;
+  let fields: DataField[] = [];
+  if (fromModelId !== undefined) {
+    const modelRespository = getModelRepository();
+    const model = yield call([modelRespository, modelRespository.getById], fromModelId);
+    fields = model.fields;
+  }
+
   const newModel = {
     id,
-    name: action.payload.name,
-    description: action.payload.description,
-    fields: [],
+    name: name,
+    description: description,
+    fields,
   };
   const modelRespository = getModelRepository();
   yield call([modelRespository, modelRespository.add], newModel);
