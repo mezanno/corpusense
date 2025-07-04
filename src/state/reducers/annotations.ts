@@ -3,7 +3,6 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 type AnnotationState = {
   values: Annotation[];
-  error?: string;
   isLoading: boolean;
   deleted: Annotation;
   updated: Annotation;
@@ -39,12 +38,14 @@ const annotationsSlice = createSlice({
     removeAnnotationSuccess(state, action: PayloadAction<string>) {
       state.values = state.values.filter((a) => a.id !== action.payload);
     },
-    removeAllAnnotationsRequest(_state, _action: PayloadAction<string>) {}, //action.payload = collectionId
+    removeAllCollectionAnnotationsRequest(_state, _action: PayloadAction<string>) {}, //action.payload = collectionId
+    removeAllCanvasAnnotationsRequest(
+      _state,
+      _action: PayloadAction<{ canvasId: string; collectionId: string }>,
+    ) {},
+    removeAllRegionAnnotationsRequest(_state, _action: PayloadAction<Annotation>) {},
     removeAllAnnotationsSuccess(state, action: PayloadAction<string[]>) {
-      state.values = state.values.filter((a) => !action.payload.includes(a.canvasId ?? ''));
-    },
-    removeAllAnnotationsFailure(_state, _action) {
-      // state.error = action.payload;
+      state.values = state.values.filter((a) => !action.payload.includes(a.id));
     },
     fetchAnnotationsByCanvasId(state, _action: PayloadAction<string>) {
       state.isLoading = true;
@@ -62,36 +63,6 @@ const annotationsSlice = createSlice({
         ),
       ];
     },
-    addLinkBetweenAnnotationsRequest(
-      _state,
-      _action: PayloadAction<{ source: string; target: string }>,
-    ) {},
-    addLinkBetweenAnnotationsSuccess(
-      state,
-      action: PayloadAction<{ source: string; target: string }>,
-    ) {
-      const fromAnnotation = state.values.find((a) => a.id === action.payload.source);
-      const toAnnotation = state.values.find((a) => a.id === action.payload.target);
-      if (fromAnnotation && toAnnotation) {
-        fromAnnotation.next = action.payload.target;
-        toAnnotation.previous = action.payload.source;
-      }
-    },
-    removeLinkBetweenAnnotationsRequest(
-      _state,
-      _action: PayloadAction<{ source: string; target: string }>,
-    ) {},
-    removeLinkBetweenAnnotationsSuccess(
-      state,
-      action: PayloadAction<{ source: string; target: string }>,
-    ) {
-      const fromAnnotation = state.values.find((a) => a.id === action.payload.source);
-      const toAnnotation = state.values.find((a) => a.id === action.payload.target);
-      if (fromAnnotation && toAnnotation) {
-        fromAnnotation.next = undefined;
-        toAnnotation.previous = undefined;
-      }
-    },
     updateAnnotationOrderValueRequest(
       _state,
       _action: PayloadAction<{ annotationId: string; value: number }>,
@@ -105,9 +76,15 @@ const annotationsSlice = createSlice({
         annotation.order = action.payload.value;
       }
     },
-    linkAnnotationsFailure(state, action: PayloadAction<string>) {
-      state.error = action.payload;
-    },
+    duplicateAnnotationsToAllPagesRequest(
+      _state,
+      _action: PayloadAction<{ canvasId: string; collectionId: string }>,
+    ) {},
+    duplicateAnnotationsEach2PagesRequest(
+      _state,
+      _action: PayloadAction<{ canvasId: string; collectionId: string }>,
+    ) {},
+    recomputeRegionsRequest(_state, _action: PayloadAction<string>) {},
     syncWithDB(_state, _action: PayloadAction<{ canvasId: string; collectionId: string }>) {},
   },
 });
@@ -117,18 +94,17 @@ export const {
   saveAnnotationSuccess,
   removeAnnotationRequest,
   removeAnnotationSuccess,
-  removeAllAnnotationsRequest,
-  removeAllAnnotationsFailure,
+  removeAllCollectionAnnotationsRequest,
+  removeAllCanvasAnnotationsRequest,
   removeAllAnnotationsSuccess,
+  removeAllRegionAnnotationsRequest,
   fetchAnnotationsByCanvasId,
   fetchAnnotationsSuccess,
-  addLinkBetweenAnnotationsRequest,
-  addLinkBetweenAnnotationsSuccess,
-  removeLinkBetweenAnnotationsRequest,
-  removeLinkBetweenAnnotationsSuccess,
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
-  linkAnnotationsFailure,
+  duplicateAnnotationsToAllPagesRequest,
+  duplicateAnnotationsEach2PagesRequest,
+  recomputeRegionsRequest,
   syncWithDB,
 } = annotationsSlice.actions;
 export default annotationsSlice.reducer;

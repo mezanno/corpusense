@@ -1,19 +1,14 @@
 import { Collection } from '@/data/models/Collection';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
-import { getErrorMessage } from '@/utils/utils';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface CollectionsState {
   values: Collection[];
-  lastError: string;
-  newCollectionEvent: boolean;
   openedCollections: string[];
 }
 
 const initialState: CollectionsState = {
   values: [],
-  lastError: '',
-  newCollectionEvent: false,
   openedCollections: [],
 };
 
@@ -21,9 +16,7 @@ export const collectionsSlice = createSlice({
   name: 'collections',
   initialState,
   reducers: {
-    createCollectionRequest: (state, _action: PayloadAction<string>) => {
-      state.newCollectionEvent = false;
-    },
+    createCollectionRequest: (_state, _action: PayloadAction<string>) => {},
     createCollectionSuccess: (state, action: PayloadAction<Collection>) => {
       state.values.push(action.payload);
       if (
@@ -32,7 +25,6 @@ export const collectionsSlice = createSlice({
       ) {
         state.openedCollections.push(action.payload.id);
       }
-      state.newCollectionEvent = true;
     },
     removeCollectionRequest: (_state, _action: PayloadAction<string>) => {},
     removeCollectionSuccess: (state, action: PayloadAction<string>) => {
@@ -105,12 +97,6 @@ export const collectionsSlice = createSlice({
     },
     importOneCollectionRequest: (_state, _action: PayloadAction<object>) => {},
     importMultipleCollectionsRequest: (_state, _action: PayloadAction<ArrayBuffer>) => {},
-    setError(state, action: PayloadAction<unknown>) {
-      state.lastError = getErrorMessage(action.payload);
-    },
-    resetLastError: (state) => {
-      state.newCollectionEvent = false;
-    },
   },
 });
 
@@ -131,7 +117,5 @@ export const {
   removeFromOpenedCollections,
   importOneCollectionRequest,
   importMultipleCollectionsRequest,
-  setError,
-  resetLastError,
 } = collectionsSlice.actions;
 export default collectionsSlice.reducer;

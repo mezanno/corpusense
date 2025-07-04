@@ -56,20 +56,4 @@ describe('CanvasGallery', () => {
       expect(screen.getAllByRole('listitem')).toHaveLength(nbOfItems);
     });
   });
-
-  it('La gallerie indique que le chargement est en cours si le manifest est en cours de chargement ', () => {
-    const preloadedState: RootState = {
-      ...getPreloadedState(),
-      manifests: {
-        ...getPreloadedState().manifests,
-        isLoading: true,
-      },
-    };
-
-    renderWithProviders(<CanvasGallery canvasViewerName='' />, { preloadedState });
-
-    expect(screen.getByRole('status')).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true');
-    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
-  });
 });

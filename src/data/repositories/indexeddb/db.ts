@@ -1,9 +1,13 @@
 import { Annotation } from '@/data/models/Annotation';
 import { Collection } from '@/data/models/Collection';
+import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
 import { ItemMetadata } from '@/data/models/Metadata';
+import { NamedEntity } from '@/data/models/NamedEntity';
+import { Result } from '@/data/models/Result';
 import { StoredItem } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
+import { Worker } from '@/data/models/Worker';
 import Dexie, { type EntityTable } from 'dexie';
 
 const db = new Dexie('mezanno') as Dexie & {
@@ -13,16 +17,24 @@ const db = new Dexie('mezanno') as Dexie & {
   itemMetadata: EntityTable<ItemMetadata, 'id'>;
   tags: EntityTable<Tag, 'id'>;
   annotations: EntityTable<Annotation, 'id'>;
+  models: EntityTable<DataModel, 'id'>;
+  namedEntities: EntityTable<NamedEntity, 'id'>;
+  results: EntityTable<Result, 'id'>;
+  workers: EntityTable<Worker, 'id'>;
 };
 
-db.version(1).stores({
+db.version(2).stores({
   collections: '&id, name, *tags.id',
   history: '&url',
   storedItems: '&id',
   typesList: '&label',
   itemMetadata: '[id+attribute.label]',
   tags: '&id',
-  annotations: '&id, canvasId, collectionId, [canvasId+collectionId]',
+  models: '&id',
+  annotations: '&id, canvasId, collectionId, [canvasId+collectionId], order',
+  namedEntities: '&id, *annotationIds, type.id',
+  results: '++id, workerName, workerId, [scopeKey+workerName]',
+  workers: '&id, name, status, [scopeKey+name]',
 });
 
 export { db };

@@ -1,14 +1,37 @@
 import { AnnotationPage, Canvas } from '@iiif/presentation-3';
-import { createAnnotation, ElementType } from '../models/Annotation';
+import i18next from 'i18next';
+import { Annotation, createAnnotation, ElementType, getAnnotationType } from '../models/Annotation';
 import { convertAnnotationPageToW3CAnnotations } from '../models/converters/iiif';
 import { SelectedCanvas } from '../models/SelectedCanvas';
 import { getAnnotationRepository } from '../repositories/indexeddb/dbFactory';
 import { getImage } from './canvas';
 
-const generatePageAnnotationForCanvas = (canvas: Canvas, collectionId: string) => {
+/**
+ * This function checks if the annotation is contained in the annotationContainer
+ * @param annotationContainer The container of the annotation
+ * @param annotation The annotation to check
+ * @returns true if the annotation is contained in the annotationContainer.
+ * If the annotation is the same as the annotationContainer, it returns false
+ */
+const contains = (annotationContainer: Annotation, annotation: Annotation) => {
+  if (annotationContainer.id === annotation.id) {
+    return false;
+  }
+
+  const container = annotationContainer.target.selector.geometry.bounds;
+  const target = annotation.target.selector.geometry.bounds;
+  return (
+    container.minX <= target.minX &&
+    container.minY <= target.minY &&
+    container.maxX >= target.maxX &&
+    container.maxY >= target.maxY
+  );
+};
+
+const generateRegionAnnotationForCanvas = (canvas: Canvas, collectionId: string) => {
   const image = getImage(canvas);
   if (image.width === undefined || image.height === undefined) {
-    throw new Error('Image width or height is undefined');
+    throw new Error(i18next.t('error_image_dimensions'));
   }
   return createAnnotation({
     canvasId: canvas.id,
@@ -28,13 +51,28 @@ function generateFirstAnnotation(
   collectionId: string,
   existingCanvasIds: string[] = [],
 ) {
-  return selection
-    .map((elt) =>
-      existingCanvasIds.includes(elt.canvas.id)
-        ? null
-        : generatePageAnnotationForCanvas(elt.canvas, collectionId),
-    )
-    .filter((elt) => elt !== null);
+  const annotations = [];
+  for (const elt of selection) {
+    //si l'élément est déjà dans la liste, on ne lui ajoute pas de nouvelle annotation
+    if (existingCanvasIds.includes(elt.canvas.id)) {
+      continue;
+    }
+    try {
+      annotations.push(generateRegionAnnotationForCanvas(elt.canvas, collectionId));
+    } catch (e) {
+      // console.error(e);
+    }
+  }
+  return annotations.filter((elt) => elt !== null);
+}
+
+async function getAnnotationsByType(type: ElementType, canvasId: string, collectionId: string) {
+  const annotations = await getAnnotationRepository().getAnnotationsForCanvas(
+    canvasId,
+    collectionId,
+  );
+
+  return annotations.filter((annotation) => getAnnotationType(annotation) === type);
 }
 
 function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {
@@ -46,4 +84,10 @@ function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {
   return annotationRepository.saveAllAnnotations(annotationsW3C);
 }
 
-export { generateFirstAnnotation, generatePageAnnotationForCanvas, importAnnotationFromJson };
+export {
+  contains,
+  generateFirstAnnotation,
+  generateRegionAnnotationForCanvas,
+  getAnnotationsByType,
+  importAnnotationFromJson,
+};

@@ -16,10 +16,9 @@ const useAddAnnotation = () => {
       canvasId,
       collectionId,
       order: -1,
-      type: ElementType.TAG,
+      type: ElementType.REGION,
       value: '',
     });
-    console.log('useAddAnnotation');
     dispatch(saveAnnotationRequest(newAnnotation));
   };
 };

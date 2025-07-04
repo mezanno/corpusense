@@ -175,6 +175,12 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
     }
   }, [canvas]);
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Delete' && selected?.length > 0) {
+      handleDeleteAnnotation(selected[0].annotation.id);
+    }
+  };
+
   const style = (annotation: Annotation, state?: AnnotationState) => {
     const value = annotation.bodies[0]?.value ?? ElementType.TAG;
     return {
@@ -193,12 +199,13 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
     >
       <div
         className={`relative h-full w-full ${cvcState?.mode === 'draw' ? 'cursor-pen-tool' : 'cursor-default'}`}
+        onKeyDown={handleKeyDown}
       >
         <OpenSeadragonViewer
           aria-label='canvas viewer'
           className='h-full w-full bg-amber-50'
           options={{
-            prefixUrl: '/corpusense/images/',
+            prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
             defaultZoomLevel: 0.5,
             minZoomLevel: 0.1,
             tileSources: cvcState?.source,

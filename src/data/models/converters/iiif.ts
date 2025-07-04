@@ -16,6 +16,14 @@ import {
 export const IIIF_CONTEXT = 'http://iiif.io/api/presentation/3/context.json';
 export const URL_ANNOTATIONPAGE = 'annotationpage/corpusense';
 
+/**
+ * Converts W3C annotations to IIIF annotations. The annotations are supposed to be
+ * from the same canvas.
+ * The function will throw an error if the annotations are empty or if the canvasId is undefined.
+ * @param annotations W3C annotations to convert
+ * @returns IIIF annotation page
+ * @throws Error if the annotations are empty or if the canvasId is undefined
+ */
 export function convertW3CAnnotationsToIIIF(annotations: Annotation[]): AnnotationPage {
   if (annotations.length === 0) {
     throw new Error('Error during convertion from W3CAnnotations to IIIF: annotations is empty');

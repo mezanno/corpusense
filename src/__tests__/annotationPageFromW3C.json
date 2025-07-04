@@ -1,0 +1,55 @@
+{
+  "@context": "http://iiif.io/api/presentation/3/context.json",
+  "id": "canvasId/annotationpage/corpusense",
+  "items": [
+    {
+      "@context": "http://iiif.io/api/presentation/3/context.json",
+      "body": {
+        "format": "text/plain",
+        "type": "TextualBody",
+        "value": "LINE"
+      },
+      "id": "canvasId/annotationpage/corpusense/799caa82-346a-475f-8689-2d6ba8ef3b65/class",
+      "motivation": "classifying",
+      "target": "canvasId#xywh=10,20,40,20",
+      "type": "Annotation"
+    },
+    {
+      "@context": "http://iiif.io/api/presentation/3/context.json",
+      "body": {
+        "format": "text/plain",
+        "type": "TextualBody",
+        "value": "Hello World!"
+      },
+      "id": "canvasId/annotationpage/corpusense/799caa82-346a-475f-8689-2d6ba8ef3b65/tag",
+      "motivation": "tagging",
+      "target": "canvasId#xywh=10,20,40,20",
+      "type": "Annotation"
+    },
+    {
+      "@context": "http://iiif.io/api/presentation/3/context.json",
+      "body": {
+        "format": "text/plain",
+        "type": "TextualBody",
+        "value": "LINE"
+      },
+      "id": "canvasId/annotationpage/corpusense/799caa82-346a-475f-8689-2d6ba8ef3b65/class",
+      "motivation": "classifying",
+      "target": "canvasId#xywh=60,20,40,20",
+      "type": "Annotation"
+    },
+    {
+      "@context": "http://iiif.io/api/presentation/3/context.json",
+      "body": {
+        "format": "text/plain",
+        "type": "TextualBody",
+        "value": "The answer is 42."
+      },
+      "id": "canvasId/annotationpage/corpusense/799caa82-346a-475f-8689-2d6ba8ef3b65/tag",
+      "motivation": "tagging",
+      "target": "canvasId#xywh=60,20,40,20",
+      "type": "Annotation"
+    }
+  ],
+  "type": "AnnotationPage"
+}

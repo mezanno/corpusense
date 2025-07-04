@@ -1,36 +1,22 @@
+import { DataModel } from '@/data/models/DataModel';
+import { Result } from '@/data/models/Result';
+import { isSameScope, Scope } from '@/data/models/Scope';
+import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import i18next from 'i18next';
-
-export const WorkerStatus = {
-  IDLE: 'idle',
-  PENDING: 'pending',
-  PROCESSING: 'processing',
-  SUCCESS: 'success',
-  ERROR: 'error',
-};
-
 export interface WorkerState {
-  global: {
-    error: string;
-    lastEvent: string;
-  };
-  workers: Record<
-    string, //canvasId
-    {
-      result?: string | object;
-      status: string;
-      error?: string;
-    }
-  >;
+  status: {
+    scope: Scope;
+    status: WorkerStatus;
+  }[];
+  workers: Worker[];
+  results: Result[];
 }
 
 export const workerInitialState: WorkerState = {
-  global: {
-    error: '',
-    lastEvent: '',
-  },
-  workers: {},
+  status: [],
+  workers: [],
+  results: [],
 };
 
 export interface fetchOcrPayload {
@@ -45,73 +31,100 @@ export interface fetchLayoutPayload {
   originalWidth: number;
 }
 
+export interface fetchDataAnalysisPayload {
+  canvasId: string;
+  collectionId: string;
+  model: DataModel;
+}
+export interface fetchBatchDataAnalysisPayload {
+  collectionId: string;
+  model: DataModel;
+}
+export interface PluginParams {
+  scope: Scope;
+  workerId?: string;
+  [key: string]: unknown;
+}
+
+export interface StartWorkerProcessPayload {
+  workerName: string;
+  params: PluginParams;
+}
+
 export const workerSlice = createSlice({
   name: 'worker',
   initialState: workerInitialState,
   reducers: {
-    fetchLayoutRequest: (state, action: PayloadAction<fetchLayoutPayload>) => {
-      state.global.lastEvent = i18next.t('info_start_layout', { canvas: action.payload.canvas });
-    },
-    fetchBatchLayoutRequest: (state, action: PayloadAction<string>) => {
+    fetchLayoutRequest: (_state, _action: PayloadAction<fetchLayoutPayload>) => {},
+    fetchBatchLayoutRequest: (_state, _action: PayloadAction<string>) => {
       //action.payload is a collectionId
-      state.global.lastEvent = i18next.t('info_start_ocr', { canvas: action.payload });
     },
-    fetchOcrRequest: (state, action: PayloadAction<fetchOcrPayload>) => {
-      state.global.lastEvent = i18next.t('info_start_ocr', { canvas: action.payload.canvas.id });
-    },
-    fetchBatchOcrRequest: (state, action: PayloadAction<string>) => {
+    fetchOcrRequest: (_state, _action: PayloadAction<fetchOcrPayload>) => {},
+    fetchBatchOcrRequest: (_state, _action: PayloadAction<string>) => {
       //action.payload is a collectionId
-      state.global.lastEvent = i18next.t('info_start_ocr', { canvas: action.payload });
     },
-    processStart: (state, action: PayloadAction<string>) => {
-      //action.payload is a canvasId
-      state.workers[action.payload] = {
-        status: WorkerStatus.PENDING,
-      };
-    },
-    processRunning: (state, action: PayloadAction<string>) => {
-      //action.payload is a canvasId
-      state.workers[action.payload] = {
-        status: WorkerStatus.PROCESSING,
-        result: '',
-        error: '',
-      };
-    },
-    processSuccess: (
-      state,
-      action: PayloadAction<{ canvasId: string; result: string | object }>,
-    ) => {
-      state.global.lastEvent = i18next.t('info_finish_analysis', {
-        canvas: action.payload.canvasId,
-      });
-      state.workers[action.payload.canvasId] = {
-        result: action.payload.result,
-        status: WorkerStatus.SUCCESS,
-      };
-    },
-    processError: (state, action: PayloadAction<{ canvasId: string | null; error: string }>) => {
-      if (action.payload.canvasId !== null) {
-        state.workers[action.payload.canvasId] = {
-          status: WorkerStatus.ERROR,
-          error: action.payload.error,
-        };
+    fetchDataAnalysisRequest: (_state, _action: PayloadAction<fetchDataAnalysisPayload>) => {},
+    fetchBatchDataAnalysisRequest: (
+      _state,
+      _action: PayloadAction<fetchBatchDataAnalysisPayload>,
+    ) => {},
+    processStart: (state, action: PayloadAction<Scope>) => {
+      const scope = action.payload;
+      const existing = state.status.find((s) => isSameScope(s.scope, scope));
+      if (existing) {
+        existing.status = WorkerStatus.WAITING;
+      } else {
+        state.status.push({ scope, status: WorkerStatus.WAITING });
       }
-      state.global.error = action.payload.error;
     },
-    resetLastWorkerError: (state) => {
-      state.global.error = '';
+    processRunning: (state, action: PayloadAction<Scope>) => {
+      const scope = action.payload;
+      const existing = state.status.find((s) => isSameScope(s.scope, scope));
+      if (existing) {
+        existing.status = WorkerStatus.INPROGRESS;
+      } else {
+        state.status.push({ scope, status: WorkerStatus.INPROGRESS });
+      }
     },
-    resetLastEvent: (state) => {
-      state.global.lastEvent = '';
+    processSuccess: (state, action: PayloadAction<Scope>) => {
+      //when the process if finish with success, remove it
+      const scope = action.payload;
+      state.status = state.status.filter((s) => !isSameScope(s.scope, scope));
     },
-    resetCanvasProcess: (state, action: PayloadAction<string>) => {
-      //action.payload is a canvasId
-      state.workers[action.payload] = {
-        result: '',
-        status: WorkerStatus.IDLE,
-        error: '',
-      };
+    processError: (state, action: PayloadAction<Scope>) => {
+      const scope = action.payload;
+      const existing = state.status.find((s) => isSameScope(s.scope, scope));
+      if (existing) {
+        existing.status = WorkerStatus.ERROR;
+      } else {
+        state.status.push({ scope, status: WorkerStatus.ERROR });
+      }
     },
+    startWorkerProcess: (_state, _action: PayloadAction<StartWorkerProcessPayload>) => {},
+    setWorkerStatus: (state, action: PayloadAction<Worker>) => {
+      if (state.workers.find((w) => w.id === action.payload.id)) {
+        // If the worker already exists, update it
+        const index = state.workers.findIndex((w) => w.id === action.payload.id);
+        state.workers[index] = action.payload;
+      } else {
+        // If the worker does not exist, add it
+        state.workers.push(action.payload);
+      }
+    },
+    setWorkers: (state, action: PayloadAction<Worker[]>) => {
+      state.workers = action.payload;
+    },
+    setResults: (state, action: PayloadAction<Result[]>) => {
+      state.results = action.payload;
+    },
+    removeWorkerRequest: (state, action: PayloadAction<Worker>) => {
+      // action.payload is a worker
+      const workerId = action.payload.id;
+      state.workers = state.workers.filter((worker) => worker.id !== workerId);
+      state.results = state.results.filter((result) => result.workerId !== workerId);
+    },
+    exportWorkerResultRequest: (_state, _action: PayloadAction<Worker>) => {}, // action.payload is a workerId
+    recoverWorkerRequest: (_state, _action: PayloadAction<Worker>) => {}, // action.payload is a workerId
   },
 });
 
@@ -120,12 +133,18 @@ export const {
   fetchBatchLayoutRequest,
   fetchOcrRequest,
   fetchBatchOcrRequest,
+  fetchDataAnalysisRequest,
+  fetchBatchDataAnalysisRequest,
   processError,
   processSuccess,
   processRunning,
   processStart,
-  resetLastWorkerError,
-  resetLastEvent,
-  resetCanvasProcess,
+  startWorkerProcess,
+  setWorkerStatus,
+  setWorkers,
+  setResults,
+  removeWorkerRequest,
+  exportWorkerResultRequest,
+  recoverWorkerRequest,
 } = workerSlice.actions;
 export default workerSlice.reducer;

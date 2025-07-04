@@ -1,0 +1,33 @@
+{
+  "id": "799caa82-346a-475f-8689-2d6ba8ef3b65",
+  "canvasId": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15",
+  "collectionId": "collectionId",
+  "order": 0,
+  "target": {
+    "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
+    "selector": {
+      "type": "RECTANGLE",
+      "geometry": {
+        "bounds": { "minX": 146.484375, "minY": 292.96875, "maxX": 585.9375, "maxY": 878.90625 },
+        "x": 146.484375,
+        "y": 292.96875,
+        "w": 439.453125,
+        "h": 585.9375
+      }
+    }
+  },
+  "bodies": [
+    {
+      "purpose": "classifying",
+      "value": "",
+      "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
+      "id": "799caa82-346a-475f-8689-2d6ba8ef3b65/class"
+    },
+    {
+      "purpose": "tagging",
+      "value": "",
+      "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
+      "id": "799caa82-346a-475f-8689-2d6ba8ef3b65/tag"
+    }
+  ]
+}

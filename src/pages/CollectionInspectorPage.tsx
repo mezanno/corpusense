@@ -1,6 +1,9 @@
 import CanvasViewer from '@/components/CanvasViewer';
 import CollectionMetadataForm from '@/components/CollectionMetadataForm';
 import CollectionToolbar from '@/components/CollectionToolbar';
+import GridThumb from '@/components/GridThumb';
+import ModelButtons from '@/components/textviewer/ModelButtons';
+import TextViewer from '@/components/textviewer/TextViewer';
 import {
   Accordion,
   AccordionContent,
@@ -8,101 +11,28 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { setCanvasFromComponent } from '@/state/reducers/canvas';
-import {
-  addCollectionToHistoryRequest,
-  removeElementFromCollectionRequest,
-} from '@/state/reducers/collections';
-import { WorkerStatus } from '@/state/reducers/workers';
-import { getCanvasById } from '@/state/selectors/storedItems';
-import { getWorker } from '@/state/selectors/workers';
-import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
-import { Thumbnail } from '@samvera/clover-iiif/primitives';
+import { reset } from '@/state/reducers/canvas';
+import { addCollectionToHistoryRequest } from '@/state/reducers/collections';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
-import { CircleX } from 'lucide-react';
-import { createRef, useCallback, useEffect, useRef } from 'react';
+import { createRef, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { BarLoader, ClockLoader } from 'react-spinners';
 
 const CANVASVIEWER_NAME = 'collection-inspector';
 
-const GridThumb = ({
-  canvasId,
-  collectionId,
-  canvasViewerName,
-}: {
-  canvasId: string;
-  collectionId: string;
-  canvasViewerName: string;
-}) => {
-  const canvas = useAppSelector((state) => getCanvasById(state, canvasId)) as Canvas;
-  const worker = useAppSelector((state) => getWorker(state, canvasId));
-  const dispatch = useAppDispatch();
-  const { t } = useTranslation();
-
-  const handleOnClick = () => {
-    if (canvas !== undefined) {
-      dispatch(setCanvasFromComponent({ componentId: canvasViewerName, canvas, collectionId }));
-    }
-  };
-
-  const handleDelete = useCallback(() => {
-    console.log('Delete', canvasId);
-    dispatch(removeElementFromCollectionRequest({ collectionId: collectionId, canvasId }));
-  }, [canvasId]);
-
-  if (canvas === undefined) {
-    return <div aria-errormessage='Error while loading canvas'>Error while loading canvas</div>;
-  }
-  const thumbnail = canvas.thumbnail as IIIFExternalWebResource[];
-
-  return (
-    <div
-      className='group relative cursor-pointer rounded-md p-1 shadow transition hover:scale-110 hover:border-slate-200 hover:bg-slate-100'
-      onClick={handleOnClick}
-    >
-      <Thumbnail
-        thumbnail={thumbnail}
-        style={{ width: '100px', height: '100px', objectFit: 'contain' }}
-        className='w-fit'
-        aria-label='canvas thumbnail'
-      />
-      <button
-        className='absolute top-0 right-0 flex cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 hover:scale-110'
-        title={t('btn_delete_collection')}
-      >
-        <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
-      </button>
-
-      {worker !== undefined && worker?.status == WorkerStatus.PENDING && (
-        <div className='absolute inset-0 flex items-center justify-center'>
-          {/* <CalendarClock size={'small'} width={28} /> */}
-          <BarLoader width={25} />
-        </div>
-      )}
-
-      {worker !== undefined && worker?.status == WorkerStatus.PROCESSING && (
-        <div className='absolute inset-0 flex items-center justify-center'>
-          {/* <Spinner size={'small'} /> */}
-          <ClockLoader size={24} />
-        </div>
-      )}
-    </div>
-  );
-};
-
 const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) => {
+  const { t } = useTranslation();
+  const appDispatch = useAppDispatch();
   const activeCollection = useAppSelector((state) =>
     state.collections.values.find((elt) => elt.id === collectionId),
   );
 
   const gridRef = useRef(null);
   const refs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
-
-  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState('document');
 
   if (activeCollection?.content) {
     if (Object.keys(refs.current).length !== activeCollection.content.length) {
@@ -113,6 +43,10 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
       });
     }
   }
+
+  useEffect(() => {
+    appDispatch(reset('collection-inspector')); // Reset the canvas state when the component mounts
+  }, []);
 
   useEffect(() => {
     if (activeCollection?.content && gridRef.current !== null) {
@@ -144,62 +78,75 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
 
   return (
     <section className='h-full max-h-full w-full max-w-full'>
-      {activeCollection && (
-        <div className='flex h-full max-h-full w-full max-w-full flex-col gap-2'>
-          <Accordion
-            asChild
-            className='panel'
-            type='single'
-            collapsible
-            defaultValue='metadata' //this open the metadata by default
-          >
-            <AccordionItem value='metadata'>
-              <AccordionTrigger className='mx-2'>
-                <h2 className='flex gap-2 text-lg'>
-                  {t('title_metadata_collection')}
-                  <span className='font-bold italic'>{activeCollection.name}</span>
-                  <span className='font-thin'>({activeCollection.id})</span>
-                </h2>
-              </AccordionTrigger>
-              <AccordionContent>
-                <CollectionMetadataForm collection={activeCollection} />
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-          <CollectionToolbar collectionId={collectionId} />
-          {activeCollection?.content.length > 0 ? (
-            <div className='panel h-full w-full overflow-hidden'>
-              <ResizablePanelGroup direction='horizontal'>
-                <ResizablePanel className='flex' minSize={30}>
-                  <div className='flex w-fit flex-wrap content-start items-start gap-2 overflow-y-auto'>
-                    {activeCollection.content.map((item) => (
-                      <div
-                        key={item.canvasId}
-                        ref={refs.current[item.canvasId]}
-                        className='flex p-1'
-                      >
-                        <GridThumb
-                          canvasId={item.canvasId}
-                          collectionId={activeCollection.id as string}
-                          canvasViewerName={CANVASVIEWER_NAME}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </ResizablePanel>
-                <ResizableHandle withHandle />
-                <ResizablePanel className='flex-1 overflow-hidden' minSize={30}>
-                  <CanvasViewer name={CANVASVIEWER_NAME} colllectionId={collectionId} />
-                </ResizablePanel>
-              </ResizablePanelGroup>
+      <ResizablePanelGroup direction='horizontal'>
+        <ResizablePanel className='mr-1 flex' minSize={30}>
+          {activeCollection ? (
+            <div className='flex h-full max-h-full w-full max-w-full flex-col gap-2'>
+              <Accordion
+                asChild
+                className='panel'
+                type='single'
+                collapsible
+                defaultValue='metadata' //this open the metadata by default
+              >
+                <AccordionItem value='metadata'>
+                  <AccordionTrigger className='mx-2'>
+                    <h2 className='flex gap-2 text-lg'>
+                      {t('title_metadata_collection')}
+                      <span className='font-bold italic'>{activeCollection.name}</span>
+                      <span className='font-thin'>({activeCollection.id})</span>
+                    </h2>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <CollectionMetadataForm collection={activeCollection} />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+              <CollectionToolbar collectionId={collectionId} />
+              <div className='panel h-full w-full overflow-hidden'>
+                <div className='flex h-full w-fit flex-wrap content-start items-start gap-2 overflow-y-auto'>
+                  {activeCollection.content.map((item) => (
+                    <div key={item.canvasId} ref={refs.current[item.canvasId]} className='flex p-1'>
+                      <GridThumb
+                        canvasId={item.canvasId}
+                        collectionId={activeCollection.id as string}
+                        canvasViewerName={CANVASVIEWER_NAME}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : (
             <div className='p-4 text-center text-muted-foreground'>
               {t('info_empty_collection')}
             </div>
           )}
-        </div>
-      )}
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel className='ml-1 flex-1 overflow-hidden' minSize={30}>
+          <Tabs
+            defaultValue='document'
+            className='panel h-full w-full'
+            value={activeTab}
+            onValueChange={setActiveTab}
+          >
+            <div className='flex w-full justify-between'>
+              <TabsList>
+                <TabsTrigger value='document'>Vue document</TabsTrigger>
+                <TabsTrigger value='text'>Vue texte</TabsTrigger>
+              </TabsList>
+              {activeTab === 'text' && <ModelButtons />}
+            </div>
+            <TabsContent value='document'>
+              <CanvasViewer name={CANVASVIEWER_NAME} colllectionId={collectionId} />
+            </TabsContent>
+            <TabsContent value='text'>
+              <TextViewer name={CANVASVIEWER_NAME} collectionId={collectionId} />
+            </TabsContent>
+          </Tabs>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </section>
   );
 };
@@ -211,10 +158,7 @@ const CollectionInspectorPage = () => {
 
   useEffect(() => {
     if (collectionId !== undefined) {
-      console.log('CollectionInspectorPage', collectionId);
-
       dispatch(addCollectionToHistoryRequest(collectionId));
-      // dispatch(reset());
     }
   }, [collectionId]);
 

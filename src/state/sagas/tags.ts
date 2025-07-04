@@ -30,4 +30,4 @@ export default function* tagsSaga() {
   yield takeEvery(createNewTagRequest, handleCreateNewTag);
 }
 
-export { fetchAllTags };
+export { fetchAllTags, handleCreateNewTag };

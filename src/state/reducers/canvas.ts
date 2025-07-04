@@ -22,8 +22,9 @@ export const canvasesSlice = createSlice({
       const { componentId, canvas } = action.payload;
       state.values[componentId] = canvas;
     },
-    reset: (state) => {
-      state.values = {};
+    reset: (state, action: PayloadAction<string>) => {
+      //payload = componentId
+      delete state.values[action.payload];
     },
   },
 });

@@ -82,8 +82,8 @@ export interface AnnotationWithIdCreateDTO extends AnnotationCreateDTO {
   id: string;
 }
 
-const URL_CLASSIFYING = '/class';
-const URL_TAGGING = '/tag';
+export const URL_CLASSIFYING = '/class';
+export const URL_TAGGING = '/tag';
 
 export function createAnnotation<T extends AnnotationCreateDTO | AnnotationWithIdCreateDTO>(
   annotationDTO: T,
@@ -135,6 +135,20 @@ export const createAnnotationFromExistingAnnotation = ({
     canvasId: canvasId ?? annotation.canvasId,
     order: order ?? annotation.order,
     bodies: createBodies(type, value, annotation.id),
+  };
+};
+
+export const duplicateAnnotation = (annotation: Annotation, canvasId?: string): Annotation => {
+  const newId = uuid();
+  return {
+    ...annotation,
+    id: newId,
+    canvasId: canvasId ?? annotation.canvasId,
+    bodies: createBodies(
+      getAnnotationType(annotation),
+      getAnnotationValue(annotation) ?? '',
+      newId,
+    ),
   };
 };
 

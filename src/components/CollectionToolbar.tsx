@@ -1,15 +1,28 @@
+import { DataModel } from '@/data/models/DataModel';
+import { Worker } from '@/data/models/Worker';
 import { useAppDispatch } from '@/hooks/hooks';
-import { removeAllAnnotationsRequest } from '@/state/reducers/annotations';
+import {
+  recomputeRegionsRequest,
+  removeAllCollectionAnnotationsRequest,
+} from '@/state/reducers/annotations';
 import { exportTextOfCollectionRequest } from '@/state/reducers/export';
-import { fetchBatchLayoutRequest, fetchBatchOcrRequest } from '@/state/reducers/workers';
+import {
+  exportWorkerResultRequest,
+  fetchBatchLayoutRequest,
+  fetchBatchOcrRequest,
+  recoverWorkerRequest,
+  startWorkerProcess,
+} from '@/state/reducers/workers';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import AnalysisMenu from './AnalysisMenu';
-import DangerousMenu from './DangerousMenu';
-import ExportMenu from './ExportMenu';
+import SelectModelForm from './textviewer/SelectModelForm';
+import Toolbar from './ToolBar';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 
 const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleOcr = () => {
     appDispatch(fetchBatchOcrRequest(collectionId));
@@ -20,25 +33,69 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   };
 
   const handleDeleteAllAnnotations = () => {
-    appDispatch(removeAllAnnotationsRequest(collectionId));
+    appDispatch(removeAllCollectionAnnotationsRequest(collectionId));
+  };
+
+  const handleRecomputeRegions = () => {
+    appDispatch(recomputeRegionsRequest(collectionId));
   };
 
   const handleExportText = () => {
     appDispatch(exportTextOfCollectionRequest(collectionId));
   };
 
+  const handleExtractData = () => {
+    setDialogOpen(true);
+  };
+
+  const handleExportResult = (worker: Worker) => {
+    appDispatch(exportWorkerResultRequest(worker));
+  };
+
+  const handleRecoverWorker = (worker: Worker) => {
+    appDispatch(recoverWorkerRequest(worker));
+  };
+
+  const close = (model: DataModel) => {
+    setDialogOpen(false);
+
+    if (collectionId !== undefined) {
+      appDispatch(
+        startWorkerProcess({
+          workerName: 'mistral',
+          params: {
+            scope: { collectionId },
+            model,
+            workerName: 'mistral',
+          },
+        }),
+      );
+    }
+  };
+
   return (
-    <div className='panel flex items-center space-x-2'>
-      <h2 className='text-md'>{t('title_call_actions')}</h2>
-      {/* <Button
-        variant={'default'}
-        className='cursor-pointer bg-white text-black hover:bg-black hover:text-white'
-      >
-        
-      </Button> */}
-      <AnalysisMenu handleLayout={handleLayout} handleOcr={handleOcr} isRunning={false} />
-      <DangerousMenu handleDeleteAllAnnotations={handleDeleteAllAnnotations} isRunning={false} />
-      <ExportMenu handleExportText={handleExportText} isRunning={false} />
+    <div className='panel'>
+      <Toolbar
+        title={t('title_collection_actions')}
+        handleLayout={handleLayout}
+        handleOcr={handleOcr}
+        handleDeleteAllAnnotations={handleDeleteAllAnnotations}
+        handleExportText={handleExportText}
+        handleExtractData={handleExtractData}
+        handleRecomputeRegions={handleRecomputeRegions}
+        handleExportResult={handleExportResult}
+        handleRecoverWorker={handleRecoverWorker}
+        scope={{ collectionId }}
+      />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('title_generate_data')}</DialogTitle>
+            <DialogDescription>{t('description_select_model')}</DialogDescription>
+          </DialogHeader>
+          <SelectModelForm close={close} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

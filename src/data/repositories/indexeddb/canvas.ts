@@ -15,10 +15,11 @@ export class IndexedDBCanvasRepository implements CanvasRepository {
     return !!(await db.storedItems.get(id));
   }
 
-  async add(canvas: Canvas): Promise<void> {
+  async add(canvas: Canvas, manifestId: string): Promise<void> {
     await db.storedItems.add({
       id: canvas.id,
       content: canvas,
+      parentId: manifestId,
     });
   }
 }

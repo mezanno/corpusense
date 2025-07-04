@@ -3,8 +3,12 @@ import { IndexedDBCanvasRepository } from './canvas';
 import { IndexedDBCollectionRepository } from './collections';
 import { IndexedDBItemMetadataRepository } from './itemMetadata';
 import { IndexedDBManifestRepository } from './manifest';
+import { IndexedDBModelRepository } from './models';
+import { IndexedDBNamedEntityRepository } from './namedEntities';
+import { IndexedDBResultRepository } from './results';
 import { IndexedDBStoredItemRepository } from './storedItem';
 import { IndexedDBTagRepository } from './tags';
+import { IndexedDBWorkerRepository } from './workers';
 
 export function getAnnotationRepository() {
   return new IndexedDBAnnotationRepository();
@@ -31,4 +35,20 @@ export function getItemMetadataRepository() {
 
 export function getStoredItemRepository() {
   return new IndexedDBStoredItemRepository();
+}
+
+export function getModelRepository() {
+  return new IndexedDBModelRepository();
+}
+
+export function getNamedEntityRepository() {
+  return new IndexedDBNamedEntityRepository();
+}
+
+export function getResultRepository() {
+  return new IndexedDBResultRepository();
+}
+
+export function getWorkerRepository() {
+  return new IndexedDBWorkerRepository();
 }

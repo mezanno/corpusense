@@ -1,8 +1,6 @@
-import { resetLastError } from '@/state/reducers/manifests';
 import { AlertCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAppDispatch, useAppSelector } from '../hooks/hooks';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,18 +13,18 @@ import {
 
 const ErrorDialog = () => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
-  const { lastError: manifestError } = useAppSelector((state) => state.manifests);
+  // const appDispatch = useAppDispatch();
+  // const { lastError: manifestError } = useAppSelector((state) => state.manifests);
   const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    if (manifestError === null || manifestError === '') return;
-    setMessage(t('error_loading_manifest', { error: manifestError }));
-  }, [manifestError, t]);
+  // useEffect(() => {
+  //   if (manifestError === null || manifestError === '') return;
+  //   setMessage(t('error_loading_manifest', { error: manifestError }));
+  // }, [manifestError, t]);
 
   const handleClose = () => {
     setMessage('');
-    appDispatch(resetLastError());
+    //   appDispatch(resetLastError());
   };
 
   if (message === '') return null;

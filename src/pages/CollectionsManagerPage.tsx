@@ -1,14 +1,5 @@
+import AlertDialogForm from '@/components/AlertDialogForm';
 import NewCollectionForm from '@/components/NewCollectionForm';
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -26,11 +17,11 @@ import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { removeCollectionRequest } from '@/state/reducers/collections';
-import { exportMultipleCollectionsRequest, resetAlert } from '@/state/reducers/export';
+import { exportMultipleCollectionsRequest } from '@/state/reducers/export';
 import { getCollections } from '@/state/selectors/collections';
 import { getTagsByIds } from '@/state/selectors/tags';
 import { DownloadIcon, FilePlus, Import, Trash2 } from 'lucide-react';
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const CollectionTableRow = ({
@@ -55,8 +46,6 @@ const CollectionTableRow = ({
       const blob = new Blob([lastExportContent as string], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       setDownloadLink(url);
-
-      dispatch(resetAlert());
     }
   }, [lastExportContent]);
 
@@ -65,7 +54,7 @@ const CollectionTableRow = ({
   };
 
   const handleOnClick = async (id: string) => {
-    await navigation.goToCollectionExplorer(id);
+    await navigation.goToCollectionInspector(id);
   };
 
   // const handleExport = (event: React.MouseEvent<HTMLButtonElement | MouseEvent>, id: string) => {
@@ -149,42 +138,6 @@ const CollectionTableRow = ({
   );
 };
 
-type AlertCollectionDialogProps = {
-  children: (props: { close: () => void }) => ReactNode;
-  trigger: ReactNode;
-  title: string;
-  description: string;
-};
-
-const AlertCollectionDialog = ({
-  children,
-  trigger,
-  title,
-  description,
-}: AlertCollectionDialogProps) => {
-  const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(false);
-
-  const close = () => setIsOpen(false);
-  return (
-    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-      <AlertDialogTrigger className='align-center mt-2 flex cursor-pointer items-center justify-center gap-2 space-x-2 rounded-xl border-2 border-gray-200 p-2 hover:bg-gray-50'>
-        {trigger}
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
-        {children({ close })}
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setIsOpen(false)}>{t('btn_cancel')}</AlertDialogCancel>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-};
-
 const CollectionsManagerPage = () => {
   const dispatch = useAppDispatch();
   const collections: Collection[] = useAppSelector(getCollections);
@@ -208,8 +161,8 @@ const CollectionsManagerPage = () => {
 
   return (
     <div className='flex h-full w-full flex-col items-center space-y-4 rounded-2xl border-1 bg-white'>
-      <section className='ml-2 flex w-full space-x-2'>
-        <AlertCollectionDialog
+      <section className='mt-2 ml-4 flex w-full space-x-2'>
+        <AlertDialogForm
           title={t('btn_create_collection')}
           description={t('description_create_collection')}
           trigger={
@@ -220,8 +173,8 @@ const CollectionsManagerPage = () => {
           }
         >
           {({ close }) => <NewCollectionForm close={close} />}
-        </AlertCollectionDialog>
-        <AlertCollectionDialog
+        </AlertDialogForm>
+        <AlertDialogForm
           title={t('btn_import_collection')}
           description={t('description_import_collection')}
           trigger={
@@ -232,7 +185,7 @@ const CollectionsManagerPage = () => {
           }
         >
           {({ close }) => <UploadFileForm close={close} />}
-        </AlertCollectionDialog>
+        </AlertDialogForm>
       </section>
 
       {collections.length > 0 ? (

@@ -1,3 +1,4 @@
+import { Annotation } from '@/data/models/Annotation';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface ExportState {
@@ -25,23 +26,31 @@ export const exportSlice = createSlice({
       state.lastExportStatus = 'OK';
     },
     exportMultipleCollectionsRequest: (_state, _action: PayloadAction<string[]>) => {},
-    exportTextOfCollectionRequest: (_state, _action: PayloadAction<string>) => {},
-    exportError: (state, action: PayloadAction<string>) => {
-      state.lastExportError = action.payload;
-      state.lastExportStatus = 'ERROR';
-    },
-    resetAlert: (state) => {
-      state.lastExportDate = null;
-    },
+    exportTextOfCollectionRequest: (_state, _action: PayloadAction<string>) => {}, //paylad = collectionId
+    exportTextOfCanvasRequest: (
+      _state,
+      _action: PayloadAction<{ canvasId: string; collectionId: string }>,
+    ) => {},
+    exportTextOfAnnotationRequest: (_state, _action: PayloadAction<Annotation>) => {},
+    // exportError: (state, action: PayloadAction<string>) => {
+    //   state.lastExportError = action.payload;
+    //   state.lastExportStatus = 'ERROR';
+    // },
+    // resetAlert: (state) => {
+    //   state.lastExportDate = null;
+    //   state.lastExportStatus = 'UNKNOWN';
+    // },
   },
 });
 
 export const {
   exportRequest,
   exportSuccess,
-  exportError,
+  // exportError,
   exportMultipleCollectionsRequest,
   exportTextOfCollectionRequest,
-  resetAlert,
+  exportTextOfCanvasRequest,
+  exportTextOfAnnotationRequest,
+  // resetAlert,
 } = exportSlice.actions;
 export default exportSlice.reducer;

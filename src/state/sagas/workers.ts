@@ -1,3 +1,22 @@
+import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
+import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
+import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
+import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
+import { Result } from '@/data/models/Result';
+import { isWorker, Worker, WorkerCreateDTO, WorkerStatus } from '@/data/models/Worker';
+import {
+  getAnnotationRepository,
+  getCollectionRepository,
+  getResultRepository,
+  getWorkerRepository,
+} from '@/data/repositories/indexeddb/dbFactory';
+import { getImage } from '@/data/utils/canvas';
+import i18n from '@/i18n';
+import { getErrorMessage } from '@/utils/utils';
+import { Client } from '@gradio/client';
+import { Canvas } from '@iiif/presentation-3';
+import { PayloadAction } from '@reduxjs/toolkit';
+import { PredictReturn } from 'node_modules/@gradio/client/dist/types';
 import {
   all,
   call,
@@ -6,25 +25,13 @@ import {
   fork,
   put,
   PutEffect,
+  takeEvery,
   takeLatest,
 } from 'redux-saga/effects';
-
-import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
-import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
-import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
-import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
-import {
-  getAnnotationRepository,
-  getCollectionRepository,
-} from '@/data/repositories/indexeddb/dbFactory';
-import { getImage } from '@/data/utils/canvas';
-import { getErrorMessage } from '@/utils/utils';
-import { Client } from '@gradio/client';
-import { Canvas } from '@iiif/presentation-3';
-import { PayloadAction } from '@reduxjs/toolkit';
-import { PredictReturn } from 'node_modules/@gradio/client/dist/types';
 import { fetchAnnotationsSuccess } from '../reducers/annotations';
+import { pushError, pushInfo } from '../reducers/events';
 import {
+  exportWorkerResultRequest,
   fetchBatchLayoutRequest,
   fetchBatchOcrRequest,
   fetchLayoutPayload,
@@ -35,20 +42,31 @@ import {
   processRunning,
   processStart,
   processSuccess,
+  recoverWorkerRequest,
+  removeWorkerRequest,
+  setResults,
+  setWorkers,
+  setWorkerStatus,
+  startWorkerProcess,
+  StartWorkerProcessPayload,
 } from '../reducers/workers';
+import { loadWorkerPlugins, WorkerPlugin } from './plugins/loader';
+
+const workerPlugins: Record<string, WorkerPlugin> = loadWorkerPlugins();
 
 function* handleFetchLayout({
   canvas,
   collectionId,
   originalWidth,
 }: fetchLayoutPayload): Generator<CallEffect | PutEffect, void, Response> {
+  yield put(pushInfo(i18n.t('info_start_layout', { canvas })));
   try {
     if (canvas === undefined) {
       // yield put(processError({ url: canvas.id, error: 'Canvas or region is undefined' }));
       return;
     }
 
-    yield put(processRunning(canvas.id));
+    yield put(processRunning({ collectionId, canvasId: canvas.id }));
     const image = getImage(canvas);
 
     const response: Response = yield call(
@@ -61,9 +79,6 @@ function* handleFetchLayout({
     }
     const data = yield call([response, 'json']);
     console.log('data: ', data);
-
-    yield put(processSuccess({ canvasId: canvas.id, result: data }));
-
     //convert the result into an array of Annotation
     const annotations = convertEdwinResult(
       data as unknown as EdwinBox[],
@@ -73,9 +88,12 @@ function* handleFetchLayout({
     );
     //and send it to the redux store
     yield put(fetchAnnotationsSuccess(annotations));
+    const annotationRepository = getAnnotationRepository();
+    yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
+    yield put(processSuccess({ collectionId, canvasId: canvas.id }));
   } catch (error) {
     console.error('Error fetching layout:', error);
-    yield put(processError({ canvasId: canvas.id, error: getErrorMessage(error) }));
+    yield put(processError({ collectionId, canvasId: canvas.id }));
   }
 }
 
@@ -88,18 +106,31 @@ function* handleFetchOcr({
   void,
   Client | PredictReturn | Annotation[]
 > {
+  yield put(pushInfo(i18n.t('info_start_ocr', { canvas })));
   if (canvas === undefined) {
     // yield put(processError({ url: canvas.id, error: 'Canvas or region is undefined' }));
     return;
   }
-  yield put(processRunning(canvas.id));
+  // Check if the canvas has already been processed
+  const annotationRepository = getAnnotationRepository();
+  const existingAnnotations = (yield call(
+    [annotationRepository, annotationRepository.getAnnotationsForCanvasByType],
+    canvas.id,
+    collectionId,
+    ElementType.LINE,
+  )) as Annotation[];
+  if (existingAnnotations.length > 0) {
+    console.log('Canvas already processed for OCR, skipping:', canvas.id);
+    yield put(processSuccess({ collectionId, canvasId: canvas.id }));
+    return;
+  }
+  yield put(processRunning({ collectionId, canvasId: canvas.id }));
 
   try {
     const image = getImage(canvas);
 
     let regions = JSON.stringify([]);
     if (region === undefined || region === null) {
-      const annotationRepository = getAnnotationRepository();
       const annotations = (yield call(
         [annotationRepository, annotationRepository.getAnnotationsForCanvas],
         canvas.id,
@@ -141,30 +172,30 @@ function* handleFetchOcr({
     console.log(gradioResult.data);
     try {
       const peroResult = peroResultSchema.parse(gradioResult.data);
-      console.log('peroResult: ', peroResult);
-
       const annotations = convertPeroTranscriptionsToAnnotations(
         peroResult,
         canvas.id,
         collectionId,
       );
       yield put(fetchAnnotationsSuccess(annotations));
-      const annotationRepository = getAnnotationRepository();
       yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
-      yield put(processSuccess({ canvasId: canvas.id, result: 'toto' }));
+      yield put(processSuccess({ collectionId, canvasId: canvas.id }));
     } catch (error) {
       try {
         const peroError = peroResultError.parse(gradioResult.data);
         console.error('peroError: ', peroError[0].result.error);
-        yield put(processError({ canvasId: canvas.id, error: peroError[0].result.error }));
+        // yield put(processError({ id: canvas.id, error: peroError[0].result.error }));
+        yield put(processError({ collectionId, canvasId: canvas.id }));
       } catch (err) {
         console.error('Error parsing peroResult:', err);
-        yield put(processError({ canvasId: canvas.id, error: getErrorMessage(err) }));
+        // yield put(processError({ id: canvas.id, error: getErrorMessage(err) }));
+        yield put(processError({ collectionId, canvasId: canvas.id }));
       }
     }
   } catch (error) {
     console.error('handleFetchOcr: ', error);
-    yield put(processError({ canvasId: canvas.id, error: getErrorMessage(error) }));
+    // yield put(processError({ id: canvas.id, error: getErrorMessage(error) }));
+    yield put(processError({ collectionId, canvasId: canvas.id }));
   }
 }
 
@@ -172,6 +203,8 @@ function* handleStartBatchLayoutProcess(
   action: PayloadAction<string>,
 ): Generator<Effect, void, Canvas[]> {
   const collectionId = action.payload;
+  yield put(processRunning({ collectionId }));
+
   const collectionRepository = getCollectionRepository();
   const canvases = yield call(
     [collectionRepository, collectionRepository.getCanvasesByCollectionId],
@@ -182,7 +215,7 @@ function* handleStartBatchLayoutProcess(
     return;
   }
   for (const canvas of canvases) {
-    yield put(processStart(canvas.id));
+    yield put(processStart({ collectionId, canvasId: canvas.id }));
   }
   for (let i = 0; i < canvases.length; i++) {
     yield call(handleFetchLayout, {
@@ -191,12 +224,15 @@ function* handleStartBatchLayoutProcess(
       originalWidth: canvases[i].width ?? 0,
     });
   }
+  yield put(processSuccess({ collectionId }));
 }
 
 function* handleStartBatchOcrProcess(
   action: PayloadAction<string>,
 ): Generator<Effect, void, Canvas[]> {
   const collectionId = action.payload;
+  yield put(processRunning({ collectionId }));
+
   const collectionRepository = getCollectionRepository();
   const canvases = yield call(
     [collectionRepository, collectionRepository.getCanvasesByCollectionId],
@@ -207,7 +243,7 @@ function* handleStartBatchOcrProcess(
     return;
   }
   for (const canvas of canvases) {
-    yield put(processStart(canvas.id));
+    yield put(processStart({ collectionId, canvasId: canvas.id }));
   }
   const batchSize = 10; // Number of canvases to process in parallel
   try {
@@ -216,11 +252,8 @@ function* handleStartBatchOcrProcess(
       yield all(
         batch.map((canvas) => call(handleFetchOcr, { canvas, collectionId, region: undefined })),
       );
-      // yield fork(handleFetchOcr, {
-      //   canvas: canvases[i],
-      //   region: undefined,
-      // });
     }
+    yield put(processSuccess({ collectionId }));
   } catch (error) {
     console.error('Error fetching canvases:', error);
   }
@@ -234,9 +267,110 @@ function* handleStartOcrProcess(action: PayloadAction<fetchOcrPayload>) {
   yield fork(handleFetchOcr, action.payload);
 }
 
+function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPayload>) {
+  const { workerName, params } = action.payload;
+  if (workerPlugins[workerName] === undefined) {
+    console.warn(`No plugin saga found for ${workerName}`);
+    return;
+  }
+
+  const worker = {
+    name: workerName,
+    scope: params.scope,
+    params,
+  };
+
+  yield call(startWorker, worker);
+}
+
+function* startWorker(worker: Worker | WorkerCreateDTO) {
+  const workerRepository = getWorkerRepository();
+  const saga = workerPlugins[worker.name];
+
+  let currentWorker: Worker | undefined = undefined;
+  const isRecovering = isWorker(worker);
+  try {
+    if (isWorker(worker)) {
+      //if worker is already a Worker instance, it means it is being recovered
+      const changes = { status: WorkerStatus.INPROGRESS };
+      yield call([workerRepository, workerRepository.patch], worker.id, changes);
+      currentWorker = worker;
+    } else {
+      //else, if it's a WorkerCreateDTO, we need to create a new worker
+      //but we delete previous worker with same name and same scope if it exists
+      const existingWorker = (yield call(
+        [workerRepository, workerRepository.selectByNameAndScope],
+        worker.name,
+        worker.scope,
+      )) as Worker | undefined;
+      if (existingWorker !== undefined) {
+        yield call([workerRepository, workerRepository.delete], existingWorker);
+        yield put(removeWorkerRequest(existingWorker));
+      }
+      //then, create a new worker
+      currentWorker = (yield call([workerRepository, workerRepository.add], worker)) as Worker;
+    }
+    //update the store
+    yield put(setWorkerStatus(currentWorker));
+    //and start the saga
+    yield call(saga.run, currentWorker, isRecovering, worker.params);
+
+    const changes = { status: WorkerStatus.COMPLETED };
+    yield call([workerRepository, workerRepository.patch], currentWorker.id, changes);
+  } catch (error) {
+    console.error(`Error in plugin saga for ${worker.name}:`, error);
+    if (currentWorker !== undefined) {
+      const changes = { status: WorkerStatus.ERROR };
+      yield call([workerRepository, workerRepository.patch], currentWorker.id, changes);
+      yield put(pushError(`Error in plugin saga for ${worker.name}: ${getErrorMessage(error)}`));
+    }
+  }
+  if (currentWorker !== undefined) {
+    currentWorker = { ...currentWorker, status: WorkerStatus.COMPLETED };
+    yield put(setWorkerStatus(currentWorker));
+  }
+}
+
+function* handleRecoverWorker(action: PayloadAction<Worker>) {
+  const worker = action.payload;
+  yield call(startWorker, worker);
+}
+
+function* handleExportWorkerResult(
+  action: PayloadAction<Worker>,
+): Generator<Effect, void, Result[]> {
+  const worker = action.payload;
+  const resultRepository = getResultRepository();
+  const results = yield call([resultRepository, resultRepository.selectByWorkerName], worker.name);
+  if (results.length === 0) {
+    //TODO! afficher message d'erreur dans l'UI
+    console.warn(`No results found for worker ${worker.id}`);
+    return;
+  }
+  const saga = workerPlugins[worker.name];
+  if (saga !== undefined && saga !== null && saga.export) {
+    yield call(saga.export, results);
+  }
+}
+
+function* fetchWorkers(): Generator<Effect, void, Worker[] | Result[]> {
+  const workerRepository = getWorkerRepository();
+  const workers = (yield call([workerRepository, workerRepository.selectAll])) as Worker[];
+  yield put(setWorkers(workers));
+
+  const resultRepository = getResultRepository();
+  const results = (yield call([resultRepository, resultRepository.selectAll])) as Result[];
+  yield put(setResults(results));
+}
+
 export default function* workerSaga() {
   yield takeLatest(fetchLayoutRequest, handleStartProcess);
   yield takeLatest(fetchOcrRequest, handleStartOcrProcess);
   yield takeLatest(fetchBatchOcrRequest, handleStartBatchOcrProcess);
   yield takeLatest(fetchBatchLayoutRequest, handleStartBatchLayoutProcess);
+  yield takeEvery(startWorkerProcess, handleStartWorkerProcess);
+  yield takeEvery(exportWorkerResultRequest, handleExportWorkerResult);
+  yield takeEvery(recoverWorkerRequest, handleRecoverWorker);
 }
+
+export { fetchWorkers };

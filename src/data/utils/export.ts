@@ -1,6 +1,11 @@
 import { AnnotationPage, Canvas, Manifest } from '@iiif/presentation-3';
 import i18next from 'i18next';
-import { getAnnotationText } from '../models/Annotation';
+import {
+  Annotation,
+  ElementType,
+  getAnnotationText,
+  getAnnotationType,
+} from '../models/Annotation';
 import { convertW3CAnnotationsToIIIF, IIIF_CONTEXT } from '../models/converters/iiif';
 import {
   getAnnotationRepository,
@@ -8,6 +13,7 @@ import {
   getCollectionRepository,
   getTagRepository,
 } from '../repositories/indexeddb/dbFactory';
+import { contains } from './annotations';
 
 export interface ManifestExport {
   name: string;
@@ -97,12 +103,40 @@ const generateAnnotationPage = async (canvasId: string, collectionId: string) =>
   return convertW3CAnnotationsToIIIF(result);
 };
 
+const generateTextForAnnotation = async (annotation: Annotation) => {
+  const type = getAnnotationType(annotation);
+
+  if (type === ElementType.REGION) {
+    const canvasId = annotation.canvasId;
+    const collectionId = annotation.collectionId;
+    if (canvasId !== undefined && collectionId !== undefined) {
+      const annotations = await getAnnotationRepository().getAnnotationsForCanvas(
+        canvasId,
+        collectionId,
+      );
+      let text = '';
+      for (let i = 0; i < annotations.length; i++) {
+        if (contains(annotation, annotations[i])) {
+          const t = getAnnotationText(annotations[i]);
+          if (t !== undefined && t.length > 0) {
+            text = text.concat(t).concat('\n');
+          }
+        }
+      }
+      return text;
+    }
+  }
+
+  return getAnnotationText(annotation);
+};
+
 const generateTextFromCanvas = async (canvasId: string, collectionId: string) => {
   const annotations = await getAnnotationRepository().getAnnotationsForCanvas(
     canvasId,
     collectionId,
   );
   if (annotations === undefined || annotations.length === 0) {
+    console.log(`No annotations found in canvas ${canvasId}`);
     return '';
   }
   let text = '';
@@ -136,6 +170,7 @@ export {
   generateAnnotationPage,
   generateCanvas,
   generateManifestFromCollection,
+  generateTextForAnnotation,
   generateTextForCollection,
   generateTextFromCanvas,
 };

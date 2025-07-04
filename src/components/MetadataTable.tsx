@@ -9,7 +9,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 
-const MetadataTable = () => {
+const MetadataTable = ({ manifestId }: { manifestId: string }) => {
   const metadata = useAppSelector(getLoadedManifest)?.metadata;
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
@@ -24,7 +24,7 @@ const MetadataTable = () => {
     //delete empty inputs
     const newMetadata = formMetadata.filter((item) => item.label !== '' && item.value !== '');
     setFormMetadata(newMetadata);
-    dispatch(saveMetadataRequest(newMetadata));
+    dispatch(saveMetadataRequest({ manifestId, metadata: newMetadata }));
   };
 
   const updateMetadata = (index: number, newValue: Partial<ItemMetadataAttribute>) => {

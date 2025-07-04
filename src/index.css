@@ -85,6 +85,7 @@
 
   /* Custom cursor */
   --cursor-pen-tool: url('/cursors/pen-tool.svg'), auto;
+  --cursor-highlighter: url('/cursors/highlighter.svg') 2 21, auto;
 }
 
 .dark {
@@ -265,6 +266,9 @@
 @layer utilities {
   .cursor-pen-tool {
     cursor: var(--cursor-pen-tool);
+  }
+  .cursor-highlighter {
+    cursor: var(--cursor-highlighter);
   }
 
   .panel {

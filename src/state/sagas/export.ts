@@ -1,3 +1,4 @@
+import { Annotation } from '@/data/models/Annotation';
 import { Collection } from '@/data/models/Collection';
 import { ItemMetadata } from '@/data/models/Metadata';
 import { Tag } from '@/data/models/Tag';
@@ -10,19 +11,26 @@ import {
 import { getImage } from '@/data/utils/canvas';
 import {
   generateManifestFromCollection,
+  generateTextForAnnotation,
   generateTextForCollection,
+  generateTextFromCanvas,
   ManifestExport,
 } from '@/data/utils/export';
+import i18n from '@/i18n';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import FileSaver from 'file-saver';
 import JSZIP from 'jszip';
 import { call, CallEffect, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
+import { pushInfo } from '../reducers/events';
 import {
+  // exportError,
   exportMultipleCollectionsRequest,
   exportRequest,
   exportSuccess,
+  exportTextOfAnnotationRequest,
+  exportTextOfCanvasRequest,
   exportTextOfCollectionRequest,
 } from '../reducers/export';
 
@@ -152,8 +160,58 @@ function* handleExportTextOfCollection(
   }
 }
 
+/**
+ * Export all the text from all the annotations of a collection
+ * @param action
+ */
+function* handleExportTextOfCanvas(
+  action: PayloadAction<{ canvasId: string; collectionId: string }>,
+): Generator<Effect, void, string> {
+  const { canvasId, collectionId } = action.payload;
+  try {
+    const text = yield call(generateTextFromCanvas, canvasId, collectionId);
+    console.log('Text generated:', text);
+    if (text === undefined || text.length === 0) {
+      console.log('No text found for this canvas');
+      yield put(pushInfo(i18n.t('error_export_no_text')));
+      return;
+    }
+    yield call(
+      FileSaver.saveAs,
+      new Blob([text], { type: 'text/plain;charset=utf-8' }),
+      'exported_text.txt',
+    );
+  } catch (error) {
+    console.error('Error generating text:', getErrorMessage(error));
+  }
+}
+
+function* handleExportTextOfAnnotation(
+  action: PayloadAction<Annotation>,
+): Generator<Effect, void, string> {
+  //payload = annotationId
+  try {
+    const text = yield call(generateTextForAnnotation, action.payload);
+    console.log('Text generated:', text);
+    if (text === undefined || text.length === 0) {
+      console.log('No text found for this canvas');
+      yield put(pushInfo(i18n.t('error_export_no_text')));
+      return;
+    }
+    yield call(
+      FileSaver.saveAs,
+      new Blob([text], { type: 'text/plain;charset=utf-8' }),
+      'exported_text.txt',
+    );
+  } catch (error) {
+    console.error('Error generating text:', getErrorMessage(error));
+  }
+}
+
 export default function* exportSaga() {
   yield takeLatest(exportRequest, handleExportRequest);
   yield takeEvery(exportMultipleCollectionsRequest, handleExportMultipleCollectionsRequest);
   yield takeEvery(exportTextOfCollectionRequest, handleExportTextOfCollection);
+  yield takeEvery(exportTextOfCanvasRequest, handleExportTextOfCanvas);
+  yield takeEvery(exportTextOfAnnotationRequest, handleExportTextOfAnnotation);
 }
