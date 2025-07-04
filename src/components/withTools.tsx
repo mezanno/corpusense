@@ -84,7 +84,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     };
 
     const handleExportResult = (worker: Worker) => {
-      appDispatch(exportWorkerResultRequest(worker));
+      appDispatch(exportWorkerResultRequest({ worker }));
     };
 
     const handleDeleteAllAnnotations = () => {

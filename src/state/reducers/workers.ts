@@ -51,6 +51,10 @@ export interface StartWorkerProcessPayload {
   params: PluginParams;
 }
 
+export interface ExportWorkerPayload {
+  worker: Worker;
+}
+
 export const workerSlice = createSlice({
   name: 'worker',
   initialState: workerInitialState,
@@ -123,7 +127,7 @@ export const workerSlice = createSlice({
       state.workers = state.workers.filter((worker) => worker.id !== workerId);
       state.results = state.results.filter((result) => result.workerId !== workerId);
     },
-    exportWorkerResultRequest: (_state, _action: PayloadAction<Worker>) => {}, // action.payload is a workerId
+    exportWorkerResultRequest: (_state, _action: PayloadAction<ExportWorkerPayload>) => {}, // action.payload is a workerId
     recoverWorkerRequest: (_state, _action: PayloadAction<Worker>) => {}, // action.payload is a workerId
   },
 });

@@ -49,7 +49,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   };
 
   const handleExportResult = (worker: Worker) => {
-    appDispatch(exportWorkerResultRequest(worker));
+    appDispatch(exportWorkerResultRequest({ worker }));
   };
 
   const handleRecoverWorker = (worker: Worker) => {

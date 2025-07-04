@@ -11,7 +11,7 @@ export type WorkerExportFunction = (results: Result[]) => Generator;
 type WorkerModule = {
   default: WorkerRunFunction;
   pluginName: string;
-  exportResult?: (results: Result[]) => Generator;
+  exportResult?: WorkerExportFunction;
 };
 
 export type ImporterPlugin = { import: ImportFunction };
