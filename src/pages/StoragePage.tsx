@@ -16,6 +16,8 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url,
 ).toString();
 
+const CANTALOUPE_URL = import.meta.env.VITE_CANTALOUPE_URL as string;
+
 // const reduceBlob = imageBlobReduce();
 
 type ImageData = {
@@ -126,9 +128,9 @@ const StoragePage = () => {
         const filename = `${i + 1}`;
         void uploadImageToSupabase(filename_prefix, images[i].data, filename);
         images[i].fullImageUrl =
-          `http://localhost:8182/iiif/3/${filename_prefix}_${filename}.png/full/max/0/default.png`;
+          `${CANTALOUPE_URL}${filename_prefix}_${filename}.png/full/max/0/default.png`;
         images[i].thumbImageUrl =
-          `http://localhost:8182/iiif/3/${filename_prefix}_${filename}.png/full/,120/0/default.png`;
+          `${CANTALOUPE_URL}${filename_prefix}_${filename}.png/full/,120/0/default.png`;
       }
       const newManifest = generateManifest(
         images.map((img) => ({

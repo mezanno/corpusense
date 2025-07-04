@@ -20,7 +20,7 @@ export type CanvasInfo = {
 };
 
 export const generateManifest = (canvasInfo: CanvasInfo[], folder: string): Manifest => {
-  const url_supabase = `https://ilbjbghryyvjfdhgunhx.supabase.co/storage/v1/object/public/corpusense/${folder}/`;
+  const url_supabase = `${import.meta.env.VITE_SUPABASE_STORAGE_URL}/${folder}/`;
 
   return {
     '@context': 'http://iiif.io/api/presentation/3/context.json',
