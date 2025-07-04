@@ -1,7 +1,7 @@
-import { ArrowRightLeft, Grid2X2Plus } from 'lucide-react';
+import { ArrowRightLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AlertDialogForm from '../AlertDialogForm';
-import NewModelForm from '../NewModelForm';
+import CreateModelButton from './CreateModelButton';
 import SelectModelForm from './SelectModelForm';
 
 const ModelButtons = () => {
@@ -15,13 +15,7 @@ const ModelButtons = () => {
       >
         {({ close }) => <SelectModelForm close={close} />}
       </AlertDialogForm>
-      <AlertDialogForm
-        title={t('btn_create_model')}
-        description={t('form_description_create_model')}
-        trigger={<Grid2X2Plus />}
-      >
-        {({ close }) => <NewModelForm close={close} />}
-      </AlertDialogForm>
+      <CreateModelButton />
     </div>
   );
 };
