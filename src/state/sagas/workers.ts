@@ -198,6 +198,7 @@ function* handleFetchOcr({
     console.error('handleFetchOcr: ', error);
     // yield put(processError({ id: canvas.id, error: getErrorMessage(error) }));
     yield put(processError({ collectionId, canvasId: canvas.id }));
+    yield put(pushError(getErrorMessage(error)));
   }
 }
 
