@@ -348,8 +348,8 @@ function* handleExportWorkerResult(
   //get the results for the worker
   const resultRepository = getResultRepository();
   const results = (yield call(
-    [resultRepository, resultRepository.selectByWorkerName],
-    worker.name,
+    [resultRepository, resultRepository.selectByWorkerId],
+    worker.id,
   )) as Result[];
 
   try {

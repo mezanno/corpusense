@@ -99,6 +99,7 @@ export interface ResultRepository {
   addResult(result: ResultCreateDTO): Promise<void>;
   selectAll(): Promise<Result[]>;
   selectByWorkerName(workerId: string): Promise<Result[]>;
+  selectByWorkerId(workerId: string): Promise<Result[]>;
   selectByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result>;
 }
 
