@@ -30,6 +30,7 @@
     "@iiif/parser": "^2.2.0",
     "@iiif/presentation-3": "^2.2.3",
     "@iiif/presentation-3-normalized": "^0.9.7",
+    "@microlink/react-json-view": "^1.26.2",
     "@mistralai/mistralai": "^1.6.0",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-alert-dialog": "^1.1.7",

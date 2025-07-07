@@ -1,4 +1,5 @@
 import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
+import { Collection } from '@/data/models/Collection';
 import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
@@ -31,6 +32,7 @@ import {
 import { fetchAnnotationsSuccess } from '../reducers/annotations';
 import { pushError, pushInfo } from '../reducers/events';
 import {
+  ExportWorkerPayload,
   exportWorkerResultRequest,
   fetchBatchLayoutRequest,
   fetchBatchOcrRequest,
@@ -196,6 +198,7 @@ function* handleFetchOcr({
     console.error('handleFetchOcr: ', error);
     // yield put(processError({ id: canvas.id, error: getErrorMessage(error) }));
     yield put(processError({ collectionId, canvasId: canvas.id }));
+    yield put(pushError(getErrorMessage(error)));
   }
 }
 
@@ -337,19 +340,33 @@ function* handleRecoverWorker(action: PayloadAction<Worker>) {
 }
 
 function* handleExportWorkerResult(
-  action: PayloadAction<Worker>,
-): Generator<Effect, void, Result[]> {
-  const worker = action.payload;
-  const resultRepository = getResultRepository();
-  const results = yield call([resultRepository, resultRepository.selectByWorkerName], worker.name);
-  if (results.length === 0) {
-    //TODO! afficher message d'erreur dans l'UI
-    console.warn(`No results found for worker ${worker.id}`);
-    return;
-  }
+  action: PayloadAction<ExportWorkerPayload>,
+): Generator<Effect, void, Result[] | Collection> {
+  const { worker } = action.payload;
   const saga = workerPlugins[worker.name];
-  if (saga !== undefined && saga !== null && saga.export) {
-    yield call(saga.export, results);
+
+  //get the results for the worker
+  const resultRepository = getResultRepository();
+  const results = (yield call(
+    [resultRepository, resultRepository.selectByWorkerId],
+    worker.id,
+  )) as Result[];
+
+  try {
+    if (saga !== undefined && saga !== null && saga.export) {
+      if (results.length === 0) {
+        //TODO! afficher message d'erreur dans l'UI
+        console.warn(`No results found for worker ${worker.id}`);
+        return;
+      }
+
+      yield call(saga.export, results);
+    }
+  } catch (error) {
+    console.error(`Error in export plugin saga for ${worker.name}:`, error);
+    yield put(
+      pushError(`Error in export plugin saga for ${worker.name}: ${getErrorMessage(error)}`),
+    );
   }
 }
 

@@ -18,7 +18,13 @@ export class IndexedDBResultRepository implements ResultRepository {
   }
 
   async selectByWorkerName(workerName: string): Promise<Result[]> {
+    // Note: Using sortBy('id') to ensure results are returned in the order of their creation
     return await db.results.where('workerName').equals(workerName).sortBy('id');
+  }
+
+  async selectByWorkerId(workerId: string): Promise<Result[]> {
+    // Note: Using sortBy('id') to ensure results are returned in the order of their creation
+    return await db.results.where('workerId').equals(workerId).sortBy('id');
   }
 
   async selectByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result> {
