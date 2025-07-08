@@ -26,9 +26,14 @@ function* handleCreateModel(
   const { name, description, fromModelId } = action.payload;
   let fields: DataField[] = [];
   if (fromModelId !== undefined) {
-    const modelRespository = getModelRepository();
-    const model = yield call([modelRespository, modelRespository.getById], fromModelId);
-    fields = model.fields;
+    try {
+      const modelRespository = getModelRepository();
+      const model = yield call([modelRespository, modelRespository.getById], fromModelId);
+      fields = model.fields;
+    } catch (error) {
+      console.error('Error fetching model by ID:', error);
+      // Handle the error as needed, e.g., show a notification or log it
+    }
   }
 
   const newModel = {
