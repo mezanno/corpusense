@@ -21,6 +21,7 @@ import { z } from 'zod';
 
 const formSchema = z.object({
   mistralApiKey: z.string(),
+  mistralModel: z.string(),
   prompt: z.string(),
 });
 
@@ -35,6 +36,11 @@ const ConfigurationPage = () => {
       form.setValue('mistralApiKey', savedApiKey);
     }
 
+    const savedModel = localStorage.getItem('mistralModel');
+    if (savedModel !== null) {
+      form.setValue('mistralModel', savedModel);
+    }
+
     const savedPrompt = localStorage.getItem('prompt');
     if (savedPrompt !== null) {
       form.setValue('prompt', savedPrompt);
@@ -47,6 +53,7 @@ const ConfigurationPage = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       mistralApiKey: '',
+      mistralModel: 'mistral-medium-latest',
     },
   });
 
@@ -54,6 +61,7 @@ const ConfigurationPage = () => {
     try {
       localStorage.setItem('mistralApiKey', values.mistralApiKey);
       localStorage.setItem('prompt', values.prompt);
+      localStorage.setItem('mistralModel', values.mistralModel);
       appDispatch(pushInfo(t('info_configuration_saved')));
     } catch (error) {
       console.error('Error saving configuration:', error);
@@ -75,6 +83,19 @@ const ConfigurationPage = () => {
                   <FormLabel id='form-label'>{t('form_label_mistral_api_key')}</FormLabel>
                   <FormControl>
                     <Input {...field} aria-describedby='form-label' />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='mistralModel'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel id='form-model'>{t('form_label_mistral_modelname')}</FormLabel>
+                  <FormControl>
+                    <Input {...field} aria-describedby='form-model' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

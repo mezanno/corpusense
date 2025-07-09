@@ -1,6 +1,7 @@
+import { Collection } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
-import { isCanvasScope, isCollectionScope } from '@/data/models/Scope';
+import { isAnnotationScope, isCanvasScope, isCollectionScope } from '@/data/models/Scope';
 import { Worker } from '@/data/models/Worker';
 import {
   getCollectionRepository,
@@ -72,16 +73,14 @@ export function* startSingleMistralAnalysisProcess(
     localStorage.getItem('prompt')?.replace('{{schema}}', generateSchema(model)) ??
     DEFAULT_PROMPT.replace('{{schema}}', generateSchema(model));
   // const prompt = localStorage.getItem('prompt')?.replace('{{schema}}') ?? DEFAULT_PROMPT;
-  console.log(`Using prompt: ${prompt}`);
-  console.log(`text : ${text}`);
+  const mistralModel = localStorage.getItem('mistralModel') ?? 'mistral-medium-latest';
 
-  const schema = generateSchema(model);
   const body = {
-    model: 'mistral-medium-latest',
+    model: mistralModel,
     messages: [
       {
         role: 'system',
-        content: `Voici une liste de données textuelles présentées correspondant à ce format :\n\n${schema}\n\nRetourne moi la liste données présentes dans ce texte sous forme d'une table JSON bien structurée. La réponse ne doit contenir que le JSON, sans explication ni commentaire.`,
+        content: prompt,
       },
       {
         role: 'user',
@@ -160,19 +159,21 @@ function* startBatchMistralAnalysisProcess(
   for (const canvas of canvases) {
     yield put(processStart({ collectionId, canvasId: canvas.id }));
   }
-  let allTheData: unknown[] = [];
+  // const allTheData: unknown[] = [];
   for (let i = 0; i < canvases.length; i++) {
     try {
-      const dataInCanvas = (yield call(
+      // const dataInCanvas = (yield call(
+      yield call(
         startSingleMistralAnalysisProcess,
         canvases[i].id,
         collectionId,
         model,
         worker,
         isRecovering,
-      )) as string;
-      const dataParsed = JSON.parse(dataInCanvas) as unknown[];
-      allTheData = [...allTheData, ...dataParsed];
+      );
+      // const dataParsed = JSON.parse(dataInCanvas) as unknown[];
+      // allTheData = [...allTheData, ...dataParsed];
+      // allTheData.push(dataParsed);
     } catch (error) {
       console.warn('Error processing canvas:', canvases[i].id, error);
       yield put(processError({ collectionId, canvasId: canvases[i].id }));
@@ -180,11 +181,11 @@ function* startBatchMistralAnalysisProcess(
     }
   }
 
-  yield call(
-    FileSaver.saveAs,
-    new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
-    'exported_data.json',
-  );
+  // yield call(
+  //   FileSaver.saveAs,
+  //   new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
+  //   'exported_data.json',
+  // );
   yield put(processSuccess({ collectionId }));
 }
 
@@ -217,21 +218,38 @@ export default function* mistralSaga(worker: Worker, isRecovering: boolean, para
   }
 }
 
-export function* exportResult(results: Result[]) {
+export function* exportResult(results: Result[]): Generator<Effect, void, Collection> {
   if (results.length === 0) {
     console.warn('No results to export from Mistral plugin');
     return;
   }
   let allTheData: unknown[] = [];
   for (let i = 0; i < results.length; i++) {
+    const result = results[i];
+    console.log(`Exporting result for `, result, ' -- ');
+    // let
+    if (!isAnnotationScope(result.scope)) {
+      const collectionId = result.scope.collectionId;
+      const collectionRepository = getCollectionRepository();
+      try {
+        const collection = yield call(
+          [collectionRepository, collectionRepository.getCollectionById],
+          collectionId,
+        );
+        console.log(`Collection for result ${result.id}:`, collection);
+      } catch (error) {
+        console.error(`Error fetching collection for result ${result.id}:`, error);
+      }
+    }
     try {
-      const dataParsed = JSON.parse(results[i].value as string) as unknown[];
+      const dataParsed = JSON.parse(result.value as string) as unknown[];
       allTheData = [...allTheData, ...dataParsed];
     } catch (error) {
       //TODO: on fait quoi lorsque le json est invalide ?
       console.error('Error parsing dataInCanvas:', error);
     }
   }
+
   yield call(
     FileSaver.saveAs,
     new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
