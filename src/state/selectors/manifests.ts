@@ -19,3 +19,5 @@ export const getHistory = (state: RootState) => state?.manifests?.history ?? [];
  * @returns The canvases of the loaded manifest or an empty array if no manifest is loaded
  */
 export const getCanvases = (state: RootState) => state?.manifests?.loadedData?.content?.items ?? [];
+
+export const getManifestOpenEvent = (state: RootState) => state.manifests.manifestOpenEvent;

@@ -6,17 +6,14 @@ import {
   getManifestRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import i18n from '@/i18n';
-import { convertJsonToManifest } from '@/utils/manifest';
-import { getErrorMessage, onlyLettersAndNumbers } from '@/utils/utils';
+import { containsArkIdentifier, convertJsonToManifest, isManifestUrl } from '@/utils/manifest';
+import { getErrorMessage } from '@/utils/utils';
 import { Manifest } from '@iiif/presentation-3';
 import { call, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
-import { pushError } from '../reducers/events';
+import { pushInfo } from '../reducers/events';
 import {
+  fecthManifestRequest,
   fetchManifestError,
-  fetchManifestFromArkRequest,
-  fetchManifestFromContentRequest,
-  fetchManifestFromUrlRequest,
-  FetchManifestPayload,
   fetchManifestSuccess,
   removeFromHistoryRequest,
   removeFromHistorySuccess,
@@ -35,15 +32,12 @@ const keys = Object.keys(importerPlugins);
  * from the URL.
  * @param action The action containing the URL of the manifest to fetch.
  */
-function* handleFetchManifestFromURL(action: {
-  payload: FetchManifestPayload;
-}): Generator<Effect, void, Manifest> {
-  const url = action.payload.manifestId;
+function* handleFetchManifestFromURL(url: string): Generator<Effect, void, Manifest> {
   // const forceV3 = action.payload.forceV3;
   try {
     const manifestRepository = getManifestRepository();
     const manifest = yield call([manifestRepository, manifestRepository.getManifest], url);
-    yield call(handleFetchManifest, { storedManifest: manifest });
+    yield call(fetchManifest, { storedManifest: manifest });
   } catch (error) {
     // If the manifest is not found in IndexedDB, we try to fetch it from the URL
     const importerKey = keys.find((key) => url.includes(key));
@@ -51,10 +45,10 @@ function* handleFetchManifestFromURL(action: {
       importerKey !== undefined ? importerPlugins[importerKey] : importerPlugins['default'];
     if (importer !== undefined && importer !== null) {
       try {
-        yield call(handleFetchManifest, { fetchFunction: () => importer.import(url) });
+        yield call(fetchManifest, { fetchFunction: () => importer.import(url) });
       } catch (err) {
-        yield put(fetchManifestError());
-        yield put(pushError(i18n.t('error_loading_manifest', { error: getErrorMessage(err) })));
+        const msg = i18n.t('error_loading_manifest', { error: getErrorMessage(err) });
+        yield put(fetchManifestError(msg));
       }
     }
 
@@ -62,30 +56,26 @@ function* handleFetchManifestFromURL(action: {
   }
 }
 
-/**
- * Side effect to fetch a manifest from an Ark reference. It constructs the URL using the Ark reference
- * and fetches the manifest from the URL.
- * TODO: il faudrait pouvoir s'adapter à d'autres ark que ceux de Gallica. Infos : https://arks.org/ark:/12148 https://n2t-dev.n2t.net/e/n2t_apidoc.html
- * @remarks If the Ark reference contains invalid characters, it dispatches an error action.
- * @param action The action containing the Ark reference to fetch the manifest from.
- */
-function* handleFetchManifestFromArk(action: { payload: string }) {
-  if (!onlyLettersAndNumbers(action.payload)) {
-    yield put(fetchManifestError());
-    yield put(pushError(i18n.t('error_ark_invalid')));
-  }
-  //build the URL based on old Gallica API
-  const url = `https://gallica.bnf.fr/iiif/ark:/${action.payload}/manifest.json`;
-  yield call(handleFetchManifestFromURL, { payload: { manifestId: url } });
-}
+function* handleFetchManifest(action: { payload: string }) {
+  try {
+    const manifestInput = action.payload;
+    console.log('handleFetchManifest ', manifestInput);
+    console.log('handleFetchManifest ', isManifestUrl(manifestInput));
 
-/**
- * Side effect to fetch a manifest from the content of an action. It parses the content
- * and fetches the manifest from it.
- * @param action The action containing the manifest content to fetch.
- */
-function* handleFetchManifestFromContent(action: { payload: string }) {
-  yield handleFetchManifest({ fetchFunction: () => JSON.parse(action.payload) as object });
+    if (isManifestUrl(manifestInput)) {
+      yield call(handleFetchManifestFromURL, manifestInput);
+    } else if (containsArkIdentifier(manifestInput)) {
+      //build the URL based on old Gallica API
+      //TODO: il faudrait pouvoir s'adapter à d'autres ark que ceux de Gallica. Infos : https://arks.org/ark:/12148 https://n2t-dev.n2t.net/e/n2t_apidoc.html
+      const url = `https://gallica.bnf.fr/iiif/${manifestInput}/manifest.json`;
+      yield call(handleFetchManifestFromURL, url);
+    } else {
+      yield call(fetchManifest, { fetchFunction: () => JSON.parse(manifestInput) as object });
+    }
+  } catch (error) {
+    const msg = i18n.t('error_loading_manifest', { error: getErrorMessage(error) });
+    yield put(fetchManifestError(msg));
+  }
 }
 
 /**
@@ -94,7 +84,7 @@ function* handleFetchManifestFromContent(action: { payload: string }) {
  * @param fetchFunction: A function to fetch the manifest. If not provided, it uses the stored manifest.
  * @param storedManifest: The manifest to use if fetchFunction is not provided.
  */
-function* handleFetchManifest({
+function* fetchManifest({
   fetchFunction,
   storedManifest,
 }: {
@@ -132,6 +122,8 @@ function* handleFetchManifest({
       metadata,
     }),
   );
+
+  yield put(pushInfo(i18n.t('info_manifest_loaded')));
 
   //save the manifest to indexedDB
   if (storedManifest === undefined) {
@@ -209,19 +201,9 @@ function* handleSaveMetadata({
 }
 
 export default function* viewerSaga() {
-  yield takeLatest(fetchManifestFromContentRequest, handleFetchManifestFromContent);
-  yield takeLatest(fetchManifestFromUrlRequest, handleFetchManifestFromURL);
-  yield takeLatest(fetchManifestFromArkRequest, handleFetchManifestFromArk);
+  yield takeLatest(fecthManifestRequest, handleFetchManifest);
   yield takeEvery(saveMetadataRequest, handleSaveMetadata);
   yield takeEvery(removeFromHistoryRequest, handleRemoveFromHistory);
 }
 
-export {
-  handleFetchManifest,
-  handleFetchManifestFromArk,
-  handleFetchManifestFromContent,
-  handleFetchManifestFromURL,
-  handleRemoveFromHistory,
-  handleSaveMetadata,
-  loadHistorySaga,
-};
+export { handleFetchManifest, handleRemoveFromHistory, handleSaveMetadata, loadHistorySaga };
