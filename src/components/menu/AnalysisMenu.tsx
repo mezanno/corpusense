@@ -1,5 +1,5 @@
 import { Scope } from '@/data/models/Scope';
-import { Puzzle, ScanText, TableProperties, TextSearch } from 'lucide-react';
+import { PocketKnife, Puzzle, ScanText, TableProperties } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
@@ -17,7 +17,7 @@ const AnalysisMenu = ({
   const { t } = useTranslation();
   const params = {
     name: 'btn_start_analysis',
-    icon: <TextSearch />,
+    icon: <PocketKnife />,
     info: 'info_start_analysis',
     items: [
       {
