@@ -6,7 +6,7 @@ import useAppNavigation from '@/hooks/useAppNavigation';
 import { fecthManifestRequest, resetManifestOpenEvent } from '@/state/reducers/manifests';
 import { getManifestOpenEvent, getManifestURL } from '@/state/selectors/manifests';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ExternalLink } from 'lucide-react';
+import { FolderOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -111,10 +111,13 @@ const ManifestExplorerDrawer = () => {
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
-        <Button className='cursor-pointer' aria-label={t('btn_open_manifest')}>
-          <ExternalLink size={16} />
+        <button
+          className='align-center flex cursor-pointer items-center justify-center gap-2 space-x-2 rounded-xl border-2 bg-white p-2 hover:bg-gray-400 hover:text-white'
+          aria-label={t('btn_open_manifest')}
+        >
+          <FolderOpen size={16} />
           {t('btn_open_manifest')}
-        </Button>
+        </button>
       </DrawerTrigger>
       <DrawerContent className='flex w-full items-center bg-white'>
         <DrawerHeader>
@@ -133,6 +136,4 @@ const ManifestExplorerDrawer = () => {
     </Drawer>
   );
 };
-
-export { ManifestExplorerDrawer };
 export default ManifestExplorerDrawer;
