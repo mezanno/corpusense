@@ -1,5 +1,5 @@
 import AlertDialogLogin from '@/components/auth/AlertDialogLogin';
-import HistoryNav from '@/components/HistoryNav';
+import HistoryDrawer from '@/components/HistoryDrawer';
 import ManifestExplorerDrawer from '@/components/ManifestExplorerDrawer';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -38,7 +38,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarInset,
   SidebarMenu,
@@ -192,12 +191,6 @@ const LayoutSideBar = () => {
               </SidebarMenu>
             </SidebarGroup>
           )}
-          <SidebarGroup id='history'>
-            <SidebarGroupLabel>{t('nav_history')}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <HistoryNav />
-            </SidebarGroupContent>
-          </SidebarGroup>
         </SidebarContent>
 
         <SidebarFooter>
@@ -247,9 +240,10 @@ const Layout = () => {
       <SidebarInset className='m-2'>
         {/*TODO: Fix this width : pour une raison inconnue w-100 empêche la fenêtre de déborder*/}
         <header className='flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
-          <div className='flex items-center'>
+          <div className='flex items-center space-x-2'>
             <SidebarTrigger />
             <ManifestExplorerDrawer />
+            <HistoryDrawer />
           </div>
         </header>
         <Outlet />

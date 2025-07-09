@@ -10,6 +10,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useAppDispatch } from '@/hooks/hooks';
+import { pushInfo } from '@/state/reducers/events';
 import { DEFAULT_PROMPT } from '@/state/sagas/plugins/workers/mistral';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
@@ -24,6 +26,7 @@ const formSchema = z.object({
 
 const ConfigurationPage = () => {
   const { t } = useTranslation();
+  const appDispatch = useAppDispatch();
 
   useEffect(() => {
     // Load the saved Mistral API key from localStorage when the component mounts
@@ -48,8 +51,14 @@ const ConfigurationPage = () => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    localStorage.setItem('mistralApiKey', values.mistralApiKey);
-    localStorage.setItem('prompt', values.prompt);
+    try {
+      localStorage.setItem('mistralApiKey', values.mistralApiKey);
+      localStorage.setItem('prompt', values.prompt);
+      appDispatch(pushInfo(t('info_configuration_saved')));
+    } catch (error) {
+      console.error('Error saving configuration:', error);
+      appDispatch(pushInfo(t('error_saving_configuration')));
+    }
   }
 
   return (

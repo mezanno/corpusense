@@ -1,7 +1,7 @@
 import CanvasViewer from '@/components/CanvasViewer';
 import { Toggle } from '@/components/ui/toggle';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { fetchManifestFromUrlRequest } from '@/state/reducers/manifests';
+import { fecthManifestRequest } from '@/state/reducers/manifests';
 import { PanelTopClose, PanelTopOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -25,13 +25,8 @@ const ManifestExplorerPage = () => {
 
   useEffect(() => {
     const id = searchParams.get('manifestId');
-    const forceV3 = searchParams.get('forceV3');
     if (id != null) {
-      if (forceV3 !== null) {
-        dispatch(fetchManifestFromUrlRequest({ manifestId: id, forceV3: forceV3 === 'true' }));
-      } else {
-        dispatch(fetchManifestFromUrlRequest({ manifestId: id }));
-      }
+      dispatch(fecthManifestRequest(id));
     }
   }, [searchParams]);
 

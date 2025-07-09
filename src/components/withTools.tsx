@@ -10,7 +10,6 @@ import {
 import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import {
   exportWorkerResultRequest,
-  fetchLayoutRequest,
   fetchOcrRequest,
   startWorkerProcess,
 } from '@/state/reducers/workers';
@@ -46,21 +45,21 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       ),
     );
 
-    const handleStartLayoutAnalysis = () => {
-      if (
-        cvcState?.image?.id !== undefined &&
-        cvcState?.canvas !== undefined &&
-        props.collectionId !== undefined
-      ) {
-        appDispatch(
-          fetchLayoutRequest({
-            canvas: cvcState.canvas,
-            collectionId: props.collectionId,
-            originalWidth: cvcState.image.width ?? 0,
-          }),
-        );
-      }
-    };
+    // const handleStartLayoutAnalysis = () => {
+    //   if (
+    //     cvcState?.image?.id !== undefined &&
+    //     cvcState?.canvas !== undefined &&
+    //     props.collectionId !== undefined
+    //   ) {
+    //     appDispatch(
+    //       fetchLayoutRequest({
+    //         canvas: cvcState.canvas,
+    //         collectionId: props.collectionId,
+    //         originalWidth: cvcState.image.width ?? 0,
+    //       }),
+    //     );
+    //   }
+    // };
 
     const handleStartOcrAnalysis = () => {
       if (cvcState?.image?.id !== undefined && props.collectionId !== undefined) {
@@ -145,7 +144,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
             handleOcr={handleStartOcrAnalysis}
             handleExportText={handleExportText}
             handleDeleteAllAnnotations={handleDeleteAllAnnotations}
-            handleLayout={handleStartLayoutAnalysis}
+            // handleLayout={handleStartLayoutAnalysis}
             handleExtractData={handleExtractData}
             handleExportResult={handleExportResult}
             scope={{ canvasId: cvcState.canvas?.id ?? '', collectionId: props.collectionId ?? '' }}

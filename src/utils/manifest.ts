@@ -2,6 +2,16 @@ import { convertPresentation2 } from '@iiif/parser/presentation-2';
 import { Manifest } from '@iiif/presentation-3';
 import i18n from 'i18next';
 
+export function isManifestUrl(str: string): boolean {
+  const regex = /^https?:\/\/[^/\s]+(?:\/.*)?\/manifest\.json$/i;
+  return regex.test(str);
+}
+
+export function containsArkIdentifier(str: string): boolean {
+  const regex = /ark:\/\d{5,}\/[a-zA-Z0-9]+/;
+  return regex.test(str);
+}
+
 export const convertJsonToManifest = (data: object): Manifest => {
   const manifest: Manifest = convertPresentation2(data) as Manifest;
 
