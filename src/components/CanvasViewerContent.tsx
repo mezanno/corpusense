@@ -193,7 +193,7 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
   return (
     <OpenSeadragonAnnotator
       autoSave={true}
-      drawingMode='click'
+      drawingMode='drag'
       drawingEnabled={cvcState?.mode === 'draw'}
       style={style}
     >
