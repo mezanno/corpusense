@@ -2,62 +2,71 @@
 
 ```mermaid
 classDiagram
-    class Canvas {
-
-    }
-    class Manifest {
-
-    }
-    class AnnotationBody { }
-    class History {
-        string url
-    }
-    note for History "models"
-    class List {
-        id?: string
+    class Collection {
+        id: string
         name: string
-        content?: SelectedCanvas[]
+        about: string
+        tags: string[]
     }
-    note for List "models"
-    class SelectedCanvas {
-        index: number
-        canvas: Canvas
+    class CollectionElement {
+        canvasId: string
+        collectionId: string
     }
-    note for SelectedCanvas "models"
-    List --* SelectedCanvas
-    SelectedCanvas --* Canvas
-    class StoredCanvas {
-        id: striing
-        content: Canvas
+    class Canvas {
+        <<external>>
     }
-    note for StoredCanvas "models"
-    StoredCanvas --* Canvas
+    class Annotation {
+        id: string
+        canvasId: string
+        collectionId: string
+        order: number
+    }
+    class DataModel {
+        id: string
+        name: string
+        fields: DataField[]
+    }
+    class DataField {
+        id: string
+        name: string
+        type: string
+    }
+    class Tag {
+        id: string
+        label: string
+        category: string
+    }
+    class TagCategory {
+        id: string
+        label: string
+        tags: Tag[]
+    }
+    class NamedEntity {
+        id: string
+        type: object
+        value: string
+    }
+    class Result {
+        id: number
+        scope: Scope
+        workerName: string
+    }
+    class Worker {
+        id: string
+        name: string
+        status: WorkerStatus
+        scope: Scope
+    }
+    class Scope {
+        <<union>>
+    }
 
-    class ManifestState {
-        isLoading: boolean
-        error: string | null
-        data: Manifest | null
-        history: History[]
-    }
-    ManifestState --* History
-    ManifestState --* Manifest
-
-    class SelectionState {
-        canvases: SelectedCanvas[]
-    }
-    SelectionState --* SelectedCanvas
-
-    class ListsState {
-        values: List[];
-        error: string;
-    }
-    ListsState --* List
-
-    class CanvasesState {
-        values: ContentResource[]
-    }
-    CanvasesState --* ContentResource
-    note for CanvasesState "values[string] = ContentResource"
-
-    classDef History fill:#f96
+    Collection "1" -- "*" CollectionElement
+    CollectionElement "*" -- "1" Canvas
+    Collection "1" -- "*" Annotation
+    DataModel "1" -- "*" DataField
+    TagCategory "1" -- "*" Tag
+    Annotation "*" -- "*" NamedEntity
+    Result "*" -- "1" Scope
+    Worker "*" -- "1" Scope
 ```
