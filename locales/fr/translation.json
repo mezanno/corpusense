@@ -95,6 +95,7 @@
   "form_description_password": "Votre mot de passe",
   "form_forcev3": "Si posible, utiliser la version 3 de Gallica",
   "form_label_mistral_api_key": "Clé API Mistral",
+  "form_label_mistral_modelname": "Modèle API Mistral",
   "form_label_prompt_mistral": "Prompt Mistral (laissez vide pour utiliser le prompt par défaut - utilisez {{schema}} pour ajouter le schéma du modèle)",
   "title_metadata_gallica": "Métadonnées Gallica",
   "title_metadata_corpusense": "Métadonnées Corpusense",
