@@ -8,7 +8,6 @@ import {
 import { exportTextOfCollectionRequest } from '@/state/reducers/export';
 import {
   exportWorkerResultRequest,
-  fetchBatchLayoutRequest,
   fetchBatchOcrRequest,
   recoverWorkerRequest,
   startWorkerProcess,
@@ -28,9 +27,9 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
     appDispatch(fetchBatchOcrRequest(collectionId));
   };
 
-  const handleLayout = () => {
-    appDispatch(fetchBatchLayoutRequest(collectionId));
-  };
+  // const handleLayout = () => {
+  //   appDispatch(fetchBatchLayoutRequest(collectionId));
+  // };
 
   const handleDeleteAllAnnotations = () => {
     appDispatch(removeAllCollectionAnnotationsRequest(collectionId));
@@ -77,7 +76,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
     <div className='panel'>
       <Toolbar
         title={t('title_collection_actions')}
-        handleLayout={handleLayout}
+        // handleLayout={handleLayout}
         handleOcr={handleOcr}
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleExportText={handleExportText}
