@@ -26,6 +26,11 @@ const ModelViewer = () => {
   const [fields, setFields] = useState(model?.fields ?? []);
   const [description, setDescription] = useState('');
 
+  const options = [
+    { value: 'string', label: 'Texte' },
+    { value: 'number', label: 'Nombre' },
+  ];
+
   useEffect(() => {
     if (model) {
       setFields(model.fields);
@@ -40,7 +45,10 @@ const ModelViewer = () => {
   const handleAddField = () => {
     const nextColor =
       fields.length === 0 ? baseColor : analogue(fields[fields.length - 1].color, 2);
-    setFields([...fields, { id: uuid(), name: '', type: '', description: '', color: nextColor }]);
+    setFields([
+      ...fields,
+      { id: uuid(), name: '', type: options[0].value, description: '', color: nextColor },
+    ]);
   };
 
   const handleSave = () => {
@@ -143,8 +151,11 @@ const ModelViewer = () => {
                             <SelectValue placeholder={'Type de données'} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value='string'>Texte</SelectItem>
-                            <SelectItem value='number'>Nombre</SelectItem>
+                            {options.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </TableCell>
