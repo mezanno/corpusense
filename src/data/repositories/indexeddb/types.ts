@@ -83,6 +83,7 @@ export interface TagRepository {
 export interface ModelRepository {
   getById(id: string): Promise<DataModel>;
   getAll(): Promise<DataModel[]>;
+  getByName(name: string): Promise<DataModel | null>;
   add(model: DataModel): Promise<void>;
   update(model: DataModel): Promise<void>;
   delete(id: string): Promise<void>;

@@ -14,6 +14,11 @@ export class IndexedDBModelRepository implements ModelRepository {
     return result;
   }
 
+  async getByName(name: string): Promise<DataModel | null> {
+    const models = await db.models.where('name').equals(name).toArray();
+    return models.length > 0 ? models[0] : null;
+  }
+
   async add(model: DataModel): Promise<void> {
     await db.models.add(model);
   }
