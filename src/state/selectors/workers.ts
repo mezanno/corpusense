@@ -23,11 +23,28 @@ export const getWorkersByScopeAndStatus = createSelector(
   [
     (state: RootState) => state.workers.workers,
     (_state: RootState, scope: Scope) => scope,
-    (_state: RootState, _scope: Scope, status: WorkerStatus) => status,
+    (_state: RootState, _scope: Scope, status: WorkerStatus | WorkerStatus[]) => status,
   ],
   (workers, scope, status): Worker[] => {
+    const statuses = Array.isArray(status) ? status : [status];
     return Object.values(workers)
-      .filter((worker) => isSameScope(worker.scope, scope) && worker.status === status)
+      .filter((worker) => isSameScope(worker.scope, scope) && statuses.includes(worker.status))
       .sort((w1, w2) => w1.name.localeCompare(w2.name));
+  },
+);
+
+export const getCompletedWorkerByScopeAndName = createSelector(
+  [
+    (state: RootState) => state.workers.workers,
+    (_state: RootState, scope: Scope) => scope,
+    (_state: RootState, _scope: Scope, name: string) => name,
+  ],
+  (workers, scope, name): Worker | undefined => {
+    return Object.values(workers).find(
+      (worker) =>
+        isSameScope(worker.scope, scope) &&
+        worker.name === name &&
+        worker.status === WorkerStatus.COMPLETED,
+    );
   },
 );

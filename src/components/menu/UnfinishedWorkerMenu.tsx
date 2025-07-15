@@ -16,7 +16,10 @@ const UnfinishedWorkerMenu = ({
   const { t } = useTranslation();
 
   const workers = useAppSelector((state) =>
-    getWorkersByScopeAndStatus(state, scope, WorkerStatus.INPROGRESS),
+    getWorkersByScopeAndStatus(state, scope, [
+      WorkerStatus.INPROGRESS,
+      WorkerStatus.INPROGRESS_WITH_ERRORS,
+    ]),
   );
 
   const items = workers.map((worker) => ({
