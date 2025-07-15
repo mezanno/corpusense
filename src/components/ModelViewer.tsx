@@ -25,6 +25,7 @@ const ModelViewer = () => {
   const model = useAppSelector(getActiveModel);
   const [fields, setFields] = useState(model?.fields ?? []);
   const [description, setDescription] = useState('');
+  const [prompt, setPrompt] = useState('');
 
   const options = [
     { value: 'string', label: 'Texte' },
@@ -35,6 +36,7 @@ const ModelViewer = () => {
     if (model) {
       setFields(model.fields);
       setDescription(model.description ?? '');
+      setPrompt(model.prompt ?? '');
     }
   }, [model]);
 
@@ -54,7 +56,12 @@ const ModelViewer = () => {
   const handleSave = () => {
     const newFields = fields.filter((f) => f.name !== '' && f.type !== '');
     setFields(newFields);
-    const updatedModel = { ...model, fields: newFields, description: description.trim() };
+    const updatedModel = {
+      ...model,
+      fields: newFields,
+      description: description.trim(),
+      prompt: prompt.trim(),
+    };
     appDispatch(saveModelRequest(updatedModel));
   };
 
@@ -112,6 +119,15 @@ const ModelViewer = () => {
           className='ml-2 max-w-3/4 min-w-1/2'
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+        />
+      </div>
+      <div className='m-2 flex w-full items-center justify-center'>
+        <Label htmlFor='prompt'>{t('form_label_model_prompt')}</Label>
+        <Textarea
+          id='prompt'
+          className='ml-2 max-w-3/4 min-w-1/2'
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
         />
       </div>
       {fields.length > 0 ? (

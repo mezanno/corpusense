@@ -12,6 +12,7 @@ export interface DataModel {
   id: string;
   name: string;
   description?: string;
+  prompt: string;
   fields: DataField[];
 }
 

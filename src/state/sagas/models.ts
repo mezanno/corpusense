@@ -6,7 +6,7 @@ import FileSaver from 'file-saver';
 import { t } from 'i18next';
 import { call, Effect, put, takeEvery } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
-import { pushError } from '../reducers/events';
+import { pushError, pushInfo } from '../reducers/events';
 import {
   createModelRequest,
   createModelSuccess,
@@ -31,11 +31,14 @@ function* handleCreateModel(
   const id = uuid();
   const { name, description, fromModelId } = action.payload;
   let fields: DataField[] = [];
+  let prompt =
+    "Voici une liste de données textuelles présentées correspondant à ce format :\n\n{{schema}}\n\nRetourne moi la liste données présentes dans ce texte sous forme d'une table JSON bien structurée. La réponse ne doit contenir que le JSON, sans explication ni commentaire.";
   if (fromModelId !== undefined) {
     try {
       const modelRespository = getModelRepository();
       const model = yield call([modelRespository, modelRespository.getById], fromModelId);
       fields = model.fields;
+      prompt = model.prompt;
     } catch (error) {
       console.error('Error fetching model by ID:', error);
       // Handle the error as needed, e.g., show a notification or log it
@@ -47,6 +50,7 @@ function* handleCreateModel(
     name: name,
     description: description,
     fields,
+    prompt,
   };
   const modelRespository = getModelRepository();
   yield call([modelRespository, modelRespository.add], newModel);
@@ -57,6 +61,7 @@ function* handleSaveModel(action: PayloadAction<DataModel>) {
   const modelRespository = getModelRepository();
   yield call([modelRespository, modelRespository.update], action.payload);
   yield put(saveModelSuccess(action.payload));
+  yield put(pushInfo(t('info_model_saved')));
 }
 
 function* handleRemoveModel(action: PayloadAction<string>) {
