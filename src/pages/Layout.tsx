@@ -1,5 +1,6 @@
 import AlertDialogLogin from '@/components/auth/AlertDialogLogin';
 import HistoryDrawer from '@/components/HistoryDrawer';
+import MailDrawer from '@/components/MailDrawer';
 import ManifestExplorerDrawer from '@/components/ManifestExplorerDrawer';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -244,6 +245,7 @@ const Layout = () => {
             <SidebarTrigger />
             <ManifestExplorerDrawer />
             <HistoryDrawer />
+            <MailDrawer />
           </div>
         </header>
         <Outlet />
