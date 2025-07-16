@@ -142,7 +142,7 @@ const ContactForm = ({ handleClose }: handleCloseProps) => {
   );
 };
 
-const MailDrawer = () => {
+const ContactDrawer = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
 
@@ -182,4 +182,4 @@ const MailDrawer = () => {
     </Drawer>
   );
 };
-export default MailDrawer;
+export default ContactDrawer;
