@@ -20,7 +20,6 @@ import { z } from 'zod';
 const formSchema = z.object({
   mistralApiKey: z.string(),
   mistralModel: z.string(),
-  prompt: z.string(),
 });
 
 const ConfigurationPage = () => {
@@ -51,7 +50,6 @@ const ConfigurationPage = () => {
   function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       localStorage.setItem('mistralApiKey', values.mistralApiKey);
-      localStorage.setItem('prompt', values.prompt);
       localStorage.setItem('mistralModel', values.mistralModel);
       appDispatch(pushInfo(t('info_configuration_saved')));
     } catch (error) {
