@@ -57,7 +57,7 @@ const WorkerDrawer = ({
           setSelectedWorkerId={setSelectedWorkerId}
           selectedWorkerId={selectedWorkerId}
         />
-        <WorkerDetails workerId={selectedWorkerId} />
+        {selectedWorkerId !== '' && <WorkerDetails workerId={selectedWorkerId} />}
         <DrawerFooter>
           <DrawerClose>
             <div className='rounded-md border border-black p-2'>{t('btn_cancel')}</div>

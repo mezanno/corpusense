@@ -12,7 +12,6 @@ import {
 import { Toaster } from '@/components/ui/sonner';
 import WorkerDrawer from '@/components/WorkerDrawer';
 import WorkerLabel from '@/components/WorkerLabel';
-import { WorkerStatus } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import { logoutRequest } from '@/state/reducers/auth';
@@ -21,7 +20,6 @@ import { resetLastEvent } from '@/state/reducers/events';
 import { connectedUser } from '@/state/selectors/auth';
 import { getOpenedCollections } from '@/state/selectors/collections';
 import { getLastErrorEvent, getLastInfoEvent } from '@/state/selectors/events';
-import { getWorkersByStatus } from '@/state/selectors/workers';
 import {
   Archive,
   Bolt,
@@ -63,13 +61,14 @@ const WorkersSideBarGroup = ({
   setSelectedWorkerId: (id: string) => void;
 }) => {
   const { t } = useTranslation();
-  const workers = useAppSelector((state) =>
-    getWorkersByStatus(state, [
-      WorkerStatus.INPROGRESS,
-      WorkerStatus.INPROGRESS_WITH_ERRORS,
-      WorkerStatus.UNFINISHED,
-      WorkerStatus.UNFINISHED_WITH_ERRORS,
-    ]),
+  const workers = useAppSelector(
+    (state) => state.workers.workers,
+    // getWorkersByStatus(state, [
+    //   WorkerStatus.INPROGRESS,
+    //   WorkerStatus.INPROGRESS_WITH_ERRORS,
+    //   WorkerStatus.UNFINISHED,
+    //   WorkerStatus.UNFINISHED_WITH_ERRORS,
+    // ]),
   );
   if (workers.length === 0) {
     return null;
@@ -299,13 +298,13 @@ const Layout = () => {
             <SidebarTrigger />
             <ManifestExplorerDrawer />
             <HistoryDrawer />
-            <ContactDrawer />
             <WorkerDrawer
               selectedWorkerId={selectedWorkerId}
               setSelectedWorkerId={setSelectedWorkerId}
               isOpen={isOpen}
               setIsOpen={setIsOpen}
             />
+            <ContactDrawer />
           </div>
         </header>
         <Outlet />
