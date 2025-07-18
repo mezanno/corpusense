@@ -19,6 +19,23 @@ export const getStatus = (state: RootState, scope: Scope) => {
 
 export const getWorkers = (state: RootState) => state.workers.workers;
 
+export const getWorkerById = (state: RootState, id: string): Worker | undefined => {
+  return state.workers.workers.find((worker) => worker.id === id);
+};
+
+export const getWorkersByStatus = createSelector(
+  [
+    (state: RootState) => state.workers.workers,
+    (_state: RootState, status: WorkerStatus | WorkerStatus[]) => status,
+  ],
+  (workers, status): Worker[] => {
+    const statuses = Array.isArray(status) ? status : [status];
+    return Object.values(workers)
+      .filter((worker) => statuses.includes(worker.status))
+      .sort((w1, w2) => w1.name.localeCompare(w2.name));
+  },
+);
+
 export const getWorkersByScopeAndStatus = createSelector(
   [
     (state: RootState) => state.workers.workers,

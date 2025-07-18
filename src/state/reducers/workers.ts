@@ -5,18 +5,15 @@ import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export interface WorkerState {
-  status: {
-    scope: Scope;
-    status: WorkerStatus;
-  }[];
   workers: Worker[];
   results: Result[];
+  status: { scope: Scope; status: WorkerStatus }[];
 }
 
 export const workerInitialState: WorkerState = {
-  status: [],
   workers: [],
   results: [],
+  status: [],
 };
 
 export interface fetchOcrPayload {
@@ -41,13 +38,13 @@ export interface fetchBatchDataAnalysisPayload {
   model: DataModel;
 }
 export interface PluginParams {
-  scope: Scope;
   workerId?: string;
   [key: string]: unknown;
 }
 
 export interface StartWorkerProcessPayload {
   workerName: string;
+  scope: Scope;
   params: PluginParams;
 }
 
@@ -105,7 +102,7 @@ export const workerSlice = createSlice({
       }
     },
     startWorkerProcess: (_state, _action: PayloadAction<StartWorkerProcessPayload>) => {},
-    setWorkerStatus: (state, action: PayloadAction<Worker>) => {
+    updateWorker: (state, action: PayloadAction<Worker>) => {
       if (state.workers.find((w) => w.id === action.payload.id)) {
         // If the worker already exists, update it
         const index = state.workers.findIndex((w) => w.id === action.payload.id);
@@ -144,7 +141,7 @@ export const {
   processRunning,
   processStart,
   startWorkerProcess,
-  setWorkerStatus,
+  updateWorker,
   setWorkers,
   setResults,
   removeWorkerRequest,

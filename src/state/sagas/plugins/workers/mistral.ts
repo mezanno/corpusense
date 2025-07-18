@@ -1,80 +1,87 @@
 import { Collection } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
-import { Result, ResultCreateDTO } from '@/data/models/Result';
-import { isAnnotationScope, isCanvasScope, isCollectionScope } from '@/data/models/Scope';
-import { Worker } from '@/data/models/Worker';
-import {
-  getCollectionRepository,
-  getResultRepository,
-} from '@/data/repositories/indexeddb/dbFactory';
+import { Result } from '@/data/models/Result';
+import { isAnnotationScope, isCanvasScope, Scope, toString } from '@/data/models/Scope';
+import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
+import { toGallicaUrl } from '@/data/utils/canvas';
 import { generateTextFromCanvas } from '@/data/utils/export';
 import { generateSchema } from '@/data/utils/model';
-import { pushError } from '@/state/reducers/events';
-import {
-  PluginParams,
-  processError,
-  processRunning,
-  processStart,
-  processSuccess,
-} from '@/state/reducers/workers';
+import i18n from '@/i18n';
+import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
-import { Canvas } from '@iiif/presentation-3';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
-import { call, Effect, put } from 'redux-saga/effects';
+import { call, Effect } from 'redux-saga/effects';
 
 export const pluginName = 'mistral';
 
-export const DEFAULT_PROMPT = `Voici une liste de données textuelles présentées correspondant à ce format :\n\n{{schema}}\n\nRetourne moi la liste données présentes dans ce texte sous forme d'une table JSON bien structurée. La réponse ne doit contenir que le JSON, sans explication ni commentaire.`;
-
-export function* startSingleMistralAnalysisProcess(
-  canvasId: string,
-  collectionId: string,
-  model: DataModel,
-  worker: Worker,
-  isRecovering: boolean,
-): Generator<Effect, string | void | object, string | Response | object | Result> {
-  // Check if the process is recovering
-  if (isRecovering) {
-    //check if there is already a result for this canvas
-    const resultRepository = getResultRepository();
-    try {
-      //if there is a result, return it and if not, selectByScopeAndWorkerName will throw an error
-      const existingResult = (yield call(
-        [resultRepository, resultRepository.selectByScopeAndWorkerName],
-        { collectionId, canvasId },
-        worker.name,
-      )) as Result;
-      yield put(processSuccess({ collectionId, canvasId }));
-      return existingResult.value;
-    } catch (error) {
-      /* empty */
-    }
+function isValidJson(str: string): boolean {
+  try {
+    JSON.parse(str);
+    return true;
+  } catch {
+    return false;
   }
+}
 
-  yield put(processRunning({ collectionId, canvasId }));
-  let text = (yield call(generateTextFromCanvas, canvasId, collectionId)) as string;
-  text = text.replace('"', ''); //.replace('«', '').replace('»', '');
+//TODO: à déplacer dans un fichier utils
+async function getText(scope: Scope) {
+  let text = '';
+  if (isCanvasScope(scope)) {
+    text = await generateTextFromCanvas(scope.canvasId, scope.collectionId);
+  } else if (isAnnotationScope(scope)) {
+    //TODO: implement text extraction from annotation
+    text = '';
+  } else {
+    throw new Error(`Unsupported scope type for text: ${toString(scope)}`);
+  }
+  return text.replace(/["«»]/g, '');
+}
+
+/*
+ * Type guard to check if params contains a model.
+ * This is used to ensure that the params passed to the Mistral plugin saga
+ * contains a DataModel object.
+ */
+function hasModel(params: PluginParams): params is PluginParams & { model: DataModel } {
+  return 'model' in params;
+}
+
+/*
+ * Mistral entry point for the Mistral plugin saga (default export)
+ * It fetches the text from the scope, sends it to the Mistral API,
+ * and returns the response.
+ */
+export default function* mistralSaga(
+  task: Task,
+  params: PluginParams,
+): Generator<Effect, WorkerResponse, string | Response> {
+  console.log(`Processing task for scope ${toString(task.scope)}`);
+
+  //TODO! à déplacer dans saga workers
+  if (!hasModel(params)) {
+    console.log('Invalid parameters for Mistral plugin saga:', params);
+    throw new Error('Invalid parameters for Mistral plugin saga');
+  }
+  const { model } = params;
+
+  const text = (yield call(getText, task.scope)) as string;
+  //return an error if no text is found
   if (text === undefined || text.length === 0) {
     console.log('No text found for this canvas');
-    // yield put(processError({ id: canvasId, error: i18n.t('error_export_no_text') }));
-    yield put(processError({ collectionId, canvasId }));
-    return;
+    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_export_no_text') };
   }
+
   const apiKey = localStorage.getItem('mistralApiKey');
-  if (apiKey === null) {
+  //return an error if no API key is found
+  if (apiKey === null || apiKey === '') {
     console.log('No Mistral API key found');
-    // yield put(processError({ id: canvasId, error: i18n.t('error_no_mistral_key') }));
-    yield put(processError({ collectionId, canvasId }));
-    return;
+    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
   }
 
-  const prompt =
-    localStorage.getItem('prompt')?.replace('{{schema}}', generateSchema(model)) ??
-    DEFAULT_PROMPT.replace('{{schema}}', generateSchema(model));
-  // const prompt = localStorage.getItem('prompt')?.replace('{{schema}}') ?? DEFAULT_PROMPT;
+  const prompt = model.prompt.replace('{{schema}}', generateSchema(model));
   const mistralModel = localStorage.getItem('mistralModel') ?? 'mistral-medium-latest';
-
+  console.log('prompt: ', prompt);
   const body = {
     model: mistralModel,
     messages: [
@@ -92,158 +99,105 @@ export function* startSingleMistralAnalysisProcess(
     response_format: { type: 'json_object' },
   };
 
-  const response = (yield call(() =>
-    fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    }),
-  )) as Response;
-  const data = (yield call([response, 'json'])) as object;
-  console.log('Response from Mistral:', data);
+  try {
+    const response = (yield call(() =>
+      fetch('https://api.mistral.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }),
+    )) as Response;
+    const data = (yield call([response, 'json'])) as object;
+    console.log('Response from Mistral:', data);
 
-  yield put(processSuccess({ collectionId, canvasId }));
-
-  if (
-    typeof data === 'object' &&
-    data !== null &&
-    'choices' in data &&
-    Array.isArray(data.choices) &&
-    data.choices.length > 0 &&
-    'message' in data.choices[0]
-  ) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const message = data.choices[0].message as object;
-    if ('content' in message && typeof message.content === 'string') {
-      console.log('Response length : ', message.content.length);
-      //save the result in the IndexedDB
-      const result: ResultCreateDTO = {
-        scope: { canvasId, collectionId },
-        workerName: worker.name,
-        workerId: worker.id,
-        value: message.content,
-      };
-      const resultRepository = getResultRepository();
-      yield call([resultRepository, resultRepository.addResult], result);
-
-      return message.content;
+    //TODO! si data.object === 'error' alors on retourne une erreur
+    if (typeof data === 'object') {
+      if (
+        data !== null &&
+        'choices' in data &&
+        Array.isArray(data.choices) &&
+        data.choices.length > 0 &&
+        'message' in data.choices[0]
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const message = data.choices[0].message as object;
+        if ('content' in message && typeof message.content === 'string') {
+          console.log('Response length : ', message.content.length);
+          if (isValidJson(message.content)) {
+            return { status: WorkerStatus.COMPLETED, content: message.content };
+          }
+        }
+      } else if (
+        'object' in data &&
+        data.object === 'error' &&
+        'code' in data &&
+        typeof data.code === 'string' &&
+        'message' in data &&
+        typeof data.message === 'string'
+      ) {
+        // Handle the case where data is an error object
+        console.error('Error from Mistral API:', data);
+        return {
+          status: WorkerStatus.ERROR,
+          statusMessage: `Mistral API error: ${data.code} - ${data.message}`,
+        };
+      }
     }
+  } catch (error) {
+    return {
+      status: WorkerStatus.ERROR,
+      statusMessage: getErrorMessage(error),
+    };
   }
-  throw new Error('Invalid response format from Mistral API');
+
+  return { status: WorkerStatus.ERROR, statusMessage: 'Invalid response format from Mistral API' };
 }
 
-function* startBatchMistralAnalysisProcess(
-  collectionId: string,
-  model: DataModel,
-  worker: Worker,
-  isRecovering: boolean,
-): Generator<Effect, void, Canvas[] | string> {
-  console.log(
-    `Mistral plugin saga started for collection ${collectionId} with model ${model.name}`,
-  );
-
-  yield put(processRunning({ collectionId }));
-
-  const collectionRepository = getCollectionRepository();
-  const canvases = (yield call(
-    [collectionRepository, collectionRepository.getCanvasesByCollectionId],
-    collectionId,
-  )) as Canvas[];
-  if (canvases === undefined || canvases.length === 0) {
-    // yield put(processError({ error: 'No canvases found' }));
-    return;
-  }
-  for (const canvas of canvases) {
-    yield put(processStart({ collectionId, canvasId: canvas.id }));
-  }
-  // const allTheData: unknown[] = [];
-  for (let i = 0; i < canvases.length; i++) {
-    try {
-      // const dataInCanvas = (yield call(
-      yield call(
-        startSingleMistralAnalysisProcess,
-        canvases[i].id,
-        collectionId,
-        model,
-        worker,
-        isRecovering,
-      );
-      // const dataParsed = JSON.parse(dataInCanvas) as unknown[];
-      // allTheData = [...allTheData, ...dataParsed];
-      // allTheData.push(dataParsed);
-    } catch (error) {
-      console.warn('Error processing canvas:', canvases[i].id, error);
-      yield put(processError({ collectionId, canvasId: canvases[i].id }));
-      yield put(pushError(`Error processing canvas: ${getErrorMessage(error)}`));
-    }
-  }
-
-  // yield call(
-  //   FileSaver.saveAs,
-  //   new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
-  //   'exported_data.json',
-  // );
-  yield put(processSuccess({ collectionId }));
-}
-
-//type guard to check if params has scope and model
-function hasScopeAndModel(params: PluginParams): params is PluginParams & { model: DataModel } {
-  return 'scope' in params && 'model' in params;
-}
-
-//entry point for the Mistral plugin saga (default export)
-export default function* mistralSaga(worker: Worker, isRecovering: boolean, params: PluginParams) {
-  if (!hasScopeAndModel(params)) {
-    console.log('Invalid parameters for Mistral plugin saga:', params);
-    throw new Error('Invalid parameters for Mistral plugin saga');
-  }
-  const { scope, model } = params;
-
-  if (isCollectionScope(scope)) {
-    yield call(startBatchMistralAnalysisProcess, scope.collectionId, model, worker, isRecovering);
-  } else if (isCanvasScope(scope)) {
-    yield call(
-      startSingleMistralAnalysisProcess,
-      scope.canvasId,
-      scope.collectionId,
-      model,
-      worker,
-      isRecovering,
-    );
-  } else {
-    console.log('`Mistral plugin saga started for annotation scope', scope.annotationId);
-  }
-}
-
+/*
+ * Export function to export results from the Mistral plugin saga.
+ * It takes an array of Result objects, extracts the data, and saves it as JSON and CSV files.
+ */
 export function* exportResult(results: Result[]): Generator<Effect, void, Collection> {
   if (results.length === 0) {
     console.warn('No results to export from Mistral plugin');
     return;
   }
-  let allTheData: unknown[] = [];
+  const allTheData: unknown[] = [];
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
-    console.log(`Exporting result for `, result, ' -- ');
-    // let
-    if (!isAnnotationScope(result.scope)) {
-      const collectionId = result.scope.collectionId;
-      const collectionRepository = getCollectionRepository();
-      try {
-        const collection = yield call(
-          [collectionRepository, collectionRepository.getCollectionById],
-          collectionId,
-        );
-        console.log(`Collection for result ${result.id}:`, collection);
-      } catch (error) {
-        console.error(`Error fetching collection for result ${result.id}:`, error);
-      }
-    }
+    console.log(result);
+
+    // if (!isAnnotationScope(result.scope)) {
+    //   const collectionId = result.scope.collectionId;
+    //   const collectionRepository = getCollectionRepository();
+    //   try {
+    //     const collection = yield call(
+    //       [collectionRepository, collectionRepository.getCollectionById],
+    //       collectionId,
+    //     );
+    //     console.log(`Collection for result ${result.id}:`, collection);
+    //   } catch (error) {
+    //     console.error(`Error fetching collection for result ${result.id}:`, error);
+    //   }
+    // }
+    const canvasId = isCanvasScope(result.scope) ? toGallicaUrl(result.scope.canvasId) : undefined;
     try {
-      const dataParsed = JSON.parse(result.value as string) as unknown[];
-      allTheData = [...allTheData, ...dataParsed];
+      const dataParsed = JSON.parse(result.value as string) as unknown;
+      const dataParsedArray = (Array.isArray(dataParsed) ? dataParsed : [dataParsed]) as unknown[];
+      const dataWithCanvasId = dataParsedArray.map((item) => {
+        if (item !== undefined && typeof item === 'object') {
+          return {
+            ...(item as object),
+            canvasId,
+          };
+        }
+        return item;
+      });
+
+      allTheData.push(...dataWithCanvasId);
     } catch (error) {
       //TODO: on fait quoi lorsque le json est invalide ?
       console.error('Error parsing dataInCanvas:', error);
