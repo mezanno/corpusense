@@ -1,6 +1,6 @@
 import AlertDialogLogin from '@/components/auth/AlertDialogLogin';
+import ContactDrawer from '@/components/ContactDrawer';
 import HistoryDrawer from '@/components/HistoryDrawer';
-import MailDrawer from '@/components/MailDrawer';
 import ManifestExplorerDrawer from '@/components/ManifestExplorerDrawer';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -10,6 +10,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Toaster } from '@/components/ui/sonner';
+import WorkerDrawer from '@/components/WorkerDrawer';
+import WorkerLabel from '@/components/WorkerLabel';
+import { WorkerStatus } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import { logoutRequest } from '@/state/reducers/auth';
@@ -18,6 +21,7 @@ import { resetLastEvent } from '@/state/reducers/events';
 import { connectedUser } from '@/state/selectors/auth';
 import { getOpenedCollections } from '@/state/selectors/collections';
 import { getLastErrorEvent, getLastInfoEvent } from '@/state/selectors/events';
+import { getWorkersByStatus } from '@/state/selectors/workers';
 import {
   Archive,
   Bolt,
@@ -39,6 +43,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarInset,
   SidebarMenu,
@@ -52,10 +57,51 @@ import {
   SidebarTrigger,
 } from '../components/ui/sidebar';
 
-const LayoutSideBar = () => {
+const WorkersSideBarGroup = ({
+  setSelectedWorkerId,
+}: {
+  setSelectedWorkerId: (id: string) => void;
+}) => {
+  const { t } = useTranslation();
+  const workers = useAppSelector((state) =>
+    getWorkersByStatus(state, [
+      WorkerStatus.INPROGRESS,
+      WorkerStatus.INPROGRESS_WITH_ERRORS,
+      WorkerStatus.UNFINISHED,
+      WorkerStatus.UNFINISHED_WITH_ERRORS,
+    ]),
+  );
+  if (workers.length === 0) {
+    return null;
+  }
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>{t('nav_workers')}</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {workers.map((worker) => (
+            <SidebarMenuItem
+              key={worker.id}
+              className='cursor-pointer overflow-hidden'
+              onClick={() => setSelectedWorkerId(worker.id)}
+            >
+              <SidebarMenuButton asChild>
+                <WorkerLabel worker={worker} />
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+};
+
+const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: string) => void }) => {
   const { t } = useTranslation();
   const user = useAppSelector(connectedUser);
   const openedCollections = useAppSelector(getOpenedCollections);
+
   const navigation = useAppNavigation();
   const dispatch = useAppDispatch();
   const [isOpen, setIsOpen] = useState(false);
@@ -192,6 +238,7 @@ const LayoutSideBar = () => {
               </SidebarMenu>
             </SidebarGroup>
           )}
+          <WorkersSideBarGroup setSelectedWorkerId={setSelectedWorkerId} />
         </SidebarContent>
 
         <SidebarFooter>
@@ -209,10 +256,11 @@ const LayoutSideBar = () => {
 };
 
 const Layout = () => {
-  // const { lastExportError, lastExportStatus } = useAppSelector((state) => state.export);
   const lastInfo = useAppSelector(getLastInfoEvent);
   const lastError = useAppSelector(getLastErrorEvent);
   const dispatch = useAppDispatch();
+  const [selectedWorkerId, setSelectedWorkerId] = useState<string>('');
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (lastInfo !== undefined) {
@@ -228,16 +276,22 @@ const Layout = () => {
     }
   }, [lastError]);
 
-  // useEffect(() => {
-  //   if (lastExportStatus === 'ERROR' && lastExportError !== '') {
-  //     toast.error(t(lastExportError));
-  //     dispatch(resetAlert());
-  //   }
-  // }, [lastExportStatus]);
+  useEffect(() => {
+    if (selectedWorkerId !== '') {
+      setIsOpen(true);
+    }
+  }, [selectedWorkerId]);
+
+  // Reset selected worker when drawer closes (if not, the drawer will not reopen)
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedWorkerId('');
+    }
+  }, [isOpen]);
 
   return (
     <SidebarProvider className='h-full w-full'>
-      <LayoutSideBar />
+      <LayoutSideBar setSelectedWorkerId={setSelectedWorkerId} />
       <SidebarInset className='m-2'>
         {/*TODO: Fix this width : pour une raison inconnue w-100 empêche la fenêtre de déborder*/}
         <header className='flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
@@ -245,7 +299,13 @@ const Layout = () => {
             <SidebarTrigger />
             <ManifestExplorerDrawer />
             <HistoryDrawer />
-            <MailDrawer />
+            <ContactDrawer />
+            <WorkerDrawer
+              selectedWorkerId={selectedWorkerId}
+              setSelectedWorkerId={setSelectedWorkerId}
+              isOpen={isOpen}
+              setIsOpen={setIsOpen}
+            />
           </div>
         </header>
         <Outlet />
