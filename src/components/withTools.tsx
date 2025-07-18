@@ -127,10 +127,10 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
           startWorkerProcess({
             workerName: 'mistral',
             params: {
-              scope: { canvasId: props.canvas.id, collectionId: props.collectionId },
               model,
               workerName: 'mistral',
             },
+            scope: { canvasId: props.canvas.id, collectionId: props.collectionId },
           }),
         );
       }

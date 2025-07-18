@@ -63,10 +63,10 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
         startWorkerProcess({
           workerName: 'mistral',
           params: {
-            scope: { collectionId },
             model,
             workerName: 'mistral',
           },
+          scope: { collectionId },
         }),
       );
     }

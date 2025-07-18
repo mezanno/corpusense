@@ -18,7 +18,10 @@ const ExportMenu = ({
   const { t } = useTranslation();
 
   const workers = useAppSelector((state) =>
-    getWorkersByScopeAndStatus(state, scope, WorkerStatus.COMPLETED),
+    getWorkersByScopeAndStatus(state, scope, [
+      WorkerStatus.COMPLETED,
+      WorkerStatus.COMPLETED_WITH_ERRORS,
+    ]),
   );
   const items = workers.map((worker) => ({
     name: t('btn_export_result', { name: worker.name }),
