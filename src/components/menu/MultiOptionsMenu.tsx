@@ -1,6 +1,6 @@
 import { Scope } from '@/data/models/Scope';
 import { useAppSelector } from '@/hooks/hooks';
-import { isWorkerRunning } from '@/state/selectors/workers';
+import { isWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { useTranslation } from 'react-i18next';
 import { ClockLoader } from 'react-spinners';
 import {
@@ -34,7 +34,7 @@ const MultiOptionsMenu = ({
   color?: string;
 }) => {
   const { t } = useTranslation();
-  const isRunning = useAppSelector((state) => isWorkerRunning(state, scope));
+  const isRunning = useAppSelector((state) => isWorkerOrTaskRunning(state, scope));
 
   //if no action is provided, the menu will not be shown
   if (params.items.every((item) => item.action === undefined)) {
