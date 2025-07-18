@@ -13,6 +13,10 @@ export class IndexedDBResultRepository implements ResultRepository {
     await db.results.add(newResult);
   }
 
+  async patch(id: number, changes: Partial<Result>): Promise<void> {
+    await db.results.update(id, changes);
+  }
+
   async selectAll(): Promise<Result[]> {
     return await db.results.orderBy('id').toArray();
   }

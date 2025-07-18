@@ -27,3 +27,16 @@ export function isSameScope(s1: Scope, s2: Scope): boolean {
   }
   return false;
 }
+
+export function toString(scope: Scope): string {
+  if (isCollectionScope(scope)) {
+    return `collection ${scope.collectionId}`;
+  }
+  if (isCanvasScope(scope)) {
+    return `canvas ${scope.canvasId} - collection ${scope.collectionId}`;
+  }
+  if (isAnnotationScope(scope)) {
+    return `annotation ${scope.annotationId}`;
+  }
+  return 'unknown';
+}
