@@ -17,6 +17,11 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
     );
   }
 
+  const displayButton =
+    worker.status === WorkerStatus.UNFINISHED ||
+    worker.status === WorkerStatus.UNFINISHED_WITH_ERRORS ||
+    worker.status === WorkerStatus.COMPLETED_WITH_ERRORS;
+
   const handleRecoverWorker = () => {
     appDispatch(recoverWorkerRequest(worker));
   };
@@ -43,15 +48,14 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
             {worker.status}
           </li>
         </ul>
-        {worker.status === WorkerStatus.UNFINISHED ||
-          (worker.status === WorkerStatus.UNFINISHED_WITH_ERRORS && (
-            <button
-              className='soft-button border-yellow-500 text-yellow-500'
-              onClick={handleRecoverWorker}
-            >
-              {t('btn_recover')}
-            </button>
-          ))}
+        {displayButton && (
+          <button
+            className='soft-button border-yellow-500 text-yellow-500'
+            onClick={handleRecoverWorker}
+          >
+            {t('btn_recover')}
+          </button>
+        )}
       </div>
       <div>
         <h3 className='text-md mt-4 font-semibold'>

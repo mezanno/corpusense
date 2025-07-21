@@ -19,6 +19,7 @@ const WorkerSelector = ({
       WorkerStatus.INPROGRESS_WITH_ERRORS,
       WorkerStatus.UNFINISHED,
       WorkerStatus.UNFINISHED_WITH_ERRORS,
+      WorkerStatus.COMPLETED_WITH_ERRORS,
     ]),
   );
 
