@@ -88,6 +88,7 @@ const CollectionTableRow = ({
         />
       </TableCell>
       <TableCell>{collection.name}</TableCell>
+      <TableCell>{collection.id}</TableCell>
       <TableCell>
         {collection.content === undefined || collection.content.length === 0 ? (
           <Badge variant='secondary' className='text-sm'>
@@ -198,6 +199,7 @@ const CollectionsManagerPage = () => {
               <TableRow>
                 <TableHead></TableHead>
                 <TableHead>{t('table_col_title_collection_name')}</TableHead>
+                <TableHead>{t('table_col_title_collection_id')}</TableHead>
                 <TableHead>{t('table_col_title_collection_info')}</TableHead>
                 <TableHead>{t('table_col_title_tags')}</TableHead>
                 <TableHead>{t('table_col_title_actions')}</TableHead>

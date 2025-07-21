@@ -30,7 +30,7 @@ db.version(2).stores({
   typesList: '&label',
   itemMetadata: '[id+attribute.label]',
   tags: '&id',
-  models: '&id',
+  models: '&id, name',
   annotations: '&id, canvasId, collectionId, [canvasId+collectionId], order',
   namedEntities: '&id, *annotationIds, type.id',
   results: '++id, workerName, workerId, [scopeKey+workerName]',

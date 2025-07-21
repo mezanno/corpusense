@@ -1,5 +1,6 @@
 import ModelViewer from '@/components/ModelViewer';
 import CreateModelButton from '@/components/textviewer/CreateModelButton';
+import ImportModelButton from '@/components/textviewer/ImportModelButton';
 import { Button } from '@/components/ui/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import {
@@ -12,10 +13,10 @@ import {
 } from '@/components/ui/table';
 import { generateSchema } from '@/data/utils/model';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { removeModelRequest, setActiveModel } from '@/state/reducers/models';
+import { exportModelRequest, removeModelRequest, setActiveModel } from '@/state/reducers/models';
 import { getModels } from '@/state/selectors/models';
 import ReactJsonView from '@microlink/react-json-view';
-import { Trash2 } from 'lucide-react';
+import { Download, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const ModelsManagerPage = () => {
@@ -31,10 +32,15 @@ const ModelsManagerPage = () => {
     appDispatch(removeModelRequest(modelId));
   };
 
+  const handleDownloadModel = (modelId: string) => {
+    appDispatch(exportModelRequest(modelId));
+  };
+
   return (
     <div>
-      <div className='panel mb-1'>
+      <div className='panel mb-1 flex items-center space-x-2'>
         <CreateModelButton />
+        <ImportModelButton />
       </div>
 
       <div className='panel mb-1'>
@@ -63,17 +69,29 @@ const ModelsManagerPage = () => {
                 </TableCell>
                 <TableCell>{model.description}</TableCell>
                 <TableCell className='space-x-2 align-middle'>
-                  <Button
-                    variant='destructive'
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleRemoveModel(model.id);
-                    }}
-                    title={t('btn_delete')}
-                    aria-label={t('btn_delete')}
-                  >
-                    <Trash2 />
-                  </Button>
+                  <div className='flex items-center space-x-2'>
+                    <Button
+                      variant='destructive'
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleRemoveModel(model.id);
+                      }}
+                      title={t('btn_delete')}
+                      aria-label={t('btn_delete')}
+                    >
+                      <Trash2 />
+                    </Button>
+                    <Button
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleDownloadModel(model.id);
+                      }}
+                      title={t('btn_download_model')}
+                      aria-label={t('btn_download_model')}
+                    >
+                      <Download />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

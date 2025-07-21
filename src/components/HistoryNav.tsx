@@ -79,7 +79,11 @@ const HistoryNav = () => {
     [history],
   );
 
-  return <nav aria-label='historique'>{historyItems}</nav>;
+  return (
+    <nav aria-label='historique' className='h-full overflow-auto'>
+      {historyItems}
+    </nav>
+  );
 };
 
 export default HistoryNav;

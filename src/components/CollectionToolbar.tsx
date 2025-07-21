@@ -8,7 +8,6 @@ import {
 import { exportTextOfCollectionRequest } from '@/state/reducers/export';
 import {
   exportWorkerResultRequest,
-  fetchBatchOcrRequest,
   recoverWorkerRequest,
   startWorkerProcess,
 } from '@/state/reducers/workers';
@@ -24,7 +23,14 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleOcr = () => {
-    appDispatch(fetchBatchOcrRequest(collectionId));
+    // appDispatch(fetchBatchOcrRequest(collectionId));
+    appDispatch(
+      startWorkerProcess({
+        workerName: 'peroocr',
+        params: {},
+        scope: { collectionId },
+      }),
+    );
   };
 
   // const handleLayout = () => {
@@ -63,10 +69,10 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
         startWorkerProcess({
           workerName: 'mistral',
           params: {
-            scope: { collectionId },
             model,
             workerName: 'mistral',
           },
+          scope: { collectionId },
         }),
       );
     }

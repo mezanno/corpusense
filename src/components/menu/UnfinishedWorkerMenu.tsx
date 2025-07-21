@@ -16,12 +16,15 @@ const UnfinishedWorkerMenu = ({
   const { t } = useTranslation();
 
   const workers = useAppSelector((state) =>
-    getWorkersByScopeAndStatus(state, scope, WorkerStatus.INPROGRESS),
+    getWorkersByScopeAndStatus(state, scope, [
+      WorkerStatus.UNFINISHED,
+      WorkerStatus.UNFINISHED_WITH_ERRORS,
+    ]),
   );
 
   const items = workers.map((worker) => ({
     name: t('btn_recover_worker', { name: worker.name }),
-    icon: <Hourglass />,
+    icon: <Hourglass color={worker.status === WorkerStatus.UNFINISHED ? 'black' : 'red'} />,
     action: handleRecoverWorker ? () => handleRecoverWorker?.(worker) : undefined,
   }));
 

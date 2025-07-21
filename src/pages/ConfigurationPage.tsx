@@ -9,10 +9,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch } from '@/hooks/hooks';
 import { pushInfo } from '@/state/reducers/events';
-import { DEFAULT_PROMPT } from '@/state/sagas/plugins/workers/mistral';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -22,7 +20,6 @@ import { z } from 'zod';
 const formSchema = z.object({
   mistralApiKey: z.string(),
   mistralModel: z.string(),
-  prompt: z.string(),
 });
 
 const ConfigurationPage = () => {
@@ -40,13 +37,6 @@ const ConfigurationPage = () => {
     if (savedModel !== null) {
       form.setValue('mistralModel', savedModel);
     }
-
-    const savedPrompt = localStorage.getItem('prompt');
-    if (savedPrompt !== null) {
-      form.setValue('prompt', savedPrompt);
-    } else {
-      form.setValue('prompt', DEFAULT_PROMPT);
-    }
   }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -60,7 +50,6 @@ const ConfigurationPage = () => {
   function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       localStorage.setItem('mistralApiKey', values.mistralApiKey);
-      localStorage.setItem('prompt', values.prompt);
       localStorage.setItem('mistralModel', values.mistralModel);
       appDispatch(pushInfo(t('info_configuration_saved')));
     } catch (error) {
@@ -96,19 +85,6 @@ const ConfigurationPage = () => {
                   <FormLabel id='form-model'>{t('form_label_mistral_modelname')}</FormLabel>
                   <FormControl>
                     <Input {...field} aria-describedby='form-model' />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='prompt'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel id='form-prompt'>{t('form_label_prompt_mistral')}</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} aria-describedby='form-prompt' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

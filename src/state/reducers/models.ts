@@ -47,6 +47,8 @@ export const modelsSlice = createSlice({
         _state.activeModel = null; // Clear active model if it was removed
       }
     },
+    exportModelRequest: (_state, _action: PayloadAction<string>) => {}, //payload is modelId
+    importModelRequest: (_state, _action: PayloadAction<object>) => {}, //payload is modelId
   },
 });
 
@@ -61,5 +63,7 @@ export const {
   saveModelSuccess,
   removeModelRequest,
   removeModelSuccess,
+  exportModelRequest,
+  importModelRequest,
 } = modelsSlice.actions;
 export default modelsSlice.reducer;

@@ -20,6 +20,8 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
       scopeKey: getScopeKey(worker.scope),
       status: WorkerStatus.INPROGRESS,
       createdAt: new Date().toISOString(),
+      queue: [],
+      estimatedDuration: 0, // Default to 0, can be updated later
     };
     await db.workers.add(newWorker);
     return newWorker;

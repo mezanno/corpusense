@@ -25,11 +25,18 @@ const ModelViewer = () => {
   const model = useAppSelector(getActiveModel);
   const [fields, setFields] = useState(model?.fields ?? []);
   const [description, setDescription] = useState('');
+  const [prompt, setPrompt] = useState('');
+
+  const options = [
+    { value: 'string', label: 'Texte' },
+    { value: 'number', label: 'Nombre' },
+  ];
 
   useEffect(() => {
     if (model) {
       setFields(model.fields);
       setDescription(model.description ?? '');
+      setPrompt(model.prompt ?? '');
     }
   }, [model]);
 
@@ -40,13 +47,21 @@ const ModelViewer = () => {
   const handleAddField = () => {
     const nextColor =
       fields.length === 0 ? baseColor : analogue(fields[fields.length - 1].color, 2);
-    setFields([...fields, { id: uuid(), name: '', type: '', description: '', color: nextColor }]);
+    setFields([
+      ...fields,
+      { id: uuid(), name: '', type: options[0].value, description: '', color: nextColor },
+    ]);
   };
 
   const handleSave = () => {
     const newFields = fields.filter((f) => f.name !== '' && f.type !== '');
     setFields(newFields);
-    const updatedModel = { ...model, fields: newFields, description: description.trim() };
+    const updatedModel = {
+      ...model,
+      fields: newFields,
+      description: description.trim(),
+      prompt: prompt.trim(),
+    };
     appDispatch(saveModelRequest(updatedModel));
   };
 
@@ -106,6 +121,15 @@ const ModelViewer = () => {
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
+      <div className='m-2 flex w-full items-center justify-center'>
+        <Label htmlFor='prompt'>{t('form_label_model_prompt')}</Label>
+        <Textarea
+          id='prompt'
+          className='ml-2 max-w-3/4 min-w-1/2'
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+        />
+      </div>
       {fields.length > 0 ? (
         <Accordion asChild type='single' collapsible className='w-full' defaultValue='datafields'>
           <AccordionItem value='datafields'>
@@ -143,8 +167,11 @@ const ModelViewer = () => {
                             <SelectValue placeholder={'Type de données'} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value='string'>Texte</SelectItem>
-                            <SelectItem value='number'>Nombre</SelectItem>
+                            {options.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </TableCell>

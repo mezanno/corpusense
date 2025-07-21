@@ -22,4 +22,11 @@ const getImageForThumbnail = (canvas: Canvas, maxWidth: number = 150): IIIFExter
   return image;
 };
 
-export { getImage, getImageForThumbnail };
+const toGallicaUrl = (iiifUrl: string) => {
+  return iiifUrl.replace(
+    /https:\/\/openapi\.bnf\.fr\/iiif\/presentation\/v3\/(ark:\/12148\/[^/]+\/[^/]+)\/canvas/,
+    'https://gallica.bnf.fr/$1.item',
+  );
+};
+
+export { getImage, getImageForThumbnail, toGallicaUrl };
