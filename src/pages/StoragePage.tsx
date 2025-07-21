@@ -10,6 +10,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import { useState } from 'react';
 import Fireworks from 'react-canvas-confetti/dist/presets/fireworks';
 import { useTranslation } from 'react-i18next';
+import { SyncLoader } from 'react-spinners';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -105,8 +106,12 @@ async function uploadManifestToSupabase(folder: string, manifest: Manifest) {
 const StoragePage = () => {
   const { t } = useTranslation();
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [documentName, setDocumentName] = useState<string>('');
   const [manifestUrl, setManifestUrl] = useState<string | null>(null);
   const { existingManifests, loading, error } = useUserManifests();
+  const [uploading, setUploading] = useState(false);
+
+  const hrefPath = `${window.location.origin}${import.meta.env.VITE_BASE_PATH ?? ''}/manifest?manifestId=`;
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -121,32 +126,39 @@ const StoragePage = () => {
       return;
     }
 
+    if (documentName.trim() === '') {
+      alert('Veuillez entrer un nom pour le document.');
+      return;
+    }
+
     const loadPdf = async () => {
       const images = await renderPdfToImages(pdfFile);
-      const filename_prefix = pdfFile.name.substring(0, pdfFile.name.length - 4); // Retirer l'extension .pdf
       for (let i = 0; i < images.length; i++) {
         const filename = `${i + 1}`;
-        void uploadImageToSupabase(filename_prefix, images[i].data, filename);
+        void uploadImageToSupabase(documentName, images[i].data, filename);
         images[i].fullImageUrl =
-          `${CANTALOUPE_URL}${filename_prefix}_${filename}.png/full/max/0/default.png`;
+          `${CANTALOUPE_URL}${documentName}_${filename}.png/full/max/0/default.png`;
         images[i].thumbImageUrl =
-          `${CANTALOUPE_URL}${filename_prefix}_${filename}.png/full/,120/0/default.png`;
+          `${CANTALOUPE_URL}${documentName}_${filename}.png/full/,120/0/default.png`;
       }
       const newManifest = generateManifest(
+        documentName.trim(),
         images.map((img) => ({
           id: img.fullImageUrl ?? '',
           thumb: img.thumbImageUrl ?? '',
           width: img.width,
           height: img.height,
         })),
-        filename_prefix, // Ajouter le préfixe de nom de fichier comme dossier),
+        documentName, // Ajouter le préfixe de nom de fichier comme dossier),
       );
-      void uploadManifestToSupabase(filename_prefix, newManifest);
+      void uploadManifestToSupabase(documentName, newManifest);
       console.log('Generated Manifest: ', newManifest);
 
       setManifestUrl(newManifest.id);
     };
+    setUploading(true);
     void loadPdf();
+    setUploading(false);
   };
 
   return (
@@ -163,22 +175,49 @@ const StoragePage = () => {
         ) : existingManifests.length > 0 ? (
           existingManifests.map((url, index) => (
             <div key={index} className='mb-2'>
-              <a href={url}>{url}</a>
+              <a href={`${hrefPath}${url}`}>
+                {hrefPath}
+                {url}
+              </a>
             </div>
           ))
         ) : (
           <p>Aucun document trouvé.</p>
         )}
       </div>
-      <h2 className='text-lg'>Ajouter un document</h2>
-      <Input type='file' accept='application/pdf' onChange={handleFileChange} />
-      <Button onClick={handleLoadPdf}>Upload</Button>
-      {manifestUrl !== null && (
-        <div className='mt-4'>
-          <h2> 🥳 T&apos;es un winner ! Ton document est en ligne : {manifestUrl}</h2>
-          <Fireworks autorun={{ speed: 2, duration: 4 }} />
-        </div>
-      )}
+      <div className='flex flex-col items-center border p-2'>
+        <h2 className='text-lg'>Ajouter un document</h2>
+        <form className='flex w-1/2 flex-col space-y-2'>
+          <Input
+            type='text'
+            required
+            placeholder={t('form_placeholder_document_name')}
+            value={documentName}
+            onChange={(e) => setDocumentName(e.target.value)}
+          />
+          <Input type='file' accept='application/pdf' onChange={handleFileChange} />
+          {!uploading ? (
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleLoadPdf();
+              }}
+              className='w-auto self-center'
+            >
+              Upload
+            </Button>
+          ) : (
+            <SyncLoader />
+          )}
+          {manifestUrl !== null && (
+            <div className='mt-4'>
+              <h2> 🥳 T&apos;es un winner ! Ton document est en ligne : {manifestUrl}</h2>
+              <Fireworks autorun={{ speed: 2, duration: 4 }} />
+            </div>
+          )}
+        </form>
+      </div>
     </div>
   );
 };
