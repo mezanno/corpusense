@@ -21,6 +21,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
     worker.status === WorkerStatus.UNFINISHED ||
     worker.status === WorkerStatus.UNFINISHED_WITH_ERRORS ||
     worker.status === WorkerStatus.COMPLETED_WITH_ERRORS;
+  console.log(`WorkerDetails: worker status is ${worker.status}, displayButton: ${displayButton}`);
 
   const handleRecoverWorker = () => {
     appDispatch(recoverWorkerRequest(worker));
