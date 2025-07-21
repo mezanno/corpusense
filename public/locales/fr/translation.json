@@ -82,6 +82,7 @@
   "form_placeholder_contact_email": "Votre adresse e-mail",
   "form_placeholder_contact_object": "Objet de votre message",
   "form_placeholder_contact_message": "Votre message",
+  "form_placeholder_document_name": "Nom du document",
   "form_label_collection_name": "Nom de la collection",
   "form_label_model_name": "Nom du modèle",
   "form_label_model_description": "Description",

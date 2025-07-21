@@ -29,7 +29,11 @@ export type CanvasInfo = {
   height: number;
 };
 
-export const generateManifest = (canvasInfo: CanvasInfo[], folder: string): Manifest => {
+export const generateManifest = (
+  documentName: string,
+  canvasInfo: CanvasInfo[],
+  folder: string,
+): Manifest => {
   const url_supabase = `${import.meta.env.VITE_SUPABASE_STORAGE_URL}/${folder}/`;
 
   return {
@@ -37,7 +41,7 @@ export const generateManifest = (canvasInfo: CanvasInfo[], folder: string): Mani
     id: `${url_supabase}/manifest.json`,
     type: 'Manifest',
     label: {
-      fr: ['Simple Manifest - Book'],
+      fr: [documentName],
     },
     items: canvasInfo.map((canvas, index) => ({
       id: `${url_supabase}/canvas/p${index + 1}`,
