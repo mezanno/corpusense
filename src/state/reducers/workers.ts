@@ -60,10 +60,10 @@ export const workerSlice = createSlice({
     fetchBatchLayoutRequest: (_state, _action: PayloadAction<string>) => {
       //action.payload is a collectionId
     },
-    fetchOcrRequest: (_state, _action: PayloadAction<fetchOcrPayload>) => {},
-    fetchBatchOcrRequest: (_state, _action: PayloadAction<string>) => {
-      //action.payload is a collectionId
-    },
+    // fetchOcrRequest: (_state, _action: PayloadAction<fetchOcrPayload>) => {},
+    // fetchBatchOcrRequest: (_state, _action: PayloadAction<string>) => {
+    //   //action.payload is a collectionId
+    // },
     fetchDataAnalysisRequest: (_state, _action: PayloadAction<fetchDataAnalysisPayload>) => {},
     fetchBatchDataAnalysisRequest: (
       _state,
@@ -132,8 +132,8 @@ export const workerSlice = createSlice({
 export const {
   fetchLayoutRequest,
   fetchBatchLayoutRequest,
-  fetchOcrRequest,
-  fetchBatchOcrRequest,
+  // fetchOcrRequest,
+  // fetchBatchOcrRequest,
   fetchDataAnalysisRequest,
   fetchBatchDataAnalysisRequest,
   processError,

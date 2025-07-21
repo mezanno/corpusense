@@ -10,7 +10,7 @@ import { useAppDispatch } from '@/hooks/hooks';
 import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
 import { removeAllRegionAnnotationsRequest } from '@/state/reducers/annotations';
 import { exportTextOfAnnotationRequest } from '@/state/reducers/export';
-import { fetchOcrRequest } from '@/state/reducers/workers';
+import { startWorkerProcess } from '@/state/reducers/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas } from '@iiif/presentation-3';
@@ -77,16 +77,30 @@ const AnnotationForm = ({
   const startOcrAsync = () => {
     if (editedAnnotation?.collectionId !== undefined) {
       const rect = editedAnnotation.target.selector.geometry;
+      // appDispatch(
+      //   fetchOcrRequest({
+      //     canvas,
+      //     collectionId: editedAnnotation.collectionId,
+      //     region: {
+      //       left: rect.bounds.minX,
+      //       top: rect.bounds.minY,
+      //       width: rect.bounds.maxX - rect.bounds.minX,
+      //       height: rect.bounds.maxY - rect.bounds.minY,
+      //     },
+      //   }),
+      // );
       appDispatch(
-        fetchOcrRequest({
-          canvas,
-          collectionId: editedAnnotation.collectionId,
-          region: {
-            left: rect.bounds.minX,
-            top: rect.bounds.minY,
-            width: rect.bounds.maxX - rect.bounds.minX,
-            height: rect.bounds.maxY - rect.bounds.minY,
+        startWorkerProcess({
+          workerName: 'peroocr',
+          params: {
+            region: {
+              left: rect.bounds.minX,
+              top: rect.bounds.minY,
+              width: rect.bounds.maxX - rect.bounds.minX,
+              height: rect.bounds.maxY - rect.bounds.minY,
+            },
           },
+          scope: { canvasId: canvas.id, collectionId: editedAnnotation.collectionId },
         }),
       );
     }

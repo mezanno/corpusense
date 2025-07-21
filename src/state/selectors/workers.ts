@@ -49,7 +49,7 @@ export const getStatus = (state: RootState, scope: Scope) => {
     return existingWorker.status;
   }
 
-  // If no worker is found, check if a worker is running a task for the given scope
+  // If no worker is found, check if a worker is running and has a task for the given scope
   for (let j = 0; j < state.workers.workers.length; j++) {
     const worker = state.workers.workers[j];
     if (
@@ -67,9 +67,6 @@ export const getStatus = (state: RootState, scope: Scope) => {
       }
     }
   }
-
-  console.log('No worker or task found for scope:', scope);
-
   return undefined;
 };
 

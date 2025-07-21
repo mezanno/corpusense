@@ -8,11 +8,7 @@ import {
   removeAllCanvasAnnotationsRequest,
 } from '@/state/reducers/annotations';
 import { exportTextOfCanvasRequest } from '@/state/reducers/export';
-import {
-  exportWorkerResultRequest,
-  fetchOcrRequest,
-  startWorkerProcess,
-} from '@/state/reducers/workers';
+import { exportWorkerResultRequest, startWorkerProcess } from '@/state/reducers/workers';
 import { getAnnotationsByType } from '@/state/selectors/annotations';
 import { RootState } from '@/state/store';
 import { Move, SquarePen } from 'lucide-react';
@@ -63,7 +59,14 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
 
     const handleStartOcrAnalysis = () => {
       if (cvcState?.image?.id !== undefined && props.collectionId !== undefined) {
-        appDispatch(fetchOcrRequest({ canvas: props.canvas, collectionId: props.collectionId }));
+        // appDispatch(fetchOcrRequest({ canvas: props.canvas, collectionId: props.collectionId }));
+        appDispatch(
+          startWorkerProcess({
+            workerName: 'peroocr',
+            params: {},
+            scope: { canvasId: props.canvas.id, collectionId: props.collectionId },
+          }),
+        );
       }
     };
 
