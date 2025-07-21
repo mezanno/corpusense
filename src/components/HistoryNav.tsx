@@ -80,7 +80,7 @@ const HistoryNav = () => {
   );
 
   return (
-    <nav aria-label='historique' className='h-full overflow-auto'>
+    <nav aria-label='historique' className='h-auto overflow-auto'>
       {historyItems}
     </nav>
   );
