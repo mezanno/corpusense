@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 import {
   Drawer,
   DrawerClose,
@@ -21,8 +21,8 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from './ui/drawer';
-import { Form, FormControl, FormField, FormItem, FormMessage } from './ui/form';
+} from '../ui/drawer';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form';
 
 const contentFormSchema = z.object({
   manifestInput: z.string(),

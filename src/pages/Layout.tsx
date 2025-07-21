@@ -1,7 +1,8 @@
 import AlertDialogLogin from '@/components/auth/AlertDialogLogin';
-import ContactDrawer from '@/components/ContactDrawer';
-import HistoryDrawer from '@/components/HistoryDrawer';
-import ManifestExplorerDrawer from '@/components/ManifestExplorerDrawer';
+import ContactDrawer from '@/components/drawers/ContactDrawer';
+import HistoryDrawer from '@/components/drawers/HistoryDrawer';
+import ManifestExplorerDrawer from '@/components/drawers/ManifestExplorerDrawer';
+import WorkerDrawer from '@/components/drawers/WorkerDrawer';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
@@ -10,7 +11,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Toaster } from '@/components/ui/sonner';
-import WorkerDrawer from '@/components/WorkerDrawer';
 import WorkerLabel from '@/components/WorkerLabel';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
