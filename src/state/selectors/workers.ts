@@ -1,4 +1,4 @@
-import { isSameScope, Scope } from '@/data/models/Scope';
+import { isCollectionScope, isSameScope, Scope } from '@/data/models/Scope';
 import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
@@ -14,6 +14,8 @@ export const isWorkerOrTaskRunning = (state: RootState, scope: Scope) => {
   );
   if (isRunning) {
     return true;
+  } else if (isCollectionScope(scope)) {
+    return false;
   }
   //check if a running worker contains the a task with the scope in its queue
   for (let j = 0; j < state.workers.workers.length; j++) {
