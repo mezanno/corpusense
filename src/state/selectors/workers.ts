@@ -50,22 +50,21 @@ export const getStatus = (state: RootState, scope: Scope) => {
   if (existingWorker !== undefined) {
     return existingWorker.status;
   }
-
   // If no worker is found, check if a worker is running and has a task for the given scope
-  for (let j = 0; j < state.workers.workers.length; j++) {
-    const worker = state.workers.workers[j];
-    if (
+  const runningWorkers = state.workers.workers.filter(
+    (worker) =>
       worker.status === WorkerStatus.INPROGRESS ||
-      worker.status === WorkerStatus.INPROGRESS_WITH_ERRORS
-    ) {
-      for (let i = 0; i < worker.queue.length; i++) {
-        const task = worker.queue[i];
-        if (
-          (isSameScope(task.scope, scope) && task.status === WorkerStatus.INPROGRESS) ||
-          task.status === WorkerStatus.WAITING
-        ) {
-          return task.status;
-        }
+      worker.status === WorkerStatus.INPROGRESS_WITH_ERRORS,
+  );
+  for (let j = 0; j < runningWorkers.length; j++) {
+    const worker = runningWorkers[j];
+    for (let i = 0; i < worker.queue.length; i++) {
+      const task = worker.queue[i];
+      if (
+        isSameScope(task.scope, scope) &&
+        (task.status === WorkerStatus.INPROGRESS || task.status === WorkerStatus.WAITING)
+      ) {
+        return task.status;
       }
     }
   }
