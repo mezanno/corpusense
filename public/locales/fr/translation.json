@@ -8,6 +8,7 @@
   "nav_application": "Sections",
   "nav_history": "Historique",
   "nav_collections": "Collection(s) ouverte(s)",
+  "nav_workers": "Traitements",
   "btn_close_metadata": "Fermer les métadonnées",
   "btn_open_metadata": "Ouvrir les métadonnées",
   "btn_close_gallery": "Fermer la galerie",
@@ -229,5 +230,13 @@
   "aria_label_thumbnail_canvas": "Aperçu du canvas {{canvas}}",
   "aria_label_tags": "Étiquettes disponibles",
   "oups": "Oups !",
-  "ia_generated": ". Générée par IA."
+  "ia_generated": ". Générée par IA.",
+  "worker_status_waiting": "En attente",
+  "worker_status_inprogress": "En cours",
+  "worker_status_inprogress_with_errors": "En cours (avec erreurs)",
+  "worker_status_completed": "Terminé",
+  "worker_status_completed_with_errors": "Terminé (avec erreurs)",
+  "worker_status_error": "Erreur",
+  "worker_status_unfinished": "Non terminé",
+  "worker_status_unfinished_with_errors": "Non terminé (avec erreurs)"
 }

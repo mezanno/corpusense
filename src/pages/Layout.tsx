@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Toaster } from '@/components/ui/sonner';
 import WorkerLabel from '@/components/WorkerLabel';
+import { WorkerStatus } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import { logoutRequest } from '@/state/reducers/auth';
@@ -20,12 +21,14 @@ import { resetLastEvent } from '@/state/reducers/events';
 import { connectedUser } from '@/state/selectors/auth';
 import { getOpenedCollections } from '@/state/selectors/collections';
 import { getLastErrorEvent, getLastInfoEvent } from '@/state/selectors/events';
+import { getWorkersByStatus } from '@/state/selectors/workers';
 import {
   Archive,
   Bolt,
   ChevronDown,
   Container,
   CornerDownRight,
+  Ellipsis,
   FolderSearch2,
   List,
   MoreHorizontal,
@@ -41,6 +44,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarInset,
@@ -55,28 +59,68 @@ import {
   SidebarTrigger,
 } from '../components/ui/sidebar';
 
+type Filter = {
+  status: WorkerStatus;
+  selected: boolean;
+};
+
 const WorkersSideBarGroup = ({
   setSelectedWorkerId,
 }: {
   setSelectedWorkerId: (id: string) => void;
 }) => {
   const { t } = useTranslation();
-  const workers = useAppSelector(
-    (state) => state.workers.workers,
-    // getWorkersByStatus(state, [
-    //   WorkerStatus.INPROGRESS,
-    //   WorkerStatus.INPROGRESS_WITH_ERRORS,
-    //   WorkerStatus.UNFINISHED,
-    //   WorkerStatus.UNFINISHED_WITH_ERRORS,
-    // ]),
+  const [filters, setFilters] = useState<Filter[]>(
+    Object.values(WorkerStatus).map((status) => ({
+      status,
+      selected: true,
+    })),
   );
-  if (workers.length === 0) {
-    return null;
-  }
+
+  const workers = useAppSelector((state) =>
+    getWorkersByStatus(
+      state,
+      filters.filter((f) => f.selected).map((f) => f.status),
+    ),
+  );
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>{t('nav_workers')}</SidebarGroupLabel>
+    <SidebarGroup className='h-1/2 overflow-y-auto'>
+      <SidebarGroupLabel>
+        {t('nav_workers')}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarGroupAction>
+              <div>
+                <Ellipsis className='rounded-lg border border-yellow-400' />
+              </div>
+            </SidebarGroupAction>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side='right' align='start'>
+            {filters.map((filter) => (
+              <DropdownMenuItem
+                key={filter.status}
+                onClick={() =>
+                  setFilters((prev) =>
+                    prev.map((f) =>
+                      f.status === filter.status ? { ...f, selected: !f.selected } : f,
+                    ),
+                  )
+                }
+              >
+                <input
+                  type='checkbox'
+                  checked={filter.selected}
+                  readOnly
+                  className='mr-2 h-4 w-4 cursor-pointer'
+                />
+                {t(`worker_status_${filter.status}`)}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarGroupLabel>
+
       <SidebarGroupContent>
         <SidebarMenu>
           {workers.map((worker) => (
