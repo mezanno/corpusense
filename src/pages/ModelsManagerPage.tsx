@@ -13,19 +13,21 @@ import {
 } from '@/components/ui/table';
 import { generateSchema } from '@/data/utils/model';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { exportModelRequest, removeModelRequest, setActiveModel } from '@/state/reducers/models';
+import { exportModelRequest, removeModelRequest } from '@/state/reducers/models';
 import { getModels } from '@/state/selectors/models';
 import ReactJsonView from '@microlink/react-json-view';
 import { Download, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const ModelsManagerPage = () => {
   const { t } = useTranslation();
-  const models = useAppSelector(getModels);
   const appDispatch = useAppDispatch();
+  const models = useAppSelector(getModels);
+  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
   const handleSelectModel = (modelId: string) => {
-    appDispatch(setActiveModel(modelId));
+    setSelectedModelId(modelId);
   };
 
   const handleRemoveModel = (modelId: string) => {
@@ -98,7 +100,7 @@ const ModelsManagerPage = () => {
           </TableBody>
         </Table>
       </div>
-      <ModelViewer />
+      {selectedModelId !== null && <ModelViewer modelId={selectedModelId} />}
     </div>
   );
 };

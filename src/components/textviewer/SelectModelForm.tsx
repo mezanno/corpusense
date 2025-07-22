@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { DataModel } from '@/data/models/DataModel';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { setActiveModel } from '@/state/reducers/models';
+import { useAppSelector } from '@/hooks/hooks';
 import { getModels } from '@/state/selectors/models';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -16,7 +15,6 @@ const formSchema = z.object({
 });
 
 const SelectModelForm = ({ close }: { close: (model: DataModel) => void }) => {
-  const appDispatch = useAppDispatch();
   const { t } = useTranslation();
   const models = useAppSelector(getModels);
 
@@ -25,7 +23,6 @@ const SelectModelForm = ({ close }: { close: (model: DataModel) => void }) => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    appDispatch(setActiveModel(values.model));
     const selectedModel = models.find((model) => model.id === values.model);
     if (selectedModel) {
       close(selectedModel);
