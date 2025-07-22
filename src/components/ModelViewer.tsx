@@ -1,7 +1,7 @@
 import { DataField } from '@/data/models/DataModel';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { saveModelRequest } from '@/state/reducers/models';
-import { getActiveModel } from '@/state/selectors/models';
+import { getModelById } from '@/state/selectors/models';
 import { CircleArrowDown, CircleArrowUp, CirclePlus, CircleX, Eye, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,10 +19,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Textarea } from './ui/textarea';
 const baseColor = '#a4d6f6';
 
-const ModelViewer = () => {
+const ModelViewer = ({ modelId }: { modelId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const model = useAppSelector(getActiveModel);
+  const model = useAppSelector((state) => getModelById(state, modelId));
   const [fields, setFields] = useState(model?.fields ?? []);
   const [description, setDescription] = useState('');
   const [prompt, setPrompt] = useState('');
@@ -33,14 +33,14 @@ const ModelViewer = () => {
   ];
 
   useEffect(() => {
-    if (model) {
+    if (model !== undefined) {
       setFields(model.fields);
       setDescription(model.description ?? '');
       setPrompt(model.prompt ?? '');
     }
   }, [model]);
 
-  if (model === null) {
+  if (model === undefined) {
     return <div className='panel text-red-500'>{t('error_model_undefined')}</div>;
   }
 

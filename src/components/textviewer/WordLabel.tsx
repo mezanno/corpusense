@@ -1,5 +1,3 @@
-import { useAppSelector } from '@/hooks/hooks';
-import { hasActiveModel } from '@/state/selectors/models';
 import Konva from 'konva';
 import { useEffect, useRef, useState } from 'react';
 import { Group, Text } from 'react-konva';
@@ -17,7 +15,7 @@ const WordLabel = ({ word, index }: WordLabelProps) => {
   const textRef = useRef<Konva.Text>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [isHovered, setIsHovered] = useState(false);
-  const hasModel = useAppSelector(hasActiveModel);
+  const hasModel = state.model !== undefined;
 
   const computedX = state.wordRects[index].rect.x;
   const computedY = state.wordRects[index].rect.y;

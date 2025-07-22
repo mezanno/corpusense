@@ -1,18 +1,18 @@
 import { DataField } from '@/data/models/DataModel';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useAppDispatch } from '@/hooks/hooks';
 import { addEntityRequest } from '@/state/reducers/namedEntities';
-import { getActiveModel } from '@/state/selectors/models';
 import { useTranslation } from 'react-i18next';
 import { useMarkupContext } from '../reducers/MarkupContext';
 
 const MarkupContextMenu = () => {
   const { t } = useTranslation();
-  const model = useAppSelector(getActiveModel);
   const appDispatch = useAppDispatch();
   const { state, dispatch } = useMarkupContext();
 
-  if (!model) {
-    return null;
+  const model = state.model;
+
+  if (model === undefined) {
+    return null; // No model available, do not render the context menu
   }
 
   const fieldButtons = model.fields
