@@ -102,6 +102,7 @@ export const workerSlice = createSlice({
       }
     },
     startWorkerProcess: (_state, _action: PayloadAction<StartWorkerProcessPayload>) => {},
+    stopWorkerProcessRequest: (_state, _action: PayloadAction<Worker>) => {},
     updateWorker: (state, action: PayloadAction<Worker>) => {
       if (state.workers.find((w) => w.id === action.payload.id)) {
         // If the worker already exists, update it
@@ -141,6 +142,7 @@ export const {
   processRunning,
   processStart,
   startWorkerProcess,
+  stopWorkerProcessRequest,
   updateWorker,
   setWorkers,
   setResults,

@@ -1,7 +1,7 @@
 import { toString } from '@/data/models/Scope';
 import { WorkerStatus } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { recoverWorkerRequest } from '@/state/reducers/workers';
+import { recoverWorkerRequest, stopWorkerProcessRequest } from '@/state/reducers/workers';
 import { getWorkerById } from '@/state/selectors/workers';
 import { useTranslation } from 'react-i18next';
 import { getTaskStatusColor, getWorkerStatusIcon } from './workerUtils';
@@ -17,14 +17,21 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
     );
   }
 
-  const displayButton =
+  const displayRestartButton =
     worker.status === WorkerStatus.UNFINISHED ||
     worker.status === WorkerStatus.UNFINISHED_WITH_ERRORS ||
     worker.status === WorkerStatus.COMPLETED_WITH_ERRORS;
-  console.log(`WorkerDetails: worker status is ${worker.status}, displayButton: ${displayButton}`);
+
+  const displayStopButton =
+    worker.status === WorkerStatus.INPROGRESS ||
+    worker.status === WorkerStatus.INPROGRESS_WITH_ERRORS;
 
   const handleRecoverWorker = () => {
     appDispatch(recoverWorkerRequest(worker));
+  };
+
+  const handleStopWorker = () => {
+    appDispatch(stopWorkerProcessRequest(worker));
   };
 
   return (
@@ -49,12 +56,17 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
             {worker.status}
           </li>
         </ul>
-        {displayButton && (
+        {displayRestartButton && (
           <button
             className='soft-button border-yellow-500 text-yellow-500'
             onClick={handleRecoverWorker}
           >
             {t('btn_recover')}
+          </button>
+        )}
+        {displayStopButton && (
+          <button className='soft-button border-red-500 text-red-500' onClick={handleStopWorker}>
+            {t('btn_stop_worker')}
           </button>
         )}
       </div>
