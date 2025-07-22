@@ -1,8 +1,10 @@
 import { toString } from '@/data/models/Scope';
 import { Worker } from '@/data/models/Worker';
+import { useTranslation } from 'react-i18next';
 import { getTaskStatusColor, getWorkerStatusIcon } from './workerUtils';
 
 const WorkerLabel = ({ worker }: { worker: Worker }) => {
+  const { t } = useTranslation();
   return (
     <div className={`flex items-center gap-2 p-2 ${getTaskStatusColor(worker.status)}`}>
       <span
@@ -12,7 +14,7 @@ const WorkerLabel = ({ worker }: { worker: Worker }) => {
       </span>
 
       <span className='break-words'>
-        {worker.name} ({worker.status}) {toString(worker.scope)}
+        {worker.name} [{t(`worker_status_${worker.status}`)}] {toString(worker.scope)}
       </span>
     </div>
   );
