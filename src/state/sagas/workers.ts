@@ -443,6 +443,7 @@ function* startWorker(
                 workerName: currentWorker.name,
                 workerId: currentWorker.id,
                 value: taskResult.content,
+                taskId: task.id,
               };
 
               yield call([resultRepository, resultRepository.addResult], result);
