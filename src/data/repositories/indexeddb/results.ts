@@ -22,13 +22,13 @@ export class IndexedDBResultRepository implements ResultRepository {
   }
 
   async selectByWorkerName(workerName: string): Promise<Result[]> {
-    // Note: Using sortBy('id') to ensure results are returned in the order of their creation
-    return await db.results.where('workerName').equals(workerName).sortBy('id');
+    // Note: Using sortBy('taskId') to ensure results are returned in the order of their taskId
+    return await db.results.where('workerName').equals(workerName).sortBy('taskId');
   }
 
   async selectByWorkerId(workerId: string): Promise<Result[]> {
-    // Note: Using sortBy('id') to ensure results are returned in the order of their creation
-    return await db.results.where('workerId').equals(workerId).sortBy('id');
+    // Note: Using sortBy('taskId') to ensure results are returned in the order of their taskId
+    return await db.results.where('workerId').equals(workerId).sortBy('taskId');
   }
 
   async selectByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result> {
