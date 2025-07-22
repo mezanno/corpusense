@@ -8,6 +8,7 @@ export interface Collection {
   content: CollectionElement[];
   about?: string;
   tags: string[];
+  modelId?: string;
 }
 
 export interface ExportedCollection extends Manifest {

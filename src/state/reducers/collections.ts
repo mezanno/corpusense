@@ -41,6 +41,7 @@ export const collectionsSlice = createSlice({
         collection.name = action.payload.name;
         collection.about = action.payload.about;
         collection.tags = action.payload.tags;
+        collection.modelId = action.payload.modelId;
       }
     },
     setCollections: (state, action: PayloadAction<Collection[]>) => {

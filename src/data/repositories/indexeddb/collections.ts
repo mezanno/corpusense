@@ -41,12 +41,18 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
 
   async update(
     id: string,
-    { name, tags, content }: { name: string; tags: string[]; content: CollectionElement[] },
+    {
+      name,
+      tags,
+      content,
+      modelId,
+    }: { name: string; tags: string[]; content: CollectionElement[]; modelId?: string },
   ): Promise<void> {
     await db.collections.update(id, {
       name,
       tags,
       content,
+      modelId,
     });
   }
 
