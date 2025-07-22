@@ -53,7 +53,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
           </li>
           <li>
             {t('list_title_worker_status')}
-            {worker.status}
+            {t(`worker_status_${worker.status}`)}
           </li>
         </ul>
         {displayRestartButton && (
@@ -90,7 +90,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
                   </span>
                   <strong>{t('table_col_title_taskID')}</strong>
                   {task.id} -<strong>{t('table_col_title_status')}</strong>
-                  {task.status}
+                  {t(`worker_status_${task.status}`)}
                   {task.statusMessage !== undefined && (
                     <span>
                       {' '}
