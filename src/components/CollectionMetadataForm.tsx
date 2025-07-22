@@ -4,6 +4,7 @@ import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { updateCollectionRequest } from '@/state/reducers/collections';
 import { createNewTagRequest } from '@/state/reducers/tags';
+import { getModels } from '@/state/selectors/models';
 import { getTags } from '@/state/selectors/tags';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Tag as FormTag, TagInput } from 'emblor';
@@ -37,10 +38,12 @@ const formSchema = z.object({
     )
     .optional(),
   about: z.string().optional(),
+  modelId: z.string().optional(),
 });
 
 const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
   const dispatch = useAppDispatch();
+  const models = useAppSelector(getModels);
   const storedTags = useAppSelector(getTags);
   //liste des tags existants dans l'application
   const autoCompleteTags = storedTags.map((tag) => ({
@@ -68,6 +71,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
       name: collection.name,
       about: collection.about,
       tags: collectionTagsDefaultValue,
+      modelId: collection.modelId,
     },
   });
 
@@ -81,6 +85,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
     const updatedCollection = { ...collection };
     updatedCollection.name = values.name;
     updatedCollection.about = values.about;
+    updatedCollection.modelId = values.modelId;
     if (values.tags !== undefined) {
       updatedCollection.tags = values.tags.map((tag) => tag.id);
     }
@@ -102,6 +107,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
     setTags(collectionTagsDefaultValue);
     form.setValue('name', collection.name);
     form.setValue('about', collection.about);
+    form.setValue('modelId', collection.modelId);
   }, [collection]);
 
   return (
@@ -151,40 +157,66 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name='modelId'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form_label_model')}</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className='h-10 w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+                    >
+                      <option value=''>{t('form_placeholder_model')}</option>
+                      {models.map((model) => (
+                        <option key={model.id} value={model.id}>
+                          {model.name}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
-          <FormField
-            control={form.control}
-            name='tags'
-            render={({ field }) => (
-              <FormItem className='flex w-1/2 flex-col items-start'>
-                <FormLabel className='text-left'>{t('form_label_tags')}</FormLabel>
-                <FormControl id='test'>
-                  {/* @ts-expect-error TagInput */}
-                  <TagInput
-                    {...field}
-                    placeholder={t('form_placeholder_tags')}
-                    tags={tags}
-                    enableAutocomplete={true}
-                    autocompleteOptions={autoCompleteTags}
-                    setTags={(newTags) => {
-                      setTags(newTags);
-                      setValue('tags', newTags as [FormTag, ...FormTag[]]);
-                      handleTagAdded(newTags as FormTag[]);
-                    }}
-                    generateTagId={() => uuid()}
-                    styleClasses={{ inlineTagsContainer: 'tagInputInlineContainer' }}
-                    activeTagIndex={activeTagIndex}
-                    setActiveTagIndex={setActiveTagIndex}
-                    title={t('aria_label_tags')}
-                    alt={t('aria_label_tags')}
-                  />
-                </FormControl>
-                <FormDescription>{t('form_description_tags')}</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className='flex w-1/2 flex-col gap-2'>
+            <FormField
+              control={form.control}
+              name='tags'
+              render={({ field }) => (
+                <FormItem className='flex w-1/2 flex-col items-start'>
+                  <FormLabel className='text-left'>{t('form_label_tags')}</FormLabel>
+                  <FormControl id='test'>
+                    {/* @ts-expect-error TagInput */}
+                    <TagInput
+                      {...field}
+                      placeholder={t('form_placeholder_tags')}
+                      tags={tags}
+                      enableAutocomplete={true}
+                      autocompleteOptions={autoCompleteTags}
+                      setTags={(newTags) => {
+                        setTags(newTags);
+                        setValue('tags', newTags as [FormTag, ...FormTag[]]);
+                        handleTagAdded(newTags as FormTag[]);
+                      }}
+                      generateTagId={() => uuid()}
+                      styleClasses={{ inlineTagsContainer: 'tagInputInlineContainer' }}
+                      activeTagIndex={activeTagIndex}
+                      setActiveTagIndex={setActiveTagIndex}
+                      title={t('aria_label_tags')}
+                      alt={t('aria_label_tags')}
+                    />
+                  </FormControl>
+                  <FormDescription>{t('form_description_tags')}</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
         <div className='flex w-full items-center justify-start pt-3'>
           <Button className='rounded-lg' size='sm'>

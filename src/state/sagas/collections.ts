@@ -86,7 +86,7 @@ function* handleCreateCollection(action: PayloadAction<string>) {
 }
 
 function* handleUpdateCollection(action: PayloadAction<Collection>) {
-  const { id, name, tags, content } = action.payload;
+  const { id, name, tags, content, modelId } = action.payload;
   try {
     if (id === undefined) {
       // yield put(setError(i18next.t('error_collection_not_found')));
@@ -97,9 +97,11 @@ function* handleUpdateCollection(action: PayloadAction<Collection>) {
       name,
       tags,
       content,
+      modelId,
     });
 
     yield put(updateCollectionSuccess(action.payload));
+    yield put(pushInfo(i18n.t('toast_collection_saved')));
   } catch (e) {
     yield put(pushError(getErrorMessage(e)));
   }
