@@ -3,6 +3,14 @@ import { RootState } from '../store';
 
 export const getCollections = (state: RootState) => state?.collections?.values ?? [];
 
+export const getCollectionById = createSelector(
+  [
+    (state: RootState) => state.collections?.values ?? [],
+    (_: RootState, collectionId: string) => collectionId,
+  ],
+  (values, collectionId) => values.find((elt) => elt.id === collectionId),
+);
+
 export const getOpenedCollections = createSelector(
   [
     (state: RootState) => state.collections?.values ?? [],
