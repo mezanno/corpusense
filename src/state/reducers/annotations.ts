@@ -34,9 +34,10 @@ const annotationsSlice = createSlice({
         state.values.push(action.payload);
       }
     },
-    removeAnnotationRequest(_state, _action: PayloadAction<string>) {},
-    removeAnnotationSuccess(state, action: PayloadAction<string>) {
-      state.values = state.values.filter((a) => a.id !== action.payload);
+    removeAnnotationRequest(_state, _action: PayloadAction<string[]>) {},
+    removeAnnotationSuccess(state, action: PayloadAction<string[]>) {
+      // Remove multiple annotations by their IDs
+      state.values = state.values.filter((a) => !action.payload.includes(a.id));
     },
     removeAllCollectionAnnotationsRequest(_state, _action: PayloadAction<string>) {}, //action.payload = collectionId
     removeAllCanvasAnnotationsRequest(

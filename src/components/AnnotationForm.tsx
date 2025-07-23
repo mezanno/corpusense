@@ -41,7 +41,7 @@ const AnnotationForm = ({
     editable?: boolean;
   }[];
   canvas: Canvas;
-  handleDelete: (id: string) => void;
+  handleDelete: () => void;
 }) => {
   const appDispatch = useAppDispatch();
   const modifyAnnotation = useModifyAnnotation();
@@ -116,6 +116,11 @@ const AnnotationForm = ({
     if (editedAnnotation !== null) {
       appDispatch(removeAllRegionAnnotationsRequest(editedAnnotation));
     }
+  };
+
+  const handleDeleteButton: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+    event.preventDefault(); //pour éviter de soumettre le formulaire
+    handleDelete();
   };
 
   return (
@@ -196,10 +201,7 @@ const AnnotationForm = ({
             title={t('btn_delete_annotation')}
             variant='destructive'
             className='cursor-pointer'
-            onClick={(event) => {
-              event.preventDefault(); //pour éviter de soumettre le formulaire
-              handleDelete(selected[0].annotation.id);
-            }}
+            onClick={handleDeleteButton}
           >
             <Trash2 />
           </Button>
