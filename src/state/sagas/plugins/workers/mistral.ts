@@ -72,6 +72,11 @@ export default function* mistralSaga(
     return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_export_no_text') };
   }
 
+  const textNumbered = text
+    .split('\n')
+    .map((ligne, index) => `${index + 1}. ${ligne}`)
+    .join('\n');
+
   const apiKey = localStorage.getItem('mistralApiKey');
   //return an error if no API key is found
   if (apiKey === null || apiKey === '') {
@@ -91,11 +96,11 @@ export default function* mistralSaga(
       },
       {
         role: 'user',
-        content: text,
+        content: textNumbered,
       },
     ],
     temperature: 0,
-    max_tokens: text.length * 2,
+    max_tokens: textNumbered.length * 2,
     response_format: { type: 'json_object' },
   };
 
