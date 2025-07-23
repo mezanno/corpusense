@@ -23,6 +23,8 @@ const GridThumb = ({
   collectionId: string;
   canvasViewerName: string;
 }) => {
+  const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const canvas = useAppSelector((state) => getCanvasById(state, canvasId)) as Canvas;
   const idDisplayed = useAppSelector((state) =>
     isCanvasDisplayed(state, canvasId, canvasViewerName),
@@ -30,15 +32,6 @@ const GridThumb = ({
   const hasLineAnnotations =
     useAppSelector((state) => getAnnotationsByType(state, canvasId, collectionId, ElementType.LINE))
       .length > 0;
-
-  const dispatch = useAppDispatch();
-  const { t } = useTranslation();
-
-  const handleOnClick = () => {
-    if (canvas !== undefined) {
-      dispatch(setCanvasFromComponent({ componentId: canvasViewerName, canvas, collectionId }));
-    }
-  };
 
   const handleDelete = useCallback(() => {
     console.log('Delete', canvasId);
@@ -50,6 +43,15 @@ const GridThumb = ({
     return <div aria-errormessage='Error while loading canvas'>Error while loading canvas</div>;
   }
 
+  const handleOnClick = () => {
+    if (canvas !== undefined) {
+      dispatch(setCanvasFromComponent({ componentId: canvasViewerName, canvas, collectionId }));
+    }
+  };
+
+  const match = canvas.id.match(/f\d+/);
+  const canvasItemId = match ? match[0] : '';
+
   const thumbnail = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
     getImageForThumbnail(canvas, 300),
   ];
@@ -59,6 +61,10 @@ const GridThumb = ({
       className={`group relative cursor-pointer rounded-md p-1 shadow transition hover:scale-110 ${idDisplayed ? 'bg-amber-400' : 'bg-amber-100'} `}
       onClick={handleOnClick}
     >
+      <div className='flex w-full justify-between p-1 text-xs'>
+        {canvas.label !== undefined && canvas.label !== null && <span>{canvas.label.none}</span>}
+        <span className='text-gray-600 italic'>{canvasItemId}</span>
+      </div>
       <Thumbnail
         thumbnail={thumbnail}
         style={{ width: '100px', height: '100px', objectFit: 'contain' }}
