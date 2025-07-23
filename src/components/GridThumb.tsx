@@ -62,30 +62,32 @@ const GridThumb = ({
       onClick={handleOnClick}
     >
       <div className='flex w-full justify-between p-1 text-xs'>
-        {canvas.label !== undefined && canvas.label !== null && <span>{canvas.label.none}</span>}
-        <span className='text-gray-600 italic'>{canvasItemId}</span>
+        <div className='w-fit rounded-xl bg-white p-1 shadow'>
+          {hasLineAnnotations ? (
+            <SpellCheck size={16} color='green' />
+          ) : (
+            <SpellCheck2 size={16} color='red' />
+          )}
+        </div>
+        <button
+          className='flex cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 hover:scale-110'
+          title={t('btn_delete_collection')}
+        >
+          <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
+        </button>
       </div>
+
       <Thumbnail
         thumbnail={thumbnail}
         style={{ width: '100px', height: '100px', objectFit: 'contain' }}
         className='w-fit'
         aria-label='canvas thumbnail'
       />
-      <button
-        className='absolute top-0 right-0 flex cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 hover:scale-110'
-        title={t('btn_delete_collection')}
-      >
-        <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
-      </button>
 
-      <div className='absolute bottom-0 left-0 rounded-xl bg-white p-1 shadow'>
-        {hasLineAnnotations ? (
-          <SpellCheck size={16} color='green' />
-        ) : (
-          <SpellCheck2 size={16} color='red' />
-        )}
+      <div className='flex w-full justify-between p-1 text-xs'>
+        {canvas.label !== undefined && canvas.label !== null && <span>{canvas.label.none}</span>}
+        <span className='text-gray-600 italic'>{canvasItemId}</span>
       </div>
-
       <WorkerStatusIcon scope={{ collectionId, canvasId }} />
     </div>
   );
