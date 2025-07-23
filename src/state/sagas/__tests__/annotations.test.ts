@@ -134,9 +134,9 @@ describe('annotations saga', () => {
     };
     (getAnnotationRepository as Mock).mockReturnValue(mockRepository);
 
-    return expectSaga(handleRemoveAnnotation, removeAnnotationRequest(annotationId))
+    return expectSaga(handleRemoveAnnotation, removeAnnotationRequest([annotationId]))
       .provide([[call([mockRepository, mockRepository.removeById], annotationId), undefined]])
-      .put(removeAnnotationSuccess(annotationId))
+      .put(removeAnnotationSuccess([annotationId]))
       .run();
   });
 

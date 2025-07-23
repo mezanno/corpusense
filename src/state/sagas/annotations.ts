@@ -91,16 +91,21 @@ function* handleSaveAnnotation(
   }
 }
 
-function* handleRemoveAnnotation(action: PayloadAction<string>) {
-  try {
-    const annotationRepository = getAnnotationRepository();
-    yield call([annotationRepository, annotationRepository.removeByScope], {
-      annotationId: action.payload,
-    });
-    yield put(removeAnnotationSuccess(action.payload));
-  } catch (e) {
-    console.warn(e);
+function* handleRemoveAnnotation(action: PayloadAction<string[]>) {
+  const annotationRepository = getAnnotationRepository();
+  const annotationsDeleted: string[] = [];
+  for (let i = 0; i < action.payload.length; i++) {
+    const annotationId = action.payload[i];
+    try {
+      yield call([annotationRepository, annotationRepository.removeByScope], {
+        annotationId,
+      });
+      annotationsDeleted.push(annotationId);
+    } catch (e) {
+      console.warn(e);
+    }
   }
+  yield put(removeAnnotationSuccess(annotationsDeleted));
 }
 
 function* handleRemoveAllCollectionAnnotations(

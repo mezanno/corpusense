@@ -29,7 +29,7 @@ describe('annotations reducer', () => {
         { id: '2', canvasId: 'canvas2', collectionId: 'collection2' },
       ],
     };
-    const action = removeAnnotationSuccess('1');
+    const action = removeAnnotationSuccess(['1']);
     //@ts-expect-error initialStateWithAnnotations
     const state = reducer(initialStateWithAnnotations, action);
 

@@ -133,8 +133,9 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
     }
   }, [annotationsInStore]);
 
-  const handleDeleteAnnotation = (id: string) => {
-    appDispatch(removeAnnotationRequest(id)); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
+  const handleDeleteAnnotation = () => {
+    const ids = selected.map((s) => s.annotation.id);
+    appDispatch(removeAnnotationRequest(ids)); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
   };
 
   //initialize the Annotorious
@@ -177,7 +178,7 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Delete' && selected?.length > 0) {
-      handleDeleteAnnotation(selected[0].annotation.id);
+      handleDeleteAnnotation();
     }
   };
 
@@ -195,6 +196,7 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
       autoSave={true}
       drawingMode='drag'
       drawingEnabled={cvcState?.mode === 'draw'}
+      multiSelect={true}
       style={style}
     >
       <div
