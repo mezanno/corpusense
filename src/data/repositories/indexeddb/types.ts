@@ -97,7 +97,7 @@ export interface NamedEntityRepository {
 }
 
 export interface ResultRepository {
-  addResult(result: ResultCreateDTO): Promise<void>;
+  addResult(result: ResultCreateDTO): Promise<Result>;
   patch(id: number, changes: Partial<Result>): Promise<void>;
   selectAll(): Promise<Result[]>;
   selectByWorkerName(workerName: string): Promise<Result[]>;

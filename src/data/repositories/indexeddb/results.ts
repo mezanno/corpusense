@@ -5,12 +5,13 @@ import { ResultRepository } from './types';
 import { getScopeKey } from './utils';
 
 export class IndexedDBResultRepository implements ResultRepository {
-  async addResult(result: ResultCreateDTO): Promise<void> {
+  async addResult(result: ResultCreateDTO): Promise<Result> {
     const newResult = {
       ...result,
       scopeKey: getScopeKey(result.scope),
     };
-    await db.results.add(newResult);
+    const id = await db.results.add(newResult);
+    return { ...newResult, id };
   }
 
   async patch(id: number, changes: Partial<Result>): Promise<void> {

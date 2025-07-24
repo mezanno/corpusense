@@ -39,6 +39,7 @@ import {
 import { fetchAnnotationsSuccess } from '../reducers/annotations';
 import { pushError, pushInfo } from '../reducers/events';
 import {
+  addResult,
   ExportWorkerPayload,
   exportWorkerResultRequest,
   fetchBatchLayoutRequest,
@@ -326,7 +327,7 @@ function* forkStartWorker(worker: Worker | WorkerCreateDTO): Generator<Effect, v
  */
 function* startWorker(
   worker: Worker | WorkerCreateDTO,
-): Generator<Effect, void, WorkerResponse | Worker | undefined | Canvas[]> {
+): Generator<Effect, void, WorkerResponse | Worker | undefined | Canvas[] | Result> {
   const workerRepository = getWorkerRepository();
   let currentWorker: Worker | undefined = undefined;
   let task: Task | undefined = undefined;
@@ -446,11 +447,15 @@ function* startWorker(
                 taskId: task.id,
               };
 
-              yield call([resultRepository, resultRepository.addResult], result);
+              const newResult = (yield call(
+                [resultRepository, resultRepository.addResult],
+                result,
+              )) as Result;
               currentWorker = {
                 ...currentWorker,
                 queue: updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.COMPLETED, ''), //on ajoute un message vide pour supprimer un potentiel précédent message d'erreur
               };
+              yield put(addResult(newResult));
             }
             break;
           case WorkerStatus.ERROR:

@@ -113,6 +113,29 @@ export const workerSlice = createSlice({
         state.workers.push(action.payload);
       }
     },
+    addResult: (state, action: PayloadAction<Result>) => {
+      const result = action.payload;
+      // Check if the result already exists
+      const existingResult = state.results.find(
+        (r) =>
+          r.id === result.id &&
+          r.workerId === result.workerId &&
+          isSameScope(r.scope, result.scope),
+      );
+      if (existingResult) {
+        // If it exists, update the existing result
+        const index = state.results.findIndex(
+          (r) =>
+            r.id === result.id &&
+            r.workerId === result.workerId &&
+            isSameScope(r.scope, result.scope),
+        );
+        state.results[index] = result;
+      } else {
+        // If it does not exist, add the new result
+        state.results.push(result);
+      }
+    },
     setWorkers: (state, action: PayloadAction<Worker[]>) => {
       state.workers = action.payload;
     },
@@ -144,6 +167,7 @@ export const {
   startWorkerProcess,
   stopWorkerProcessRequest,
   updateWorker,
+  addResult,
   setWorkers,
   setResults,
   removeWorkerRequest,
