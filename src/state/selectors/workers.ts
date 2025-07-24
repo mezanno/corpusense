@@ -119,3 +119,6 @@ export const getCompletedWorkerByScopeAndName = createSelector(
     );
   },
 );
+
+export const hasResult = (state: RootState, workerId: string) =>
+  state.workers.results?.some((result) => result.workerId === workerId) ?? false;

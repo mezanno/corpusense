@@ -1,8 +1,12 @@
 import { toString } from '@/data/models/Scope';
 import { WorkerStatus } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { recoverWorkerRequest, stopWorkerProcessRequest } from '@/state/reducers/workers';
-import { getWorkerById } from '@/state/selectors/workers';
+import {
+  exportWorkerResultRequest,
+  recoverWorkerRequest,
+  stopWorkerProcessRequest,
+} from '@/state/reducers/workers';
+import { getWorkerById, hasResult } from '@/state/selectors/workers';
 import { useTranslation } from 'react-i18next';
 import { getTaskStatusColor, getWorkerStatusIcon } from './workerUtils';
 
@@ -10,6 +14,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const worker = useAppSelector((state) => getWorkerById(state, workerId));
+  const resultExists = useAppSelector((state) => hasResult(state, workerId));
 
   if (worker === undefined) {
     return (
@@ -34,6 +39,10 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
     appDispatch(stopWorkerProcessRequest(worker));
   };
 
+  const handleExportResult = () => {
+    appDispatch(exportWorkerResultRequest({ worker }));
+  };
+
   return (
     <div className='overflow-auto p-4'>
       <div>
@@ -56,19 +65,29 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
             {t(`worker_status_${worker.status}`)}
           </li>
         </ul>
-        {displayRestartButton && (
-          <button
-            className='soft-button border-yellow-500 text-yellow-500'
-            onClick={handleRecoverWorker}
-          >
-            {t('btn_recover')}
-          </button>
-        )}
-        {displayStopButton && (
-          <button className='soft-button border-red-500 text-red-500' onClick={handleStopWorker}>
-            {t('btn_stop_worker')}
-          </button>
-        )}
+        <div className='flex gap-2'>
+          {displayRestartButton && (
+            <button
+              className='soft-button border-yellow-500 text-yellow-500'
+              onClick={handleRecoverWorker}
+            >
+              {t('btn_recover')}
+            </button>
+          )}
+          {displayStopButton && (
+            <button className='soft-button border-red-500 text-red-500' onClick={handleStopWorker}>
+              {t('btn_stop_worker')}
+            </button>
+          )}
+          {resultExists && (
+            <button
+              className='soft-button border-blue-500 text-blue-500'
+              onClick={handleExportResult}
+            >
+              {t('btn_export_result', { name: worker.name })}
+            </button>
+          )}
+        </div>
       </div>
       <div>
         <h3 className='text-md mt-4 font-semibold'>
