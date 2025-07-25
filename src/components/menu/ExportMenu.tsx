@@ -2,7 +2,7 @@ import { Scope } from '@/data/models/Scope';
 import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { useAppSelector } from '@/hooks/hooks';
 import { getWorkersByScopeAndStatus } from '@/state/selectors/workers';
-import { Download, SendHorizonal } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
@@ -30,13 +30,13 @@ const ExportMenu = ({
   }));
   items.push({
     name: t('btn_export_text'),
-    icon: <SendHorizonal />,
+    icon: <Download />,
     action: handleExportText ? () => handleExportText?.() : undefined,
   });
 
   const params = {
     name: 'btn_export_menu',
-    icon: <SendHorizonal />,
+    icon: <Download />,
     info: 'info_export_menu',
     items,
   };
