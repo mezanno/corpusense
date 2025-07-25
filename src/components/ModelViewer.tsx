@@ -26,6 +26,7 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
   const [fields, setFields] = useState(model?.fields ?? []);
   const [description, setDescription] = useState('');
   const [prompt, setPrompt] = useState('');
+  const [modelName, setModelName] = useState(model?.name ?? '');
 
   const options = [
     { value: 'string', label: 'Texte' },
@@ -58,6 +59,7 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
     setFields(newFields);
     const updatedModel = {
       ...model,
+      name: modelName.trim() || model.name,
       fields: newFields,
       description: description.trim(),
       prompt: prompt.trim(),
@@ -96,7 +98,12 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
       <div className='flex items-center space-x-2'>
         <h3 className='text-lg'>
           {t('title_active_model')}
-          <span className='font-bold'>{model.name}</span>
+          <input
+            type='text'
+            className='font-bold'
+            value={modelName}
+            onChange={(e) => setModelName(e.target.value)}
+          />
         </h3>
         <button title={t('btn_add_datafield')} onClick={handleAddField} className='soft-button'>
           <CirclePlus color='orange' />
