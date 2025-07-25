@@ -33,7 +33,6 @@ const keys = Object.keys(importerPlugins);
  * @param action The action containing the URL of the manifest to fetch.
  */
 function* handleFetchManifestFromURL(url: string): Generator<Effect, void, Manifest> {
-  // const forceV3 = action.payload.forceV3;
   try {
     const manifestRepository = getManifestRepository();
     const manifest = yield call([manifestRepository, manifestRepository.getManifest], url);
@@ -51,16 +50,12 @@ function* handleFetchManifestFromURL(url: string): Generator<Effect, void, Manif
         yield put(fetchManifestError(msg));
       }
     }
-
-    // yield call(handleFetchManifest, { fetchFunction: () => gallicaImporter(url, forceV3) });
   }
 }
 
 function* handleFetchManifest(action: { payload: string }) {
   try {
     const manifestInput = action.payload;
-    console.log('handleFetchManifest ', manifestInput);
-    console.log('handleFetchManifest ', isManifestUrl(manifestInput));
 
     if (isManifestUrl(manifestInput)) {
       yield call(handleFetchManifestFromURL, manifestInput);

@@ -57,7 +57,6 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
 
     const handleStartOcrAnalysis = () => {
       if (cvcState?.image?.id !== undefined && props.collectionId !== undefined) {
-        // appDispatch(fetchOcrRequest({ canvas: props.canvas, collectionId: props.collectionId }));
         appDispatch(
           startWorkerProcess({
             workerName: 'peroocr',
@@ -154,21 +153,6 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
             handleExportResult={handleExportResult}
             scope={{ canvasId: cvcState.canvas?.id ?? '', collectionId: props.collectionId ?? '' }}
           />
-
-          {/* <div className='flex items-center space-x-1 rounded-xl border p-2 align-middle'>
-            <Label className='flex items-center gap-1'>
-              <Move size={16} />
-              {t('btn_toggle_mode_view')}
-            </Label>
-            <Switch
-              id='viewer-mode'
-              onCheckedChange={() => cvcDispatch({ type: ACTIONS.TOGGLE_MODE })}
-            />
-            <Label className='flex items-center gap-1'>
-              {t('btn_toggle_mode_annotate')}
-              <SquarePen size={16} />{' '}
-            </Label>
-          </div> */}
           <button
             className='soft-button'
             title={t('btn_add_annotation')}

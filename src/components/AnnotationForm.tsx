@@ -77,18 +77,6 @@ const AnnotationForm = ({
   const startOcrAsync = () => {
     if (editedAnnotation?.collectionId !== undefined) {
       const rect = editedAnnotation.target.selector.geometry;
-      // appDispatch(
-      //   fetchOcrRequest({
-      //     canvas,
-      //     collectionId: editedAnnotation.collectionId,
-      //     region: {
-      //       left: rect.bounds.minX,
-      //       top: rect.bounds.minY,
-      //       width: rect.bounds.maxX - rect.bounds.minX,
-      //       height: rect.bounds.maxY - rect.bounds.minY,
-      //     },
-      //   }),
-      // );
       appDispatch(
         startWorkerProcess({
           workerName: 'peroocr',

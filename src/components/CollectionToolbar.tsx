@@ -23,7 +23,6 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleOcr = () => {
-    // appDispatch(fetchBatchOcrRequest(collectionId));
     appDispatch(
       startWorkerProcess({
         workerName: 'peroocr',

@@ -57,14 +57,6 @@ const CollectionTableRow = ({
     await navigation.goToCollectionInspector(id);
   };
 
-  // const handleExport = (event: React.MouseEvent<HTMLButtonElement | MouseEvent>, id: string) => {
-  //   console.log(event);
-  //   event.stopPropagation();
-  //   event.preventDefault();
-
-  //   dispatch(exportRequest(id));
-  // };
-
   const handleDownload = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.stopPropagation();
     const link = document.createElement('a');
@@ -117,14 +109,6 @@ const CollectionTableRow = ({
         >
           <Trash2 />
         </Button>
-        {/* <Button
-          onClick={(e) => handleExport(e, collection.id as string)}
-          aria-label={t('btn_create_export')}
-          title={t('btn_create_export')}
-        >
-          <PenLine aria-label={t('btn_create_export')} />
-        </Button> */}
-
         {lastExportStatus === 'OK' && (
           <Button
             className='rounded bg-cyan-400 px-4 py-2 text-slate-900 transition hover:bg-cyan-600 hover:text-white'

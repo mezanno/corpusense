@@ -70,7 +70,6 @@ const MultiOptionsMenu = ({
             ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      {/* {isRunning && <Spinner className='absolute -top-2 -right-2' size={'small'} />} */}
     </div>
   );
 };
