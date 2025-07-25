@@ -9,6 +9,7 @@ const Toolbar = ({
   title,
   handleLayout,
   handleOcr,
+  handleOcrWrite,
   handleDeleteAllAnnotations,
   handleRecomputeRegions,
   handleExportText,
@@ -20,6 +21,7 @@ const Toolbar = ({
   title?: string;
   handleLayout?: () => void;
   handleOcr?: () => void;
+  handleOcrWrite?: () => void;
   handleDeleteAllAnnotations?: () => void;
   handleRecomputeRegions?: () => void;
   handleExportText?: () => void;
@@ -34,6 +36,7 @@ const Toolbar = ({
       <AnalysisMenu
         handleLayout={handleLayout}
         handleOcr={handleOcr}
+        handleOcrWrite={handleOcrWrite}
         handleExtractData={handleExtractData}
         scope={scope}
       />

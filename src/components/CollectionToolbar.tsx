@@ -32,6 +32,16 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
     );
   };
 
+  const handleOcrWrite = () => {
+    appDispatch(
+      startWorkerProcess({
+        workerName: 'surya',
+        params: {},
+        scope: { collectionId },
+      }),
+    );
+  };
+
   // const handleLayout = () => {
   //   appDispatch(fetchBatchLayoutRequest(collectionId));
   // };
@@ -89,6 +99,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
         handleRecomputeRegions={handleRecomputeRegions}
         handleExportResult={handleExportResult}
         handleRecoverWorker={handleRecoverWorker}
+        handleOcrWrite={handleOcrWrite}
         scope={{ collectionId }}
       />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
