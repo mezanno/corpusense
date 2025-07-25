@@ -220,7 +220,6 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
         </div>
         <div className='flex w-full items-center justify-start pt-3'>
           <Button className='rounded-lg' size='sm'>
-            {/* {isPending ? 'Submitting...' : 'Submit'} */}
             {t('btn_save')}
           </Button>
         </div>

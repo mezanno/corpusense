@@ -17,8 +17,6 @@ function* handleLogin(
       email,
       password,
     });
-    // console.log('Login data: ', data);
-    // console.log('Login error: ', error);
 
     if (error !== null) {
       yield put(loginFailure(getErrorMessage(error)));

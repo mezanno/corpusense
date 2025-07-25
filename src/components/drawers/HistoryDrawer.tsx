@@ -38,7 +38,6 @@ const HistoryDrawer = () => {
           {t('btn_open_history')}
         </button>
       </DrawerTrigger>
-      {/* <DrawerContent className='max-h-[33vh] w-full items-center bg-white'> */}
       <DrawerContent className='fixed top-0 left-0 flex h-full w-100 items-center rounded-none border-l bg-white shadow-lg animate-in slide-in-from-left-80'>
         <DrawerHeader>
           <DrawerTitle>{t('btn_open_history')}</DrawerTitle>

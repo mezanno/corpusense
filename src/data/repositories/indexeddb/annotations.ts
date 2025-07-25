@@ -23,12 +23,6 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
   }
 
   async getAnnotationsForCanvasByType(canvasId: string, collectionId: string, type: ElementType) {
-    // return db.annotations
-    //   .where({
-    //     canvasId,
-    //     collectionId,
-    //   })
-    //   .sortBy('order');
     const canvasAnnotations = await this.getAnnotationsForCanvas(canvasId, collectionId);
     return canvasAnnotations.filter((annotation) => getAnnotationType(annotation) === type);
   }

@@ -4,10 +4,8 @@ import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentatio
 import { TileSource } from 'openseadragon';
 
 export const ACTIONS = {
-  TOGGLE_TREE_PANEL: 'TOGGLE_TREE_PANEL',
   SET_MODE: 'SET_MODE',
   SET_CANVAS: 'SET_CANVAS',
-  SOMETHING_HAS_CHANGED: 'SOMETHING_HAS_CHANGED',
 } as const;
 
 export enum CanvasViewerContentMode {
@@ -15,42 +13,30 @@ export enum CanvasViewerContentMode {
   MOVE = 'move',
 }
 export interface CanvasViewerContentState {
-  treePanelOpen: boolean;
   mode: CanvasViewerContentMode;
   error: string | undefined;
   source: TileSource[]; //the source of tiles for the viewer from the canvas
   image: IIIFExternalWebResource | undefined;
   canvas: Canvas | undefined;
-  somethingHasChanged: boolean;
 }
 
 export const initialState: CanvasViewerContentState = {
-  treePanelOpen: false,
   mode: CanvasViewerContentMode.MOVE,
   error: undefined,
   source: [],
   image: undefined,
   canvas: undefined,
-  somethingHasChanged: false,
 };
 
 export type CanvasViewerContentAction =
-  | { type: typeof ACTIONS.TOGGLE_TREE_PANEL }
   | { type: typeof ACTIONS.SET_MODE; payload: CanvasViewerContentMode }
-  | { type: typeof ACTIONS.SET_CANVAS; payload: Canvas }
-  | { type: typeof ACTIONS.SOMETHING_HAS_CHANGED; payload: boolean };
+  | { type: typeof ACTIONS.SET_CANVAS; payload: Canvas };
 
 export function CanvasViewerContentReducer(
   state = initialState,
   action: CanvasViewerContentAction,
 ) {
   switch (action.type) {
-    case ACTIONS.TOGGLE_TREE_PANEL: {
-      return {
-        ...state,
-        treePanelOpen: !state.treePanelOpen,
-      };
-    }
     case ACTIONS.SET_MODE: {
       return {
         ...state,
@@ -80,7 +66,6 @@ export function CanvasViewerContentReducer(
           return {
             ...state,
             error: 'Aucun service trouvé',
-            somethingHasChanged: false,
           };
         }
         return {
@@ -88,22 +73,14 @@ export function CanvasViewerContentReducer(
           image,
           canvas,
           source,
-          somethingHasChanged: false,
         };
       } catch (error) {
         console.error('ACTIONS.SET_CANVAS - error: ', error);
         return {
           ...state,
           error: getErrorMessage(error),
-          somethingHasChanged: false,
         };
       }
-    }
-    case ACTIONS.SOMETHING_HAS_CHANGED: {
-      return {
-        ...state,
-        somethingHasChanged: action.payload,
-      };
     }
     default: {
       throw Error(`Action inconnue`);

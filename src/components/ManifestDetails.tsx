@@ -36,7 +36,6 @@ const ManifestDetails = () => {
       className='flex h-full w-full flex-col items-center justify-center space-y-2 p-2'
       aria-label='manifest details'
     >
-      {/* <ErrorDialog /> */}
       {!isLoaded || manifest === null ? (
         <NoManifestToShow />
       ) : (

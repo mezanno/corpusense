@@ -25,7 +25,6 @@ import JSZIP from 'jszip';
 import { call, CallEffect, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
 import { pushInfo } from '../reducers/events';
 import {
-  // exportError,
   exportMultipleCollectionsRequest,
   exportRequest,
   exportSuccess,

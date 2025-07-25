@@ -36,7 +36,6 @@ function App() {
             element={<CollectionInspectorPage />}
           />
           <Route path={CorpusenseRoutes.MODELS} element={<ModelsManagerPage />} />
-          {/* <Route path='*' element={<div>Oups...</div>} /> */}
           <Route path={CorpusenseRoutes.CONFIGURATION} element={<ConfigurationPage />} />
           <Route path={CorpusenseRoutes.STORAGE} element={<StoragePage />} />
         </Route>

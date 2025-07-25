@@ -173,21 +173,6 @@ export function* exportResult(results: Result[]): Generator<Effect, void, Collec
   const allTheData: unknown[] = [];
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
-    console.log(result);
-
-    // if (!isAnnotationScope(result.scope)) {
-    //   const collectionId = result.scope.collectionId;
-    //   const collectionRepository = getCollectionRepository();
-    //   try {
-    //     const collection = yield call(
-    //       [collectionRepository, collectionRepository.getCollectionById],
-    //       collectionId,
-    //     );
-    //     console.log(`Collection for result ${result.id}:`, collection);
-    //   } catch (error) {
-    //     console.error(`Error fetching collection for result ${result.id}:`, error);
-    //   }
-    // }
     const canvasId = isCanvasScope(result.scope) ? toGallicaUrl(result.scope.canvasId) : undefined;
     try {
       const dataParsed = JSON.parse(result.value as string) as unknown;
