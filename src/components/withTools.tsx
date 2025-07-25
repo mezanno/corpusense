@@ -11,19 +11,17 @@ import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import { exportWorkerResultRequest, startWorkerProcess } from '@/state/reducers/workers';
 import { getAnnotationsByType } from '@/state/selectors/annotations';
 import { RootState } from '@/state/store';
-import { Move, SquarePen } from 'lucide-react';
+import { NotebookPen } from 'lucide-react';
 import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { ReducerContext } from './CanvasViewer';
 import { CanvasViewerContentProps } from './CanvasViewerContent';
 import LayoutMenu from './menu/LayoutMenu';
-import { ACTIONS } from './reducers/CanvasViewerContentReducer';
+import { ACTIONS, CanvasViewerContentMode } from './reducers/CanvasViewerContentReducer';
 import SelectModelForm from './textviewer/SelectModelForm';
 import Toolbar from './ToolBar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
-import { Label } from './ui/label';
-import { Switch } from './ui/switch';
 
 export const withTools = <T extends object>(WrappedComponent: React.ComponentType<T>) => {
   const ComponentWithTools = (props: CanvasViewerContentProps) => {
@@ -139,6 +137,10 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       }
     };
 
+    const handleAddAnnotation = () => {
+      cvcDispatch({ type: ACTIONS.SET_MODE, payload: CanvasViewerContentMode.DRAW });
+    };
+
     return (
       <div className='flex h-full w-full flex-col'>
         <h4 className='w-full border-b-1 text-center text-sm italic'>{props.canvas?.id}</h4>
@@ -153,7 +155,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
             scope={{ canvasId: cvcState.canvas?.id ?? '', collectionId: props.collectionId ?? '' }}
           />
 
-          <div className='flex items-center space-x-1 rounded-xl border p-2 align-middle'>
+          {/* <div className='flex items-center space-x-1 rounded-xl border p-2 align-middle'>
             <Label className='flex items-center gap-1'>
               <Move size={16} />
               {t('btn_toggle_mode_view')}
@@ -166,7 +168,14 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
               {t('btn_toggle_mode_annotate')}
               <SquarePen size={16} />{' '}
             </Label>
-          </div>
+          </div> */}
+          <button
+            className='soft-button'
+            title={t('btn_add_annotation')}
+            onClick={handleAddAnnotation}
+          >
+            <NotebookPen size={24} />
+          </button>
           {regionAnnotations.length > 0 && (
             <LayoutMenu
               handleDuplicateToAll={handleDuplicateRegionToAllPages}

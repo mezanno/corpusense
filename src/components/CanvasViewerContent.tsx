@@ -27,6 +27,7 @@ import { useContext, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import AnnotationForm from './AnnotationForm';
 import { HoverContext, ReducerContext } from './CanvasViewer';
+import { ACTIONS, CanvasViewerContentMode } from './reducers/CanvasViewerContentReducer';
 import { Button } from './ui/button';
 import withTools from './withTools';
 
@@ -96,7 +97,7 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
   );
   const addAnnotation = useAddAnnotation(); //logic to add an annotation to the store
 
-  const { cvcState } = useContext(ReducerContext); //the reducer/state of the canvas viewer
+  const { cvcState, cvcDispatch } = useContext(ReducerContext); //the reducer/state of the canvas viewer
   const { hoveredElement } = useContext(HoverContext);
 
   const isNewCanvas = useRef(true); //to check if the canvas is new (to avoid syncing the annotations when the canvas is the same)
@@ -148,6 +149,7 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
       } else {
         console.warn('No collectionId provided, annotation not saved');
       }
+      cvcDispatch({ type: ACTIONS.SET_MODE, payload: CanvasViewerContentMode.MOVE });
     };
     const onUpdate = (annotation: Annotation) => {
       appDispatch(saveAnnotationRequest(annotation));
@@ -195,12 +197,12 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
     <OpenSeadragonAnnotator
       autoSave={true}
       drawingMode='drag'
-      drawingEnabled={cvcState?.mode === 'draw'}
+      drawingEnabled={cvcState?.mode === CanvasViewerContentMode.DRAW}
       multiSelect={true}
       style={style}
     >
       <div
-        className={`relative h-full w-full ${cvcState?.mode === 'draw' ? 'cursor-pen-tool' : 'cursor-default'}`}
+        className={`relative h-full w-full ${cvcState?.mode === CanvasViewerContentMode.DRAW ? 'cursor-pen-tool' : 'cursor-default'}`}
         onKeyDown={handleKeyDown}
       >
         <OpenSeadragonViewer

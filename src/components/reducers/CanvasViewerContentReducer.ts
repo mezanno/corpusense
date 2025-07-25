@@ -5,14 +5,18 @@ import { TileSource } from 'openseadragon';
 
 export const ACTIONS = {
   TOGGLE_TREE_PANEL: 'TOGGLE_TREE_PANEL',
-  TOGGLE_MODE: 'TOGGLE_MODE',
+  SET_MODE: 'SET_MODE',
   SET_CANVAS: 'SET_CANVAS',
   SOMETHING_HAS_CHANGED: 'SOMETHING_HAS_CHANGED',
 } as const;
 
+export enum CanvasViewerContentMode {
+  DRAW = 'draw',
+  MOVE = 'move',
+}
 export interface CanvasViewerContentState {
   treePanelOpen: boolean;
-  mode: string; // 'draw' | 'move'
+  mode: CanvasViewerContentMode;
   error: string | undefined;
   source: TileSource[]; //the source of tiles for the viewer from the canvas
   image: IIIFExternalWebResource | undefined;
@@ -22,7 +26,7 @@ export interface CanvasViewerContentState {
 
 export const initialState: CanvasViewerContentState = {
   treePanelOpen: false,
-  mode: 'move',
+  mode: CanvasViewerContentMode.MOVE,
   error: undefined,
   source: [],
   image: undefined,
@@ -32,7 +36,7 @@ export const initialState: CanvasViewerContentState = {
 
 export type CanvasViewerContentAction =
   | { type: typeof ACTIONS.TOGGLE_TREE_PANEL }
-  | { type: typeof ACTIONS.TOGGLE_MODE }
+  | { type: typeof ACTIONS.SET_MODE; payload: CanvasViewerContentMode }
   | { type: typeof ACTIONS.SET_CANVAS; payload: Canvas }
   | { type: typeof ACTIONS.SOMETHING_HAS_CHANGED; payload: boolean };
 
@@ -47,10 +51,10 @@ export function CanvasViewerContentReducer(
         treePanelOpen: !state.treePanelOpen,
       };
     }
-    case ACTIONS.TOGGLE_MODE: {
+    case ACTIONS.SET_MODE: {
       return {
         ...state,
-        mode: state.mode === 'draw' ? 'move' : 'draw',
+        mode: action.payload,
       };
     }
     case ACTIONS.SET_CANVAS: {
