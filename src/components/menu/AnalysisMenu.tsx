@@ -8,11 +8,13 @@ const AnalysisMenu = ({
   handleLayout,
   handleOcr,
   handleExtractData,
+  handleOcrWrite,
 }: {
   scope: Scope;
   handleLayout?: () => void;
   handleOcr?: () => void;
   handleExtractData?: () => void;
+  handleOcrWrite?: () => void;
 }) => {
   const { t } = useTranslation();
   const params = {
@@ -29,6 +31,11 @@ const AnalysisMenu = ({
         name: t('btn_OCR_analyze'),
         icon: <ScanText />,
         action: handleOcr,
+      },
+      {
+        name: t('btn_OCR_surya'),
+        icon: <ScanText />,
+        action: handleOcrWrite,
       },
       {
         name: t('btn_data_extraction'),

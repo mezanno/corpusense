@@ -20,6 +20,7 @@ import { z } from 'zod';
 const formSchema = z.object({
   mistralApiKey: z.string(),
   mistralModel: z.string(),
+  suryaUrl: z.string(),
 });
 
 const ConfigurationPage = () => {
@@ -37,6 +38,11 @@ const ConfigurationPage = () => {
     if (savedModel !== null) {
       form.setValue('mistralModel', savedModel);
     }
+
+    const savedSuryaUrl = localStorage.getItem('suryaUrl');
+    if (savedSuryaUrl !== null) {
+      form.setValue('suryaUrl', savedSuryaUrl);
+    }
   }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -44,6 +50,7 @@ const ConfigurationPage = () => {
     defaultValues: {
       mistralApiKey: '',
       mistralModel: 'mistral-medium-latest',
+      suryaUrl: 'http://localhost:8000',
     },
   });
 
@@ -51,6 +58,7 @@ const ConfigurationPage = () => {
     try {
       localStorage.setItem('mistralApiKey', values.mistralApiKey);
       localStorage.setItem('mistralModel', values.mistralModel);
+      localStorage.setItem('suryaUrl', values.suryaUrl);
       appDispatch(pushInfo(t('info_configuration_saved')));
     } catch (error) {
       console.error('Error saving configuration:', error);
@@ -85,6 +93,19 @@ const ConfigurationPage = () => {
                   <FormLabel id='form-model'>{t('form_label_mistral_modelname')}</FormLabel>
                   <FormControl>
                     <Input {...field} aria-describedby='form-model' />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='suryaUrl'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel id='form-surya'>{t('form_label_surya')}</FormLabel>
+                  <FormControl>
+                    <Input {...field} aria-describedby='form-surya' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
