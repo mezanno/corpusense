@@ -13,15 +13,20 @@ import 'gridstack/dist/gridstack.min.css';
 import { CircleX, SpellCheck, SpellCheck2 } from 'lucide-react';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import AutoSizer from 'react-virtualized-auto-sizer';
 
 const GridThumb = ({
   canvasId,
   collectionId,
   canvasViewerName,
+  thumbWidth,
+  thumbHeight,
 }: {
   canvasId: string;
   collectionId: string;
   canvasViewerName: string;
+  thumbWidth: number;
+  thumbHeight: number;
 }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
@@ -58,10 +63,12 @@ const GridThumb = ({
 
   return (
     <div
-      className={`group relative cursor-pointer rounded-md p-1 shadow transition hover:scale-110 ${idDisplayed ? 'bg-amber-400' : 'bg-amber-100'} `}
+      className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition hover:scale-110 ${idDisplayed ? 'bg-amber-400' : 'bg-amber-100'} `}
+      style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
       onClick={handleOnClick}
+      role='listitem'
     >
-      <div className='flex w-full justify-between p-1 text-xs'>
+      <div className='flex w-full justify-between text-xs'>
         <div className='w-fit rounded-xl bg-white p-1 shadow'>
           {hasLineAnnotations ? (
             <SpellCheck size={16} color='green' />
@@ -70,20 +77,23 @@ const GridThumb = ({
           )}
         </div>
         <button
-          className='flex cursor-pointer items-center justify-center opacity-0 group-hover:opacity-100 hover:scale-110'
+          className='cursor-pointer opacity-0 group-hover:opacity-100 hover:scale-110'
           title={t('btn_delete_collection')}
         >
           <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
         </button>
       </div>
-
-      <Thumbnail
-        thumbnail={thumbnail}
-        style={{ width: '100px', height: '100px', objectFit: 'contain' }}
-        className='w-fit'
-        aria-label='canvas thumbnail'
-      />
-
+      <div className='w-fit flex-1'>
+        <AutoSizer disableWidth>
+          {({ height }) => (
+            <Thumbnail
+              thumbnail={thumbnail}
+              style={{ width: 'auto', height: `${height}px`, objectFit: 'contain' }}
+              aria-label='canvas thumbnail'
+            />
+          )}
+        </AutoSizer>
+      </div>
       <div className='flex w-full justify-between p-1 text-xs'>
         {canvas.label !== undefined && canvas.label !== null && <span>{canvas.label.none}</span>}
         <span className='text-gray-600 italic'>{canvasItemId}</span>

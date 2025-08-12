@@ -12,16 +12,62 @@ import {
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { reset } from '@/state/reducers/canvas';
 import { addCollectionToHistoryRequest } from '@/state/reducers/collections';
-import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
-import { createRef, useEffect, useRef, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { FixedSizeGrid as Grid } from 'react-window';
 
 const CANVASVIEWER_NAME = 'collection-inspector';
+const COLUMN_COUNT = 5;
+
+interface GridCellProps {
+  columnIndex: number;
+  rowIndex: number;
+  style: React.CSSProperties;
+  data: {
+    collection: Collection;
+    width: number;
+    height: number;
+  };
+}
+
+const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => {
+  const index = rowIndex * COLUMN_COUNT + columnIndex;
+  //we return an empty div if the index is out of bounds
+  //this is to avoid the error "index out of bounds" when using react-window
+  if (index >= data.collection.content.length) {
+    return <div style={style} />;
+  }
+
+  return (
+    <div
+      className={`${
+        columnIndex % 2
+          ? rowIndex % 2 === 0
+            ? 'GridItemOdd'
+            : 'GridItemEven'
+          : rowIndex % 2
+            ? 'GridItemOdd'
+            : 'GridItemEven'
+      }`}
+      style={style}
+    >
+      <GridThumb
+        canvasId={data.collection.content[index].canvasId}
+        collectionId={data.collection.id ?? ''}
+        canvasViewerName={CANVASVIEWER_NAME}
+        thumbWidth={data.width}
+        thumbHeight={data.height}
+      />
+    </div>
+  );
+};
 
 const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
@@ -30,51 +76,11 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
     state.collections.values.find((elt) => elt.id === collectionId),
   );
 
-  const gridRef = useRef(null);
-  const refs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
   const [activeTab, setActiveTab] = useState('document');
-
-  if (activeCollection?.content) {
-    if (Object.keys(refs.current).length !== activeCollection.content.length) {
-      activeCollection.content.forEach(({ canvasId }) => {
-        if (!(canvasId in refs.current)) {
-          refs.current[canvasId] = createRef();
-        }
-      });
-    }
-  }
 
   useEffect(() => {
     appDispatch(reset('collection-inspector')); // Reset the canvas state when the component mounts
   }, []);
-
-  useEffect(() => {
-    if (activeCollection?.content && gridRef.current !== null) {
-      const grid = GridStack.init(
-        { float: false, disableResize: true, disableDrag: true },
-        gridRef.current,
-      );
-      grid.on('change', (_event, _items) => {
-        grid.compact();
-      });
-
-      grid.batchUpdate(); //afin d'éviter les rendus tant qu'on n'a pas terminé les makeWidgets
-      grid.removeAll();
-      activeCollection.content.forEach(({ canvasId }, index) => {
-        const item = refs.current[canvasId].current;
-        const x = index % 12;
-        const y = Math.floor(index / 12);
-        if (item !== null) {
-          item.setAttribute('data-gs-x', x.toString());
-          item.setAttribute('data-gs-y', y.toString());
-          item.setAttribute('data-gs-width', '1');
-          item.setAttribute('data-gs-height', '1');
-          grid.makeWidget(item);
-        }
-      });
-      grid.batchUpdate(false); //on termine les makeWidgets
-    }
-  }, [activeCollection]);
 
   return (
     <section className='h-full max-h-full w-full max-w-full'>
@@ -104,17 +110,25 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
               </Accordion>
               <CollectionToolbar collectionId={collectionId} />
               <div className='panel h-full w-full overflow-hidden'>
-                <div className='flex h-full w-fit flex-wrap content-start items-start gap-2 overflow-y-auto'>
-                  {activeCollection.content.map((item) => (
-                    <div key={item.canvasId} ref={refs.current[item.canvasId]} className='flex p-1'>
-                      <GridThumb
-                        canvasId={item.canvasId}
-                        collectionId={activeCollection.id as string}
-                        canvasViewerName={CANVASVIEWER_NAME}
-                      />
-                    </div>
-                  ))}
-                </div>
+                <AutoSizer role='list'>
+                  {({ height, width }) => (
+                    <Grid
+                      columnCount={COLUMN_COUNT}
+                      columnWidth={width / COLUMN_COUNT}
+                      height={height}
+                      rowCount={Math.ceil(activeCollection.content.length / COLUMN_COUNT)}
+                      rowHeight={175}
+                      width={width}
+                      itemData={{
+                        collection: activeCollection,
+                        width: width / COLUMN_COUNT - 20,
+                        height: 165,
+                      }}
+                    >
+                      {GridCell}
+                    </Grid>
+                  )}
+                </AutoSizer>
               </div>
             </div>
           ) : (

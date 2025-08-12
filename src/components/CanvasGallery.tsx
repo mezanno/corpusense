@@ -122,7 +122,7 @@ const CanvasGallery = ({ canvasViewerName }: { canvasViewerName: string }) => {
             {({ height, width }) => (
               <Grid
                 columnCount={4}
-                columnWidth={width / 4}
+                columnWidth={width / 4 - 10}
                 height={height}
                 rowCount={Math.ceil(canvases.length / 4)}
                 rowHeight={150}
