@@ -1,4 +1,5 @@
 import AlertDialogLogin from '@/components/auth/AlertDialogLogin';
+import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
@@ -13,7 +14,7 @@ import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import { logoutRequest } from '@/state/reducers/auth';
 import { removeFromOpenedCollections } from '@/state/reducers/collections';
 import { connectedUser } from '@/state/selectors/auth';
-import { getOpenedCollections } from '@/state/selectors/collections';
+import { getCollections, getOpenedCollections } from '@/state/selectors/collections';
 import { getWorkersByStatus } from '@/state/selectors/workers';
 import {
   Archive,
@@ -182,7 +183,7 @@ const CollectionsSideBarGroup = () => {
                             </SidebarMenuAction>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent side='right' align='start'>
-                            <DropdownMenuItem onClick={() => void handleOnClose(col.id as string)}>
+                            <DropdownMenuItem onClick={() => void handleOnClose(col.id)}>
                               {t('btn_close_collection')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -251,6 +252,7 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
   const user = useAppSelector(connectedUser);
   const appDispatch = useAppDispatch();
   const [isOpen, setIsOpen] = useState(false);
+  const collections = useAppSelector(getCollections);
 
   const handleLogout = () => {
     appDispatch(logoutRequest());
@@ -292,27 +294,23 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
           <SourcesSideBarGroup />
           <SidebarGroup>
             <SidebarMenu>
-              {[
-                {
-                  title: t('page_title_collection_manager'),
-                  url: CorpusenseRoutes.COLLECTIONS,
-                  icon: List,
-                },
-                {
-                  title: t('page_title_models_manager'),
-                  url: CorpusenseRoutes.MODELS,
-                  icon: Container,
-                },
-              ].map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link to={CorpusenseRoutes.COLLECTIONS}>
+                    <List />
+                    <span>{t('page_title_collection_manager')}</span>
+                    <Badge>{collections.length}</Badge>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link to={CorpusenseRoutes.MODELS}>
+                    <Container />
+                    <span>{t('page_title_models_manager')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroup>
           <CollectionsSideBarGroup />
