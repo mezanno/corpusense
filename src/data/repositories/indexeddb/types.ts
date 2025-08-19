@@ -7,7 +7,7 @@ import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { Scope } from '@/data/models/Scope';
-import { StoredItem, StoredItemDetails } from '@/data/models/StoredItem';
+import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
 import { Canvas, Manifest } from '@iiif/presentation-3';
@@ -55,17 +55,12 @@ export interface ManifestRepository {
   getCanvasById(manifestId: string, canvasId: string): Promise<Canvas>;
   getCanvasByIds(manifestId: string, canvasId: string[]): Promise<Canvas[]>;
   getManifestById(manifestId: string): Promise<Manifest>;
-  getManifestDetailsByIds(manifestIds: string[]): Promise<StoredItemDetails[]>;
+  getManifestDetailsByIds(manifestIds: string[]): Promise<StoredManifestDetails[]>;
   loadMetadataForManifest(manifestId: string): Promise<ItemMetadataAttribute[]>;
   saveManifest(manifest: Manifest): Promise<void>;
   addToHistory(url: string): Promise<History>;
   removeFromHistory(url: string): Promise<void>;
   getHistory(): Promise<History[]>;
-}
-
-export interface StoredItemRepository {
-  getAllDetails(): Promise<StoredItemDetails[]>;
-  getById(id: string): Promise<StoredItem>;
 }
 
 export interface TagRepository {

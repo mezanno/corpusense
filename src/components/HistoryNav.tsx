@@ -1,4 +1,4 @@
-import { StoredItemDetails } from '@/data/models/StoredItem';
+import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { removeFromHistoryRequest } from '@/state/reducers/manifests';
 import { getHistory } from '@/state/selectors/manifests';
@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
-const Item = ({ item }: { item: StoredItemDetails }) => {
+const Item = ({ item }: { item: StoredManifestDetails }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -59,7 +59,7 @@ const Item = ({ item }: { item: StoredItemDetails }) => {
 };
 
 const HistoryNav = () => {
-  const history: StoredItemDetails[] = useAppSelector(getHistory);
+  const history: StoredManifestDetails[] = useAppSelector(getHistory);
 
   const historyItems = useMemo(
     () => history.map((item) => <Item key={item.id} item={item} />),
