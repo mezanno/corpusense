@@ -1,18 +1,22 @@
 export type CollectionScope = { collectionId: string };
-export type CanvasScope = { canvasId: string; collectionId: string };
-export type AnnotationScope = { annotationId: string };
+export type CanvasScope = { collectionId: string; canvasId: string };
+export type AnnotationScope = {
+  collectionId: string;
+  canvasId: string;
+  annotationId: string;
+};
 export type Scope = CollectionScope | CanvasScope | AnnotationScope;
 
 export function isCollectionScope(scope: Scope): scope is CollectionScope {
-  return 'collectionId' in scope && !('canvasId' in scope);
+  return 'collectionId' in scope && !('canvasId' in scope) && !('annotationId' in scope);
 }
 
 export function isCanvasScope(scope: Scope): scope is CanvasScope {
-  return 'collectionId' in scope && 'canvasId' in scope;
+  return 'collectionId' in scope && 'canvasId' in scope && !('annotationId' in scope);
 }
 
 export function isAnnotationScope(scope: Scope): scope is AnnotationScope {
-  return 'annotationId' in scope;
+  return 'collectionId' in scope && 'canvasId' in scope && 'annotationId' in scope;
 }
 
 export function isSameScope(s1: Scope, s2: Scope): boolean {
@@ -29,14 +33,15 @@ export function isSameScope(s1: Scope, s2: Scope): boolean {
 }
 
 export function toString(scope: Scope): string {
-  if (isCollectionScope(scope)) {
-    return `collection ${scope.collectionId}`;
+  if (isAnnotationScope(scope)) {
+    return `annotation ${scope.annotationId} - canvas ${scope.canvasId} - collection ${scope.collectionId}`;
   }
   if (isCanvasScope(scope)) {
     return `canvas ${scope.canvasId} - collection ${scope.collectionId}`;
   }
-  if (isAnnotationScope(scope)) {
-    return `annotation ${scope.annotationId}`;
+  if (isCollectionScope(scope)) {
+    return `collection ${scope.collectionId}`;
   }
+
   return 'unknown';
 }

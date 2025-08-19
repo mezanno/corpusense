@@ -23,19 +23,17 @@ export interface AnnotationRepository {
   getById(id: string): Promise<Annotation>;
   saveAllAnnotations(annotations: Annotation[]): Promise<void>;
   removeAllById(ids: string[]): Promise<string[]>;
+  removeById(id: string): Promise<void>;
   removeByScope(scope: Scope): Promise<string[]>;
   updateAnnotation(annotation: Annotation): Promise<void>;
   updateOrder(annotationId: string, order: number): Promise<void>;
-}
-export interface CanvasRepository {
-  getCanvasById(id: string): Promise<Canvas>;
-  exists(id: string): Promise<boolean>;
 }
 
 export interface CollectionRepository {
   getAll(): Promise<CollectionDetails[]>;
   getCollectionById(id: string): Promise<Collection>;
   getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]>;
+  getCanvasInCollectionById(canvasId: string, collectionId: string): Promise<Canvas>;
   insertCollection(collection: Collection): Promise<void>;
   saveCollectionContent(collection: Collection): Promise<void>;
   update(

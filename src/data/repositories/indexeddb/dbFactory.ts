@@ -1,5 +1,5 @@
 import { IndexedDBAnnotationRepository } from './annotations';
-import { IndexedDBCanvasRepository } from './canvas';
+// import { IndexedDBCanvasRepository } from './canvas';
 import { IndexedDBCollectionRepository } from './collections';
 import { IndexedDBItemMetadataRepository } from './itemMetadata';
 import { IndexedDBManifestRepository } from './manifest';
@@ -25,9 +25,9 @@ export function getTagRepository() {
   return new IndexedDBTagRepository();
 }
 
-export function getCanvasRepository() {
-  return new IndexedDBCanvasRepository();
-}
+// export function getCanvasRepository() {
+//   return new IndexedDBCanvasRepository();
+// }
 
 export function getItemMetadataRepository() {
   return new IndexedDBItemMetadataRepository();

@@ -3,10 +3,7 @@ import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
 import { isCanvasScope, toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
-import {
-  getAnnotationRepository,
-  getCanvasRepository,
-} from '@/data/repositories/indexeddb/dbFactory';
+import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
 import { addAnnotationsSuccess } from '@/state/reducers/annotations';
 import { PluginParams } from '@/state/reducers/workers';
@@ -43,20 +40,15 @@ export default function* peroSaga(
   const annotationRepository = getAnnotationRepository();
 
   if (isCanvasScope(task.scope)) {
-    const canvasRepository = getCanvasRepository();
     try {
-      const canvas = (yield call(
-        [canvasRepository, canvasRepository.getCanvasById],
-        task.scope.canvasId,
-      )) as Canvas;
-      const image = getImage(canvas);
+      const image = getImage(task.canvas);
       let regions = JSON.stringify([]);
       if (hasRegion(params)) {
         regions = JSON.stringify(params.region);
       } else {
         const annotations = (yield call(
           [annotationRepository, annotationRepository.getAnnotationsForCanvas],
-          canvas.id,
+          task.canvas.id,
           task.scope.collectionId,
         )) as Annotation[];
         const annotationRegions = annotations.filter(
@@ -88,7 +80,7 @@ export default function* peroSaga(
         const peroResult = peroResultSchema.parse(gradioResult.data);
         const annotations = convertPeroTranscriptionsToAnnotations(
           peroResult,
-          canvas.id,
+          task.canvas.id,
           task.scope.collectionId,
         );
         yield put(addAnnotationsSuccess(annotations));

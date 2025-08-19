@@ -3,7 +3,6 @@ import { Collection } from '@/data/models/Collection';
 import { ItemMetadata } from '@/data/models/Metadata';
 import { Tag } from '@/data/models/Tag';
 import {
-  getCanvasRepository,
   getCollectionRepository,
   getItemMetadataRepository,
   getTagRepository,
@@ -49,7 +48,6 @@ function* handleExportRequest(
   let header = 'nom_collection\turl\tnum_page\ttags';
 
   let firstTimeHeader = true;
-  const canvasRepository = getCanvasRepository();
   const tagRepository = getTagRepository();
   const itemMetadataRepository = getItemMetadataRepository();
   if (collectionToExport !== undefined) {
@@ -58,8 +56,9 @@ function* handleExportRequest(
       const collectionElement = collectionToExport.content[i];
       try {
         const canvas = (yield call(
-          [canvasRepository, canvasRepository.getCanvasById],
+          [collectionRepository, collectionRepository.getCanvasInCollectionById],
           collectionElement.canvasId,
+          collectionId,
         )) as Canvas;
 
         const image = getImage(canvas);

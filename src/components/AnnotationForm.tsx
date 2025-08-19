@@ -34,6 +34,7 @@ const annotationFormSchema = z.object({
 const AnnotationForm = ({
   selected,
   canvas,
+  collectionId,
   handleDelete,
 }: {
   selected: {
@@ -41,6 +42,7 @@ const AnnotationForm = ({
     editable?: boolean;
   }[];
   canvas: Canvas;
+  collectionId: string;
   handleDelete: () => void;
 }) => {
   const appDispatch = useAppDispatch();
@@ -75,7 +77,7 @@ const AnnotationForm = ({
   }, [selected]);
 
   const startOcrAsync = () => {
-    if (editedAnnotation?.collectionId !== undefined) {
+    if (editedAnnotation !== null) {
       const rect = editedAnnotation.target.selector.geometry;
       appDispatch(
         startWorkerProcess({
@@ -88,7 +90,7 @@ const AnnotationForm = ({
               height: rect.bounds.maxY - rect.bounds.minY,
             },
           },
-          scope: { canvasId: canvas.id, collectionId: editedAnnotation.collectionId },
+          scope: { canvasId: canvas.id, collectionId },
         }),
       );
     }
@@ -183,7 +185,11 @@ const AnnotationForm = ({
             handleOcr={startOcrAsync}
             handleExportText={handleExportText}
             handleDeleteAllAnnotations={handleRemoveAllAnnotationsInside}
-            scope={{ annotationId: selected[0].annotation.id }}
+            scope={{
+              annotationId: selected[0].annotation.id,
+              canvasId: canvas.id,
+              collectionId,
+            }}
           />
           <Button
             title={t('btn_delete_annotation')}
