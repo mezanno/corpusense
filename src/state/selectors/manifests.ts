@@ -1,7 +1,7 @@
-import { StoredItemDetails } from '@/data/models/StoredItem';
+import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { RootState } from '../store';
 
-const EMPTY_ARRAY: StoredItemDetails[] = [];
+const EMPTY_ARRAY: StoredManifestDetails[] = [];
 
 /**
  * @returns The content of the loaded manifest (+ metadata) or null if no manifest is loaded

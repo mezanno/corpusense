@@ -133,13 +133,13 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     if (collection === undefined) {
       throw new Error(`Collection with id ${collectionId} not found`);
     }
-    await db.transaction('rw', db.storedItems, db.collections, async () => {
+    await db.transaction('rw', db.storedManifests, db.collections, async () => {
       //update the content of the collection
       const savedElements = collection.content?.filter((elt) => elt.canvasId !== canvasId);
       collection.content = savedElements;
       await db.collections.put(collection);
       //and remove the canvas from the storedItems
-      await db.storedItems.delete(canvasId);
+      await db.storedManifests.delete(canvasId);
     });
     return collection;
   }

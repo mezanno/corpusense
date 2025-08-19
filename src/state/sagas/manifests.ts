@@ -1,7 +1,7 @@
 import { importerPlugins } from '@/App';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
-import { StoredItemDetails } from '@/data/models/StoredItem';
+import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import {
   getItemMetadataRepository,
   getManifestRepository,
@@ -161,14 +161,14 @@ function* handleRemoveFromHistory(action: { payload: string }) {
  * Side effect to load the history from IndexedDB. It fetches all the history items
  * and dispatches an action to set the history in the state.
  */
-function* loadHistorySaga(): Generator<Effect, void, History[] | StoredItemDetails[]> {
+function* loadHistorySaga(): Generator<Effect, void, History[] | StoredManifestDetails[]> {
   try {
     const manifestRepository = getManifestRepository();
     const history = (yield call([manifestRepository, manifestRepository.getHistory])) as History[];
     const manifestDetails = (yield call(
       [manifestRepository, manifestRepository.getManifestDetailsByIds],
       history.map((item) => item.url),
-    )) as StoredItemDetails[];
+    )) as StoredManifestDetails[];
     yield put(setHistory({ history, manifestDetails }));
   } catch (e) {
     console.warn('Error loading history from indexedDB', e);

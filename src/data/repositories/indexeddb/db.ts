@@ -5,7 +5,7 @@ import { History } from '@/data/models/History';
 import { ItemMetadata } from '@/data/models/Metadata';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Result } from '@/data/models/Result';
-import { StoredItemContent, StoredItemDetails } from '@/data/models/StoredItem';
+import { StoredManifestContent, StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
 import Dexie, { type EntityTable } from 'dexie';
@@ -14,8 +14,8 @@ const db = new Dexie('mezanno') as Dexie & {
   collections: EntityTable<CollectionDetails, 'id'>;
   collectionContents: EntityTable<CollectionContent, 'id'>;
   history: EntityTable<History, 'url'>;
-  storedItems: EntityTable<StoredItemDetails, 'id'>;
-  storedItemContents: EntityTable<StoredItemContent, 'id'>;
+  storedManifests: EntityTable<StoredManifestDetails, 'id'>;
+  storedManifestContents: EntityTable<StoredManifestContent, 'id'>;
   itemMetadata: EntityTable<ItemMetadata, 'id'>;
   tags: EntityTable<Tag, 'id'>;
   annotations: EntityTable<Annotation, 'id'>;
@@ -29,8 +29,8 @@ db.version(1).stores({
   collections: '&id, name, *tags.id',
   collectionContents: 'id',
   history: '&url',
-  storedItems: '&id, name',
-  storedItemContents: 'id',
+  storedManifests: '&id, name',
+  storedManifestContents: '&id',
   typesList: '&label',
   itemMetadata: '[id+attribute.label]',
   tags: '&id',
