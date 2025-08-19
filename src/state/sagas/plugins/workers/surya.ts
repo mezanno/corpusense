@@ -5,7 +5,7 @@ import { isCanvasScope, toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
-  getCanvasRepository,
+  getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
 import { fetchAnnotationsSuccess } from '@/state/reducers/annotations';
@@ -41,11 +41,12 @@ export default function* peroSaga(
   const annotationRepository = getAnnotationRepository();
 
   if (isCanvasScope(task.scope)) {
-    const canvasRepository = getCanvasRepository();
+    const collectionRepository = getCollectionRepository();
     try {
       const canvas = (yield call(
-        [canvasRepository, canvasRepository.getCanvasById],
+        [collectionRepository, collectionRepository.getCanvasInCollectionById],
         task.scope.canvasId,
+        task.scope.collectionId,
       )) as Canvas;
       const image = getImage(canvas);
       let regions = JSON.stringify([]);

@@ -98,9 +98,7 @@ function* handleRemoveAnnotation(action: PayloadAction<string[]>) {
   for (let i = 0; i < action.payload.length; i++) {
     const annotationId = action.payload[i];
     try {
-      yield call([annotationRepository, annotationRepository.removeByScope], {
-        annotationId,
-      });
+      yield call([annotationRepository, annotationRepository.removeById], annotationId);
       annotationsDeleted.push(annotationId);
     } catch (e) {
       console.warn(e);

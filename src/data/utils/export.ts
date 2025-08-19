@@ -9,7 +9,6 @@ import {
 import { convertW3CAnnotationsToIIIF, IIIF_CONTEXT } from '../models/converters/iiif';
 import {
   getAnnotationRepository,
-  getCanvasRepository,
   getCollectionRepository,
   getTagRepository,
 } from '../repositories/indexeddb/dbFactory';
@@ -65,7 +64,10 @@ const generateCanvas = async (
   collectionId: string,
 ): Promise<Canvas> => {
   try {
-    const canvas = await getCanvasRepository().getCanvasById(canvasId);
+    const canvas = await getCollectionRepository().getCanvasInCollectionById(
+      canvasId,
+      collectionId,
+    );
 
     let allAnnotationPages: AnnotationPage[] = [];
     //TODO: il faudra ajouter les annotations déjà existantes

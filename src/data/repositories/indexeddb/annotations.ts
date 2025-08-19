@@ -48,6 +48,10 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     return ids;
   }
 
+  async removeById(id: string): Promise<void> {
+    await db.annotations.delete(id);
+  }
+
   async removeByScope(scope: Scope): Promise<string[]> {
     if (isAnnotationScope(scope)) {
       return this.removeAllById([scope.annotationId]);

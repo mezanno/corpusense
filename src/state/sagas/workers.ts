@@ -187,7 +187,7 @@ function* forkStartWorker(worker: Worker | WorkerCreateDTO): Generator<Effect, v
  */
 function* startWorker(
   worker: Worker | WorkerCreateDTO,
-): Generator<Effect, void, WorkerResponse | Worker | undefined | Canvas[] | Result> {
+): Generator<Effect, void, WorkerResponse | Worker | undefined | Canvas | Canvas[] | Result> {
   const workerRepository = getWorkerRepository();
   let currentWorker: Worker | undefined = undefined;
   let task: Task | undefined = undefined;
@@ -230,7 +230,21 @@ function* startWorker(
 
       //initialize the worker queue if the scope is collection
       currentWorker.queue = [];
-      if (isCollectionScope(worker.scope)) {
+      if (isCanvasScope(worker.scope)) {
+        const collectionRepository = getCollectionRepository();
+        const canvas = (yield call(
+          [collectionRepository, collectionRepository.getCanvasInCollectionById],
+          worker.scope.canvasId,
+          worker.scope.collectionId,
+        )) as Canvas;
+        //add the canvas to the worker queue
+        currentWorker.queue.push({
+          id: 0,
+          scope: worker.scope,
+          canvas,
+          status: WorkerStatus.WAITING,
+        });
+      } else if (isCollectionScope(worker.scope)) {
         const collectionId = worker.scope.collectionId;
         const collectionRepository = getCollectionRepository();
         const canvases = (yield call(
@@ -251,17 +265,11 @@ function* startWorker(
         currentWorker.queue = canvases.map((canvas, index) => ({
           id: index,
           scope: { collectionId: collectionId, canvasId: canvas.id },
+          canvas,
           status: WorkerStatus.WAITING,
         }));
         yield call([workerRepository, workerRepository.patch], currentWorker.id, {
           queue: currentWorker.queue,
-        });
-      } else if (isCanvasScope(worker.scope)) {
-        //add the canvas to the worker queue
-        currentWorker.queue.push({
-          id: 0,
-          scope: worker.scope,
-          status: WorkerStatus.WAITING,
         });
       }
     }

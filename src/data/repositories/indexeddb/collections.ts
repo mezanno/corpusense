@@ -52,6 +52,20 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     return canvases;
   }
 
+  async getCanvasInCollectionById(canvasId: string, collectionId: string): Promise<Canvas> {
+    const collection = await this.getCollectionById(collectionId);
+    if (collection === undefined) {
+      throw new Error(`Collection with id ${collectionId} not found`);
+    }
+
+    const collectionElement = collection.content.find((elt) => elt.canvasId === canvasId);
+    if (!collectionElement) {
+      throw new Error(`Canvas with id ${canvasId} not found in collection ${collectionId}`);
+    }
+
+    return await getManifestRepository().getCanvasById(collectionElement.manifestId, canvasId);
+  }
+
   async insertCollection(collection: Collection): Promise<void> {
     const { content, ...collectionDetails } = collection;
     await db.transaction('rw', db.collections, db.collectionContents, async () => {

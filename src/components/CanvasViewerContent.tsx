@@ -223,11 +223,12 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
             },
           }}
         />
-        {selected?.length > 0 && (
+        {collectionId !== undefined && selected?.length > 0 && (
           <div className='absolute bottom-0 left-0 w-full bg-amber-100'>
             <AnnotationForm
               canvas={canvas}
               selected={selected}
+              collectionId={collectionId}
               handleDelete={handleDeleteAnnotation}
             />
           </div>
