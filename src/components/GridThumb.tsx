@@ -6,8 +6,8 @@ import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import { removeElementFromCollectionRequest } from '@/state/reducers/collections';
 import { getAnnotationsByType } from '@/state/selectors/annotations';
 import { isCanvasDisplayed } from '@/state/selectors/canvas';
-import { getCanvasById } from '@/state/selectors/storedItems';
-import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
+import { getLoadedCanvasById } from '@/state/selectors/collections';
+import { IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import 'gridstack/dist/gridstack.min.css';
 import { CircleX, SpellCheck, SpellCheck2 } from 'lucide-react';
@@ -30,7 +30,7 @@ const GridThumb = ({
 }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const canvas = useAppSelector((state) => getCanvasById(state, canvasId)) as Canvas;
+  const canvas = useAppSelector((state) => getLoadedCanvasById(state, canvasId));
   const idDisplayed = useAppSelector((state) =>
     isCanvasDisplayed(state, canvasId, canvasViewerName),
   );

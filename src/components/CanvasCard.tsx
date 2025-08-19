@@ -12,7 +12,7 @@ import {
   ContextMenuTrigger,
 } from './ui/context-menu';
 
-import { Collection } from '@/data/models/Collection';
+import { CollectionDetails } from '@/data/models/Collection';
 import { getImageForThumbnail } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import {
@@ -47,7 +47,7 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const selection = useAppSelector(getSelection);
-  const collections: Collection[] = useAppSelector(getCollections);
+  const collections: CollectionDetails[] = useAppSelector(getCollections);
   const selected: boolean = useAppSelector(isSelected(index, canvas.id));
 
   const inputCollectionName = useRef(null);
@@ -136,13 +136,13 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
               <ContextMenuItem onClick={() => setDialogOpen(true)}>
                 {t('menu_create_from_selection')}
               </ContextMenuItem>
-              <ContextMenuSub>
-                <ContextMenuSubTrigger>
-                  {t('menu_add_selection_to_collection')}
-                </ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                  {collections?.length > 0 &&
-                    collections.map((col) => (
+              {collections?.length > 0 && (
+                <ContextMenuSub>
+                  <ContextMenuSubTrigger>
+                    {t('menu_add_selection_to_collection')}
+                  </ContextMenuSubTrigger>
+                  <ContextMenuSubContent>
+                    {collections.map((col) => (
                       <ContextMenuItem
                         key={col.id}
                         onClick={() => handleAddSelectionToCollection(col.id)}
@@ -150,8 +150,9 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
                         {col.name}
                       </ContextMenuItem>
                     ))}
-                </ContextMenuSubContent>
-              </ContextMenuSub>
+                  </ContextMenuSubContent>
+                </ContextMenuSub>
+              )}
 
               <ContextMenuSeparator />
             </>

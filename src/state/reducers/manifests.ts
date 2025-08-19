@@ -1,6 +1,7 @@
 import { Event, EventType } from '@/data/models/Event';
 import { History } from '@/data/models/History';
 import { ItemMetadataAttribute } from '@/data/models/Metadata';
+import { StoredItemDetails } from '@/data/models/StoredItem';
 import { Manifest } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -12,6 +13,7 @@ export interface ManifestState {
   } | null;
   isLoaded: boolean;
   history: History[];
+  historyDetails?: StoredItemDetails[];
   manifestOpenEvent: Event | undefined; // Optional event to track when the manifest is opened
 }
 
@@ -19,6 +21,7 @@ export const manifestInitialState: ManifestState = {
   isLoading: false,
   loadedData: null,
   history: [],
+  historyDetails: [],
   isLoaded: false,
   manifestOpenEvent: undefined, // Initialize the manifestOpenEvent to false
 };
@@ -66,8 +69,12 @@ export const manifestsSlice = createSlice({
       state.history = state.history.filter((item) => item.url !== action.payload.url);
       state.history.unshift(action.payload);
     },
-    setHistory: (state, action: PayloadAction<History[]>) => {
-      state.history = action.payload;
+    setHistory: (
+      state,
+      action: PayloadAction<{ history: History[]; manifestDetails: StoredItemDetails[] }>,
+    ) => {
+      state.history = action.payload.history;
+      state.historyDetails = action.payload.manifestDetails;
     },
     removeFromHistoryRequest: (_state, _action: PayloadAction<string>) => {},
     removeFromHistorySuccess: (state, action: PayloadAction<string>) => {

@@ -1,42 +1,66 @@
 import { CollectionElement } from '@/data/models/CollectionElement';
 import { Canvas } from '@iiif/presentation-3';
-import { Collection } from '../../models/Collection';
-import { SelectedCanvas } from '../../models/SelectedCanvas';
+import { groupBy, mapValues } from 'lodash';
+import { Collection, CollectionDetails } from '../../models/Collection';
 import { db } from './db';
+import { getAnnotationRepository, getManifestRepository } from './dbFactory';
 import { CollectionRepository } from './types';
 
 export class IndexedDBCollectionRepository implements CollectionRepository {
-  async getAll(): Promise<Collection[]> {
+  async getAll(): Promise<CollectionDetails[]> {
     return await db.collections.toArray();
   }
 
   async getCollectionById(id: string): Promise<Collection> {
-    const result = await db.collections.get(id);
-    if (result === undefined) {
+    const details = await db.collections.get(id);
+    if (details === undefined) {
       throw new Error(`Collection with id ${id} not found`);
     }
-    return result;
+    const content = await db.collectionContents.get(id);
+
+    return { ...details, content: content?.content || [] };
   }
 
   async getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]> {
-    const collection = await db.collections.get(collectionId);
+    const collection = await this.getCollectionById(collectionId);
     if (collection === undefined) {
       throw new Error(`Collection with id ${collectionId} not found`);
     }
-    const canvasesIds = collection.content.map((elt) => elt.canvasId);
-    const items = await db.storedItems.bulkGet(canvasesIds);
 
-    if (items === undefined || items.length === 0) {
-      return [];
+    //get the list of canvases in the collection (with their manifestId)
+    const canvasesByManifest = groupBy(
+      collection.content.map((elt) => ({
+        canvasId: elt.canvasId,
+        manifestId: elt.manifestId,
+      })),
+      'manifestId',
+    );
+    //group the canvases by manifestId
+    const groupedCanvasesIds = mapValues(canvasesByManifest, (value) =>
+      value.map((elt) => elt.canvasId),
+    );
+    const manifestRepository = getManifestRepository();
+    const canvases: Canvas[] = [];
+    for (const manifestId in groupedCanvasesIds) {
+      const canvasIds = groupedCanvasesIds[manifestId];
+      if (canvasIds.length > 0) {
+        const result = await manifestRepository.getCanvasByIds(manifestId, canvasIds);
+        canvases.push(...result);
+      }
     }
 
-    return items
-      .map((item) => item?.content as Canvas)
-      .filter((canvas): canvas is Canvas => canvas !== undefined);
+    return canvases;
   }
 
   async insertCollection(collection: Collection): Promise<void> {
-    await db.collections.add(collection);
+    const { content, ...collectionDetails } = collection;
+    await db.transaction('rw', db.collections, db.collectionContents, async () => {
+      await db.collections.add(collectionDetails);
+      await db.collectionContents.add({
+        id: collection.id,
+        content: content ?? [],
+      });
+    });
   }
 
   async update(
@@ -48,11 +72,15 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       modelId,
     }: { name: string; tags: string[]; content: CollectionElement[]; modelId?: string },
   ): Promise<void> {
-    await db.collections.update(id, {
-      name,
-      tags,
-      content,
-      modelId,
+    await db.transaction('rw', db.collections, db.collectionContents, async () => {
+      await db.collections.update(id, {
+        name,
+        tags,
+        modelId,
+      });
+      await db.collectionContents.update(id, {
+        content,
+      });
     });
   }
 
@@ -62,32 +90,27 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     });
   }
 
-  async saveCollectionContent(
-    collection: Collection,
-    selection: SelectedCanvas[],
-    manifestId: string,
-  ): Promise<void> {
-    await db.transaction('rw', db.storedItems, db.collections, async () => {
-      const canvasesToStore = selection.map((elt) => ({
-        id: elt.canvas.id,
-        content: elt.canvas,
-        parentId: manifestId,
-      }));
-      //on utilie bulkPut pour éviter les doublons et éviter une erreur si un doublon existe (avec bulkAdd, une erreur est levée au premier doublon rencontré)
-      await db.storedItems.bulkPut(canvasesToStore);
-      await db.collections.put(collection);
+  async saveCollectionContent(collection: Collection): Promise<void> {
+    const { content, ...collectionDetails } = collection;
+    await db.transaction('rw', db.collections, db.collectionContents, async () => {
+      await db.collections.put(collectionDetails);
+      await db.collectionContents.put({
+        id: collection.id,
+        content: collection.content,
+      });
     });
   }
 
   async remove(collectionToRemove: Collection): Promise<void> {
-    await db.transaction('rw', db.collections, db.storedItems, async () => {
-      //list the canvases to remove (to remove them from the storedItems)
-      const canvasIds = collectionToRemove.content.map((elt) => elt.canvasId);
-      await db.storedItems.bulkDelete(canvasIds);
-      //remove the annotations related to the canvases (for this collection)
-      //TODO!
+    await db.transaction('rw', db.collections, db.collectionContents, db.annotations, async () => {
+      //remove the annotations of the collection
+      const annotationRepository = getAnnotationRepository();
+      await annotationRepository.removeByScope({
+        collectionId: collectionToRemove.id,
+      });
       //remove the collection
       await db.collections.delete(collectionToRemove.id);
+      await db.collectionContents.delete(collectionToRemove.id);
     });
   }
 

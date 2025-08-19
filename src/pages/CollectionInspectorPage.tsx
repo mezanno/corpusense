@@ -15,7 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { reset } from '@/state/reducers/canvas';
-import { addCollectionToHistoryRequest } from '@/state/reducers/collections';
+import { loadCollectionRequest } from '@/state/reducers/collections';
+import { getCurrentCollection } from '@/state/selectors/collections';
 import 'gridstack/dist/gridstack.min.css';
 import { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -72,9 +73,8 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
 const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const activeCollection = useAppSelector((state) =>
-    state.collections.values.find((elt) => elt.id === collectionId),
-  );
+  const currentCollection = useAppSelector(getCurrentCollection);
+  console.log('currentCollection: ', currentCollection);
 
   const [activeTab, setActiveTab] = useState('document');
 
@@ -86,7 +86,7 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
     <section className='h-full max-h-full w-full max-w-full'>
       <ResizablePanelGroup direction='horizontal'>
         <ResizablePanel className='mr-1 flex' minSize={30}>
-          {activeCollection ? (
+          {currentCollection ? (
             <div className='flex h-full max-h-full w-full max-w-full flex-col gap-2'>
               <Accordion
                 asChild
@@ -99,12 +99,12 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
                   <AccordionTrigger className='mx-2'>
                     <h2 className='flex gap-2 text-lg'>
                       {t('title_metadata_collection')}
-                      <span className='font-bold italic'>{activeCollection.name}</span>
-                      <span className='font-thin'>({activeCollection.id})</span>
+                      <span className='font-bold italic'>{currentCollection.name}</span>
+                      <span className='font-thin'>({currentCollection.id})</span>
                     </h2>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <CollectionMetadataForm collection={activeCollection} />
+                    <CollectionMetadataForm collection={currentCollection} />
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
@@ -116,11 +116,11 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
                       columnCount={COLUMN_COUNT}
                       columnWidth={width / COLUMN_COUNT}
                       height={height}
-                      rowCount={Math.ceil(activeCollection.content.length / COLUMN_COUNT)}
+                      rowCount={Math.ceil(currentCollection.content.length / COLUMN_COUNT)}
                       rowHeight={175}
                       width={width}
                       itemData={{
-                        collection: activeCollection,
+                        collection: currentCollection,
                         width: width / COLUMN_COUNT - 20,
                         height: 165,
                       }}
@@ -169,10 +169,12 @@ const CollectionInspectorPage = () => {
   const { t } = useTranslation();
   const { collectionId } = useParams();
   const dispatch = useAppDispatch();
+  console.log('CollectionInspectorPage collectionId: ', collectionId);
 
   useEffect(() => {
+    console.log('CollectionInspectorPage collectionId - useEffect: ', collectionId);
     if (collectionId !== undefined) {
-      dispatch(addCollectionToHistoryRequest(collectionId));
+      dispatch(loadCollectionRequest(collectionId));
     }
   }, [collectionId]);
 

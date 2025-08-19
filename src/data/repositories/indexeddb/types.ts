@@ -1,5 +1,5 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
-import { Collection } from '@/data/models/Collection';
+import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { CollectionElement } from '@/data/models/CollectionElement';
 import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
@@ -7,8 +7,7 @@ import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { Scope } from '@/data/models/Scope';
-import { SelectedCanvas } from '@/data/models/SelectedCanvas';
-import { StoredItem } from '@/data/models/StoredItem';
+import { StoredItem, StoredItemDetails } from '@/data/models/StoredItem';
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
 import { Canvas, Manifest } from '@iiif/presentation-3';
@@ -31,19 +30,14 @@ export interface AnnotationRepository {
 export interface CanvasRepository {
   getCanvasById(id: string): Promise<Canvas>;
   exists(id: string): Promise<boolean>;
-  add(canvas: Canvas, manifestId: string): Promise<void>;
 }
 
 export interface CollectionRepository {
-  getAll(): Promise<Collection[]>;
+  getAll(): Promise<CollectionDetails[]>;
   getCollectionById(id: string): Promise<Collection>;
   getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]>;
   insertCollection(collection: Collection): Promise<void>;
-  saveCollectionContent(
-    collection: Collection,
-    selection: SelectedCanvas[],
-    manifestId: string,
-  ): Promise<void>;
+  saveCollectionContent(collection: Collection): Promise<void>;
   update(
     id: string,
     { name, tags, content }: { name: string; tags: string[]; content: CollectionElement[] },
@@ -60,8 +54,10 @@ export interface ItemMetadataRepository {
 
 export interface ManifestRepository {
   exists(id: string): Promise<boolean>;
-  getCanvases(manifestId: string, canvasId: string): Promise<Canvas>;
-  getManifest(manifestId: string): Promise<Manifest>;
+  getCanvasById(manifestId: string, canvasId: string): Promise<Canvas>;
+  getCanvasByIds(manifestId: string, canvasId: string[]): Promise<Canvas[]>;
+  getManifestById(manifestId: string): Promise<Manifest>;
+  getManifestDetailsByIds(manifestIds: string[]): Promise<StoredItemDetails[]>;
   loadMetadataForManifest(manifestId: string): Promise<ItemMetadataAttribute[]>;
   saveManifest(manifest: Manifest): Promise<void>;
   addToHistory(url: string): Promise<History>;
@@ -70,7 +66,8 @@ export interface ManifestRepository {
 }
 
 export interface StoredItemRepository {
-  getAll(): Promise<StoredItem[]>;
+  getAllDetails(): Promise<StoredItemDetails[]>;
+  getById(id: string): Promise<StoredItem>;
 }
 
 export interface TagRepository {

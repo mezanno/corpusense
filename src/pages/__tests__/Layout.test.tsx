@@ -57,8 +57,8 @@ describe('Layout', () => {
           {
             id: 'id1',
             name: 'Collection 1',
-            content: [],
             tags: [],
+            contentSize: 0,
           },
         ],
       },

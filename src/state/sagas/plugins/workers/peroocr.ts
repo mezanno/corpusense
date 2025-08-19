@@ -8,7 +8,7 @@ import {
   getCanvasRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
-import { fetchAnnotationsSuccess } from '@/state/reducers/annotations';
+import { addAnnotationsSuccess } from '@/state/reducers/annotations';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
@@ -91,7 +91,7 @@ export default function* peroSaga(
           canvas.id,
           task.scope.collectionId,
         );
-        yield put(fetchAnnotationsSuccess(annotations));
+        yield put(addAnnotationsSuccess(annotations));
         yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
         return {
           status: WorkerStatus.COMPLETED,

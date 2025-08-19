@@ -1,6 +1,7 @@
 import { importerPlugins } from '@/App';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
+import { StoredItemDetails } from '@/data/models/StoredItem';
 import {
   getItemMetadataRepository,
   getManifestRepository,
@@ -35,7 +36,7 @@ const keys = Object.keys(importerPlugins);
 function* handleFetchManifestFromURL(url: string): Generator<Effect, void, Manifest> {
   try {
     const manifestRepository = getManifestRepository();
-    const manifest = yield call([manifestRepository, manifestRepository.getManifest], url);
+    const manifest = yield call([manifestRepository, manifestRepository.getManifestById], url);
     yield call(fetchManifest, { storedManifest: manifest });
   } catch (error) {
     // If the manifest is not found in IndexedDB, we try to fetch it from the URL
@@ -160,11 +161,15 @@ function* handleRemoveFromHistory(action: { payload: string }) {
  * Side effect to load the history from IndexedDB. It fetches all the history items
  * and dispatches an action to set the history in the state.
  */
-function* loadHistorySaga(): Generator<Effect, void, History[]> {
+function* loadHistorySaga(): Generator<Effect, void, History[] | StoredItemDetails[]> {
   try {
     const manifestRepository = getManifestRepository();
-    const history: History[] = yield call([manifestRepository, manifestRepository.getHistory]);
-    yield put(setHistory(history));
+    const history = (yield call([manifestRepository, manifestRepository.getHistory])) as History[];
+    const manifestDetails = (yield call(
+      [manifestRepository, manifestRepository.getManifestDetailsByIds],
+      history.map((item) => item.url),
+    )) as StoredItemDetails[];
+    yield put(setHistory({ history, manifestDetails }));
   } catch (e) {
     console.warn('Error loading history from indexedDB', e);
   }

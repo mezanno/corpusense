@@ -1,4 +1,7 @@
+import { StoredItemDetails } from '@/data/models/StoredItem';
 import { RootState } from '../store';
+
+const EMPTY_ARRAY: StoredItemDetails[] = [];
 
 /**
  * @returns The content of the loaded manifest (+ metadata) or null if no manifest is loaded
@@ -13,7 +16,8 @@ export const getManifestURL = (state: RootState) => state?.manifests?.loadedData
 /**
  * @returns The history of loaded manifests or an empty array if no manifest is loaded
  */
-export const getHistory = (state: RootState) => state?.manifests?.history ?? [];
+
+export const getHistory = (state: RootState) => state.manifests?.historyDetails ?? EMPTY_ARRAY;
 
 /**
  * @returns The canvases of the loaded manifest or an empty array if no manifest is loaded
