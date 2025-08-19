@@ -11,7 +11,6 @@ import manifestsReducer from './reducers/manifests';
 import modelsReducer from './reducers/models';
 import entityReducer from './reducers/namedEntities';
 import selectionReducer from './reducers/selection';
-import storedItemsReducer from './reducers/storedItems';
 import tagsReducer from './reducers/tags';
 import workersReducer from './reducers/workers';
 import getRootSaga from './sagas';
@@ -23,7 +22,6 @@ export const rootReducer = combineReducers({
   selection: selectionReducer,
   collections: collectionsReducer,
   canvases: canvasReducer,
-  storedItems: storedItemsReducer,
   tags: tagsReducer,
   export: exportReducer,
   annotations: annotationsReducer,

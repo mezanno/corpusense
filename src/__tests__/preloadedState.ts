@@ -20,9 +20,6 @@ const defaultPreloadedState: RootState = {
     indexStart: -1,
     indexEnd: -1,
   },
-  storedItems: {
-    items: [],
-  },
   tags: {
     values: [],
   },

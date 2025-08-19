@@ -1,47 +1,34 @@
-import { History } from '@/data/models/History';
+import { StoredItemDetails } from '@/data/models/StoredItem';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import useManifest from '@/hooks/useManifest';
 import { removeFromHistoryRequest } from '@/state/reducers/manifests';
 import { getHistory } from '@/state/selectors/manifests';
-import { IIIFExternalWebResource, InternationalString } from '@iiif/presentation-3';
-import { Summary, Thumbnail } from '@samvera/clover-iiif/primitives';
+import { IIIFExternalWebResource } from '@iiif/presentation-3';
+import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import { CircleX, FileImage } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
-const Item = ({ url }: { url: string }) => {
-  const { manifest } = useManifest(url);
+const Item = ({ item }: { item: StoredItemDetails }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
-  const label = useMemo(() => {
-    const text: InternationalString | undefined = manifest?.summary || manifest?.label;
-
-    return (
-      <Summary
-        className='text-left text-xs font-bold text-mezanno-4'
-        summary={text as InternationalString}
-      />
-    );
-  }, [manifest]);
-
   const thumbnail = useMemo(() => {
-    if (manifest !== null && manifest.thumbnail !== undefined) {
+    if (item.thumbnail !== undefined) {
       return (
         <Thumbnail
-          thumbnail={manifest.thumbnail as IIIFExternalWebResource[]}
+          thumbnail={[item.thumbnail] as IIIFExternalWebResource[]}
           style={{ width: '48px', height: '48px', objectFit: 'contain' }}
           aria-label='thumbnail'
         />
       );
     }
     return <FileImage size={48} />;
-  }, [manifest]);
+  }, [item]);
 
   const handleDelete = () => {
-    dispatch(removeFromHistoryRequest(url));
+    dispatch(removeFromHistoryRequest(item.id));
   };
 
   return (
@@ -50,12 +37,12 @@ const Item = ({ url }: { url: string }) => {
         <TooltipTrigger asChild>
           <div className='relative'>
             <Link
-              key={url}
-              to={`/manifest?manifestId=${url}`}
+              key={item.id}
+              to={`/manifest?manifestId=${item.id}`}
               className='text-wrapping flex cursor-pointer items-center space-x-2 border-b border-gray-200 p-2'
             >
               {thumbnail}
-              {label}
+              <div className='text-left text-xs font-bold text-mezanno-4'>{item.name}</div>
             </Link>
             <button
               className='absolute top-0 right-0 flex items-center justify-center opacity-0 group-hover:opacity-100'
@@ -65,17 +52,17 @@ const Item = ({ url }: { url: string }) => {
             </button>
           </div>
         </TooltipTrigger>
-        <TooltipContent>{url}</TooltipContent>
+        <TooltipContent>{item.id}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
 };
 
 const HistoryNav = () => {
-  const history: History[] = useAppSelector(getHistory);
+  const history: StoredItemDetails[] = useAppSelector(getHistory);
 
   const historyItems = useMemo(
-    () => history.map((item) => <Item key={item.url} url={item.url} />),
+    () => history.map((item) => <Item key={item.id} item={item} />),
     [history],
   );
 

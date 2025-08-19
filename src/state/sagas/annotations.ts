@@ -34,6 +34,7 @@ import {
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
 } from '../reducers/annotations';
+import { setCanvasFromComponent, SetCanvasFromComponentPayload } from '../reducers/canvas';
 import { pushError, pushInfo } from '../reducers/events';
 import { getAnnotations } from '../selectors/annotations';
 
@@ -374,7 +375,22 @@ function* handleSyncWithDB(
   }
 }
 
+function* handleLoadAnnotationsForCanvas(
+  action: PayloadAction<SetCanvasFromComponentPayload>,
+): Generator<Effect, void, Annotation[]> {
+  const { collectionId, canvas } = action.payload;
+  // load all the annotations of the collection
+  const annotationRepository = getAnnotationRepository();
+  const annotations = yield call(
+    [annotationRepository, annotationRepository.getAnnotationsForCanvas],
+    canvas.id,
+    collectionId ?? '',
+  );
+  yield put(fetchAnnotationsSuccess(annotations));
+}
+
 export default function* annotationsSaga() {
+  yield takeEvery(setCanvasFromComponent, handleLoadAnnotationsForCanvas);
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotation);
   yield takeEvery(removeAnnotationRequest, handleRemoveAnnotation);
   yield takeEvery(removeAllCollectionAnnotationsRequest, handleRemoveAllCollectionAnnotations);

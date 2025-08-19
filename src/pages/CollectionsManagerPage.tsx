@@ -13,7 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import UploadFileForm from '@/components/UploadFileForm';
-import { Collection } from '@/data/models/Collection';
+import { CollectionDetails } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { removeCollectionRequest } from '@/state/reducers/collections';
@@ -28,7 +28,7 @@ const CollectionTableRow = ({
   collection,
   addOrRemoveCollection,
 }: {
-  collection: Collection;
+  collection: CollectionDetails;
   addOrRemoveCollection: (collectionId: string, isAdd: boolean) => void;
 }) => {
   const { t } = useTranslation();
@@ -66,14 +66,14 @@ const CollectionTableRow = ({
   };
 
   return (
-    <TableRow onClick={() => void handleOnClick(collection.id as string)}>
+    <TableRow onClick={() => void handleOnClick(collection.id)}>
       <TableCell>
         <Checkbox
           aria-label={t('aria_label_selection_collection')}
           onClick={(e) => {
             e.stopPropagation();
             addOrRemoveCollection(
-              collection.id as string,
+              collection.id,
               (e.target as HTMLInputElement).dataset['state'] === 'unchecked',
             );
           }}
@@ -82,13 +82,13 @@ const CollectionTableRow = ({
       <TableCell>{collection.name}</TableCell>
       <TableCell>{collection.id}</TableCell>
       <TableCell>
-        {collection.content === undefined || collection.content.length === 0 ? (
+        {collection.contentSize === 0 ? (
           <Badge variant='secondary' className='text-sm'>
             {t('info_empty_collection')}
           </Badge>
         ) : (
           <Badge className='text-md font-bold'>
-            {t('info_number_of_items', { number: collection.content.length })}
+            {t('info_number_of_items', { number: collection.contentSize })}
           </Badge>
         )}
       </TableCell>
@@ -102,7 +102,7 @@ const CollectionTableRow = ({
           variant='destructive'
           onClick={(event) => {
             event.stopPropagation();
-            handleDelete(collection.id as string);
+            handleDelete(collection.id);
           }}
           title={t('btn_delete')}
           aria-label={t('btn_delete')}
@@ -125,7 +125,7 @@ const CollectionTableRow = ({
 
 const CollectionsManagerPage = () => {
   const dispatch = useAppDispatch();
-  const collections: Collection[] = useAppSelector(getCollections);
+  const collections: CollectionDetails[] = useAppSelector(getCollections);
   const { t } = useTranslation();
 
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);

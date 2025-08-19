@@ -38,18 +38,11 @@ describe('CollectionsManagerPage', () => {
       collections: {
         ...getPreloadedState().collections,
         values: [
-          { id: '1', name: 'Collection 1', content: [], tags: [] },
+          { id: '1', name: 'Collection 1', contentSize: 0, tags: [] },
           {
             id: '2',
             name: 'Collection 2',
-            content: [
-              {
-                canvasId: 'canvasId',
-                collectionId: 'collectionId',
-                position: 0,
-                manifestId: 'manifestId',
-              },
-            ],
+            contentSize: 0,
             tags: [],
           },
         ],

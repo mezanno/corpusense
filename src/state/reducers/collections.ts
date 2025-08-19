@@ -1,10 +1,13 @@
-import { Collection } from '@/data/models/Collection';
+import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
+import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface CollectionsState {
-  values: Collection[];
+  values: CollectionDetails[]; // List of all collections to show in the collection list
   openedCollections: string[];
+  currentCollection?: Collection; //the collection currently being viewed in the collection inspector
+  loadedCanvases?: Canvas[]; //the canvases loaded for the current collection
 }
 
 const initialState: CollectionsState = {
@@ -17,7 +20,7 @@ export const collectionsSlice = createSlice({
   initialState,
   reducers: {
     createCollectionRequest: (_state, _action: PayloadAction<string>) => {},
-    createCollectionSuccess: (state, action: PayloadAction<Collection>) => {
+    createCollectionSuccess: (state, action: PayloadAction<CollectionDetails>) => {
       state.values.push(action.payload);
       if (
         action.payload.id !== undefined &&
@@ -33,8 +36,8 @@ export const collectionsSlice = createSlice({
       state.openedCollections = state.openedCollections.filter((id) => id !== collectionId);
     },
     updateCollectionRequest: (_state, _action) => {},
-    updateCollectionSuccess: (state, action: PayloadAction<Collection>) => {
-      const collection: Collection | undefined = state.values.find(
+    updateCollectionSuccess: (state, action: PayloadAction<CollectionDetails>) => {
+      const collection: CollectionDetails | undefined = state.values.find(
         (elt) => elt.id === action.payload.id,
       );
       if (collection !== undefined) {
@@ -44,13 +47,20 @@ export const collectionsSlice = createSlice({
         collection.modelId = action.payload.modelId;
       }
     },
-    setCollections: (state, action: PayloadAction<Collection[]>) => {
-      state.values = action.payload;
-    },
-    addCollectionToHistoryRequest: (state, action: PayloadAction<string>) => {
-      if (state.openedCollections.find((id) => id === action.payload) === undefined) {
-        state.openedCollections.push(action.payload);
+    loadCollectionRequest: (_state, _action: PayloadAction<string>) => {},
+    loadCollectionSuccess: (
+      state,
+      action: PayloadAction<{ collection: Collection; canvases: Canvas[] }>,
+    ) => {
+      const { collection, canvases } = action.payload;
+      state.currentCollection = collection;
+      if (state.openedCollections.find((id) => id === collection.id) === undefined) {
+        state.openedCollections.push(collection.id);
       }
+      state.loadedCanvases = canvases;
+    },
+    setCollections: (state, action: PayloadAction<CollectionDetails[]>) => {
+      state.values = action.payload;
     },
     addSelectionToCollectionRequest: (
       _state,
@@ -61,12 +71,11 @@ export const collectionsSlice = createSlice({
       }>,
     ) => {},
     addSelectionToCollectionSuccess: (state, action: PayloadAction<Collection>) => {
-      const collection: Collection | undefined = state.values.find(
-        (elt) => elt.id === action.payload.id,
+      const { content, ...collectionDetails } = action.payload;
+      state.currentCollection = action.payload;
+      state.values = state.values.map((details) =>
+        details.id === collectionDetails.id ? collectionDetails : details,
       );
-      if (collection !== undefined) {
-        collection.content = action.payload.content;
-      }
     },
     createCollectionWithSelectionRequest: (
       _state,
@@ -84,13 +93,13 @@ export const collectionsSlice = createSlice({
       _state,
       _action: PayloadAction<{ collectionId: string; canvasId: string }>,
     ) => {},
-    removeElementFromCollectionSuccess: (state, action: PayloadAction<Collection>) => {
-      const collection: Collection | undefined = state.values.find(
-        (elt) => elt.id === action.payload.id,
-      );
-      if (collection && collection.content !== undefined) {
-        collection.content = action.payload.content;
-      }
+    removeElementFromCollectionSuccess: (_state, _action: PayloadAction<Collection>) => {
+      // const collection: Collection | undefined = state.values.find(
+      //   (elt) => elt.id === action.payload.id,
+      // );
+      // if (collection && collection.content !== undefined) {
+      //   collection.content = action.payload.content;
+      // }
     },
     removeFromOpenedCollections: (state, action: PayloadAction<string>) => {
       const collectionId: string = action.payload;
@@ -108,8 +117,9 @@ export const {
   removeCollectionRequest,
   updateCollectionRequest,
   updateCollectionSuccess,
+  loadCollectionRequest,
+  loadCollectionSuccess,
   setCollections,
-  addCollectionToHistoryRequest,
   addSelectionToCollectionRequest,
   addSelectionToCollectionSuccess,
   createCollectionWithSelectionRequest,

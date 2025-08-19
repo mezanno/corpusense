@@ -1,15 +1,8 @@
-import { Annotation } from '@/data/models/Annotation';
-import { Collection, ExportedCollection } from '@/data/models/Collection';
-import { NamedEntity } from '@/data/models/NamedEntity';
+import { Collection, CollectionDetails, ExportedCollection } from '@/data/models/Collection';
 import { SelectedCanvas } from '@/data/models/SelectedCanvas';
-import { StoredItem } from '@/data/models/StoredItem';
 import {
   getAnnotationRepository,
-  getCanvasRepository,
   getCollectionRepository,
-  getManifestRepository,
-  getNamedEntityRepository,
-  getStoredItemRepository,
   getTagRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { generateFirstAnnotation, importAnnotationFromJson } from '@/data/utils/annotations';
@@ -19,19 +12,10 @@ import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import JSZip from 'jszip';
-import {
-  call,
-  CallEffect,
-  Effect,
-  put,
-  PutEffect,
-  takeEvery,
-  takeLatest,
-} from 'redux-saga/effects';
+import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
-import { fetchAnnotationsSuccess } from '../reducers/annotations';
+import { removeAllCollectionAnnotationsSuccess } from '../reducers/annotations';
 import {
-  addCollectionToHistoryRequest,
   addSelectionToCollectionRequest,
   addSelectionToCollectionSuccess,
   createCollectionRequest,
@@ -39,6 +23,8 @@ import {
   createCollectionWithSelectionRequest,
   importMultipleCollectionsRequest,
   importOneCollectionRequest,
+  loadCollectionRequest,
+  loadCollectionSuccess,
   removeCollectionRequest,
   removeCollectionSuccess,
   removeElementFromCollectionRequest,
@@ -48,19 +34,15 @@ import {
   updateCollectionSuccess,
 } from '../reducers/collections';
 import { pushError, pushInfo } from '../reducers/events';
-import { loadEntitiesSuccess } from '../reducers/namedEntities';
-import { setStoredItems } from '../reducers/storedItems';
-import { handleRemoveAllCollectionAnnotations } from './annotations';
-import { loadStoredElements } from './storedItems';
 
 function* fetchAllCollections(): Generator<
-  CallEffect<Collection[]> | PutEffect,
+  CallEffect<CollectionDetails[]> | PutEffect,
   void,
-  Collection[]
+  CollectionDetails[]
 > {
   try {
     const collectionRepository = getCollectionRepository();
-    const collections: Collection[] = yield call([
+    const collections: CollectionDetails[] = yield call([
       collectionRepository,
       collectionRepository.getAll,
     ]);
@@ -73,7 +55,7 @@ function* fetchAllCollections(): Generator<
 
 function* handleCreateCollection(action: PayloadAction<string>) {
   const name = action.payload;
-  const newCollection: Collection = { id: uuid(), name, tags: [], content: [] };
+  const newCollection: Collection = { id: uuid(), name, tags: [], contentSize: 0, content: [] };
 
   try {
     const collectionRepository = getCollectionRepository();
@@ -114,17 +96,17 @@ function* handleUpdateCollection(action: PayloadAction<Collection>) {
 function* handleRemoveCollection(
   action: PayloadAction<string>,
 ): Generator<Effect, void, Collection> {
-  const { payload } = action; //id of the collection to remove
+  const collectionId = action.payload; //id of the collection to remove
   try {
     const collectionRepository = getCollectionRepository();
     const collectionToRemove = yield call(
       [collectionRepository, collectionRepository.getCollectionById],
-      payload,
+      collectionId,
     );
     yield call([collectionRepository, collectionRepository.remove], collectionToRemove);
-
-    yield call(handleRemoveAllCollectionAnnotations, action); //delete the annotations of the collection
-    yield put(removeCollectionSuccess(payload));
+    yield put(removeCollectionSuccess(collectionId));
+    yield put(removeAllCollectionAnnotationsSuccess(collectionId));
+    // yield put(removeStoreItems)
   } catch (e) {
     yield put(pushError(getErrorMessage(e)));
   }
@@ -146,31 +128,30 @@ function* handleAddSelectionToCollection(
       [collectionRepository, collectionRepository.getCollectionById],
       collectionId,
     );
-
-    if (collection.content === null || collection.content === undefined) {
-      collection.content = [];
-    }
-    const existingCanvasIds = collection.content.map((elt) => elt.canvasId);
+    //we check the existing content of the collection and add only the new canvases
+    const existingContent = collection.content ?? [];
+    const existingCanvasIds = existingContent.map((elt) => elt.canvasId);
     const newContent = generateCollectionContent(
-      collection.content.length - 1,
+      existingContent.length - 1,
       selection,
       collectionId,
       manifestId,
       existingCanvasIds,
     );
-    collection.content = [...collection.content, ...newContent];
+    const updatedCollection = {
+      ...collection,
+      contentSize: existingContent.length + newContent.length,
+      content: [...existingContent, ...newContent],
+    };
     yield call(
       [collectionRepository, collectionRepository.saveCollectionContent],
-      collection,
-      selection,
-      manifestId,
+      updatedCollection,
     );
-
+    //Add first annotations for the new canvases
     const firstAnnotations = generateFirstAnnotation(selection, collectionId, existingCanvasIds);
     const annotationRepository = getAnnotationRepository();
     yield call([annotationRepository, annotationRepository.saveAllAnnotations], firstAnnotations);
-    yield call(loadStoredElements); //TODO: ? est-ce nécessaire de tout recharger ?
-    yield put(addSelectionToCollectionSuccess(collection));
+    yield put(addSelectionToCollectionSuccess(updatedCollection));
   } catch (e) {
     yield put(pushError(getErrorMessage(e)));
   }
@@ -188,32 +169,33 @@ function* handleCreateCollectionWithSelection(
 ): Generator<Effect, Collection, Collection | undefined> {
   const { id, name, selection, manifestId } = action.payload;
   const collectionId = id ?? uuid();
-  const newCollection: Collection = { id: collectionId, name, tags: [], content: [] };
-  newCollection.content = generateCollectionContent(0, selection, collectionId, manifestId);
+  const newCollection: CollectionDetails = {
+    id: collectionId,
+    name,
+    tags: [],
+    contentSize: selection.length,
+  };
+  const content = generateCollectionContent(0, selection, collectionId, manifestId);
 
   try {
     const collectionRepository = getCollectionRepository();
-    yield call([collectionRepository, collectionRepository.insertCollection], newCollection);
-    yield call(
-      [collectionRepository, collectionRepository.saveCollectionContent],
-      newCollection,
-      selection,
-      manifestId,
-    );
+    yield call([collectionRepository, collectionRepository.insertCollection], {
+      ...newCollection,
+      content,
+    });
     if (id === undefined) {
       //if an id was provided, it means it is an import, so we don't need to create the first annotations
       const firstAnnotations = generateFirstAnnotation(selection, collectionId);
       const annotationRepository = getAnnotationRepository();
       yield call([annotationRepository, annotationRepository.saveAllAnnotations], firstAnnotations);
     }
-    yield call(loadStoredElements); //il faut appeler le saga pour mettre à jour le state //TODO: ? est-ce nécessaire de tout recharger ?
     yield put(createCollectionSuccess(newCollection));
     yield put(pushInfo(i18n.t('toast_collection_created')));
   } catch (e) {
     yield put(pushError(getErrorMessage(e)));
   }
 
-  return newCollection;
+  return { ...newCollection, content };
 }
 
 function* handleRemoveElementFromCollection(
@@ -283,13 +265,8 @@ function* handleImportOneCollection(
 
   const selectedCanvas = [];
   //add the canvas
-  const canvasRepository = getCanvasRepository();
   for (let i = 0; i < items.length; i++) {
     const canvas = items[i];
-    const isCanvasStored = yield call([canvasRepository, canvasRepository.exists], canvas.id);
-    if (!isCanvasStored) {
-      yield call([canvasRepository, canvasRepository.add], canvas, manifest.id);
-    }
     selectedCanvas.push({
       canvas,
       index: i,
@@ -333,75 +310,35 @@ function* handleImportOneCollection(
 
 function* handleLoadCollection(
   action: PayloadAction<string>,
-): Generator<Effect, void, Collection[] | StoredItem[] | Canvas | Annotation[] | NamedEntity[]> {
+  // ): Generator<Effect, void, Collection | StoredItem[] | Canvas | Annotation[] | NamedEntity[]> {
+): Generator<Effect, void, Collection | Canvas[]> {
   try {
     const collectionRepository = getCollectionRepository();
-    const canvasRepository = getCanvasRepository();
-    const storedItemRepository = getStoredItemRepository();
-    const collectionId = action.payload;
-    //reload all the collections
-
-    const collections = (yield call([
-      collectionRepository,
-      collectionRepository.getAll,
-    ])) as Collection[];
-    yield put(setCollections(collections));
 
     //get the collection to load
-    const collectionToLoad = collections.find((collection) => collection.id === collectionId);
+    const collectionToLoad = (yield call(
+      [collectionRepository, collectionRepository.getCollectionById],
+      action.payload,
+    )) as Collection;
     if (collectionToLoad === undefined) {
       yield put(pushError(i18n.t('error_collection_not_found')));
       return;
     }
 
-    //check if the canvas are already in the storedItems, if not add them to the storedItems
-    const contentToLoad = collectionToLoad.content.map((elt) => ({
-      canvasId: elt.canvasId,
-      manifestId: elt.manifestId,
-    }));
-    const storedItems = (yield call([
-      storedItemRepository,
-      storedItemRepository.getAll,
-    ])) as StoredItem[];
-    const storedCanvasIds = storedItems.map((elt) => elt.id);
-    const contentToAdd = contentToLoad.filter((elt) => !storedCanvasIds.includes(elt.canvasId));
-    if (contentToAdd.length > 0) {
-      for (const content of contentToAdd) {
-        const manifestRepository = getManifestRepository();
-        try {
-          const canvas = (yield call(
-            [manifestRepository, manifestRepository.getCanvases],
-            content.manifestId,
-            content.canvasId,
-          )) as Canvas;
-          yield call([canvasRepository, canvasRepository.add], canvas, content.manifestId);
-        } catch (e) {
-          console.warn('Error loading canvas', content.canvasId, e);
-        }
-      }
-      const newStoredItems = (yield call([
-        storedItemRepository,
-        storedItemRepository.getAll,
-      ])) as StoredItem[];
-      yield put(setStoredItems(newStoredItems));
-    }
-
-    //load all the annotations of the collection
-    const annotationRepository = getAnnotationRepository();
-    const annotations = (yield call(
-      [annotationRepository, annotationRepository.getAnnotationsForCollection],
-      collectionId,
-    )) as Annotation[];
-    yield put(fetchAnnotationsSuccess(annotations));
+    const canvases: Canvas[] = (yield call(
+      [collectionRepository, collectionRepository.getCanvasesByCollectionId],
+      collectionToLoad.id,
+    )) as Canvas[];
+    yield put(loadCollectionSuccess({ collection: collectionToLoad, canvases }));
 
     //load the entities of the collection
-    const annotationsIds = annotations.map((annotation) => annotation.id);
-    const namedEntityRepository = getNamedEntityRepository();
-    const namedEntities = (yield call(
-      [namedEntityRepository, namedEntityRepository.getNamedEntitiesByAnnotationsIds],
-      annotationsIds,
-    )) as NamedEntity[];
-    yield put(loadEntitiesSuccess(namedEntities));
+    // const annotationsIds = annotations.map((annotation) => annotation.id);
+    // const namedEntityRepository = getNamedEntityRepository();
+    // const namedEntities = (yield call(
+    //   [namedEntityRepository, namedEntityRepository.getNamedEntitiesByAnnotationsIds],
+    //   annotationsIds,
+    // )) as NamedEntity[];
+    // yield put(loadEntitiesSuccess(namedEntities));
   } catch (e) {
     yield put(pushError(getErrorMessage(e)));
   }
@@ -416,7 +353,7 @@ export default function* collectionsSaga() {
   yield takeEvery(updateCollectionRequest, handleUpdateCollection);
   yield takeEvery(importOneCollectionRequest, handleImportOneCollection);
   yield takeEvery(importMultipleCollectionsRequest, handleImportMultipleCollections);
-  yield takeLatest(addCollectionToHistoryRequest, handleLoadCollection);
+  yield takeEvery(loadCollectionRequest, handleLoadCollection);
 }
 
 export {

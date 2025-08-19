@@ -8,7 +8,7 @@ const useManifest = (manifestUrl: string) => {
   useEffect(() => {
     const fetchManifest = async () => {
       try {
-        const m = await getManifestRepository().getManifest(manifestUrl);
+        const m = await getManifestRepository().getManifestById(manifestUrl);
         setManifest(m);
       } catch (error) {
         console.log(error);

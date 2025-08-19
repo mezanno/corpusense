@@ -214,7 +214,7 @@ export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerConten
             minZoomLevel: 0.1,
             tileSources: cvcState?.source,
             loadTilesWithAjax: true,
-            crossOriginPolicy: 'Anonymous',
+            crossOriginPolicy: false,
             showSequenceControl: true,
             showHomeControl: true,
             showFullPageControl: true,
