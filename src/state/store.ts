@@ -10,7 +10,6 @@ import exportReducer from './reducers/export';
 import manifestsReducer from './reducers/manifests';
 import modelsReducer from './reducers/models';
 import entityReducer from './reducers/namedEntities';
-import selectionReducer from './reducers/selection';
 import tagsReducer from './reducers/tags';
 import workersReducer from './reducers/workers';
 import getRootSaga from './sagas';
@@ -19,7 +18,6 @@ const sagaMiddleware = createSagaMiddleware();
 
 export const rootReducer = combineReducers({
   manifests: manifestsReducer,
-  selection: selectionReducer,
   collections: collectionsReducer,
   canvases: canvasReducer,
   tags: tagsReducer,

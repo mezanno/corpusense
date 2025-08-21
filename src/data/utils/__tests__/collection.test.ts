@@ -1,13 +1,10 @@
-import { SelectedCanvas } from '@/data/models/SelectedCanvas';
-import { Canvas } from '@iiif/presentation-3';
-import canvasWithImage from '../../../__tests__/canvasWithImage.json';
 import { generateCollectionContent } from '../collections';
 
 describe('collection utils', () => {
   describe('generateCollectionContent', () => {
     it('should generate 0 collection content', () => {
       const position = 0;
-      const selection: SelectedCanvas[] = [];
+      const selection: string[] = [];
       const collectionId = 'collectionId';
       const manifestId = 'manifestId';
       const existingCanvasIds = ['canvas1', 'canvas2'];
@@ -24,10 +21,7 @@ describe('collection utils', () => {
 
     it('should generate collection content (size 2)', () => {
       const position = 0;
-      const selection: SelectedCanvas[] = [
-        { index: 0, canvas: { ...canvasWithImage, id: 'canvas1' } as Canvas },
-        { index: 1, canvas: { ...canvasWithImage, id: 'canvas2' } as Canvas },
-      ];
+      const selection: string[] = ['canvas1', 'canvas2'];
       const collectionId = 'collectionId';
       const manifestId = 'manifestId';
 
@@ -50,10 +44,7 @@ describe('collection utils', () => {
 
     it('should generate collection content (size 1)', () => {
       const position = 0;
-      const selection: SelectedCanvas[] = [
-        { index: 0, canvas: { ...canvasWithImage, id: 'canvas1' } as Canvas },
-        { index: 1, canvas: { ...canvasWithImage, id: 'canvas2' } as Canvas },
-      ];
+      const selection: string[] = ['canvas1', 'canvas2'];
       const collectionId = 'collectionId';
       const manifestId = 'manifestId';
       const existingCanvasIds = ['canvas1'];

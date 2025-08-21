@@ -1,5 +1,4 @@
 import { Collection, CollectionDetails, ExportedCollection } from '@/data/models/Collection';
-import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -118,7 +117,7 @@ function* handleRemoveCollection(
  * @returns
  */
 function* handleAddSelectionToCollection(
-  action: PayloadAction<{ selection: SelectedCanvas[]; collectionId: string; manifestId: string }>,
+  action: PayloadAction<{ selection: Canvas[]; collectionId: string; manifestId: string }>,
 ): Generator<Effect, void, Collection> {
   const { selection, collectionId, manifestId } = action.payload;
 
@@ -133,7 +132,7 @@ function* handleAddSelectionToCollection(
     const existingCanvasIds = existingContent.map((elt) => elt.canvasId);
     const newContent = generateCollectionContent(
       existingContent.length - 1,
-      selection,
+      selection.map((canvas) => canvas.id),
       collectionId,
       manifestId,
       existingCanvasIds,
@@ -158,7 +157,7 @@ function* handleAddSelectionToCollection(
 }
 
 export interface CreateCollectionWithSelectionPayload {
-  selection: SelectedCanvas[];
+  selection: Canvas[];
   name: string;
   id?: string;
   manifestId: string;
@@ -175,7 +174,12 @@ function* handleCreateCollectionWithSelection(
     tags: [],
     contentSize: selection.length,
   };
-  const content = generateCollectionContent(0, selection, collectionId, manifestId);
+  const content = generateCollectionContent(
+    0,
+    selection.map((c) => c.id),
+    collectionId,
+    manifestId,
+  );
 
   try {
     const collectionRepository = getCollectionRepository();
@@ -285,27 +289,27 @@ function* handleImportOneCollection(
     }
   }
 
-  const result = yield call(handleCreateCollectionWithSelection, {
-    payload: {
-      selection: selectedCanvas,
-      name: collectionName,
-      id: collectionId,
-      manifestId: manifest.id,
-    },
-    type: createCollectionWithSelectionRequest.type,
-  });
-  const newCollection = result as unknown as Collection;
-  if (newCollection.id === undefined) {
-    yield put(pushError(i18n.t('error_collection_not_found')));
-    return;
-  }
-  const collectionRepository = getCollectionRepository();
-  yield call(
-    [collectionRepository, collectionRepository.updateTags],
-    newCollection.id,
-    tags.map((tag) => tag.id),
-  );
-  yield put(updateCollectionSuccess({ ...newCollection, tags: tags.map((tag) => tag.id) }));
+  // const result = yield call(handleCreateCollectionWithSelection, {
+  //   payload: {
+  //     selection: selectedCanvas,
+  //     name: collectionName,
+  //     id: collectionId,
+  //     manifestId: manifest.id,
+  //   },
+  //   type: createCollectionWithSelectionRequest.type,
+  // });
+  // const newCollection = result as unknown as Collection;
+  // if (newCollection.id === undefined) {
+  //   yield put(pushError(i18n.t('error_collection_not_found')));
+  //   return;
+  // }
+  // const collectionRepository = getCollectionRepository();
+  // yield call(
+  //   [collectionRepository, collectionRepository.updateTags],
+  //   newCollection.id,
+  //   tags.map((tag) => tag.id),
+  // );
+  // yield put(updateCollectionSuccess({ ...newCollection, tags: tags.map((tag) => tag.id) }));
 }
 
 function* handleLoadCollection(
