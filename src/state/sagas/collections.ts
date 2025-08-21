@@ -2,6 +2,7 @@ import { Collection, CollectionDetails, ExportedCollection } from '@/data/models
 import {
   getAnnotationRepository,
   getCollectionRepository,
+  getManifestRepository,
   getTagRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { generateFirstAnnotation, importAnnotationFromJson } from '@/data/utils/annotations';
@@ -11,6 +12,7 @@ import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import JSZip from 'jszip';
+import { uniq } from 'lodash';
 import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
 import { removeAllCollectionAnnotationsSuccess } from '../reducers/annotations';
@@ -33,6 +35,7 @@ import {
   updateCollectionSuccess,
 } from '../reducers/collections';
 import { pushError, pushInfo } from '../reducers/events';
+import { handleFetchManifestFromURL } from './manifests';
 
 function* fetchAllCollections(): Generator<
   CallEffect<CollectionDetails[]> | PutEffect,
@@ -243,7 +246,7 @@ function* handleImportMultipleCollections(
 
 function* handleImportOneCollection(
   _action: PayloadAction<object>,
-): Generator<Effect, void, boolean> {
+): Generator<Effect, void, Collection> {
   const json = _action.payload;
   if ('type' in json && json.type !== 'Manifest') {
     console.log('not a manifest');
@@ -257,6 +260,10 @@ function* handleImportOneCollection(
     return;
   }
 
+  //save the manifest in indexedDB
+  const manifestRepository = getManifestRepository();
+  yield call([manifestRepository, manifestRepository.saveManifest], manifest);
+
   const collectionName = manifest.label?.none?.[0] ?? 'Imported collection'; //TODO change default name
   const collectionId = uuid(); //TODO change default id
 
@@ -267,21 +274,16 @@ function* handleImportOneCollection(
   const tagRepository = getTagRepository();
   yield call([tagRepository, tagRepository.saveTags], tags);
 
-  const selectedCanvas = [];
   //add the canvas
   for (let i = 0; i < items.length; i++) {
     const canvas = items[i];
-    selectedCanvas.push({
-      canvas,
-      index: i,
-    });
     //import annotations
     const annotationPages = canvas.annotations;
     if (annotationPages !== undefined) {
       for (let j = 0; j < annotationPages.length; j++) {
         const annotationPage = annotationPages[j];
         if (annotationPage.id.endsWith('.json')) {
-          continue;
+          continue; //TODO: handle json files
         } else {
           yield call(importAnnotationFromJson, annotationPage, collectionId);
         }
@@ -289,27 +291,27 @@ function* handleImportOneCollection(
     }
   }
 
-  // const result = yield call(handleCreateCollectionWithSelection, {
-  //   payload: {
-  //     selection: selectedCanvas,
-  //     name: collectionName,
-  //     id: collectionId,
-  //     manifestId: manifest.id,
-  //   },
-  //   type: createCollectionWithSelectionRequest.type,
-  // });
-  // const newCollection = result as unknown as Collection;
-  // if (newCollection.id === undefined) {
-  //   yield put(pushError(i18n.t('error_collection_not_found')));
-  //   return;
-  // }
-  // const collectionRepository = getCollectionRepository();
-  // yield call(
-  //   [collectionRepository, collectionRepository.updateTags],
-  //   newCollection.id,
-  //   tags.map((tag) => tag.id),
-  // );
-  // yield put(updateCollectionSuccess({ ...newCollection, tags: tags.map((tag) => tag.id) }));
+  const result: Collection = yield* handleCreateCollectionWithSelection({
+    payload: {
+      selection: items,
+      name: collectionName,
+      id: collectionId,
+      manifestId: manifest.id,
+    },
+    type: 'handleCreateCollectionWithSelection',
+  });
+  const newCollection = result as unknown as Collection;
+  if (newCollection.id === undefined) {
+    yield put(pushError(i18n.t('error_collection_not_found')));
+    return;
+  }
+  const collectionRepository = getCollectionRepository();
+  yield call(
+    [collectionRepository, collectionRepository.updateTags],
+    newCollection.id,
+    tags.map((tag) => tag.id),
+  );
+  yield put(updateCollectionSuccess({ ...newCollection, tags: tags.map((tag) => tag.id) }));
 }
 
 function* handleLoadCollection(
@@ -327,6 +329,20 @@ function* handleLoadCollection(
     if (collectionToLoad === undefined) {
       yield put(pushError(i18n.t('error_collection_not_found')));
       return;
+    }
+    console.log(`Loading collection ${collectionToLoad.name} (${collectionToLoad.id})`);
+
+    //compute the list of manifest ids in the collection and fetch them
+    const manifestIds = uniq(collectionToLoad.content.map((elt) => elt.manifestId));
+    console.log('Looking for ', manifestIds);
+
+    // yield all(
+    //   manifestIds.map((manifestId) => {
+    //     call(handleFetchManifestFromURL, manifestId);
+    //   }),
+    // );
+    for (const manifestId of manifestIds) {
+      yield call(handleFetchManifestFromURL, manifestId);
     }
 
     const canvases: Canvas[] = (yield call(
