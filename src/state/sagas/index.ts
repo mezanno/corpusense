@@ -6,7 +6,6 @@ import exportSaga from './export';
 import manifestsSaga, { loadHistorySaga } from './manifests';
 import modelsSaga, { fetchModels } from './models';
 import namedEntitiesSaga from './namedEntities';
-import selectionSaga from './selection';
 import tagsSaga, { fetchAllTags } from './tags';
 import workerSaga, { fetchWorkers } from './workers';
 
@@ -27,7 +26,6 @@ function getRootSaga() {
       manifestsSaga,
       collectionsSaga,
       tagsSaga,
-      selectionSaga,
       exportSaga,
       annotationsSaga,
       workerSaga,

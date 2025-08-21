@@ -15,11 +15,6 @@ const defaultPreloadedState: RootState = {
     values: [],
     openedCollections: [],
   },
-  selection: {
-    canvases: [],
-    indexStart: -1,
-    indexEnd: -1,
-  },
   tags: {
     values: [],
   },

@@ -11,15 +11,6 @@ describe('CanvasCard', () => {
   it('should render the CanvasCard with a white background (not selected)', () => {
     const preloadedState: RootState = {
       ...getPreloadedState(),
-      selection: {
-        ...getPreloadedState().selection,
-        canvases: [
-          {
-            index: 0, //l'indice ici est différent de celui du canvas (not selected)
-            canvas: canvas as Canvas,
-          },
-        ],
-      },
       collections: {
         ...getPreloadedState().collections,
       },
@@ -45,15 +36,6 @@ describe('CanvasCard', () => {
   it('should render the CanvasCard with a blue background (selected)', () => {
     const preloadedState: RootState = {
       ...getPreloadedState(),
-      selection: {
-        ...getPreloadedState().selection,
-        canvases: [
-          {
-            index: 143,
-            canvas: canvas as Canvas,
-          },
-        ],
-      },
       collections: {
         ...getPreloadedState().collections,
       },

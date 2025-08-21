@@ -1,5 +1,4 @@
 import { Collection, CollectionDetails } from '@/data/models/Collection';
-import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -65,7 +64,7 @@ export const collectionsSlice = createSlice({
     addSelectionToCollectionRequest: (
       _state,
       _action: PayloadAction<{
-        selection: SelectedCanvas[];
+        selection: Canvas[];
         collectionId: string;
         manifestId: string;
       }>,
@@ -79,7 +78,7 @@ export const collectionsSlice = createSlice({
     },
     createCollectionWithSelectionRequest: (
       _state,
-      _action: PayloadAction<{ selection: SelectedCanvas[]; name: string; manifestId: string }>,
+      _action: PayloadAction<{ selection: Canvas[]; name: string; manifestId: string }>,
     ) => {},
     fetchCanvasesOfCollectionRequest: (_state, _action: PayloadAction<string>) => {},
     fetchCanvasesOfCollectionSuccess: (state, action: PayloadAction<Collection>) => {

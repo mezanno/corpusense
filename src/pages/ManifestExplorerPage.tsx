@@ -1,4 +1,5 @@
 import CanvasViewer from '@/components/CanvasViewer';
+import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
 import { Toggle } from '@/components/ui/toggle';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fecthManifestRequest } from '@/state/reducers/manifests';
@@ -13,20 +14,17 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../compone
 const CANVASVIEWER_NAME = 'canvas-manifest';
 
 const ManifestExplorerPage = () => {
-  const { isLoading, isLoaded } = useAppSelector((state) => state.manifests);
+  const { t } = useTranslation();
+  const appDispatch = useAppDispatch();
+  const { isLoading, isLoaded, loadedData } = useAppSelector((state) => state.manifests);
   const [isMetadataOpen, setIsMetadataOpen] = useState(true);
   const [isGalleryOpen, setIsGalleryOpen] = useState(true);
-
-  const dispatch = useAppDispatch();
-
   const [searchParams] = useSearchParams();
-
-  const { t } = useTranslation();
 
   useEffect(() => {
     const id = searchParams.get('manifestId');
     if (id != null) {
-      dispatch(fecthManifestRequest(id));
+      appDispatch(fecthManifestRequest(id));
     }
   }, [searchParams]);
 
@@ -79,19 +77,23 @@ const ManifestExplorerPage = () => {
 
         {!isLoading && isLoaded && (
           <>
-            {isGalleryOpen && (
-              <>
-                <ResizablePanel
-                  order={2}
-                  id='gallery-panel'
-                  className='h-full rounded-lg bg-white'
-                  minSize={25}
-                >
-                  <CanvasGallery canvasViewerName={CANVASVIEWER_NAME} />
-                </ResizablePanel>
-                <ResizableHandle withHandle />
-              </>
-            )}
+            {isGalleryOpen &&
+              loadedData?.content?.items !== undefined &&
+              loadedData?.content?.items.length > 0 && (
+                <>
+                  <ResizablePanel
+                    order={2}
+                    id='gallery-panel'
+                    className='h-full rounded-lg bg-white'
+                    minSize={25}
+                  >
+                    <CanvasSelectionProvider canvasesLoaded={loadedData.content.items}>
+                      <CanvasGallery canvasViewerName={CANVASVIEWER_NAME} />
+                    </CanvasSelectionProvider>
+                  </ResizablePanel>
+                  <ResizableHandle withHandle />
+                </>
+              )}
 
             <ResizablePanel
               id='canvas-panel'

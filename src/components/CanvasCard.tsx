@@ -15,15 +15,14 @@ import {
 import { CollectionDetails } from '@/data/models/Collection';
 import { getImageForThumbnail } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useCanvasSelection } from '@/hooks/useCanvasSelection';
 import {
   addSelectionToCollectionRequest,
   createCollectionWithSelectionRequest,
 } from '@/state/reducers/collections';
-import { setSelectionEndRequest, setSelectionStartRequest } from '@/state/reducers/selection';
 import { getCollections } from '@/state/selectors/collections';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getSelection, isSelected } from '../state/selectors/selection';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -45,17 +44,23 @@ interface CanvasCardProps {
 
 const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => {
   const { t } = useTranslation();
+  const appDispatch = useAppDispatch();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const selection = useAppSelector(getSelection);
   const collections: CollectionDetails[] = useAppSelector(getCollections);
-  const selected: boolean = useAppSelector(isSelected(index, canvas.id));
+  const {
+    isSelected,
+    hasSelectedElements,
+    getSelectedCanvases,
+    setSelectionEnd,
+    setSelectionStart,
+  } = useCanvasSelection();
+
+  if (isSelected(index)) console.log('is selected');
 
   const inputCollectionName = useRef(null);
   const thumbnail = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
     getImageForThumbnail(canvas, 200),
   ];
-
-  const dispatch = useAppDispatch();
 
   //! mieux gérer le cas où canvas est undefined
   if (canvas === undefined) {
@@ -63,17 +68,21 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
   }
 
   const handleSetSelectionStart = () => {
-    dispatch(setSelectionStartRequest(index));
+    setSelectionStart(index);
   };
 
   const handleSetSelectionEnd = () => {
-    dispatch(setSelectionEndRequest(index));
+    setSelectionEnd(index);
   };
 
   const handleAddSelectionToCollection = (collectionId: string | undefined) => {
     if (collectionId === undefined) return;
-    dispatch(
-      addSelectionToCollectionRequest({ selection, collectionId: collectionId, manifestId }),
+    appDispatch(
+      addSelectionToCollectionRequest({
+        selection: getSelectedCanvases(),
+        collectionId: collectionId,
+        manifestId,
+      }),
     );
   };
 
@@ -95,7 +104,13 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
     //TODO! : gérer le cas où input est null
     if (input === null) return;
     const collectionName = (input as HTMLInputElement).value;
-    dispatch(createCollectionWithSelectionRequest({ selection, name: collectionName, manifestId }));
+    appDispatch(
+      createCollectionWithSelectionRequest({
+        selection: getSelectedCanvases(),
+        name: collectionName,
+        manifestId,
+      }),
+    );
     setDialogOpen(false);
   };
 
@@ -108,7 +123,7 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
           <ContextMenuTrigger>
             <Card
               onClick={(e) => handleClick(e.target)}
-              className={`selectable-item h-fit w-fit ${selected ? 'bg-blue-300' : 'bg-white'}`}
+              className={`selectable-item h-fit w-fit ${isSelected(index) ? 'bg-blue-300' : 'bg-white'}`}
               data-index={index}
               data-canvas-id={canvas.id}
               role='listitem'
@@ -131,7 +146,7 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
         </div>
 
         <ContextMenuContent>
-          {selection.length > 0 && (
+          {hasSelectedElements() && (
             <>
               <ContextMenuItem onClick={() => setDialogOpen(true)}>
                 {t('menu_create_from_selection')}
