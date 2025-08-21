@@ -159,7 +159,7 @@
   "error_ark_invalid": "L'identifiant ARK ne doit contenir que des chiffres et des lettres",
   "error_no_manifest_method": "Aucune méthode de chargement de manifest sélectionnée",
   "error_annotation_not_found": "L'annotation n'a pas été trouvée",
-  "error_manifest_not_found": "Le manifest n'a pas été trouvé",
+  "error_manifest_not_found_storage": "Le manifest n'a pas été trouvé dans le stockage de votre navigateur.",
   "error_canvas_not_found": "Le canvas n'a pas été trouvé",
   "error_image_not_found": "Le canvas ne contient pas d'image",
   "error_model_not_found": "Le modèle de données n'a pas été trouvé",

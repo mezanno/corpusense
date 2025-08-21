@@ -39,7 +39,7 @@ export class IndexedDBManifestRepository implements ManifestRepository {
     try {
       const manifestContent = await db.storedManifestContents.get(manifestId);
       if (!manifestContent) {
-        throw new Error(i18next.t('error_manifest_not_found'));
+        throw new Error(i18next.t('error_manifest_not_found_storage'));
       }
       return manifestContent.content;
     } catch (error) {
