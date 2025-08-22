@@ -11,7 +11,6 @@ import { IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import 'gridstack/dist/gridstack.min.css';
 import { CircleX, SpellCheck, SpellCheck2 } from 'lucide-react';
-import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
@@ -38,10 +37,10 @@ const GridThumb = ({
     useAppSelector((state) => getAnnotationsByType(state, canvasId, collectionId, ElementType.LINE))
       .length > 0;
 
-  const handleDelete = useCallback(() => {
-    console.log('Delete', canvasId);
+  const handleDelete = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    event.stopPropagation();
     dispatch(removeElementFromCollectionRequest({ collectionId: collectionId, canvasId }));
-  }, [canvasId]);
+  };
 
   //! mieux gérer le cas où canvas est undefined
   if (canvas === undefined) {
@@ -79,8 +78,9 @@ const GridThumb = ({
         <button
           className='cursor-pointer opacity-0 group-hover:opacity-100 hover:scale-110'
           title={t('btn_delete_collection')}
+          onClick={(e) => handleDelete(e)}
         >
-          <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
+          <CircleX className='text-red-400 hover:text-red-800' />
         </button>
       </div>
       <div className='w-fit flex-1'>
