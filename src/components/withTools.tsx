@@ -11,12 +11,12 @@ import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import { exportWorkerResultRequest, startWorkerProcess } from '@/state/reducers/workers';
 import { getAnnotationsByType } from '@/state/selectors/annotations';
 import { RootState } from '@/state/store';
+import { Canvas } from '@iiif/presentation-3';
 import { NotebookPen } from 'lucide-react';
 import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { ReducerContext } from './CanvasViewer';
-import { CanvasViewerContentProps } from './CanvasViewerContent';
 import LayoutMenu from './menu/LayoutMenu';
 import { ACTIONS, CanvasViewerContentMode } from './reducers/CanvasViewerContentReducer';
 import SelectModelForm from './textviewer/SelectModelForm';
@@ -24,7 +24,7 @@ import Toolbar from './ToolBar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 
 export const withTools = <T extends object>(WrappedComponent: React.ComponentType<T>) => {
-  const ComponentWithTools = (props: CanvasViewerContentProps) => {
+  const ComponentWithTools = (props: { collectionId: string; canvas: Canvas }) => {
     const appDispatch = useAppDispatch();
     const { t } = useTranslation();
     const { cvcState, cvcDispatch } = useContext(ReducerContext);
@@ -179,7 +179,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
               <DialogTitle>{t('title_generate_data')}</DialogTitle>
               <DialogDescription>{t('description_select_model')}</DialogDescription>
             </DialogHeader>
-            <SelectModelForm close={close} />
+            <SelectModelForm close={close} collectionId={props.collectionId} />
           </DialogContent>
         </Dialog>
       </div>

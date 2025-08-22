@@ -108,7 +108,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
             <DialogTitle>{t('title_generate_data')}</DialogTitle>
             <DialogDescription>{t('description_select_model')}</DialogDescription>
           </DialogHeader>
-          <SelectModelForm close={close} />
+          <SelectModelForm close={close} collectionId={collectionId} />
         </DialogContent>
       </Dialog>
     </div>
