@@ -24,3 +24,11 @@ export const getOpenedCollections = createSelector(
 
 export const getLoadedCanvasById = (state: RootState, canvasId: string) =>
   state.collections?.loadedCanvases?.find((canvas) => canvas.id === canvasId);
+
+export const getModelIdOfCollection = createSelector(
+  [
+    (state: RootState) => state.collections?.values ?? [],
+    (_: RootState, collectionId: string) => collectionId,
+  ],
+  (values, collectionId) => values.find((elt) => elt.id === collectionId)?.modelId,
+);

@@ -81,12 +81,13 @@ const AnnotationPopup = (props: PopupProps) => {
   );
 };
 
-export type CanvasViewerContentProps = {
+export const CanvasViewerContent = ({
+  canvas,
+  collectionId,
+}: {
   canvas: Canvas;
   collectionId?: string;
-};
-
-export const CanvasViewerContent = ({ canvas, collectionId }: CanvasViewerContentProps) => {
+}) => {
   console.log(`CanvasViewerContent - render ${canvas.id}, ${collectionId}`);
   const appDispatch = useAppDispatch();
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...

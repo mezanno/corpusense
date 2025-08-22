@@ -150,7 +150,7 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
                 <TabsTrigger value='document'>Vue document</TabsTrigger>
                 <TabsTrigger value='text'>Vue texte</TabsTrigger>
               </TabsList>
-              {activeTab === 'text' && <ModelButtons />}
+              {activeTab === 'text' && <ModelButtons collectionId={collectionId} />}
             </div>
             <TabsContent value='document'>
               <CanvasViewer name={CANVASVIEWER_NAME} colllectionId={collectionId} />

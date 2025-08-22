@@ -4,7 +4,7 @@ import AlertDialogForm from '../AlertDialogForm';
 import CreateModelButton from './CreateModelButton';
 import SelectModelForm from './SelectModelForm';
 
-const ModelButtons = () => {
+const ModelButtons = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
   return (
     <div className='flex items-center space-x-2'>
@@ -13,7 +13,7 @@ const ModelButtons = () => {
         description={t('form_description_select_model')}
         trigger={<ArrowRightLeft />}
       >
-        {({ close }) => <SelectModelForm close={close} />}
+        {({ close }) => <SelectModelForm close={close} collectionId={collectionId} />}
       </AlertDialogForm>
       <CreateModelButton />
     </div>
