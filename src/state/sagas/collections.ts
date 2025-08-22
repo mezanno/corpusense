@@ -154,6 +154,11 @@ function* handleAddSelectionToCollection(
     const annotationRepository = getAnnotationRepository();
     yield call([annotationRepository, annotationRepository.saveAllAnnotations], firstAnnotations);
     yield put(addSelectionToCollectionSuccess(updatedCollection));
+    if (selection.length === 1) {
+      yield put(pushInfo(i18n.t('toast_one_element_added')));
+    } else if (selection.length > 1) {
+      yield put(pushInfo(i18n.t('toast_multiple_elements_added', { count: selection.length })));
+    }
   } catch (e) {
     yield put(pushError(getErrorMessage(e)));
   }
@@ -217,6 +222,7 @@ function* handleRemoveElementFromCollection(
       canvasId,
     );
     yield put(removeElementFromCollectionSuccess(updatedCollection));
+    yield put(pushInfo(i18n.t('toast_element_removed')));
   } catch (e) {
     yield put(pushError(getErrorMessage(e)));
   }
