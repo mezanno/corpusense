@@ -42,9 +42,15 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
     );
   };
 
-  // const handleLayout = () => {
-  //   appDispatch(fetchBatchLayoutRequest(collectionId));
-  // };
+  const handleLayout = () => {
+    appDispatch(
+      startWorkerProcess({
+        workerName: 'edwin',
+        params: {},
+        scope: { collectionId },
+      }),
+    );
+  };
 
   const handleDeleteAllAnnotations = () => {
     appDispatch(removeAllCollectionAnnotationsRequest(collectionId));
@@ -91,7 +97,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
     <div className='panel'>
       <Toolbar
         title={t('title_collection_actions')}
-        // handleLayout={handleLayout}
+        handleLayout={handleLayout}
         handleOcr={handleOcr}
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleExportText={handleExportText}

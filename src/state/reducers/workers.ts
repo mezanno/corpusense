@@ -22,12 +22,6 @@ export interface fetchOcrPayload {
   region?: { left: number; top: number; width: number; height: number };
 }
 
-export interface fetchLayoutPayload {
-  canvas: Canvas;
-  collectionId: string;
-  originalWidth: number;
-}
-
 export interface fetchDataAnalysisPayload {
   canvasId: string;
   collectionId: string;
@@ -56,10 +50,6 @@ export const workerSlice = createSlice({
   name: 'worker',
   initialState: workerInitialState,
   reducers: {
-    fetchLayoutRequest: (_state, _action: PayloadAction<fetchLayoutPayload>) => {},
-    fetchBatchLayoutRequest: (_state, _action: PayloadAction<string>) => {
-      //action.payload is a collectionId
-    },
     fetchDataAnalysisRequest: (_state, _action: PayloadAction<fetchDataAnalysisPayload>) => {},
     fetchBatchDataAnalysisRequest: (
       _state,
@@ -150,8 +140,6 @@ export const workerSlice = createSlice({
 });
 
 export const {
-  fetchLayoutRequest,
-  fetchBatchLayoutRequest,
   fetchDataAnalysisRequest,
   fetchBatchDataAnalysisRequest,
   processError,
