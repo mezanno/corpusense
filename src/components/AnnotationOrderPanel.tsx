@@ -11,7 +11,7 @@ const AnnotationOrderPanel = ({ annotation }: { annotation: Annotation }) => {
     appDispatch(
       updateAnnotationOrderValueRequest({
         annotationId: annotation.id,
-        value: (annotation.order ?? -1) + 1,
+        value: (annotation.order ?? 0) + 1,
       }),
     );
   };
@@ -20,7 +20,7 @@ const AnnotationOrderPanel = ({ annotation }: { annotation: Annotation }) => {
     appDispatch(
       updateAnnotationOrderValueRequest({
         annotationId: annotation.id,
-        value: (annotation.order ?? 1) - 1,
+        value: (annotation.order ?? 0) - 1,
       }),
     );
   };

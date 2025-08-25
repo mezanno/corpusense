@@ -35,7 +35,6 @@ const generateRegionAnnotationForCanvas = (canvas: Canvas, collectionId: string)
   return createAnnotation({
     canvasId: canvas.id,
     collectionId: collectionId,
-    order: 0,
     minX: 0,
     minY: 0,
     maxX: image.width,

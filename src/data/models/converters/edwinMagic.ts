@@ -27,7 +27,6 @@ function convertEdwinToAnnotation(
   return createAnnotation({
     canvasId,
     collectionId,
-    order: 0,
     minX: edwinBox.box[0] * multiple,
     minY: edwinBox.box[1] * multiple,
     maxX: edwinBox.box[0] * multiple + edwinBox.box[2] * multiple,

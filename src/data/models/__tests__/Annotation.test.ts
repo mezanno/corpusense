@@ -61,7 +61,6 @@ describe('Annotation', () => {
       const newAnnotation = createAnnotation({
         canvasId: 'https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15',
         collectionId: 'collectionId',
-        order: 0,
         minX: 146.484375,
         minY: 292.96875,
         maxX: 585.9375,
@@ -77,7 +76,6 @@ describe('Annotation', () => {
         canvasId: 'https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15',
         collectionId: 'collectionId',
         id: 'anotherId',
-        order: 0,
         minX: 146.484375,
         minY: 292.96875,
         maxX: 585.9375,
@@ -93,7 +91,6 @@ describe('Annotation', () => {
     it('should create a new annotation from an existing annotation', () => {
       const newAnnotation = createAnnotationFromExistingAnnotation({
         annotation,
-        order: 1,
         type: ElementType.REGION,
         value: 'new value',
       });
