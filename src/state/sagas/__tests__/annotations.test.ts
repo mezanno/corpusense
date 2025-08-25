@@ -43,7 +43,7 @@ describe('annotations saga', () => {
 
       const expectedNewAnnotation = {
         ...newAnnotation,
-        order: 0,
+        order: 1,
       };
       return expectSaga(handleSaveAnnotation, saveAnnotationRequest(newAnnotation as Annotation))
         .provide([

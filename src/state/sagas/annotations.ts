@@ -65,11 +65,11 @@ function* handleSaveAnnotation(
       }
     } catch (error) {
       // If the annotation does not exist, create it
-      //compute the order value if not set or if set to -1
+      //compute the order value if not set or if set to 0
       //TODO : this should be done in the repository
       let newOrder = annotationToSave.order;
       if (
-        (annotationToSave.order === undefined || annotationToSave.order === -1) &&
+        (annotationToSave.order === undefined || annotationToSave.order === 0) &&
         annotationToSave.canvasId !== undefined &&
         annotationToSave.collectionId !== undefined
       ) {
@@ -81,7 +81,7 @@ function* handleSaveAnnotation(
         const regions = annotationsForCanvas
           .filter((a) => getAnnotationType(a) === getAnnotationType(annotationToSave))
           .map((a) => a.order ?? -1);
-        newOrder = regions.length > 0 ? Math.max(...regions) + 1 : 0;
+        newOrder = regions.length > 0 ? Math.max(...regions) + 1 : 1;
       }
       const newAnnotation = { ...annotationToSave, order: newOrder };
       yield call([annotationRepository, annotationRepository.updateAnnotation], newAnnotation);
@@ -336,7 +336,6 @@ function* handleRecomputeRegions(
         .selector.geometry.bounds.maxY;
       if (minX !== undefined && minY !== undefined && maxX !== undefined && maxY !== undefined) {
         const region = createAnnotation({
-          order: 0,
           canvasId,
           collectionId,
           type: ElementType.REGION,
