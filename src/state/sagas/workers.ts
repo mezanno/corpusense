@@ -1,5 +1,4 @@
 import { Collection } from '@/data/models/Collection';
-import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { isCanvasScope, isCollectionScope, toString } from '@/data/models/Scope';
 import {
@@ -11,12 +10,10 @@ import {
   WorkerStatus,
 } from '@/data/models/Worker';
 import {
-  getAnnotationRepository,
   getCollectionRepository,
   getResultRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { getImage } from '@/data/utils/canvas';
 import i18n from '@/i18n';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
@@ -24,30 +21,20 @@ import { PayloadAction } from '@reduxjs/toolkit';
 import { Task as TaskSaga } from 'redux-saga';
 import {
   call,
-  CallEffect,
   cancel,
   cancelled,
   Effect,
   fork,
   put,
-  PutEffect,
   race,
   take,
   takeEvery,
-  takeLatest,
 } from 'redux-saga/effects';
-import { fetchAnnotationsSuccess } from '../reducers/annotations';
 import { pushError, pushInfo } from '../reducers/events';
 import {
   addResult,
   ExportWorkerPayload,
   exportWorkerResultRequest,
-  fetchBatchLayoutRequest,
-  fetchLayoutPayload,
-  fetchLayoutRequest,
-  processError,
-  processRunning,
-  processStart,
   processSuccess,
   recoverWorkerRequest,
   removeWorkerRequest,
@@ -61,81 +48,6 @@ import {
 import { loadWorkerPlugins, WorkerPlugin } from './plugins/loader';
 
 const workerPlugins: Record<string, WorkerPlugin> = loadWorkerPlugins();
-
-function* handleFetchLayout({
-  canvas,
-  collectionId,
-  originalWidth,
-}: fetchLayoutPayload): Generator<CallEffect | PutEffect, void, Response> {
-  yield put(pushInfo(i18n.t('info_start_layout', { canvas })));
-  try {
-    if (canvas === undefined) {
-      // yield put(processError({ url: canvas.id, error: 'Canvas or region is undefined' }));
-      return;
-    }
-
-    yield put(processRunning({ collectionId, canvasId: canvas.id }));
-    const image = getImage(canvas);
-
-    const response: Response = yield call(
-      fetch,
-      // `http://localhost:3000/layout?image_url=${imageUrl}`,
-      `https://api.mezanno.xyz/layout?image_url=${image.id}`,
-    );
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    const data = yield call([response, 'json']);
-    console.log('data: ', data);
-    //convert the result into an array of Annotation
-    const annotations = convertEdwinResult(
-      data as unknown as EdwinBox[],
-      canvas.id,
-      collectionId,
-      originalWidth,
-    );
-    //and send it to the redux store
-    yield put(fetchAnnotationsSuccess(annotations));
-    const annotationRepository = getAnnotationRepository();
-    yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
-    yield put(processSuccess({ collectionId, canvasId: canvas.id }));
-  } catch (error) {
-    console.error('Error fetching layout:', error);
-    yield put(processError({ collectionId, canvasId: canvas.id }));
-  }
-}
-
-function* handleStartBatchLayoutProcess(
-  action: PayloadAction<string>,
-): Generator<Effect, void, Canvas[]> {
-  const collectionId = action.payload;
-  yield put(processRunning({ collectionId }));
-
-  const collectionRepository = getCollectionRepository();
-  const canvases = yield call(
-    [collectionRepository, collectionRepository.getCanvasesByCollectionId],
-    collectionId,
-  );
-  if (canvases === undefined || canvases.length === 0) {
-    // yield put(processError({ error: 'No canvases found' }));
-    return;
-  }
-  for (const canvas of canvases) {
-    yield put(processStart({ collectionId, canvasId: canvas.id }));
-  }
-  for (let i = 0; i < canvases.length; i++) {
-    yield call(handleFetchLayout, {
-      canvas: canvases[i],
-      collectionId,
-      originalWidth: canvases[i].width ?? 0,
-    });
-  }
-  yield put(processSuccess({ collectionId }));
-}
-
-function* handleStartProcess(action: PayloadAction<fetchLayoutPayload>) {
-  yield fork(handleFetchLayout, action.payload);
-}
 
 function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPayload>) {
   const { workerName, params, scope } = action.payload;
@@ -490,8 +402,6 @@ function* fetchWorkers(): Generator<Effect, void, Worker[] | Result[]> {
 }
 
 export default function* workerSaga() {
-  yield takeLatest(fetchLayoutRequest, handleStartProcess);
-  yield takeLatest(fetchBatchLayoutRequest, handleStartBatchLayoutProcess);
   yield takeEvery(startWorkerProcess, handleStartWorkerProcess);
   yield takeEvery(exportWorkerResultRequest, handleExportWorkerResult);
   yield takeEvery(recoverWorkerRequest, handleRecoverWorker);
