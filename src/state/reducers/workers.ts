@@ -1,8 +1,6 @@
-import { DataModel } from '@/data/models/DataModel';
 import { Result } from '@/data/models/Result';
 import { isSameScope, Scope } from '@/data/models/Scope';
 import { Worker, WorkerStatus } from '@/data/models/Worker';
-import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export interface WorkerState {
   workers: Worker[];
@@ -16,21 +14,6 @@ export const workerInitialState: WorkerState = {
   status: [],
 };
 
-export interface fetchOcrPayload {
-  canvas: Canvas;
-  collectionId: string;
-  region?: { left: number; top: number; width: number; height: number };
-}
-
-export interface fetchDataAnalysisPayload {
-  canvasId: string;
-  collectionId: string;
-  model: DataModel;
-}
-export interface fetchBatchDataAnalysisPayload {
-  collectionId: string;
-  model: DataModel;
-}
 export interface PluginParams {
   workerId?: string;
   [key: string]: unknown;
@@ -50,42 +33,10 @@ export const workerSlice = createSlice({
   name: 'worker',
   initialState: workerInitialState,
   reducers: {
-    fetchDataAnalysisRequest: (_state, _action: PayloadAction<fetchDataAnalysisPayload>) => {},
-    fetchBatchDataAnalysisRequest: (
-      _state,
-      _action: PayloadAction<fetchBatchDataAnalysisPayload>,
-    ) => {},
-    processStart: (state, action: PayloadAction<Scope>) => {
-      const scope = action.payload;
-      const existing = state.status.find((s) => isSameScope(s.scope, scope));
-      if (existing) {
-        existing.status = WorkerStatus.WAITING;
-      } else {
-        state.status.push({ scope, status: WorkerStatus.WAITING });
-      }
-    },
-    processRunning: (state, action: PayloadAction<Scope>) => {
-      const scope = action.payload;
-      const existing = state.status.find((s) => isSameScope(s.scope, scope));
-      if (existing) {
-        existing.status = WorkerStatus.INPROGRESS;
-      } else {
-        state.status.push({ scope, status: WorkerStatus.INPROGRESS });
-      }
-    },
     processSuccess: (state, action: PayloadAction<Scope>) => {
       //when the process if finish with success, remove it
       const scope = action.payload;
       state.status = state.status.filter((s) => !isSameScope(s.scope, scope));
-    },
-    processError: (state, action: PayloadAction<Scope>) => {
-      const scope = action.payload;
-      const existing = state.status.find((s) => isSameScope(s.scope, scope));
-      if (existing) {
-        existing.status = WorkerStatus.ERROR;
-      } else {
-        state.status.push({ scope, status: WorkerStatus.ERROR });
-      }
     },
     startWorkerProcess: (_state, _action: PayloadAction<StartWorkerProcessPayload>) => {},
     stopWorkerProcessRequest: (_state, _action: PayloadAction<Worker>) => {},
@@ -140,12 +91,7 @@ export const workerSlice = createSlice({
 });
 
 export const {
-  fetchDataAnalysisRequest,
-  fetchBatchDataAnalysisRequest,
-  processError,
   processSuccess,
-  processRunning,
-  processStart,
   startWorkerProcess,
   stopWorkerProcessRequest,
   updateWorker,
