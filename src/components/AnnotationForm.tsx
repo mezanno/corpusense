@@ -13,12 +13,12 @@ import { exportTextOfAnnotationRequest } from '@/state/reducers/export';
 import { startWorkerProcess } from '@/state/reducers/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Canvas } from '@iiif/presentation-3';
 import { Save, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import AnnotationOrderPanel from './AnnotationOrderPanel';
 import Entities from './Entities';
 import Toolbar from './ToolBar';
 import { Button } from './ui/button';
@@ -32,17 +32,10 @@ const annotationFormSchema = z.object({
 });
 
 const AnnotationForm = ({
-  selected,
-  canvas,
-  collectionId,
+  annotation,
   handleDelete,
 }: {
-  selected: {
-    annotation: Annotation;
-    editable?: boolean;
-  }[];
-  canvas: Canvas;
-  collectionId: string;
+  annotation: Annotation;
   handleDelete: () => void;
 }) => {
   const appDispatch = useAppDispatch();
@@ -68,13 +61,11 @@ const AnnotationForm = ({
   }
 
   useEffect(() => {
-    if (selected.length > 0) {
-      setEditedAnnotation(selected[0].annotation);
-      const { type, value } = getBodies(selected[0].annotation);
-      form.setValue('type', type);
-      form.setValue('value', value);
-    }
-  }, [selected]);
+    setEditedAnnotation(annotation);
+    const { type, value } = getBodies(annotation);
+    form.setValue('type', type);
+    form.setValue('value', value);
+  }, [annotation]);
 
   const startOcrAsync = () => {
     if (editedAnnotation !== null) {
@@ -90,7 +81,7 @@ const AnnotationForm = ({
               height: rect.bounds.maxY - rect.bounds.minY,
             },
           },
-          scope: { canvasId: canvas.id, collectionId },
+          scope: { canvasId: annotation.canvasId, collectionId: annotation.collectionId },
         }),
       );
     }
@@ -114,94 +105,95 @@ const AnnotationForm = ({
   };
 
   return (
-    <section className='m-2 flex w-full' aria-label='annotation form'>
-      <div className='w-1/2'>
-        <Form {...form}>
-          <form
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            onSubmit={form.handleSubmit(onSubmit)}
-            className='relative mx-auto flex-col space-y-2'
-          >
-            <div className='flex flex-col gap-2'>
-              <FormField
-                control={form.control}
-                name='type'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('form_label_type')}*</FormLabel>
-                    <Select
-                      key={field.value}
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl className='bg-white'>
-                        <SelectTrigger>
-                          <SelectValue placeholder='Select a type' />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {Object.keys(ElementType).map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='value'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('form_label_value')}</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        className='max-h-52 bg-white'
-                        placeholder={t('form_placeholder_value')}
-                        value={field.value}
-                        onChange={(e) => {
-                          field.onChange(e.target.value);
-                        }}
-                      />
+    <section className='panel m-1 w-full flex-col' aria-label='annotation form'>
+      <div className='w-full text-right text-sm font-light'>{annotation.id}</div>
+      <div className='flex items-center justify-end space-x-2'>
+        <Toolbar
+          handleOcr={startOcrAsync}
+          handleExportText={handleExportText}
+          handleDeleteAllAnnotations={handleRemoveAllAnnotationsInside}
+          scope={{
+            annotationId: annotation.id,
+            canvasId: annotation.canvasId,
+            collectionId: annotation.collectionId,
+          }}
+        />
+        <Button
+          title={t('btn_delete_annotation')}
+          variant='destructive'
+          className='cursor-pointer'
+          onClick={handleDeleteButton}
+        >
+          <Trash2 />
+        </Button>
+      </div>
+      <div className='flex items-center space-x-2 text-sm'>
+        {t('form_label_order')}
+        <AnnotationOrderPanel annotation={annotation} />
+      </div>
+      <Form {...form}>
+        <form
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          onSubmit={form.handleSubmit(onSubmit)}
+          className='relative mx-auto flex-col space-y-2'
+        >
+          <div className='flex flex-col gap-2'>
+            <FormField
+              control={form.control}
+              name='type'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form_label_type')}*</FormLabel>
+                  <Select
+                    key={field.value}
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl className='bg-white'>
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select a type' />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <Button type='submit' variant='outline' className='cursor-pointer'>
-              <Save /> {t('btn_save')}
-            </Button>
-          </form>
-        </Form>
-      </div>
-      <div className='w-1/2 flex-col'>
-        <div className='w-full text-right font-light'>{selected[0].annotation.id}</div>
-        <div className='flex items-center justify-end space-x-2'>
-          <Toolbar
-            handleOcr={startOcrAsync}
-            handleExportText={handleExportText}
-            handleDeleteAllAnnotations={handleRemoveAllAnnotationsInside}
-            scope={{
-              annotationId: selected[0].annotation.id,
-              canvasId: canvas.id,
-              collectionId,
-            }}
-          />
-          <Button
-            title={t('btn_delete_annotation')}
-            variant='destructive'
-            className='cursor-pointer'
-            onClick={handleDeleteButton}
-          >
-            <Trash2 />
+                    <SelectContent>
+                      {Object.keys(ElementType).map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='value'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form_label_value')}</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      className='max-h-52 bg-white'
+                      placeholder={t('form_placeholder_value')}
+                      value={field.value}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <Button type='submit' variant='outline' className='cursor-pointer'>
+            <Save /> {t('btn_save')}
           </Button>
-        </div>
-        {editedAnnotation !== null && <Entities annotation={editedAnnotation} />}
-      </div>
+        </form>
+      </Form>
+
+      {editedAnnotation !== null && <Entities annotation={editedAnnotation} />}
     </section>
   );
 };

@@ -17,15 +17,6 @@ export enum W3CMotivationEnum {
   Tagging = 'tagging',
 }
 
-export interface Annotation extends ImageAnnotation {
-  partOf?: string;
-  canvasId?: string;
-  previous?: string;
-  next?: string;
-  order?: number;
-  collectionId?: string;
-}
-
 export enum ElementType {
   TAG = 'TAG',
   ENTRY = 'ENTRY',
@@ -34,6 +25,22 @@ export enum ElementType {
   PAGE = 'PAGE',
   SECTION = 'SECTION',
   REGION = 'REGION',
+}
+
+export interface Annotation extends ImageAnnotation {
+  partOf?: string;
+  canvasId: string;
+  previous?: string;
+  next?: string;
+  order?: number;
+  collectionId: string;
+}
+
+export function isAnnotation(annotation: ImageAnnotation): annotation is Annotation {
+  return (
+    (annotation as Annotation).canvasId !== undefined &&
+    (annotation as Annotation).collectionId !== undefined
+  );
 }
 
 export function convertToElementTypeEnum(str: string | undefined): ElementType {
@@ -134,6 +141,27 @@ export const createAnnotationFromExistingAnnotation = ({
     collectionId: collectionId ?? annotation.collectionId,
     canvasId: canvasId ?? annotation.canvasId,
     order: order ?? annotation.order,
+    bodies: createBodies(type, value, annotation.id),
+  };
+};
+
+export const createAnnotationFromAnnotorious = ({
+  annotation,
+  type,
+  value,
+  collectionId,
+  canvasId,
+}: {
+  annotation: ImageAnnotation;
+  type: ElementType;
+  value: string;
+  collectionId: string;
+  canvasId: string;
+}): Annotation => {
+  return {
+    ...annotation,
+    collectionId,
+    canvasId,
     bodies: createBodies(type, value, annotation.id),
   };
 };

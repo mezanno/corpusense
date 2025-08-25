@@ -1,11 +1,7 @@
-import { Annotation, ElementType } from '@/data/models/Annotation';
+import { Annotation, ElementType, isAnnotation } from '@/data/models/Annotation';
 import { useAppDispatch } from '@/hooks/hooks';
 import { useAddAnnotation } from '@/hooks/useSaveAnnotation';
-import {
-  removeAnnotationRequest,
-  saveAnnotationRequest,
-  updateAnnotationOrderValueRequest,
-} from '@/state/reducers/annotations';
+import { saveAnnotationRequest } from '@/state/reducers/annotations';
 import { getAnnotations } from '@/state/selectors/annotations';
 import { RootState } from '@/state/store';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
@@ -14,21 +10,16 @@ import {
   AnnotoriousOpenSeadragonAnnotator,
   DrawingStyleExpression,
   ImageAnnotation,
-  OpenSeadragonAnnotationPopup,
   OpenSeadragonAnnotator,
   OpenSeadragonViewer,
-  PopupProps,
   useAnnotations,
   useAnnotator,
-  useSelection,
 } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
 import { useContext, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import AnnotationForm from './AnnotationForm';
 import { HoverContext, ReducerContext } from './CanvasViewer';
 import { ACTIONS, CanvasViewerContentMode } from './reducers/CanvasViewerContentReducer';
-import { Button } from './ui/button';
 import withTools from './withTools';
 
 //bleu foncé : #264653
@@ -46,41 +37,6 @@ const colors = {
   [ElementType.REGION.toString()]: '#e76f51',
 };
 
-const AnnotationPopup = (props: PopupProps) => {
-  const appDispatch = useAppDispatch();
-  const annotation = props.annotation as Annotation;
-
-  const handlePlus = () => {
-    appDispatch(
-      updateAnnotationOrderValueRequest({
-        annotationId: annotation.id,
-        value: (annotation.order ?? -1) + 1,
-      }),
-    );
-  };
-
-  const handleMinus = () => {
-    appDispatch(
-      updateAnnotationOrderValueRequest({
-        annotationId: annotation.id,
-        value: (annotation.order ?? 1) - 1,
-      }),
-    );
-  };
-
-  return (
-    <div className='flex items-center gap-2 rounded-xl bg-white/75 p-2'>
-      <Button className='soft-button' onClick={handleMinus}>
-        -
-      </Button>
-      {annotation.order}
-      <Button className='soft-button' onClick={handlePlus}>
-        +
-      </Button>
-    </div>
-  );
-};
-
 export const CanvasViewerContent = ({
   canvas,
   collectionId,
@@ -91,7 +47,7 @@ export const CanvasViewerContent = ({
   console.log(`CanvasViewerContent - render ${canvas.id}, ${collectionId}`);
   const appDispatch = useAppDispatch();
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
-  const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
+
   const annotationsInAnnotorious = useAnnotations();
   const annotationsInStore = useSelector((state: RootState) =>
     getAnnotations(state, canvas.id, collectionId ?? ''),
@@ -135,25 +91,24 @@ export const CanvasViewerContent = ({
     }
   }, [annotationsInStore]);
 
-  const handleDeleteAnnotation = () => {
-    const ids = selected.map((s) => s.annotation.id);
-    appDispatch(removeAnnotationRequest(ids)); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
-  };
-
   //initialize the Annotorious
   useEffect(() => {
     if (anno === null || anno === undefined) return;
 
     const onCreate = (annotation: ImageAnnotation) => {
       if (collectionId !== undefined) {
+        console.log('Creating annotation ', annotation);
+
         addAnnotation(annotation, canvas.id, collectionId);
       } else {
         console.warn('No collectionId provided, annotation not saved');
       }
       cvcDispatch({ type: ACTIONS.SET_MODE, payload: CanvasViewerContentMode.MOVE });
     };
-    const onUpdate = (annotation: Annotation) => {
-      appDispatch(saveAnnotationRequest(annotation));
+    const onUpdate = (annotation: ImageAnnotation) => {
+      if (isAnnotation(annotation)) {
+        appDispatch(saveAnnotationRequest(annotation));
+      }
     };
 
     anno.on('createAnnotation', onCreate);
@@ -179,12 +134,6 @@ export const CanvasViewerContent = ({
     }
   }, [canvas]);
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Delete' && selected?.length > 0) {
-      handleDeleteAnnotation();
-    }
-  };
-
   const style = (annotation: Annotation, state?: AnnotationState) => {
     const value = annotation.bodies[0]?.value ?? ElementType.TAG;
     return {
@@ -204,7 +153,6 @@ export const CanvasViewerContent = ({
     >
       <div
         className={`relative h-full w-full ${cvcState?.mode === CanvasViewerContentMode.DRAW ? 'cursor-pen-tool' : 'cursor-default'}`}
-        onKeyDown={handleKeyDown}
       >
         <OpenSeadragonViewer
           aria-label='canvas viewer'
@@ -224,22 +172,7 @@ export const CanvasViewerContent = ({
             },
           }}
         />
-        {collectionId !== undefined && selected?.length > 0 && (
-          <div className='absolute bottom-0 left-0 w-full bg-amber-100'>
-            <AnnotationForm
-              canvas={canvas}
-              selected={selected}
-              collectionId={collectionId}
-              handleDelete={handleDeleteAnnotation}
-            />
-          </div>
-        )}
       </div>
-      <OpenSeadragonAnnotationPopup
-        popup={(props) => <AnnotationPopup {...props} />}
-        arrow={true}
-        placement={'top'}
-      />
     </OpenSeadragonAnnotator>
   );
 };

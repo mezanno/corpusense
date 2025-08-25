@@ -95,6 +95,7 @@
   "form_label_model_from_model": "Créer à partir d'un modèle existant",
   "form_label_tags": "Étiquette(s) de la collection",
   "form_label_about": "A propos",
+  "form_label_order": "Ordre",
   "form_label_type": "Type",
   "form_label_value": "Valeur",
   "form_label_manifesturl": "URL du manifest",

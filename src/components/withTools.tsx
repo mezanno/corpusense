@@ -1,4 +1,4 @@
-import { ElementType } from '@/data/models/Annotation';
+import { Annotation, ElementType } from '@/data/models/Annotation';
 import { DataModel } from '@/data/models/DataModel';
 import { Worker } from '@/data/models/Worker';
 import { useAppDispatch } from '@/hooks/hooks';
@@ -6,16 +6,19 @@ import {
   duplicateAnnotationsEach2PagesRequest,
   duplicateAnnotationsToAllPagesRequest,
   removeAllCanvasAnnotationsRequest,
+  removeAnnotationRequest,
 } from '@/state/reducers/annotations';
 import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import { exportWorkerResultRequest, startWorkerProcess } from '@/state/reducers/workers';
 import { getAnnotationsByType } from '@/state/selectors/annotations';
 import { RootState } from '@/state/store';
+import { useSelection } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
 import { NotebookPen } from 'lucide-react';
 import React, { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import AnnotationForm from './AnnotationForm';
 import { ReducerContext } from './CanvasViewer';
 import LayoutMenu from './menu/LayoutMenu';
 import { ACTIONS, CanvasViewerContentMode } from './reducers/CanvasViewerContentReducer';
@@ -29,6 +32,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const { t } = useTranslation();
     const { cvcState, cvcDispatch } = useContext(ReducerContext);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
 
     const regionAnnotations = useSelector((state: RootState) =>
       getAnnotationsByType(
@@ -140,8 +144,19 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       cvcDispatch({ type: ACTIONS.SET_MODE, payload: CanvasViewerContentMode.DRAW });
     };
 
+    const handleDeleteAnnotation = () => {
+      const ids = selected.map((s) => s.annotation.id);
+      appDispatch(removeAnnotationRequest(ids)); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === 'Delete' && selected?.length > 0) {
+        handleDeleteAnnotation();
+      }
+    };
+
     return (
-      <div className='flex h-full w-full flex-col'>
+      <div className='flex h-full w-full flex-col' onKeyDown={handleKeyDown}>
         <h4 className='w-full border-b-1 text-center text-sm italic'>{props.canvas?.id}</h4>
         <div className='m-1 flex h-auto w-full gap-2 space-x-2'>
           <Toolbar
@@ -171,7 +186,18 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
             />
           )}
         </div>
-        <WrappedComponent {...(props as T)} />
+        <div className='flex h-full w-full'>
+          <WrappedComponent {...(props as T)} />
+
+          {selected.length === 1 && (
+            <div className='max-w-1/2 min-w-1/3'>
+              <AnnotationForm
+                annotation={selected[0].annotation as Annotation}
+                handleDelete={handleDeleteAnnotation}
+              />
+            </div>
+          )}
+        </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent>

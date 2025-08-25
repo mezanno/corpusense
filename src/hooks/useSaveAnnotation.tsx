@@ -1,5 +1,6 @@
 import {
   Annotation,
+  createAnnotationFromAnnotorious,
   createAnnotationFromExistingAnnotation,
   ElementType,
 } from '@/data/models/Annotation';
@@ -11,11 +12,10 @@ const useAddAnnotation = () => {
   const dispatch = useAppDispatch();
 
   return (annotation: ImageAnnotation, canvasId: string, collectionId: string) => {
-    const newAnnotation = createAnnotationFromExistingAnnotation({
+    const newAnnotation = createAnnotationFromAnnotorious({
       annotation,
       canvasId,
       collectionId,
-      order: -1,
       type: ElementType.REGION,
       value: '',
     });
