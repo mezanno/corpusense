@@ -1,7 +1,7 @@
 import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
-import { isCanvasScope, toString } from '@/data/models/Scope';
+import { toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
@@ -39,81 +39,82 @@ export default function* peroSaga(
 
   const annotationRepository = getAnnotationRepository();
 
-  if (isCanvasScope(task.scope)) {
-    try {
-      const image = getImage(task.canvas);
-      let regions = JSON.stringify([]);
-      if (hasRegion(params)) {
-        regions = JSON.stringify(params.region);
-      } else {
-        const annotations = (yield call(
-          [annotationRepository, annotationRepository.getAnnotationsForCanvas],
-          task.canvas.id,
-          task.scope.collectionId,
-        )) as Annotation[];
-        const annotationRegions = annotations.filter(
-          (a) => getAnnotationType(a) === ElementType.REGION,
+  try {
+    const image = getImage(task.canvas);
+    let regions = JSON.stringify([]);
+    if (hasRegion(params)) {
+      regions = JSON.stringify([
+        {
+          xtl: params.region.left,
+          ytl: params.region.top,
+          xbr: params.region.left + params.region.width,
+          ybr: params.region.top + params.region.height,
+        },
+      ]);
+    } else {
+      const annotations = (yield call(
+        [annotationRepository, annotationRepository.getAnnotationsForCanvas],
+        task.canvas.id,
+        task.scope.collectionId,
+      )) as Annotation[];
+      const annotationRegions = annotations.filter(
+        (a) => getAnnotationType(a) === ElementType.REGION,
+      );
+      if (annotationRegions.length > 0) {
+        regions = JSON.stringify(
+          annotationRegions
+            .sort((a1, a2) => (a1.order ?? 0) - (a2.order ?? 0))
+            .map((annotation) => {
+              return {
+                xtl: annotation.target.selector.geometry.bounds.minX,
+                ytl: annotation.target.selector.geometry.bounds.minY,
+                xbr: annotation.target.selector.geometry.bounds.maxX,
+                ybr: annotation.target.selector.geometry.bounds.maxY,
+              };
+            }),
         );
-        if (annotationRegions.length > 0) {
-          regions = JSON.stringify(
-            annotationRegions
-              .sort((a1, a2) => (a1.order ?? 0) - (a2.order ?? 0))
-              .map((annotation) => {
-                return {
-                  xtl: annotation.target.selector.geometry.bounds.minX,
-                  ytl: annotation.target.selector.geometry.bounds.minY,
-                  xbr: annotation.target.selector.geometry.bounds.maxX,
-                  ybr: annotation.target.selector.geometry.bounds.maxY,
-                };
-              }),
-          );
-        }
       }
-
-      const client = (yield call(() => Client.connect('https://api.mezanno.xyz/ocr/'))) as Client;
-      const gradioResult = (yield call(() =>
-        client.predict('/transcribe', { image_url: image.id, regions }),
-      )) as PredictReturn;
-
-      console.log(gradioResult.data);
-      try {
-        const peroResult = peroResultSchema.parse(gradioResult.data);
-        const annotations = convertPeroTranscriptionsToAnnotations(
-          peroResult,
-          task.canvas.id,
-          task.scope.collectionId,
-        );
-        yield put(addAnnotationsSuccess(annotations));
-        yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
-        return {
-          status: WorkerStatus.COMPLETED,
-        };
-      } catch (error) {
-        try {
-          const peroError = peroResultError.parse(gradioResult.data);
-          console.error('peroError: ', peroError[0].result.error);
-          return {
-            status: WorkerStatus.ERROR,
-            statusMessage: peroError[0].result.error,
-          };
-        } catch (err) {
-          console.error('Error parsing peroResult:', err);
-          return {
-            status: WorkerStatus.ERROR,
-            statusMessage: getErrorMessage(err),
-          };
-        }
-      }
-    } catch (error) {
-      console.error(getErrorMessage(error));
-      return {
-        status: WorkerStatus.ERROR,
-        statusMessage: getErrorMessage(error),
-      };
     }
-  }
 
-  return {
-    status: WorkerStatus.COMPLETED,
-  };
+    const client = (yield call(() => Client.connect('https://api.mezanno.xyz/ocr/'))) as Client;
+    const gradioResult = (yield call(() =>
+      client.predict('/transcribe', { image_url: image.id, regions }),
+    )) as PredictReturn;
+
+    console.log(gradioResult.data);
+    try {
+      const peroResult = peroResultSchema.parse(gradioResult.data);
+      const annotations = convertPeroTranscriptionsToAnnotations(
+        peroResult,
+        task.canvas.id,
+        task.scope.collectionId,
+      );
+      yield put(addAnnotationsSuccess(annotations));
+      yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
+      return {
+        status: WorkerStatus.COMPLETED,
+      };
+    } catch (error) {
+      try {
+        const peroError = peroResultError.parse(gradioResult.data);
+        console.error('peroError: ', peroError[0].result.error);
+        return {
+          status: WorkerStatus.ERROR,
+          statusMessage: peroError[0].result.error,
+        };
+      } catch (err) {
+        console.error('Error parsing peroResult:', err);
+        return {
+          status: WorkerStatus.ERROR,
+          statusMessage: getErrorMessage(err),
+        };
+      }
+    }
+  } catch (error) {
+    console.error(getErrorMessage(error));
+    return {
+      status: WorkerStatus.ERROR,
+      statusMessage: getErrorMessage(error),
+    };
+  }
 }
