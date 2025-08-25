@@ -1,9 +1,10 @@
 import { CollectionElement } from '@/data/models/CollectionElement';
+import { Tag } from '@/data/models/Tag';
 import { Canvas } from '@iiif/presentation-3';
 import { groupBy, mapValues } from 'lodash';
 import { Collection, CollectionDetails } from '../../models/Collection';
 import { db } from './db';
-import { getAnnotationRepository, getManifestRepository } from './dbFactory';
+import { getAnnotationRepository, getManifestRepository, getTagRepository } from './dbFactory';
 import { CollectionRepository } from './types';
 
 export class IndexedDBCollectionRepository implements CollectionRepository {
@@ -19,6 +20,16 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     const content = await db.collectionContents.get(id);
 
     return { ...details, content: content?.content || [] };
+  }
+
+  async getTagsByCollectionId(collectionId: string): Promise<Tag[]> {
+    const collection = await this.getCollectionById(collectionId);
+    const tagIds = collection.tags;
+    if (tagIds.length === 0) {
+      return [];
+    }
+    const tagRepository = getTagRepository();
+    return await tagRepository.getTagsByIds(tagIds);
   }
 
   async getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]> {

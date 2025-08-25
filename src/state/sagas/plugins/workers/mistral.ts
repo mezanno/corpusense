@@ -1,8 +1,9 @@
-import { Collection } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
 import { Result } from '@/data/models/Result';
 import { isAnnotationScope, isCanvasScope, Scope, toString } from '@/data/models/Scope';
+import { Tag } from '@/data/models/Tag';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
+import { getCollectionRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { toGallicaUrl } from '@/data/utils/canvas';
 import { generateTextFromCanvas } from '@/data/utils/export';
 import { generateSchema } from '@/data/utils/model';
@@ -165,7 +166,7 @@ export default function* mistralSaga(
  * Export function to export results from the Mistral plugin saga.
  * It takes an array of Result objects, extracts the data, and saves it as JSON and CSV files.
  */
-export function* exportResult(results: Result[]): Generator<Effect, void, Collection> {
+export function* exportResult(results: Result[]): Generator<Effect, void, Tag[]> {
   if (results.length === 0) {
     console.warn('No results to export from Mistral plugin');
     return;
@@ -174,6 +175,20 @@ export function* exportResult(results: Result[]): Generator<Effect, void, Collec
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
     const canvasId = isCanvasScope(result.scope) ? toGallicaUrl(result.scope.canvasId) : undefined;
+
+    const collectionRepository = getCollectionRepository();
+    const tags: Tag[] = yield call(
+      [collectionRepository, collectionRepository.getTagsByCollectionId],
+      result.scope.collectionId,
+    );
+    const tagsAsColumns = tags.reduce(
+      (acc, t, index) => {
+        acc[`tag${index + 1}`] = t.label;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
     try {
       const dataParsed = JSON.parse(result.value as string) as unknown;
       const dataParsedArray = (Array.isArray(dataParsed) ? dataParsed : [dataParsed]) as unknown[];
@@ -182,6 +197,7 @@ export function* exportResult(results: Result[]): Generator<Effect, void, Collec
           return {
             ...(item as object),
             canvasId,
+            ...tagsAsColumns,
           };
         }
         return item;
@@ -200,7 +216,7 @@ export function* exportResult(results: Result[]): Generator<Effect, void, Collec
     'exported_data.json',
   );
 
-  const csv = json2csv(allTheData as object[]);
+  const csv = json2csv((allTheData as object[]).filter(Boolean));
   yield call(
     FileSaver.saveAs,
     new Blob([csv], { type: 'text/plain;charset=utf-8' }),
