@@ -1,6 +1,6 @@
 import { Collection } from '@/data/models/Collection';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
-import { isCanvasScope, isCollectionScope, toString } from '@/data/models/Scope';
+import { isAnnotationScope, isCanvasScope, isCollectionScope, toString } from '@/data/models/Scope';
 import {
   isWorker,
   Task,
@@ -140,10 +140,24 @@ function* startWorker(
       //then, create a new worker
       currentWorker = (yield call([workerRepository, workerRepository.add], worker)) as Worker;
 
+      const collectionRepository = getCollectionRepository();
+
       //initialize the worker queue if the scope is collection
       currentWorker.queue = [];
-      if (isCanvasScope(worker.scope)) {
-        const collectionRepository = getCollectionRepository();
+      if (isAnnotationScope(worker.scope)) {
+        const canvas = (yield call(
+          [collectionRepository, collectionRepository.getCanvasInCollectionById],
+          worker.scope.canvasId,
+          worker.scope.collectionId,
+        )) as Canvas;
+        //add the canvas to the worker queue
+        currentWorker.queue.push({
+          id: 0,
+          scope: worker.scope,
+          canvas,
+          status: WorkerStatus.WAITING,
+        });
+      } else if (isCanvasScope(worker.scope)) {
         const canvas = (yield call(
           [collectionRepository, collectionRepository.getCanvasInCollectionById],
           worker.scope.canvasId,
@@ -158,7 +172,6 @@ function* startWorker(
         });
       } else if (isCollectionScope(worker.scope)) {
         const collectionId = worker.scope.collectionId;
-        const collectionRepository = getCollectionRepository();
         const canvases = (yield call(
           [collectionRepository, collectionRepository.getCanvasesByCollectionId],
           collectionId,

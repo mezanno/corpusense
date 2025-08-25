@@ -81,7 +81,11 @@ const AnnotationForm = ({
               height: rect.bounds.maxY - rect.bounds.minY,
             },
           },
-          scope: { canvasId: annotation.canvasId, collectionId: annotation.collectionId },
+          scope: {
+            canvasId: annotation.canvasId,
+            collectionId: annotation.collectionId,
+            annotationId: annotation.id,
+          },
         }),
       );
     }
