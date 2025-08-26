@@ -22,7 +22,7 @@
   "btn_cancel": "Cancel",
   "btn_continue": "Continue",
   "btn_add_metadata": "Add Metadata",
-  "btn_collection_actions": "What would you like to do?",
+  "btn_actions": "What would you like to do?",
   "btn_create_collection": "Create a New Collection",
   "btn_create_export": "Generate Export",
   "btn_download_export": "Download Export",
