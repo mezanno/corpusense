@@ -1,7 +1,6 @@
 import ContactDrawer from '@/components/drawers/ContactDrawer';
 import HistoryDrawer from '@/components/drawers/HistoryDrawer';
 import ManifestExplorerDrawer from '@/components/drawers/ManifestExplorerDrawer';
-import WorkerDrawer from '@/components/drawers/WorkerDrawer';
 import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { resetLastEvent } from '@/state/reducers/events';
@@ -56,12 +55,6 @@ const Layout = () => {
             <SidebarTrigger />
             <ManifestExplorerDrawer />
             <HistoryDrawer />
-            <WorkerDrawer
-              selectedWorkerId={selectedWorkerId}
-              setSelectedWorkerId={setSelectedWorkerId}
-              isOpen={isOpen}
-              setIsOpen={setIsOpen}
-            />
             <ContactDrawer />
           </div>
         </header>
