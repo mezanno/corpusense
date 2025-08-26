@@ -21,3 +21,14 @@ Cette structure nous permet d'avoir en ligne 2 builds :
 
 - <https://mezanno.xyz/corpusense/> : version stable de l'application
 - <https://mezanno.xyz/corpusense-dev/> : version d'essai de l'application utilisée pour les tests lors du développement
+
+## Technos utilisées
+
+- React : https://react.dev/
+- Redux (store) : https://redux.js.org/
+- Redux-Saga (opérations asynchrones) : https://redux-saga.js.org/
+- Shadcn/UI (composants React): https://ui.shadcn.com/
+- Tailwind CSS (framework CSS): https://tailwindcss.com/
+- Dexie (wrapper pour IndexedDB): https://dexie.org/
+- Annotorious + OpenSeaDragon (affichage d'images IIIF + annotation d'images) : https://annotorious.dev/
+-
