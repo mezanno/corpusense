@@ -1,12 +1,22 @@
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import WorkerDataTable from '@/components/WorkerDataTable';
 import WorkerDetails from '@/components/WorkerDetails';
 import { getWorkerStatusIcon } from '@/components/workerUtils';
 import { toString } from '@/data/models/Scope';
 import { Worker, WorkerStatus } from '@/data/models/Worker';
-import { useAppSelector } from '@/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { removeWorkerRequest } from '@/state/reducers/workers';
 import { getWorkersByStatus } from '@/state/selectors/workers';
 import { ColumnDef } from '@tanstack/react-table';
+import { MoreHorizontal, Trash } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -17,6 +27,7 @@ type Filter = {
 
 const WorkersManagerPage = () => {
   const { t } = useTranslation();
+  const appDispatch = useAppDispatch();
   const [filters, setFilters] = useState<Filter[]>(
     Object.values(WorkerStatus).map((status) => ({
       status,
@@ -30,6 +41,10 @@ const WorkersManagerPage = () => {
     ),
   );
   const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null);
+
+  const handleDeleteWorker = (workerId: string) => {
+    appDispatch(removeWorkerRequest(workerId));
+  };
 
   const columns: ColumnDef<Worker, unknown>[] = [
     {
@@ -74,12 +89,37 @@ const WorkersManagerPage = () => {
         return <div>{date.toLocaleString()}</div>;
       },
     },
+    {
+      id: 'actions',
+      cell: ({ row }) => {
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant='ghost'>
+                <span className='sr-only'>{t('btn_open_menu')}</span>
+                <MoreHorizontal className='h-4 w-4' />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end'>
+              <DropdownMenuLabel>{t('btn_actions')}</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => handleDeleteWorker(row.original.id)}
+                className='text-destructive'
+              >
+                <Trash color='red' />
+                {t('btn_delete')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
   ];
 
   return (
     <div className='panel h-full w-full'>
       <ResizablePanelGroup direction='horizontal'>
-        <ResizablePanel>
+        <ResizablePanel minSize={50} defaultSize={70}>
           <div className='flex h-full flex-col'>
             <div className='m-2 flex flex-wrap space-y-2 space-x-2'>
               {filters.map((filter) => (
@@ -112,7 +152,7 @@ const WorkersManagerPage = () => {
           </div>
         </ResizablePanel>
         <ResizableHandle />
-        <ResizablePanel>
+        <ResizablePanel minSize={30}>
           {selectedWorkerId !== null ? (
             <WorkerDetails workerId={selectedWorkerId} />
           ) : (
