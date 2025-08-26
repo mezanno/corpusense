@@ -24,10 +24,12 @@ const getTaskStatusColor = (status: WorkerStatus): string => {
       return 'text-yellow-500';
     case WorkerStatus.INPROGRESS:
       return 'text-blue-500';
-
+    case WorkerStatus.INPROGRESS_WITH_ERRORS:
+      return 'text-orange-500';
     case WorkerStatus.COMPLETED:
       return 'text-green-700';
     case WorkerStatus.ERROR:
+    case WorkerStatus.COMPLETED_WITH_ERRORS:
       return 'text-red-500';
     default:
       return 'text-gray-500'; // Default color for unknown status
