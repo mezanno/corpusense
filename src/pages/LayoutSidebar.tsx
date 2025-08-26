@@ -59,6 +59,10 @@ const WorkersSideBarGroup = ({
     getWorkersByStatus(state, [WorkerStatus.INPROGRESS, WorkerStatus.INPROGRESS_WITH_ERRORS]),
   );
 
+  if (workers.length === 0) {
+    return null; // No active workers, nothing to display
+  }
+
   return (
     <SidebarGroup className='h-1/2 overflow-y-auto'>
       <SidebarGroupLabel>{t('nav_workers')}</SidebarGroupLabel>
@@ -254,6 +258,7 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <CollectionsSideBarGroup />
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link to={CorpusenseRoutes.MODELS}>
@@ -272,7 +277,6 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroup>
-          <CollectionsSideBarGroup />
           <WorkersSideBarGroup setSelectedWorkerId={setSelectedWorkerId} />
         </SidebarContent>
 

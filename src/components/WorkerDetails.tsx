@@ -54,7 +54,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
           </li>
           <li>
             {t('list_title_worker_createdAt')}
-            {worker.createdAt}
+            {new Date(worker.createdAt).toLocaleString()}
           </li>
           <li>
             {t('list_title_worker_scope')}
