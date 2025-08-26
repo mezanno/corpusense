@@ -38,6 +38,7 @@ import {
   processSuccess,
   recoverWorkerRequest,
   removeWorkerRequest,
+  removeWorkerSuccess,
   setResults,
   setWorkers,
   startWorkerProcess,
@@ -134,8 +135,7 @@ function* startWorker(
         worker.scope,
       )) as Worker | undefined;
       if (existingWorker !== undefined) {
-        yield call([workerRepository, workerRepository.delete], existingWorker);
-        yield put(removeWorkerRequest(existingWorker));
+        yield call(handleRemoveWorker, { payload: existingWorker.id, type: 'REMOVE_WORKER' });
       }
       //then, create a new worker
       currentWorker = (yield call([workerRepository, workerRepository.add], worker)) as Worker;
@@ -414,10 +414,18 @@ function* fetchWorkers(): Generator<Effect, void, Worker[] | Result[]> {
   yield put(setResults(results));
 }
 
+function* handleRemoveWorker(action: PayloadAction<string>) {
+  const workerId = action.payload;
+  const workerRepository = getWorkerRepository();
+  yield call([workerRepository, workerRepository.delete], workerId);
+  yield put(removeWorkerSuccess(workerId));
+}
+
 export default function* workerSaga() {
   yield takeEvery(startWorkerProcess, handleStartWorkerProcess);
   yield takeEvery(exportWorkerResultRequest, handleExportWorkerResult);
   yield takeEvery(recoverWorkerRequest, handleRecoverWorker);
+  yield takeEvery(removeWorkerRequest, handleRemoveWorker);
 }
 
 export { fetchWorkers };

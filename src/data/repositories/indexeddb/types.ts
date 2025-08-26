@@ -98,7 +98,7 @@ export interface ResultRepository {
 
 export interface WorkerRepository {
   add(worker: Worker): Promise<Worker>;
-  delete(worker: Worker): Promise<void>;
+  delete(workerId: string): Promise<void>;
   update(worker: Worker): Promise<void>;
   patch(id: string, changes: Partial<Worker>): Promise<void>;
   selectAll(): Promise<Worker[]>;
