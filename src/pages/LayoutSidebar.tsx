@@ -23,10 +23,10 @@ import {
   Container,
   CornerDownRight,
   Database,
-  Ellipsis,
   FolderSearch2,
   List,
   MoreHorizontal,
+  PocketKnife,
   ScrollText,
   User2,
 } from 'lucide-react';
@@ -38,7 +38,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
@@ -50,67 +49,19 @@ import {
   SidebarMenuSubItem,
 } from '../components/ui/sidebar';
 
-type Filter = {
-  status: WorkerStatus;
-  selected: boolean;
-};
-
 const WorkersSideBarGroup = ({
   setSelectedWorkerId,
 }: {
   setSelectedWorkerId: (id: string) => void;
 }) => {
   const { t } = useTranslation();
-  const [filters, setFilters] = useState<Filter[]>(
-    Object.values(WorkerStatus).map((status) => ({
-      status,
-      selected: true,
-    })),
-  );
-
   const workers = useAppSelector((state) =>
-    getWorkersByStatus(
-      state,
-      filters.filter((f) => f.selected).map((f) => f.status),
-    ),
+    getWorkersByStatus(state, [WorkerStatus.INPROGRESS, WorkerStatus.INPROGRESS_WITH_ERRORS]),
   );
 
   return (
     <SidebarGroup className='h-1/2 overflow-y-auto'>
-      <SidebarGroupLabel>
-        {t('nav_workers')}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarGroupAction>
-              <div>
-                <Ellipsis className='rounded-lg border border-yellow-400' />
-              </div>
-            </SidebarGroupAction>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side='right' align='start'>
-            {filters.map((filter) => (
-              <DropdownMenuItem
-                key={filter.status}
-                onClick={() =>
-                  setFilters((prev) =>
-                    prev.map((f) =>
-                      f.status === filter.status ? { ...f, selected: !f.selected } : f,
-                    ),
-                  )
-                }
-              >
-                <input
-                  type='checkbox'
-                  checked={filter.selected}
-                  readOnly
-                  className='mr-2 h-4 w-4 cursor-pointer'
-                />
-                {t(`worker_status_${filter.status}`)}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarGroupLabel>
+      <SidebarGroupLabel>{t('nav_workers')}</SidebarGroupLabel>
 
       <SidebarGroupContent>
         <SidebarMenu>
@@ -308,6 +259,14 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
                   <Link to={CorpusenseRoutes.MODELS}>
                     <Container />
                     <span>{t('page_title_models_manager')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link to={CorpusenseRoutes.WORKERS}>
+                    <PocketKnife />
+                    <span>{t('page_title_workers_manager')}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
