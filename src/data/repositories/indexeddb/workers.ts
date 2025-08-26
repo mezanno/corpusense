@@ -35,8 +35,8 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     await db.workers.update(id, changes);
   }
 
-  async delete(worker: Worker): Promise<void> {
-    await db.workers.delete(worker.id);
-    await db.results.where('workerId').equals(worker.id).delete();
+  async delete(workerId: string): Promise<void> {
+    await db.workers.delete(workerId);
+    await db.results.where('workerId').equals(workerId).delete();
   }
 }

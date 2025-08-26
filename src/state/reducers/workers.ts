@@ -79,11 +79,13 @@ export const workerSlice = createSlice({
     setResults: (state, action: PayloadAction<Result[]>) => {
       state.results = action.payload;
     },
-    removeWorkerRequest: (state, action: PayloadAction<Worker>) => {
-      // action.payload is a worker
-      const workerId = action.payload.id;
-      state.workers = state.workers.filter((worker) => worker.id !== workerId);
-      state.results = state.results.filter((result) => result.workerId !== workerId);
+    removeWorkerRequest: (_state, _action: PayloadAction<string>) => {
+      //payload is workerId
+    },
+    removeWorkerSuccess: (state, action: PayloadAction<string>) => {
+      //payload is workerId
+      state.workers = state.workers.filter((worker) => worker.id !== action.payload);
+      state.results = state.results.filter((result) => result.workerId !== action.payload);
     },
     exportWorkerResultRequest: (_state, _action: PayloadAction<ExportWorkerPayload>) => {}, // action.payload is a workerId
     recoverWorkerRequest: (_state, _action: PayloadAction<Worker>) => {}, // action.payload is a workerId
@@ -99,6 +101,7 @@ export const {
   setWorkers,
   setResults,
   removeWorkerRequest,
+  removeWorkerSuccess,
   exportWorkerResultRequest,
   recoverWorkerRequest,
 } = workerSlice.actions;
