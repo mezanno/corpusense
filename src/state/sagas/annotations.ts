@@ -338,6 +338,7 @@ function* handleRecomputeRegions(
         const region = createAnnotation({
           canvasId,
           collectionId,
+          order: 1,
           type: ElementType.REGION,
           value: '',
           minX,

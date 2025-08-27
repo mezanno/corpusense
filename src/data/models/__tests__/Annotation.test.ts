@@ -61,6 +61,7 @@ describe('Annotation', () => {
       const newAnnotation = createAnnotation({
         canvasId: 'https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15',
         collectionId: 'collectionId',
+        order: 1,
         minX: 146.484375,
         minY: 292.96875,
         maxX: 585.9375,
@@ -75,6 +76,7 @@ describe('Annotation', () => {
       const newAnnotation = createAnnotation({
         canvasId: 'https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15',
         collectionId: 'collectionId',
+        order: 1,
         id: 'anotherId',
         minX: 146.484375,
         minY: 292.96875,
