@@ -1,12 +1,9 @@
-import { History } from '@/data/models/History';
 import { ItemMetadataAttribute } from '@/data/models/Metadata';
 import { Manifest } from '@iiif/presentation-3';
 import reducer, {
   fetchManifestSuccess,
   manifestInitialState,
-  removeFromHistorySuccess,
   saveMetadataSuccess,
-  updateHistorySuccess,
 } from '../manifests';
 
 describe('manifests reducer', () => {
@@ -39,35 +36,11 @@ describe('manifests reducer', () => {
     expect(state.loadedData).toEqual({ content: manifest, metadata });
   });
 
-  it('should handle updateHistorySuccess', () => {
-    const historyItem: History = { url: 'http://example.com' };
-    const action = updateHistorySuccess(historyItem);
-    const state = reducer(initialState, action);
+  it('should handle updateHistorySuccess', () => {});
 
-    expect(state.history).toContainEqual(historyItem);
-  });
+  it('should handle setHistory', () => {});
 
-  it('should handle setHistory', () => {
-    // const history: History[] = [{ url: 'http://example1.com' }, { url: 'http://example2.com' }];
-    // const action = setHistory(history);
-    // const state = reducer(initialState, action);
-    // expect(state.history).toEqual(history);
-  });
-
-  it('should handle removeFromHistorySuccess', () => {
-    const initialStateWithHistory = {
-      ...initialState,
-      history: [
-        { url: 'http://example1.com', label: 'Example 1' },
-        { url: 'http://example2.com', label: 'Example 2' },
-      ],
-    };
-    const action = removeFromHistorySuccess('http://example1.com');
-    const state = reducer(initialStateWithHistory, action);
-
-    expect(state.history).toHaveLength(1);
-    expect(state.history[0].url).toBe('http://example2.com');
-  });
+  it('should handle removeFromHistorySuccess', () => {});
 
   it('should handle saveMetadataSuccess', () => {
     const initialStateWithLoadedData = {

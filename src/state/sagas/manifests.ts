@@ -22,7 +22,6 @@ import {
   saveMetadataRequest,
   saveMetadataSuccess,
   setHistory,
-  updateHistorySuccess,
 } from '../reducers/manifests';
 
 const keys = Object.keys(importerPlugins);
@@ -99,11 +98,7 @@ function* handleFetchManifest(action: {
 
       //add the manifest to the history
       try {
-        const addedHistory = (yield call(
-          [manifestRepository, manifestRepository.addToHistory],
-          manifest.id,
-        )) as History;
-        yield put(updateHistorySuccess(addedHistory));
+        yield call([manifestRepository, manifestRepository.addToHistory], manifest.id);
       } catch (error) {
         console.warn('Error adding url to indexedDB history: ', error);
       }
