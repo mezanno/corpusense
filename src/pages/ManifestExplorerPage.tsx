@@ -3,6 +3,7 @@ import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionCo
 import { Toggle } from '@/components/ui/toggle';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fecthManifestRequest } from '@/state/reducers/manifests';
+import { Canvas } from '@iiif/presentation-3';
 import { PanelTopClose, PanelTopOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,8 +12,6 @@ import CanvasGallery from '../components/CanvasGallery';
 import ManifestDetails from '../components/ManifestDetails';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
-const CANVASVIEWER_NAME = 'canvas-manifest';
-
 const ManifestExplorerPage = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
@@ -20,6 +19,7 @@ const ManifestExplorerPage = () => {
   const [isMetadataOpen, setIsMetadataOpen] = useState(true);
   const [isGalleryOpen, setIsGalleryOpen] = useState(true);
   const [searchParams] = useSearchParams();
+  const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | undefined>(undefined);
 
   useEffect(() => {
     const id = searchParams.get('manifestId');
@@ -88,7 +88,7 @@ const ManifestExplorerPage = () => {
                     minSize={25}
                   >
                     <CanvasSelectionProvider canvasesLoaded={loadedData.content.items}>
-                      <CanvasGallery canvasViewerName={CANVASVIEWER_NAME} />
+                      <CanvasGallery setCanvasToDisplay={setCanvasToDisplay} />
                     </CanvasSelectionProvider>
                   </ResizablePanel>
                   <ResizableHandle withHandle />
@@ -101,7 +101,7 @@ const ManifestExplorerPage = () => {
               minSize={30}
               className='relative h-full w-full rounded-lg bg-white'
             >
-              <CanvasViewer name={CANVASVIEWER_NAME} />
+              <CanvasViewer canvas={canvasToDisplay} />
             </ResizablePanel>
           </>
         )}

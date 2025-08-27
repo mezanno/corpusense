@@ -1,7 +1,7 @@
 import { Annotation, ElementType, isAnnotation } from '@/data/models/Annotation';
 import { useAppDispatch } from '@/hooks/hooks';
 import { useAddAnnotation } from '@/hooks/useSaveAnnotation';
-import { saveAnnotationRequest } from '@/state/reducers/annotations';
+import { fetchAnnotationsRequest, saveAnnotationRequest } from '@/state/reducers/annotations';
 import { getAnnotations } from '@/state/selectors/annotations';
 import { RootState } from '@/state/store';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
@@ -132,7 +132,10 @@ export const CanvasViewerContent = ({
       anno.clearAnnotations();
       isNewCanvas.current = true;
     }
-  }, [canvas]);
+    if (collectionId !== undefined) {
+      appDispatch(fetchAnnotationsRequest({ canvasId: canvas.id, collectionId }));
+    }
+  }, [canvas, collectionId]);
 
   const style = (annotation: Annotation, state?: AnnotationState) => {
     const value = annotation.bodies[0]?.value ?? ElementType.TAG;

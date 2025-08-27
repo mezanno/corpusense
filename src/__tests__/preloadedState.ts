@@ -8,9 +8,6 @@ import { RootState } from '@/state/store';
 
 const defaultPreloadedState: RootState = {
   manifests: manifestInitialState,
-  canvases: {
-    values: {},
-  },
   collections: {
     values: [],
     openedCollections: [],
