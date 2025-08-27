@@ -1,5 +1,5 @@
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
-import { getCanvasById, getCanvasesByIds } from '@/data/utils/manifest';
+import { getCanvasById, getCanvasesByIds, getManifestDetails } from '@/data/utils/manifest';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas, Manifest } from '@iiif/presentation-3';
 import i18next from 'i18next';
@@ -58,15 +58,7 @@ export class IndexedDBManifestRepository implements ManifestRepository {
   }
 
   async saveManifest(manifest: Manifest) {
-    const summaryNone = manifest.summary?.['none'];
-    const labelNone = manifest.label?.['none'];
-    const name =
-      Array.isArray(summaryNone) && summaryNone[0]
-        ? summaryNone[0]
-        : Array.isArray(labelNone) && labelNone[0]
-          ? labelNone[0]
-          : '';
-    const thumbnail = manifest.thumbnail?.[0];
+    const { name, thumbnail } = getManifestDetails(manifest);
 
     await db.transaction('rw', db.storedManifests, db.storedManifestContents, async () => {
       await db.storedManifests.add({ id: manifest.id, name, thumbnail });

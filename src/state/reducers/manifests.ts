@@ -2,6 +2,7 @@ import { Event, EventType } from '@/data/models/Event';
 import { History } from '@/data/models/History';
 import { ItemMetadataAttribute } from '@/data/models/Metadata';
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
+import { getManifestDetails } from '@/data/utils/manifest';
 import { Manifest } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -12,21 +13,19 @@ export interface ManifestState {
     metadata: ItemMetadataAttribute[];
   } | null;
   isLoaded: boolean;
-  history: History[];
-  historyDetails?: StoredManifestDetails[];
+  historyDetails: StoredManifestDetails[];
   manifestOpenEvent: Event | undefined; // Optional event to track when the manifest is opened
 }
 
 export const manifestInitialState: ManifestState = {
   isLoading: false,
   loadedData: null,
-  history: [],
   historyDetails: [],
   isLoaded: false,
   manifestOpenEvent: undefined, // Initialize the manifestOpenEvent to false
 };
 
-const loadingState: Omit<ManifestState, 'history'> = {
+const loadingState: Omit<ManifestState, 'historyDetails'> = {
   isLoading: true,
   loadedData: null,
   isLoaded: false,
@@ -34,8 +33,8 @@ const loadingState: Omit<ManifestState, 'history'> = {
 };
 
 const applyLoadingState = (state: ManifestState): ManifestState => ({
+  ...state,
   ...loadingState,
-  history: state.history,
 });
 
 export interface SaveMetadataPayload {
@@ -63,22 +62,24 @@ export const manifestsSlice = createSlice({
       state.isLoaded = true;
       state.loadedData = action.payload;
       state.manifestOpenEvent = { message: 'OK', type: EventType.INFO }; // Set the manifestOpenEvent when a manifest is successfully loaded
-    },
-    updateHistorySuccess: (state, action: PayloadAction<History>) => {
-      //add the manifest id to the history and remove the duplicates
-      state.history = state.history.filter((item) => item.url !== action.payload.url);
-      state.history.unshift(action.payload);
+
+      const details = getManifestDetails(action.payload.content);
+      state.historyDetails = state.historyDetails.filter(
+        (item) => item.id !== action.payload.content.id,
+      );
+      state.historyDetails.unshift({ id: action.payload.content.id, ...details });
     },
     setHistory: (
       state,
       action: PayloadAction<{ history: History[]; manifestDetails: StoredManifestDetails[] }>,
     ) => {
-      state.history = action.payload.history;
       state.historyDetails = action.payload.manifestDetails;
     },
     removeFromHistoryRequest: (_state, _action: PayloadAction<string>) => {},
     removeFromHistorySuccess: (state, action: PayloadAction<string>) => {
-      state.history = state.history.filter((item) => item.url !== action.payload);
+      //action.payload is the manifest id to remove
+
+      state.historyDetails = state.historyDetails.filter((item) => item.id !== action.payload);
     },
     saveMetadataRequest: (_state, _action: PayloadAction<SaveMetadataPayload>) => {},
     saveMetadataSuccess: (state, action: PayloadAction<SaveMetadataPayload>) => {
@@ -98,7 +99,6 @@ export const {
   setHistory,
   removeFromHistoryRequest,
   removeFromHistorySuccess,
-  updateHistorySuccess,
   saveMetadataRequest,
   saveMetadataSuccess,
   resetManifestOpenEvent,

@@ -27,7 +27,8 @@ const Item = ({ item }: { item: StoredManifestDetails }) => {
     return <FileImage size={48} />;
   }, [item]);
 
-  const handleDelete = () => {
+  const handleDelete = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    event.stopPropagation();
     dispatch(removeFromHistoryRequest(item.id));
   };
 
@@ -35,20 +36,17 @@ const Item = ({ item }: { item: StoredManifestDetails }) => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className='relative'>
+          <div className='flex cursor-pointer items-center justify-center p-1'>
             <Link
               key={item.id}
               to={`/manifest?manifestId=${item.id}`}
-              className='text-wrapping flex cursor-pointer items-center space-x-2 border-b border-gray-200 p-2'
+              className='text-wrapping flex items-center space-x-2 border-b border-gray-200 p-1'
             >
               {thumbnail}
               <div className='text-left text-xs font-bold text-mezanno-4'>{item.name}</div>
             </Link>
-            <button
-              className='absolute top-0 right-0 flex items-center justify-center opacity-0 group-hover:opacity-100'
-              title={t('btn_delete_from_history')}
-            >
-              <CircleX className='text-red-400 hover:text-red-800' onClick={handleDelete} />
+            <button title={t('btn_delete_from_history')} onClick={(event) => handleDelete(event)}>
+              <CircleX className='text-red-400 hover:text-red-800' />
             </button>
           </div>
         </TooltipTrigger>
@@ -61,14 +59,11 @@ const Item = ({ item }: { item: StoredManifestDetails }) => {
 const HistoryNav = () => {
   const history: StoredManifestDetails[] = useAppSelector(getHistory);
 
-  const historyItems = useMemo(
-    () => history.map((item) => <Item key={item.id} item={item} />),
-    [history],
-  );
-
   return (
     <nav aria-label='historique' className='h-auto overflow-auto'>
-      {historyItems}
+      {history.map((item) => (
+        <Item key={item.id} item={item} />
+      ))}
     </nav>
   );
 };

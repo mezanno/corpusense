@@ -22,10 +22,6 @@ describe('Layout', () => {
       ...getPreloadedState(),
       manifests: {
         ...getPreloadedState().manifests,
-        history: [
-          { url: 'https://example.com/manifest1.json' },
-          { url: 'https://example.com/manifest2.json' },
-        ],
       },
     };
 
