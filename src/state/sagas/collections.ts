@@ -35,6 +35,7 @@ import {
   updateCollectionSuccess,
 } from '../reducers/collections';
 import { pushError, pushInfo } from '../reducers/events';
+import { removeWorkerByScopeRequest } from '../reducers/workers';
 import { handleFetchManifestFromURL } from './manifests';
 
 function* fetchAllCollections(): Generator<
@@ -108,7 +109,8 @@ function* handleRemoveCollection(
     yield call([collectionRepository, collectionRepository.remove], collectionToRemove);
     yield put(removeCollectionSuccess(collectionId));
     yield put(removeAllCollectionAnnotationsSuccess(collectionId));
-    // yield put(removeStoreItems)
+    yield put(removeWorkerByScopeRequest({ collectionId })); //remove workers associated to the collection
+    yield put(pushInfo(i18n.t('toast_collection_removed')));
   } catch (e) {
     yield put(pushError(getErrorMessage(e)));
   }

@@ -4,7 +4,12 @@ import { Canvas } from '@iiif/presentation-3';
 import { groupBy, mapValues } from 'lodash';
 import { Collection, CollectionDetails } from '../../models/Collection';
 import { db } from './db';
-import { getAnnotationRepository, getManifestRepository, getTagRepository } from './dbFactory';
+import {
+  getAnnotationRepository,
+  getManifestRepository,
+  getTagRepository,
+  getWorkerRepository,
+} from './dbFactory';
 import { CollectionRepository } from './types';
 
 export class IndexedDBCollectionRepository implements CollectionRepository {
@@ -127,16 +132,23 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
   }
 
   async remove(collectionToRemove: Collection): Promise<void> {
-    await db.transaction('rw', db.collections, db.collectionContents, db.annotations, async () => {
-      //remove the annotations of the collection
-      const annotationRepository = getAnnotationRepository();
-      await annotationRepository.removeByScope({
-        collectionId: collectionToRemove.id,
-      });
-      //remove the collection
-      await db.collections.delete(collectionToRemove.id);
-      await db.collectionContents.delete(collectionToRemove.id);
-    });
+    await db.transaction(
+      'rw',
+      [db.collections, db.collectionContents, db.annotations, db.workers, db.results],
+      async () => {
+        //remove the annotations of the collection
+        const annotationRepository = getAnnotationRepository();
+        await annotationRepository.removeByScope({
+          collectionId: collectionToRemove.id,
+        });
+        //remove the workers associated to the collection
+        const workerRepository = getWorkerRepository();
+        await workerRepository.deleteByScope({ collectionId: collectionToRemove.id });
+        //remove the collection
+        await db.collections.delete(collectionToRemove.id);
+        await db.collectionContents.delete(collectionToRemove.id);
+      },
+    );
   }
 
   async removeElement(collectionId: string, canvasId: string): Promise<Collection> {

@@ -87,6 +87,10 @@ export const workerSlice = createSlice({
       state.workers = state.workers.filter((worker) => worker.id !== action.payload);
       state.results = state.results.filter((result) => result.workerId !== action.payload);
     },
+    removeWorkerByScopeRequest: (state, _action: PayloadAction<Scope>) => {
+      state.workers = state.workers.filter((worker) => !isSameScope(worker.scope, _action.payload));
+      state.results = state.results.filter((result) => !isSameScope(result.scope, _action.payload));
+    },
     exportWorkerResultRequest: (_state, _action: PayloadAction<ExportWorkerPayload>) => {}, // action.payload is a workerId
     recoverWorkerRequest: (_state, _action: PayloadAction<Worker>) => {}, // action.payload is a workerId
   },
@@ -102,6 +106,7 @@ export const {
   setResults,
   removeWorkerRequest,
   removeWorkerSuccess,
+  removeWorkerByScopeRequest,
   exportWorkerResultRequest,
   recoverWorkerRequest,
 } = workerSlice.actions;
