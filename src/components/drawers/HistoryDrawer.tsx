@@ -1,5 +1,6 @@
-import { useAppDispatch } from '@/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { resetManifestOpenEvent } from '@/state/reducers/manifests';
+import { getManifestOpenEvent } from '@/state/selectors/manifests';
 import { History } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +19,7 @@ import {
 const HistoryDrawer = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
+  const manifestOpenEvent = useAppSelector(getManifestOpenEvent);
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -26,6 +28,12 @@ const HistoryDrawer = () => {
       appDispatch(resetManifestOpenEvent());
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (manifestOpenEvent) {
+      setIsOpen(false);
+    }
+  }, [manifestOpenEvent]);
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
