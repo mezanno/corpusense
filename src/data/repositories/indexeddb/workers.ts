@@ -36,7 +36,19 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
   }
 
   async delete(workerId: string): Promise<void> {
-    await db.workers.delete(workerId);
-    await db.results.where('workerId').equals(workerId).delete();
+    await db.transaction('rw', db.workers, db.results, async () => {
+      await db.workers.delete(workerId);
+      await db.results.where('workerId').equals(workerId).delete();
+    });
+  }
+
+  async deleteByScope(scope: Scope): Promise<void> {
+    const scopeKey = getScopeKey(scope);
+    const workersToDelete = await db.workers.where('scopeKey').equals(scopeKey).toArray();
+    const workerIds = workersToDelete.map((worker) => worker.id);
+    await db.transaction('rw', db.workers, db.results, async () => {
+      await db.workers.where('scopeKey').equals(scopeKey).delete();
+      await db.results.where('workerId').anyOf(workerIds).delete();
+    });
   }
 }
