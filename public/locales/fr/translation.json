@@ -196,6 +196,7 @@
   "info_dangerous_menu": "Attention, ces actions sont irréversibles !",
   "info_export_menu": "Options d'export",
   "info_analysis_running": "Traitement en cours...",
+  "info_worker_running": "Aucune action disponible. Un traitement est en cours sur cette collection.",
   "info_start_layout": "Lancement de la détection de la mise en page pour {{canvas}}",
   "info_start_ocr": "Lancement de l'OCR pour {{canvas}}",
   "info_finish_analysis": "Analyse terminée pour {{canvas}}",

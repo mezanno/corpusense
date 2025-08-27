@@ -1,6 +1,6 @@
 import { DataModel } from '@/data/models/DataModel';
 import { Worker } from '@/data/models/Worker';
-import { useAppDispatch } from '@/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import {
   recomputeRegionsRequest,
   removeAllCollectionAnnotationsRequest,
@@ -11,6 +11,7 @@ import {
   recoverWorkerRequest,
   startWorkerProcess,
 } from '@/state/reducers/workers';
+import { isWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SelectModelForm from './textviewer/SelectModelForm';
@@ -20,7 +21,16 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
+  const isWorkerRunning = useAppSelector((state) => isWorkerOrTaskRunning(state, { collectionId }));
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  if (isWorkerRunning) {
+    return (
+      <div className='panel'>
+        <strong>{t('info_worker_running')}</strong>
+      </div>
+    );
+  }
 
   const handleOcr = () => {
     appDispatch(

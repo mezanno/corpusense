@@ -1,7 +1,7 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
 import { DataModel } from '@/data/models/DataModel';
 import { Worker } from '@/data/models/Worker';
-import { useAppDispatch } from '@/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import {
   duplicateAnnotationsEach2PagesRequest,
   duplicateAnnotationsToAllPagesRequest,
@@ -11,6 +11,7 @@ import {
 import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import { exportWorkerResultRequest, startWorkerProcess } from '@/state/reducers/workers';
 import { getAnnotationsByType } from '@/state/selectors/annotations';
+import { isWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { RootState } from '@/state/store';
 import { useSelection } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
@@ -33,6 +34,9 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const { cvcState, cvcDispatch } = useContext(ReducerContext);
     const [dialogOpen, setDialogOpen] = useState(false);
     const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
+    const isWorkerRunning = useAppSelector((state) =>
+      isWorkerOrTaskRunning(state, { collectionId: props.collectionId }),
+    );
 
     const regionAnnotations = useSelector((state: RootState) =>
       getAnnotationsByType(
@@ -158,34 +162,43 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     return (
       <div className='flex h-full w-full flex-col' onKeyDown={handleKeyDown}>
         <h4 className='w-full border-b-1 text-center text-sm italic'>{props.canvas?.id}</h4>
-        <div className='m-1 flex h-auto w-full gap-2 space-x-2'>
-          <Toolbar
-            handleOcr={handleStartOcrAnalysis}
-            handleExportText={handleExportText}
-            handleDeleteAllAnnotations={handleDeleteAllAnnotations}
-            // handleLayout={handleStartLayoutAnalysis}
-            handleExtractData={handleExtractData}
-            handleExportResult={handleExportResult}
-            scope={{ canvasId: cvcState.canvas?.id ?? '', collectionId: props.collectionId ?? '' }}
-          />
-          <button
-            className='soft-button'
-            title={t('btn_add_annotation')}
-            onClick={handleAddAnnotation}
-          >
-            <NotebookPen size={24} />
-          </button>
-          {regionAnnotations.length > 0 && (
-            <LayoutMenu
-              handleDuplicateToAll={handleDuplicateRegionToAllPages}
-              handleDuplicateEach2={handleDuplicateRegionEach2}
+        {isWorkerRunning ? (
+          <div>
+            <strong>{t('info_worker_running')}</strong>
+          </div>
+        ) : (
+          <div className='m-1 flex h-auto w-full gap-2 space-x-2'>
+            <Toolbar
+              handleOcr={handleStartOcrAnalysis}
+              handleExportText={handleExportText}
+              handleDeleteAllAnnotations={handleDeleteAllAnnotations}
+              // handleLayout={handleStartLayoutAnalysis}
+              handleExtractData={handleExtractData}
+              handleExportResult={handleExportResult}
               scope={{
                 canvasId: cvcState.canvas?.id ?? '',
                 collectionId: props.collectionId ?? '',
               }}
             />
-          )}
-        </div>
+            <button
+              className='soft-button'
+              title={t('btn_add_annotation')}
+              onClick={handleAddAnnotation}
+            >
+              <NotebookPen size={24} />
+            </button>
+            {regionAnnotations.length > 0 && (
+              <LayoutMenu
+                handleDuplicateToAll={handleDuplicateRegionToAllPages}
+                handleDuplicateEach2={handleDuplicateRegionEach2}
+                scope={{
+                  canvasId: cvcState.canvas?.id ?? '',
+                  collectionId: props.collectionId ?? '',
+                }}
+              />
+            )}
+          </div>
+        )}
         <div className='flex h-full w-full'>
           <WrappedComponent {...(props as T)} />
 
