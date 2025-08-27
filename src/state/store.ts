@@ -3,7 +3,6 @@ import createSagaMiddleware from 'redux-saga';
 import { dateConverterMiddleware } from './middlewares/dateConverterMiddleware';
 import annotationsReducer from './reducers/annotations';
 import authReducer from './reducers/auth';
-import canvasReducer from './reducers/canvas';
 import collectionsReducer from './reducers/collections';
 import eventsReducer from './reducers/events';
 import exportReducer from './reducers/export';
@@ -19,7 +18,6 @@ const sagaMiddleware = createSagaMiddleware();
 export const rootReducer = combineReducers({
   manifests: manifestsReducer,
   collections: collectionsReducer,
-  canvases: canvasReducer,
   tags: tagsReducer,
   export: exportReducer,
   annotations: annotationsReducer,

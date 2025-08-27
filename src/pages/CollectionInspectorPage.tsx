@@ -14,9 +14,9 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { reset } from '@/state/reducers/canvas';
 import { loadCollectionRequest } from '@/state/reducers/collections';
 import { getCurrentCollection } from '@/state/selectors/collections';
+import { Canvas } from '@iiif/presentation-3';
 import 'gridstack/dist/gridstack.min.css';
 import { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,7 +24,6 @@ import { useParams } from 'react-router-dom';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeGrid as Grid } from 'react-window';
 
-const CANVASVIEWER_NAME = 'collection-inspector';
 const COLUMN_COUNT = 5;
 
 interface GridCellProps {
@@ -35,6 +34,8 @@ interface GridCellProps {
     collection: Collection;
     width: number;
     height: number;
+    canvasToDisplay: Canvas | undefined;
+    setCanvasToDisplay: (canvas: Canvas) => void;
   };
 }
 
@@ -62,9 +63,10 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
       <GridThumb
         canvasId={data.collection.content[index].canvasId}
         collectionId={data.collection.id ?? ''}
-        canvasViewerName={CANVASVIEWER_NAME}
         thumbWidth={data.width}
         thumbHeight={data.height}
+        setCanvasToDisplay={data.setCanvasToDisplay}
+        canvasToDisplay={data.canvasToDisplay}
       />
     </div>
   );
@@ -72,15 +74,9 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
 
 const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
   const currentCollection = useAppSelector(getCurrentCollection);
-  console.log('currentCollection: ', currentCollection);
-
+  const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | undefined>(undefined);
   const [activeTab, setActiveTab] = useState('document');
-
-  useEffect(() => {
-    appDispatch(reset('collection-inspector')); // Reset the canvas state when the component mounts
-  }, []);
 
   return (
     <section className='h-full max-h-full w-full max-w-full'>
@@ -123,6 +119,8 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
                         collection: currentCollection,
                         width: width / COLUMN_COUNT - 20,
                         height: 165,
+                        setCanvasToDisplay,
+                        canvasToDisplay,
                       }}
                     >
                       {GridCell}
@@ -139,26 +137,32 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel className='ml-1 flex-1 overflow-hidden' minSize={30}>
-          <Tabs
-            defaultValue='document'
-            className='panel h-full w-full'
-            value={activeTab}
-            onValueChange={setActiveTab}
-          >
-            <div className='flex w-full justify-between'>
-              <TabsList>
-                <TabsTrigger value='document'>Vue document</TabsTrigger>
-                <TabsTrigger value='text'>Vue texte</TabsTrigger>
-              </TabsList>
-              {activeTab === 'text' && <ModelButtons collectionId={collectionId} />}
+          {canvasToDisplay === undefined ? (
+            <div className='panel flex h-full w-full items-center justify-center text-2xl text-red-500'>
+              {t('info_no_canvas_selected')}
             </div>
-            <TabsContent value='document'>
-              <CanvasViewer name={CANVASVIEWER_NAME} colllectionId={collectionId} />
-            </TabsContent>
-            <TabsContent value='text'>
-              <TextViewer name={CANVASVIEWER_NAME} collectionId={collectionId} />
-            </TabsContent>
-          </Tabs>
+          ) : (
+            <Tabs
+              defaultValue='document'
+              className='panel h-full w-full'
+              value={activeTab}
+              onValueChange={setActiveTab}
+            >
+              <div className='flex w-full justify-between'>
+                <TabsList>
+                  <TabsTrigger value='document'>Vue document</TabsTrigger>
+                  <TabsTrigger value='text'>Vue texte</TabsTrigger>
+                </TabsList>
+                {activeTab === 'text' && <ModelButtons collectionId={collectionId} />}
+              </div>
+              <TabsContent value='document'>
+                <CanvasViewer colllectionId={collectionId} canvas={canvasToDisplay} />
+              </TabsContent>
+              <TabsContent value='text'>
+                <TextViewer collectionId={collectionId} canvas={canvasToDisplay} />
+              </TabsContent>
+            </Tabs>
+          )}
         </ResizablePanel>
       </ResizablePanelGroup>
     </section>

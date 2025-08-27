@@ -1,6 +1,5 @@
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useAppSelector } from '@/hooks/hooks';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
-import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import { getCanvases, getManifestURL } from '@/state/selectors/manifests';
 import { Canvas } from '@iiif/presentation-3';
 import { FC, useRef, useState } from 'react';
@@ -54,9 +53,12 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
   );
 };
 
-const CanvasGallery = ({ canvasViewerName }: { canvasViewerName: string }) => {
+const CanvasGallery = ({
+  setCanvasToDisplay,
+}: {
+  setCanvasToDisplay: (canvas: Canvas) => void;
+}) => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
   const canvases = useAppSelector(getCanvases);
   const manifestId = useAppSelector(getManifestURL);
   const { setSelection } = useCanvasSelection();
@@ -75,14 +77,8 @@ const CanvasGallery = ({ canvasViewerName }: { canvasViewerName: string }) => {
       return target;
     });
 
-    //TODO! Vérifications à faire
     if (canvas != null) {
-      appDispatch(
-        setCanvasFromComponent({
-          componentId: canvasViewerName,
-          canvas,
-        }),
-      );
+      setCanvasToDisplay(canvas);
     }
   };
 

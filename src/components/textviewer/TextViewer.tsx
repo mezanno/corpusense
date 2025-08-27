@@ -1,7 +1,6 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
 import { getAnnotationsByType } from '@/data/utils/annotations';
 import { useAppSelector } from '@/hooks/hooks';
-import { getCanvasForComponent } from '@/state/selectors/canvas';
 import { getCollectionById } from '@/state/selectors/collections';
 import { getModelById } from '@/state/selectors/models';
 import { Canvas } from '@iiif/presentation-3';
@@ -11,9 +10,8 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import { MarkupProvider } from '../reducers/MarkupContext';
 import TextViewerStage from './TextViewerStage';
 
-const TextViewer = ({ name, collectionId }: { name: string; collectionId: string }) => {
+const TextViewer = ({ collectionId, canvas }: { collectionId: string; canvas: Canvas }) => {
   const { t } = useTranslation();
-  const canvas = useAppSelector(getCanvasForComponent(name));
   const collection = useAppSelector((state) => getCollectionById(state, collectionId));
   const containerRef = useRef(null);
   const [text, setText] = useState<Annotation[]>([]);

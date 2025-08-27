@@ -2,12 +2,10 @@ import WorkerStatusIcon from '@/components/WorkerStatusIcon';
 import { ElementType } from '@/data/models/Annotation';
 import { getImageForThumbnail } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { setCanvasFromComponent } from '@/state/reducers/canvas';
 import { removeElementFromCollectionRequest } from '@/state/reducers/collections';
 import { getAnnotationsByType } from '@/state/selectors/annotations';
-import { isCanvasDisplayed } from '@/state/selectors/canvas';
 import { getLoadedCanvasById } from '@/state/selectors/collections';
-import { IIIFExternalWebResource } from '@iiif/presentation-3';
+import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import 'gridstack/dist/gridstack.min.css';
 import { CircleX, SpellCheck, SpellCheck2 } from 'lucide-react';
@@ -17,22 +15,22 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 const GridThumb = ({
   canvasId,
   collectionId,
-  canvasViewerName,
   thumbWidth,
   thumbHeight,
+  setCanvasToDisplay,
+  canvasToDisplay,
 }: {
   canvasId: string;
   collectionId: string;
-  canvasViewerName: string;
   thumbWidth: number;
   thumbHeight: number;
+  canvasToDisplay: Canvas | undefined;
+  setCanvasToDisplay: (canvas: Canvas) => void;
 }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const canvas = useAppSelector((state) => getLoadedCanvasById(state, canvasId));
-  const idDisplayed = useAppSelector((state) =>
-    isCanvasDisplayed(state, canvasId, canvasViewerName),
-  );
+  const idDisplayed = canvasToDisplay?.id === canvas?.id;
   const hasLineAnnotations =
     useAppSelector((state) => getAnnotationsByType(state, canvasId, collectionId, ElementType.LINE))
       .length > 0;
@@ -49,7 +47,7 @@ const GridThumb = ({
 
   const handleOnClick = () => {
     if (canvas !== undefined) {
-      dispatch(setCanvasFromComponent({ componentId: canvasViewerName, canvas, collectionId }));
+      setCanvasToDisplay(canvas);
     }
   };
 
