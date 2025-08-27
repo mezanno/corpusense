@@ -12,6 +12,7 @@ function convertEdwinToAnnotation(
   canvasId: string,
   collectionId: string,
   originalWidth: number,
+  order: number,
 ) {
   const multiple = Math.max(originalWidth, 2048) / 2048;
 
@@ -27,6 +28,7 @@ function convertEdwinToAnnotation(
   return createAnnotation({
     canvasId,
     collectionId,
+    order,
     minX: edwinBox.box[0] * multiple,
     minY: edwinBox.box[1] * multiple,
     maxX: edwinBox.box[0] * multiple + edwinBox.box[2] * multiple,
@@ -43,6 +45,6 @@ export function convertEdwinResult(
   originalWidth: number,
 ): Annotation[] {
   return boxes
-    .map((b) => convertEdwinToAnnotation(b, canvasId, collecionId, originalWidth))
+    .map((b, index) => convertEdwinToAnnotation(b, canvasId, collecionId, originalWidth, index + 1))
     .filter(Boolean);
 }

@@ -76,7 +76,7 @@ function getValueForMotivation(annotation: Annotation, motivation: W3CMotivation
 export interface AnnotationCreateDTO {
   canvasId: string;
   collectionId: string;
-  // order: number;
+  order: number;
   minX: number;
   minY: number;
   maxX: number;
@@ -96,14 +96,14 @@ export function createAnnotation<T extends AnnotationCreateDTO | AnnotationWithI
   annotationDTO: T,
 ): Annotation {
   const annotationId = (annotationDTO as AnnotationWithIdCreateDTO).id ?? uuid();
-  const { canvasId, collectionId, minX, minY, maxX, maxY, type, value } = annotationDTO;
+  const { canvasId, collectionId, minX, minY, maxX, maxY, type, value, order } = annotationDTO;
   const bounds = { minX, minY, maxX, maxY };
 
   return {
     id: annotationId,
     canvasId,
     collectionId,
-    order: 0,
+    order,
     target: {
       annotation: annotationId,
       selector: {
