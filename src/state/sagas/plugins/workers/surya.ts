@@ -96,7 +96,12 @@ export default function* peroSaga(
           canvas.id,
           task.scope.collectionId,
         );
-        yield put(fetchAnnotationsSuccess(annotations));
+        yield put(
+          fetchAnnotationsSuccess({
+            scope: { collectionId: task.scope.collectionId, canvasId: canvas.id },
+            annotations,
+          }),
+        );
         yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
         return {
           status: WorkerStatus.COMPLETED,

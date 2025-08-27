@@ -15,11 +15,12 @@ import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { t } from 'i18next';
-import { groupBy, isEqual, maxBy, minBy } from 'lodash';
+import { isEqual, maxBy, minBy } from 'lodash';
 import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
   duplicateAnnotationsEach2PagesRequest,
   duplicateAnnotationsToAllPagesRequest,
+  fetchAnnotationsRequest,
   fetchAnnotationsSuccess,
   recomputeRegionsRequest,
   removeAllAnnotationsSuccess,
@@ -34,7 +35,8 @@ import {
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
 } from '../reducers/annotations';
-import { setCanvasFromComponent, SetCanvasFromComponentPayload } from '../reducers/canvas';
+// import { setCanvasFromComponent, SetCanvasFromComponentPayload } from '../reducers/canvas';
+import { CanvasScope } from '@/data/models/Scope';
 import { pushError, pushInfo } from '../reducers/events';
 import { getAnnotations } from '../selectors/annotations';
 
@@ -288,8 +290,6 @@ function* handleDuplicateAnnotationsToPages({
           duplicatedAnnotations,
         );
       }
-      yield put(removeAllAnnotationsSuccess(removedAnnotations));
-      yield put(fetchAnnotationsSuccess(duplicatedAnnotations));
     }
   } catch (e) {
     console.warn(e);
@@ -298,45 +298,53 @@ function* handleDuplicateAnnotationsToPages({
 
 function* handleRecomputeRegions(
   action: PayloadAction<string>,
-): Generator<Effect, void, Annotation[]> {
+): Generator<Effect, void, Canvas[] | Annotation[]> {
   const collectionId = action.payload;
 
   const annotationRepository = getAnnotationRepository();
-  const annotations = yield call(
-    [annotationRepository, annotationRepository.getAnnotationsForCollection],
-    collectionId,
-  );
-  const lines = groupBy(
-    annotations.filter((a) => getAnnotationType(a) === ElementType.LINE),
-    'canvasId',
-  );
   let removedAnnotations: string[] = [];
   const newRegionsAnnotations: Annotation[] = [];
-  for (const [canvasId, canvasLines] of Object.entries(lines)) {
-    if (canvasLines.length > 0) {
-      //remove the region annotations that are already on the canvases
-      const regions = yield call(
-        [annotationRepository, annotationRepository.getAnnotationsForCanvasByType],
-        canvasId,
-        collectionId,
-        ElementType.REGION,
-      );
-      const annotationIds = regions.map((r) => r.id);
-      removedAnnotations = [...removedAnnotations, ...annotationIds];
-      yield call([annotationRepository, annotationRepository.removeAllById], annotationIds);
+  /*
+    for each canvas, compute the new region annotation
+    first, remove the existing region annotation
+    then compute the new region annotation that contains all the lines
+    if there is no line on the canvas, create a region annotation that covers the whole canvas
+  */
+  const canvases = (yield call(
+    [getCollectionRepository(), getCollectionRepository().getCanvasesByCollectionId],
+    collectionId,
+  )) as Canvas[];
+  for (const canvas of canvases) {
+    //remove the region annotations that are already on the canvases
+    const regions = yield call(
+      [annotationRepository, annotationRepository.getAnnotationsForCanvasByType],
+      canvas.id,
+      collectionId,
+      ElementType.REGION,
+    );
+    const annotationIds = regions.map((r) => r.id);
+    removedAnnotations = [...removedAnnotations, ...annotationIds];
+    yield call([annotationRepository, annotationRepository.removeAllById], annotationIds);
 
+    const lines = (yield call(
+      [annotationRepository, annotationRepository.getAnnotationsForCanvasByType],
+      canvas.id,
+      collectionId,
+      ElementType.LINE,
+    )) as Annotation[];
+    if (lines.length > 0) {
       //compute the coordinates of the new region annotation
-      const minX = minBy(canvasLines, (l) => l.target.selector.geometry.bounds.minX)?.target
-        .selector.geometry.bounds.minX;
-      const minY = minBy(canvasLines, (l) => l.target.selector.geometry.bounds.minY)?.target
-        .selector.geometry.bounds.minY;
-      const maxX = maxBy(canvasLines, (l) => l.target.selector.geometry.bounds.maxX)?.target
-        .selector.geometry.bounds.maxX;
-      const maxY = maxBy(canvasLines, (l) => l.target.selector.geometry.bounds.maxY)?.target
-        .selector.geometry.bounds.maxY;
+      const minX = minBy(lines, (l) => l.target.selector.geometry.bounds.minX)?.target.selector
+        .geometry.bounds.minX;
+      const minY = minBy(lines, (l) => l.target.selector.geometry.bounds.minY)?.target.selector
+        .geometry.bounds.minY;
+      const maxX = maxBy(lines, (l) => l.target.selector.geometry.bounds.maxX)?.target.selector
+        .geometry.bounds.maxX;
+      const maxY = maxBy(lines, (l) => l.target.selector.geometry.bounds.maxY)?.target.selector
+        .geometry.bounds.maxY;
       if (minX !== undefined && minY !== undefined && maxX !== undefined && maxY !== undefined) {
         const region = createAnnotation({
-          canvasId,
+          canvasId: canvas.id,
           collectionId,
           order: 1,
           type: ElementType.REGION,
@@ -348,6 +356,20 @@ function* handleRecomputeRegions(
         });
         newRegionsAnnotations.push(region);
       }
+    } else {
+      //if there is no line, create a region annotation that covers the whole canvas
+      const region = createAnnotation({
+        canvasId: canvas.id,
+        collectionId,
+        order: 1,
+        type: ElementType.REGION,
+        value: '',
+        minX: 0,
+        minY: 0,
+        maxX: canvas.width ?? 1000,
+        maxY: canvas.height ?? 1000,
+      });
+      newRegionsAnnotations.push(region);
     }
   }
   if (newRegionsAnnotations.length > 0) {
@@ -356,8 +378,6 @@ function* handleRecomputeRegions(
       newRegionsAnnotations,
     );
   }
-  yield put(removeAllAnnotationsSuccess(removedAnnotations));
-  yield put(fetchAnnotationsSuccess(newRegionsAnnotations));
 }
 
 function* handleSyncWithDB(
@@ -374,21 +394,21 @@ function* handleSyncWithDB(
 }
 
 function* handleLoadAnnotationsForCanvas(
-  action: PayloadAction<SetCanvasFromComponentPayload>,
+  action: PayloadAction<CanvasScope>,
 ): Generator<Effect, void, Annotation[]> {
-  const { collectionId, canvas } = action.payload;
+  const { collectionId, canvasId } = action.payload;
   // load all the annotations of the collection
   const annotationRepository = getAnnotationRepository();
   const annotations = yield call(
     [annotationRepository, annotationRepository.getAnnotationsForCanvas],
-    canvas.id,
-    collectionId ?? '',
+    canvasId,
+    collectionId,
   );
-  yield put(fetchAnnotationsSuccess(annotations));
+  yield put(fetchAnnotationsSuccess({ scope: action.payload, annotations }));
 }
 
 export default function* annotationsSaga() {
-  yield takeEvery(setCanvasFromComponent, handleLoadAnnotationsForCanvas);
+  yield takeEvery(fetchAnnotationsRequest, handleLoadAnnotationsForCanvas);
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotation);
   yield takeEvery(removeAnnotationRequest, handleRemoveAnnotation);
   yield takeEvery(removeAllCollectionAnnotationsRequest, handleRemoveAllCollectionAnnotations);

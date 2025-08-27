@@ -1,7 +1,9 @@
 import { Annotation } from '@/data/models/Annotation';
+import { CanvasScope, Scope } from '@/data/models/Scope';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 type AnnotationState = {
+  currentScope?: Scope;
   values: Annotation[];
   isLoading: boolean;
   deleted: Annotation;
@@ -9,6 +11,7 @@ type AnnotationState = {
 };
 
 const initialState: AnnotationState = {
+  currentScope: undefined,
   values: [],
   isLoading: false,
   deleted: {} as Annotation,
@@ -52,13 +55,14 @@ const annotationsSlice = createSlice({
     removeAllAnnotationsSuccess(state, action: PayloadAction<string[]>) {
       state.values = state.values.filter((a) => !action.payload.includes(a.id));
     },
-    fetchAnnotationsByCanvasId(state, _action: PayloadAction<string>) {
-      state.isLoading = true;
-      state.values = [];
-    },
-    fetchAnnotationsSuccess(state, action: PayloadAction<Annotation[]>) {
+    fetchAnnotationsRequest(_state, _action: PayloadAction<CanvasScope>) {},
+    fetchAnnotationsSuccess(
+      state,
+      action: PayloadAction<{ scope: CanvasScope; annotations: Annotation[] }>,
+    ) {
       state.isLoading = false;
-      state.values = action.payload;
+      state.currentScope = action.payload.scope;
+      state.values = action.payload.annotations;
     },
     addAnnotationsSuccess(state, action: PayloadAction<Annotation[]>) {
       state.values = [
@@ -105,7 +109,7 @@ export const {
   removeAllCanvasAnnotationsRequest,
   removeAllAnnotationsSuccess,
   removeAllRegionAnnotationsRequest,
-  fetchAnnotationsByCanvasId,
+  fetchAnnotationsRequest,
   fetchAnnotationsSuccess,
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
