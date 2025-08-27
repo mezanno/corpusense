@@ -6,11 +6,12 @@ import {
   getAnnotationType,
   getBodies,
 } from '@/data/models/Annotation';
-import { useAppDispatch } from '@/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
 import { removeAllRegionAnnotationsRequest } from '@/state/reducers/annotations';
 import { exportTextOfAnnotationRequest } from '@/state/reducers/export';
 import { startWorkerProcess } from '@/state/reducers/workers';
+import { isWorkerOrTaskRunning } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, Trash2 } from 'lucide-react';
@@ -41,6 +42,9 @@ const AnnotationForm = ({
   const appDispatch = useAppDispatch();
   const modifyAnnotation = useModifyAnnotation();
   const { t } = useTranslation();
+  const isWorkerRunning = useAppSelector((state) =>
+    isWorkerOrTaskRunning(state, { collectionId: annotation.collectionId }),
+  );
   const [editedAnnotation, setEditedAnnotation] = useState<Annotation | null>(null);
 
   const form = useForm<z.infer<typeof annotationFormSchema>>({
@@ -111,26 +115,32 @@ const AnnotationForm = ({
   return (
     <section className='panel m-1 w-full flex-col' aria-label='annotation form'>
       <div className='w-full text-right text-sm font-light'>{annotation.id}</div>
-      <div className='flex items-center justify-end space-x-2'>
-        <Toolbar
-          handleOcr={startOcrAsync}
-          handleExportText={handleExportText}
-          handleDeleteAllAnnotations={handleRemoveAllAnnotationsInside}
-          scope={{
-            annotationId: annotation.id,
-            canvasId: annotation.canvasId,
-            collectionId: annotation.collectionId,
-          }}
-        />
-        <Button
-          title={t('btn_delete_annotation')}
-          variant='destructive'
-          className='cursor-pointer'
-          onClick={handleDeleteButton}
-        >
-          <Trash2 />
-        </Button>
-      </div>
+      {isWorkerRunning ? (
+        <div>
+          <strong>{t('info_worker_running')}</strong>
+        </div>
+      ) : (
+        <div className='flex items-center justify-end space-x-2'>
+          <Toolbar
+            handleOcr={startOcrAsync}
+            handleExportText={handleExportText}
+            handleDeleteAllAnnotations={handleRemoveAllAnnotationsInside}
+            scope={{
+              annotationId: annotation.id,
+              canvasId: annotation.canvasId,
+              collectionId: annotation.collectionId,
+            }}
+          />
+          <Button
+            title={t('btn_delete_annotation')}
+            variant='destructive'
+            className='cursor-pointer'
+            onClick={handleDeleteButton}
+          >
+            <Trash2 />
+          </Button>
+        </div>
+      )}
       <div className='flex items-center space-x-2 text-sm'>
         {t('form_label_order')}
         <AnnotationOrderPanel annotation={annotation} />
