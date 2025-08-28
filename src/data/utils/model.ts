@@ -25,12 +25,15 @@ const generateSchema = (model: DataModel) => {
     fields: [
       ...model.fields,
       {
-        id: 'confiance',
-        name: 'confiance',
-        type: 'number',
+        id: 'position',
+        name: 'position',
+        type: 'array',
+        items: {
+          type: 'number',
+        },
         description:
-          '(valeur comprise entre 0 et 1, 0 pour confiance minimale et 1 pour la confiance maximale). Si un élément ne te semble pas pertient, garde-le et donne-lui un indice de confiance de 0. ',
-        generated: true,
+          "valeur indiquée au début de chaque ligne de texte entre double accolades, par exemple {{12}} indique que l'élément commence à la ligne 12 du texte. Si l'élément ne correspond pas à une ligne précise, mets la valeur [-1]. Un élément peut couvrir plusieurs lignes, il faut alors indiquer toutes lignes qu'il couvre, dans un tableau, séparées par des virgules, par exemple : [12,13,14].",
+        generated: false,
         color: '#000000',
       },
     ],
