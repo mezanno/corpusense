@@ -53,9 +53,8 @@ export default function* peroSaga(
       ]);
     } else {
       const annotations = (yield call(
-        [annotationRepository, annotationRepository.getAnnotationsForCanvas],
-        task.canvas.id,
-        task.scope.collectionId,
+        [annotationRepository, annotationRepository.getAnnotationsByScope],
+        { canvasId: task.canvas.id, collectionId: task.scope.collectionId },
       )) as Annotation[];
       const annotationRegions = annotations.filter(
         (a) => getAnnotationType(a) === ElementType.REGION,
