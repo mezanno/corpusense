@@ -13,14 +13,9 @@ import { Worker } from '@/data/models/Worker';
 import { Canvas, Manifest } from '@iiif/presentation-3';
 
 export interface AnnotationRepository {
-  getAnnotationsForCanvas(canvasId: string, collectionId: string): Promise<Annotation[]>;
-  getAnnotationsForCanvasByType(
-    canvasId: string,
-    collectionId: string,
-    type: ElementType,
-  ): Promise<Annotation[]>;
-  getAnnotationsForCollection(collectionId: string): Promise<Annotation[]>;
   getById(id: string): Promise<Annotation>;
+  getAnnotationsByScope(scope: Scope): Promise<Annotation[]>;
+  getAnnotationsByScopeAndType(scope: Scope, type: ElementType): Promise<Annotation[]>;
   saveAllAnnotations(annotations: Annotation[]): Promise<void>;
   removeAllById(ids: string[]): Promise<string[]>;
   removeById(id: string): Promise<void>;

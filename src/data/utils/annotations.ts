@@ -1,6 +1,6 @@
 import { AnnotationPage, Canvas } from '@iiif/presentation-3';
 import i18next from 'i18next';
-import { Annotation, createAnnotation, ElementType, getAnnotationType } from '../models/Annotation';
+import { Annotation, createAnnotation, ElementType } from '../models/Annotation';
 import { convertAnnotationPageToW3CAnnotations } from '../models/converters/iiif';
 import { getAnnotationRepository } from '../repositories/indexeddb/dbFactory';
 import { getImage } from './canvas';
@@ -66,12 +66,10 @@ function generateFirstAnnotation(
 }
 
 async function getAnnotationsByType(type: ElementType, canvasId: string, collectionId: string) {
-  const annotations = await getAnnotationRepository().getAnnotationsForCanvas(
-    canvasId,
-    collectionId,
+  return await getAnnotationRepository().getAnnotationsByScopeAndType(
+    { canvasId, collectionId },
+    type,
   );
-
-  return annotations.filter((annotation) => getAnnotationType(annotation) === type);
 }
 
 function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {

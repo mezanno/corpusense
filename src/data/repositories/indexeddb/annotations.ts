@@ -13,22 +13,26 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     return annotation;
   }
 
-  async getAnnotationsForCanvas(canvasId: string, collectionId: string) {
-    return db.annotations
-      .where({
-        canvasId,
-        collectionId,
-      })
-      .sortBy('order');
+  async getAnnotationsByScope(scope: Scope): Promise<Annotation[]> {
+    if (isAnnotationScope(scope)) {
+      const annotation = await this.getById(scope.annotationId);
+      return [annotation];
+    } else if (isCanvasScope(scope)) {
+      return db.annotations
+        .where({
+          canvasId: scope.canvasId,
+          collectionId: scope.collectionId,
+        })
+        .sortBy('order');
+    } else if (isCollectionScope(scope)) {
+      return await db.annotations.where('collectionId').equals(scope.collectionId).toArray();
+    }
+    return [];
   }
 
-  async getAnnotationsForCanvasByType(canvasId: string, collectionId: string, type: ElementType) {
-    const canvasAnnotations = await this.getAnnotationsForCanvas(canvasId, collectionId);
-    return canvasAnnotations.filter((annotation) => getAnnotationType(annotation) === type);
-  }
-
-  async getAnnotationsForCollection(collectionId: string) {
-    return await db.annotations.where('collectionId').equals(collectionId).toArray();
+  async getAnnotationsByScopeAndType(scope: Scope, type: ElementType): Promise<Annotation[]> {
+    const annotations = await this.getAnnotationsByScope(scope);
+    return annotations.filter((annotation) => getAnnotationType(annotation) === type);
   }
 
   async saveAllAnnotations(annotations: Annotation[]) {
@@ -53,15 +57,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
   }
 
   async removeByScope(scope: Scope): Promise<string[]> {
-    if (isAnnotationScope(scope)) {
-      return this.removeAllById([scope.annotationId]);
-    } else if (isCanvasScope(scope)) {
-      const annotations = await this.getAnnotationsForCanvas(scope.canvasId, scope.collectionId);
-      return this.removeAllById(annotations.map((annotation) => annotation.id));
-    } else if (isCollectionScope(scope)) {
-      const annotations = await this.getAnnotationsForCollection(scope.collectionId);
-      return this.removeAllById(annotations.map((annotation) => annotation.id));
-    }
-    return [];
+    const annotations = await this.getAnnotationsByScope(scope);
+    return this.removeAllById(annotations.map((annotation) => annotation.id));
   }
 }
