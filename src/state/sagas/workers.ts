@@ -238,6 +238,7 @@ function* startWorker(
                 workerId: currentWorker.id,
                 value: taskResult.content,
                 taskId: task.id,
+                params: worker.params,
               };
 
               const newResult = (yield call(
