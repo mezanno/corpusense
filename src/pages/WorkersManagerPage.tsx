@@ -19,6 +19,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal, Trash } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
 
 type Filter = {
   status: WorkerStatus;
@@ -28,6 +29,7 @@ type Filter = {
 const WorkersManagerPage = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
+  const { workerId } = useParams();
   const [filters, setFilters] = useState<Filter[]>(
     Object.values(WorkerStatus).map((status) => ({
       status,
@@ -40,10 +42,13 @@ const WorkersManagerPage = () => {
       filters.filter((f) => f.selected).map((f) => f.status),
     ),
   );
-  const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null);
 
-  const handleDeleteWorker = (workerId: string) => {
-    appDispatch(removeWorkerRequest(workerId));
+  const initialSelectedWorkerId =
+    workerId !== undefined && workers.find((w) => w.id === workerId) ? workerId : null;
+  const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(initialSelectedWorkerId);
+
+  const handleDeleteWorker = (id: string) => {
+    appDispatch(removeWorkerRequest(id));
   };
 
   const columns: ColumnDef<Worker, unknown>[] = [
