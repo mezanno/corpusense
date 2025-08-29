@@ -15,11 +15,12 @@ import { Canvas, Manifest } from '@iiif/presentation-3';
 export interface AnnotationRepository {
   getById(id: string): Promise<Annotation>;
   getAnnotationsByScope(scope: Scope): Promise<Annotation[]>;
-  getAnnotationsByScopeAndType(scope: Scope, type: ElementType): Promise<Annotation[]>;
+  getAnnotationsByScopeAndType(scope: Scope, types: ElementType[]): Promise<Annotation[]>;
   saveAllAnnotations(annotations: Annotation[]): Promise<void>;
   removeAllById(ids: string[]): Promise<string[]>;
   removeById(id: string): Promise<void>;
   removeByScope(scope: Scope): Promise<string[]>;
+  removeByScopeAndType(scope: Scope, types: ElementType[]): Promise<string[]>;
   updateAnnotation(annotation: Annotation): Promise<void>;
   updateOrder(annotationId: string, order: number): Promise<void>;
 }
