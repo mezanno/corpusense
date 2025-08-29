@@ -1,7 +1,7 @@
 import { Annotation, ElementType, isAnnotation } from '@/data/models/Annotation';
 import { useAppDispatch } from '@/hooks/hooks';
 import { useAddAnnotation } from '@/hooks/useSaveAnnotation';
-import { fetchAnnotationsRequest, saveAnnotationRequest } from '@/state/reducers/annotations';
+import { saveAnnotationRequest } from '@/state/reducers/annotations';
 import { getAnnotations } from '@/state/selectors/annotations';
 import { RootState } from '@/state/store';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
@@ -16,7 +16,7 @@ import {
   useAnnotator,
 } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
-import { useContext, useEffect, useRef } from 'react';
+import { useContext, useEffect, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { HoverContext, ReducerContext } from './CanvasViewer';
 import { ACTIONS, CanvasViewerContentMode } from './reducers/CanvasViewerContentReducer';
@@ -132,10 +132,7 @@ export const CanvasViewerContent = ({
       anno.clearAnnotations();
       isNewCanvas.current = true;
     }
-    if (collectionId !== undefined) {
-      appDispatch(fetchAnnotationsRequest({ canvasId: canvas.id, collectionId }));
-    }
-  }, [canvas, collectionId]);
+  }, [canvas]);
 
   const style = (annotation: Annotation, state?: AnnotationState) => {
     const value = annotation.bodies[0]?.value ?? ElementType.TAG;
@@ -145,6 +142,25 @@ export const CanvasViewerContent = ({
       fillOpacity: (state?.hovered ?? false) || hoveredElement === annotation.id ? 0.3 : 0.1,
     } as DrawingStyleExpression;
   };
+
+  //TODO : on a des renders qui se produisent quand on déplace une annotation (??)
+  const options = useMemo(
+    () => ({
+      prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
+      defaultZoomLevel: 0.5,
+      minZoomLevel: 0.1,
+      tileSources: cvcState?.source,
+      loadTilesWithAjax: true,
+      // crossOriginPolicy: 'false',
+      showSequenceControl: true,
+      showHomeControl: true,
+      showFullPageControl: true,
+      gestureSettingsMouse: {
+        clickToZoom: false,
+      },
+    }),
+    [cvcState?.source],
+  );
 
   return (
     <OpenSeadragonAnnotator
@@ -160,20 +176,7 @@ export const CanvasViewerContent = ({
         <OpenSeadragonViewer
           aria-label='canvas viewer'
           className='h-full w-full bg-amber-50'
-          options={{
-            prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
-            defaultZoomLevel: 0.5,
-            minZoomLevel: 0.1,
-            tileSources: cvcState?.source,
-            loadTilesWithAjax: true,
-            crossOriginPolicy: false,
-            showSequenceControl: true,
-            showHomeControl: true,
-            showFullPageControl: true,
-            gestureSettingsMouse: {
-              clickToZoom: false,
-            },
-          }}
+          options={options}
         />
       </div>
     </OpenSeadragonAnnotator>
