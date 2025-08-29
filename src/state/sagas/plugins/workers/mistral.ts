@@ -5,7 +5,7 @@ import { Tag } from '@/data/models/Tag';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import { getCollectionRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { toGallicaUrl } from '@/data/utils/canvas';
-import { generateTextFromCanvas } from '@/data/utils/export';
+import { generateNumberedTextFromCanvas } from '@/data/utils/export';
 import { generateSchema } from '@/data/utils/model';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
@@ -29,7 +29,7 @@ function isValidJson(str: string): boolean {
 async function getText(scope: Scope) {
   let text = '';
   if (isCanvasScope(scope)) {
-    text = await generateTextFromCanvas(scope.canvasId, scope.collectionId);
+    text = await generateNumberedTextFromCanvas(scope.canvasId, scope.collectionId);
   } else if (isAnnotationScope(scope)) {
     //TODO: implement text extraction from annotation
     text = '';
@@ -73,11 +73,6 @@ export default function* mistralSaga(
     return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_export_no_text') };
   }
 
-  const textNumbered = text
-    .split('\n')
-    .map((ligne, index) => `${index + 1}. ${ligne}`)
-    .join('\n');
-
   const apiKey = localStorage.getItem('mistralApiKey');
   //return an error if no API key is found
   if (apiKey === null || apiKey === '') {
@@ -97,11 +92,11 @@ export default function* mistralSaga(
       },
       {
         role: 'user',
-        content: textNumbered,
+        content: text,
       },
     ],
     temperature: 0,
-    max_tokens: textNumbered.length * 2,
+    max_tokens: text.length * 2,
     response_format: { type: 'json_object' },
   };
 
