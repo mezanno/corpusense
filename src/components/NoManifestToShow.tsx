@@ -9,7 +9,7 @@ const NoManifestToShow = () => {
   const { t } = useTranslation();
 
   return (
-    <div className='m-2 flex w-full max-w-[600px] flex-col justify-center p-2 text-mezanno-4'>
+    <div className='m-2 flex h-full w-full max-w-[600px] flex-col justify-center p-2 text-mezanno-4'>
       <NothingToShow />
       {history.length > 0 && (
         <div className='h-1/2 overflow-auto'>
