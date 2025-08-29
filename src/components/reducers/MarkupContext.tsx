@@ -207,7 +207,7 @@ export const MarkupProvider = ({
 
   useEffect(() => {
     dispatch({ type: MARKUP_ACTIONS.SET_TEXT, payload: { annotations: text, entities } });
-  }, [text]);
+  }, [text, entities]);
 
   useEffect(() => {
     dispatch({ type: MARKUP_ACTIONS.SET_MODEL, payload: model });
