@@ -14,7 +14,9 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { fetchAnnotationsRequest } from '@/state/reducers/annotations';
 import { loadCollectionRequest } from '@/state/reducers/collections';
+import { loadEntitiesRequest } from '@/state/reducers/namedEntities';
 import { getCurrentCollection } from '@/state/selectors/collections';
 import { Canvas } from '@iiif/presentation-3';
 import 'gridstack/dist/gridstack.min.css';
@@ -74,9 +76,17 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
 
 const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
+  const appDispatch = useAppDispatch();
   const currentCollection = useAppSelector(getCurrentCollection);
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | undefined>(undefined);
   const [activeTab, setActiveTab] = useState('document');
+
+  useEffect(() => {
+    if (canvasToDisplay !== undefined) {
+      appDispatch(fetchAnnotationsRequest({ canvasId: canvasToDisplay.id, collectionId }));
+      appDispatch(loadEntitiesRequest({ canvasId: canvasToDisplay.id, collectionId }));
+    }
+  }, [canvasToDisplay]);
 
   return (
     <section className='h-full max-h-full w-full max-w-full'>
