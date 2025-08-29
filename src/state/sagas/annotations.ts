@@ -28,6 +28,7 @@ import {
   removeAllCollectionAnnotationsRequest,
   removeAllRegionAnnotationsRequest,
   removeAnnotationRequest,
+  removeAnnotationsByScopeRequest,
   removeAnnotationSuccess,
   saveAnnotationRequest,
   saveAnnotationSuccess,
@@ -36,7 +37,7 @@ import {
   updateAnnotationOrderValueSuccess,
 } from '../reducers/annotations';
 // import { setCanvasFromComponent, SetCanvasFromComponentPayload } from '../reducers/canvas';
-import { CanvasScope } from '@/data/models/Scope';
+import { CanvasScope, Scope } from '@/data/models/Scope';
 import { pushError, pushInfo } from '../reducers/events';
 import { getAnnotations } from '../selectors/annotations';
 
@@ -105,6 +106,21 @@ function* handleRemoveAnnotation(action: PayloadAction<string[]>) {
       console.warn(e);
     }
   }
+  yield put(removeAnnotationSuccess(annotationsDeleted));
+}
+
+function* handleRemoveAnnotationsByScope(
+  action: PayloadAction<{ scope: Scope; types?: string[] }>,
+): Generator<Effect, void, string[]> {
+  const annotationRepository = getAnnotationRepository();
+  const { scope, types } = action.payload;
+  const elementTypes = (types as ElementType[]) ?? [];
+  const annotationsDeleted: string[] = yield call(
+    [annotationRepository, annotationRepository.removeByScopeAndType],
+    scope,
+    elementTypes,
+  );
+
   yield put(removeAnnotationSuccess(annotationsDeleted));
 }
 
@@ -255,7 +271,7 @@ function* handleDuplicateAnnotationsToPages({
     const annotations = yield call(
       [annotationRepository, annotationRepository.getAnnotationsByScopeAndType],
       { canvasId, collectionId },
-      ElementType.REGION,
+      [ElementType.REGION],
     );
 
     if (annotations.length > 0) {
@@ -267,7 +283,7 @@ function* handleDuplicateAnnotationsToPages({
           const regions = yield call(
             [annotationRepository, annotationRepository.getAnnotationsByScopeAndType],
             { canvasId: id, collectionId },
-            ElementType.REGION,
+            [ElementType.REGION],
           );
           const annotationIds = regions.map((r) => r.id);
           removedAnnotations = [...removedAnnotations, ...annotationIds];
@@ -315,7 +331,7 @@ function* handleRecomputeRegions(
     const regions = yield call(
       [annotationRepository, annotationRepository.getAnnotationsByScopeAndType],
       { canvasId: canvas.id, collectionId },
-      ElementType.REGION,
+      [ElementType.REGION],
     );
     const annotationIds = regions.map((r) => r.id);
     removedAnnotations = [...removedAnnotations, ...annotationIds];
@@ -324,7 +340,7 @@ function* handleRecomputeRegions(
     const lines = (yield call(
       [annotationRepository, annotationRepository.getAnnotationsByScopeAndType],
       { canvasId: canvas.id, collectionId },
-      ElementType.LINE,
+      [ElementType.LINE],
     )) as Annotation[];
     if (lines.length > 0) {
       //compute the coordinates of the new region annotation
@@ -403,6 +419,7 @@ function* handleLoadAnnotationsForCanvas(
 export default function* annotationsSaga() {
   yield takeEvery(fetchAnnotationsRequest, handleLoadAnnotationsForCanvas);
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotation);
+  yield takeEvery(removeAnnotationsByScopeRequest, handleRemoveAnnotationsByScope);
   yield takeEvery(removeAnnotationRequest, handleRemoveAnnotation);
   yield takeEvery(removeAllCollectionAnnotationsRequest, handleRemoveAllCollectionAnnotations);
   yield takeEvery(removeAllCanvasAnnotationsRequest, handleRemoveAllCanvasAnnotations);

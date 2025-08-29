@@ -37,6 +37,10 @@ const annotationsSlice = createSlice({
         state.values.push(action.payload);
       }
     },
+    removeAnnotationsByScopeRequest(
+      _state,
+      _action: PayloadAction<{ scope: Scope; types?: string[] }>,
+    ) {},
     removeAnnotationRequest(_state, _action: PayloadAction<string[]>) {},
     removeAnnotationSuccess(state, action: PayloadAction<string[]>) {
       // Remove multiple annotations by their IDs
@@ -102,6 +106,7 @@ export const {
   addAnnotationsSuccess,
   saveAnnotationRequest,
   saveAnnotationSuccess,
+  removeAnnotationsByScopeRequest,
   removeAnnotationRequest,
   removeAnnotationSuccess,
   removeAllCollectionAnnotationsRequest,

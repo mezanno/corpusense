@@ -65,11 +65,11 @@ function generateFirstAnnotation(
   return annotations.filter((elt) => elt !== null);
 }
 
+//TODO! ? ça fait redit avec la fonction dans AnnotationRepository
 async function getAnnotationsByType(type: ElementType, canvasId: string, collectionId: string) {
-  return await getAnnotationRepository().getAnnotationsByScopeAndType(
-    { canvasId, collectionId },
+  return await getAnnotationRepository().getAnnotationsByScopeAndType({ canvasId, collectionId }, [
     type,
-  );
+  ]);
 }
 
 function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {
