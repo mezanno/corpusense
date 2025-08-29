@@ -40,6 +40,7 @@ function App() {
           <Route path={CorpusenseRoutes.CONFIGURATION} element={<ConfigurationPage />} />
           <Route path={CorpusenseRoutes.STORAGE} element={<StoragePage />} />
           <Route path={CorpusenseRoutes.WORKERS} element={<WorkersManagerPage />} />
+          <Route path={`${CorpusenseRoutes.WORKERS}/:workerId`} element={<WorkersManagerPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

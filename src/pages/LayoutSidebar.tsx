@@ -76,7 +76,13 @@ const WorkersSideBarGroup = ({
               onClick={() => setSelectedWorkerId(worker.id)}
             >
               <SidebarMenuButton asChild>
-                <WorkerLabel worker={worker} />
+                <Link
+                  to={`/${CorpusenseRoutes.WORKERS}/${worker.id}`}
+                  className='h-full w-full'
+                  title={worker.name}
+                >
+                  <WorkerLabel worker={worker} />
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
