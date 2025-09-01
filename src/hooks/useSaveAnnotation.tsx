@@ -1,10 +1,10 @@
 import {
   Annotation,
   createAnnotationFromAnnotorious,
-  createAnnotationFromExistingAnnotation,
+  createBodies,
   ElementType,
 } from '@/data/models/Annotation';
-import { saveAnnotationRequest } from '@/state/reducers/annotations';
+import { saveAnnotationRequest, updateAnnotationRequest } from '@/state/reducers/annotations';
 import { ImageAnnotation } from '@annotorious/annotorious';
 import { useAppDispatch } from './hooks';
 
@@ -27,13 +27,16 @@ const useModifyAnnotation = () => {
   const dispatch = useAppDispatch();
 
   return (annotation: Annotation, type: ElementType, value: string) => {
-    const modifiedAnnotation = createAnnotationFromExistingAnnotation({
-      annotation,
-      type,
-      value,
-    });
-    console.log('useModifyAnnotation ', modifiedAnnotation);
-    dispatch(saveAnnotationRequest(modifiedAnnotation));
+    // const modifiedAnnotation = createAnnotationFromExistingAnnotation({
+    //   annotation,
+    //   type,
+    //   value,
+    // });
+    const modifiedAnnotation = {
+      ...annotation,
+      bodies: createBodies(type, value, annotation.id),
+    };
+    dispatch(updateAnnotationRequest(modifiedAnnotation));
   };
 };
 

@@ -1,4 +1,4 @@
-import { Annotation, ElementType } from '@/data/models/Annotation';
+import { Annotation, AnnotationDTO, ElementType } from '@/data/models/Annotation';
 import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { CollectionElement } from '@/data/models/CollectionElement';
 import { DataModel } from '@/data/models/DataModel';
@@ -16,7 +16,7 @@ export interface AnnotationRepository {
   getById(id: string): Promise<Annotation>;
   getAnnotationsByScope(scope: Scope): Promise<Annotation[]>;
   getAnnotationsByScopeAndType(scope: Scope, types: ElementType[]): Promise<Annotation[]>;
-  saveAllAnnotations(annotations: Annotation[]): Promise<void>;
+  saveAllAnnotations(annotations: AnnotationDTO[]): Promise<Annotation[]>;
   removeAllById(ids: string[]): Promise<string[]>;
   removeById(id: string): Promise<void>;
   removeByScope(scope: Scope): Promise<string[]>;

@@ -1,3 +1,4 @@
+import { Annotation } from '@/data/models/Annotation';
 import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
@@ -13,7 +14,7 @@ export const pluginName = 'edwin';
 export default function* edwinSaga(
   task: Task,
   _params: PluginParams,
-): Generator<Effect, WorkerResponse, Response | PredictReturn> {
+): Generator<Effect, WorkerResponse, Response | PredictReturn | Annotation[]> {
   try {
     const image = getImage(task.canvas);
 
@@ -38,9 +39,12 @@ export default function* edwinSaga(
       task.canvas.width ?? 0,
     );
     //and send it to the redux store
-    yield put(addAnnotationsSuccess(annotations));
     const annotationRepository = getAnnotationRepository();
-    yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
+    const newAnnotations = (yield call(
+      [annotationRepository, annotationRepository.saveAllAnnotations],
+      annotations,
+    )) as Annotation[];
+    yield put(addAnnotationsSuccess(newAnnotations));
   } catch (error) {
     return {
       status: WorkerStatus.ERROR,

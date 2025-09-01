@@ -1,6 +1,6 @@
 import { isAnnotationScope, isCanvasScope, isCollectionScope, Scope } from '@/data/models/Scope';
 import i18next from 'i18next';
-import { Annotation, ElementType, getAnnotationType } from '../../models/Annotation';
+import { Annotation, AnnotationDTO, ElementType, getAnnotationType } from '../../models/Annotation';
 import { db } from './db';
 import { AnnotationRepository } from './types';
 
@@ -38,8 +38,14 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     return annotations.filter((annotation) => types.includes(getAnnotationType(annotation)));
   }
 
-  async saveAllAnnotations(annotations: Annotation[]) {
-    await db.annotations.bulkPut(annotations);
+  async saveAllAnnotations(annotations: AnnotationDTO[]) {
+    //TODO : ajouter un order à chaque annotation
+    const newAnnotations = annotations.map((annotation, index) => ({
+      ...annotation,
+      order: index + 1,
+    }));
+    await db.annotations.bulkPut(newAnnotations);
+    return newAnnotations;
   }
 
   async updateAnnotation(annotation: Annotation) {

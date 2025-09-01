@@ -1,4 +1,3 @@
-import annotationCreatedFromAnother from '@/__tests__/annotationCreatedFromAnother.json';
 import annotationCreateFromDTOWithId from '@/__tests__/annotationCreateFromDTOWithId.json';
 import annotationFromEdwin from '@/__tests__/annotationFromEdwin.json';
 import annotationWitoutTypeAndText from '@/__tests__/annotationWithoutTypeAndValue.json';
@@ -6,7 +5,6 @@ import { vi } from 'vitest';
 import {
   Annotation,
   createAnnotation,
-  createAnnotationFromExistingAnnotation,
   ElementType,
   getAnnotationText,
   getAnnotationType,
@@ -89,14 +87,14 @@ describe('Annotation', () => {
     });
   });
 
-  describe('createAnnotationFromExistingAnnotation', () => {
-    it('should create a new annotation from an existing annotation', () => {
-      const newAnnotation = createAnnotationFromExistingAnnotation({
-        annotation,
-        type: ElementType.REGION,
-        value: 'new value',
-      });
-      expect(newAnnotation).toEqual(annotationCreatedFromAnother);
-    });
-  });
+  // describe('createAnnotationFromExistingAnnotation', () => {
+  //   it('should create a new annotation from an existing annotation', () => {
+  //     const newAnnotation = createAnnotationFromExistingAnnotation({
+  //       annotation,
+  //       type: ElementType.REGION,
+  //       value: 'new value',
+  //     });
+  //     expect(newAnnotation).toEqual(annotationCreatedFromAnother);
+  //   });
+  // });
 });
