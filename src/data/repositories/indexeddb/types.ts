@@ -16,6 +16,7 @@ export interface AnnotationRepository {
   getById(id: string): Promise<Annotation>;
   getAnnotationsByScope(scope: Scope): Promise<Annotation[]>;
   getAnnotationsByScopeAndType(scope: Scope, types: ElementType[]): Promise<Annotation[]>;
+  getNextOrderByScopeAndType(scope: Scope, type: ElementType): Promise<number>;
   saveAllAnnotations(annotations: AnnotationDTO[]): Promise<Annotation[]>;
   removeAllById(ids: string[]): Promise<string[]>;
   removeById(id: string): Promise<void>;
