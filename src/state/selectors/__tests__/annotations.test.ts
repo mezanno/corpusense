@@ -1,7 +1,7 @@
 import { getPreloadedState } from '@/__tests__/preloadedState';
 import { Annotation } from '@/data/models/Annotation';
 import { RootState } from '../../store';
-import { getAnnotations } from '../annotations';
+import { selectAnnotations } from '../annotations';
 
 // Mock data
 const mockAnnotations: Annotation[] = [
@@ -23,10 +23,7 @@ console.log('Mock state:', mockState.annotations);
 
 describe('getAnnotations selector', () => {
   it('should return sorted annotations for the given canvasId and collectionId', () => {
-    const canvasId = 'canvas1';
-    const collectionId = 'collection1';
-
-    const result = getAnnotations(mockState, canvasId, collectionId);
+    const result = selectAnnotations(mockState);
 
     expect(result).toStrictEqual([
       { id: '2', canvasId: 'canvas1', collectionId: 'collection1', order: 1 },
@@ -35,10 +32,7 @@ describe('getAnnotations selector', () => {
   });
 
   it('should return an empty array if no annotations match the canvasId and collectionId', () => {
-    const canvasId = 'canvas3';
-    const collectionId = 'collection3';
-
-    const result = getAnnotations(mockState, canvasId, collectionId);
+    const result = selectAnnotations(mockState);
 
     expect(result).toEqual([]);
   });
@@ -57,10 +51,7 @@ describe('getAnnotations selector', () => {
       },
     };
 
-    const canvasId = 'canvas1';
-    const collectionId = 'collection1';
-
-    const result = getAnnotations(mockStateWithNoOrder, canvasId, collectionId);
+    const result = selectAnnotations(mockStateWithNoOrder);
 
     //if there is no order, the order is 0
     expect(result).toStrictEqual([

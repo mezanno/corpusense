@@ -26,6 +26,7 @@ import { ACTIONS, CanvasViewerContentMode } from './reducers/CanvasViewerContent
 import SelectModelForm from './textviewer/SelectModelForm';
 import Toolbar from './ToolBar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
+import { Toggle } from './ui/toggle';
 
 export const withTools = <T extends object>(WrappedComponent: React.ComponentType<T>) => {
   const ComponentWithTools = (props: { collectionId: string; canvas: Canvas }) => {
@@ -39,12 +40,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     );
 
     const regionAnnotations = useSelector((state: RootState) =>
-      getAnnotationsByType(
-        state,
-        cvcState.canvas?.id ?? '',
-        props.collectionId ?? '',
-        ElementType.REGION,
-      ),
+      getAnnotationsByType(state, ElementType.REGION),
     );
 
     // const handleStartLayoutAnalysis = () => {
@@ -147,7 +143,11 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     };
 
     const handleAddAnnotation = () => {
-      cvcDispatch({ type: ACTIONS.SET_MODE, payload: CanvasViewerContentMode.DRAW });
+      if (cvcState.mode === CanvasViewerContentMode.DRAW) {
+        cvcDispatch({ type: ACTIONS.SET_MODE, payload: CanvasViewerContentMode.MOVE });
+      } else {
+        cvcDispatch({ type: ACTIONS.SET_MODE, payload: CanvasViewerContentMode.DRAW });
+      }
     };
 
     const handleDeleteAnnotation = () => {
@@ -182,13 +182,15 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
                 collectionId: props.collectionId ?? '',
               }}
             />
-            <button
+            <Toggle
               className='soft-button'
+              size={null}
               title={t('btn_add_annotation')}
               onClick={handleAddAnnotation}
+              pressed={cvcState.mode === CanvasViewerContentMode.DRAW}
             >
               <NotebookPen size={24} />
-            </button>
+            </Toggle>
             {regionAnnotations.length > 0 && (
               <LayoutMenu
                 handleDuplicateToAll={handleDuplicateRegionToAllPages}
