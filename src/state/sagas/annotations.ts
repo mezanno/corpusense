@@ -23,13 +23,10 @@ import {
   fetchAnnotationsRequest,
   fetchAnnotationsSuccess,
   recomputeRegionsRequest,
-  removeAllAnnotationsSuccess,
-  removeAllCanvasAnnotationsRequest,
-  removeAllCollectionAnnotationsRequest,
   removeAllRegionAnnotationsRequest,
-  removeAnnotationRequest,
   removeAnnotationsByScopeRequest,
-  removeAnnotationSuccess,
+  removeAnnotationsRequest,
+  removeAnnotationsSuccess,
   saveAnnotationRequest,
   saveAnnotationSuccess,
   syncWithDB,
@@ -106,55 +103,21 @@ function* handleRemoveAnnotation(action: PayloadAction<string[]>) {
       console.warn(e);
     }
   }
-  yield put(removeAnnotationSuccess(annotationsDeleted));
+  yield put(removeAnnotationsSuccess(annotationsDeleted));
 }
 
 function* handleRemoveAnnotationsByScope(
-  action: PayloadAction<{ scope: Scope; types?: string[] }>,
+  action: PayloadAction<{ scope: Scope; types?: ElementType[] }>,
 ): Generator<Effect, void, string[]> {
-  const annotationRepository = getAnnotationRepository();
   const { scope, types } = action.payload;
-  const elementTypes = (types as ElementType[]) ?? [];
+  const annotationRepository = getAnnotationRepository();
   const annotationsDeleted: string[] = yield call(
     [annotationRepository, annotationRepository.removeByScopeAndType],
     scope,
-    elementTypes,
+    types,
   );
 
-  yield put(removeAnnotationSuccess(annotationsDeleted));
-}
-
-function* handleRemoveAllCollectionAnnotations(
-  action: PayloadAction<string>,
-): Generator<Effect, void, string[]> {
-  const collectionId = action.payload;
-  try {
-    const annotationRepository = getAnnotationRepository();
-    const annotationIds = yield call([annotationRepository, annotationRepository.removeByScope], {
-      collectionId,
-    });
-    yield put(removeAllAnnotationsSuccess(annotationIds));
-  } catch (e) {
-    console.warn(e);
-    yield put(pushError(getErrorMessage(e)));
-  }
-}
-
-function* handleRemoveAllCanvasAnnotations(
-  action: PayloadAction<{ canvasId: string; collectionId: string }>,
-): Generator<Effect, void, string[]> {
-  try {
-    const { canvasId, collectionId } = action.payload;
-    const annotationRepository = getAnnotationRepository();
-    const annotationIds = yield call([annotationRepository, annotationRepository.removeByScope], {
-      canvasId,
-      collectionId,
-    });
-    yield put(removeAllAnnotationsSuccess(annotationIds));
-  } catch (e) {
-    console.warn(e);
-    yield put(pushError(getErrorMessage(e)));
-  }
+  yield put(removeAnnotationsSuccess(annotationsDeleted));
 }
 
 function* handleRemoveAllRegionAnnotations(
@@ -182,7 +145,7 @@ function* handleRemoveAllRegionAnnotations(
         [annotationRepository, annotationRepository.removeAllById],
         annotationsIdsToRemove,
       );
-      yield put(removeAllAnnotationsSuccess(annotationsIdsToRemove));
+      yield put(removeAnnotationsSuccess(annotationsIdsToRemove));
     }
   } catch (e) {
     console.warn(e);
@@ -420,9 +383,7 @@ export default function* annotationsSaga() {
   yield takeEvery(fetchAnnotationsRequest, handleLoadAnnotationsForCanvas);
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotation);
   yield takeEvery(removeAnnotationsByScopeRequest, handleRemoveAnnotationsByScope);
-  yield takeEvery(removeAnnotationRequest, handleRemoveAnnotation);
-  yield takeEvery(removeAllCollectionAnnotationsRequest, handleRemoveAllCollectionAnnotations);
-  yield takeEvery(removeAllCanvasAnnotationsRequest, handleRemoveAllCanvasAnnotations);
+  yield takeEvery(removeAnnotationsRequest, handleRemoveAnnotation);
   yield takeEvery(removeAllRegionAnnotationsRequest, handleRemoveAllRegionAnnotations);
   yield takeEvery(updateAnnotationOrderValueRequest, handleUpdateAnnotationOrderValue);
   yield takeEvery(duplicateAnnotationsToAllPagesRequest, handleDuplicateAnnotationsToAllPages);
@@ -431,10 +392,4 @@ export default function* annotationsSaga() {
   yield takeLatest(syncWithDB, handleSyncWithDB);
 }
 
-export {
-  handleRemoveAllCanvasAnnotations,
-  handleRemoveAllCollectionAnnotations,
-  handleRemoveAnnotation,
-  handleSaveAnnotation,
-  handleUpdateAnnotationOrderValue,
-};
+export { handleRemoveAnnotation, handleSaveAnnotation, handleUpdateAnnotationOrderValue };

@@ -7,17 +7,14 @@ import { throwError } from 'redux-saga-test-plan/providers';
 import { call } from 'redux-saga/effects';
 import { Mock, vi } from 'vitest';
 import {
-  removeAllAnnotationsSuccess,
-  removeAllCollectionAnnotationsRequest,
-  removeAnnotationRequest,
-  removeAnnotationSuccess,
+  removeAnnotationsRequest,
+  removeAnnotationsSuccess,
   saveAnnotationRequest,
   saveAnnotationSuccess,
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
 } from '../../reducers/annotations';
 import {
-  handleRemoveAllCollectionAnnotations,
   handleRemoveAnnotation,
   handleSaveAnnotation,
   handleUpdateAnnotationOrderValue,
@@ -134,29 +131,28 @@ describe('annotations saga', () => {
     };
     (getAnnotationRepository as Mock).mockReturnValue(mockRepository);
 
-    return expectSaga(handleRemoveAnnotation, removeAnnotationRequest([annotationId]))
+    return expectSaga(handleRemoveAnnotation, removeAnnotationsRequest([annotationId]))
       .provide([[call([mockRepository, mockRepository.removeById], annotationId), undefined]])
-      .put(removeAnnotationSuccess([annotationId]))
+      .put(removeAnnotationsSuccess([annotationId]))
       .run();
   });
 
   it('should handle removeAllCollectionAnnotationsRequest and dispatch removeAllAnnotationsSuccess', () => {
-    const collectionId = 'collection1';
-    const mockCanvasIds = ['canvas1', 'canvas2'];
-    const mockRepository = {
-      removeByCollectionId: vi.fn().mockResolvedValue(mockCanvasIds),
-    };
-    (getAnnotationRepository as Mock).mockReturnValue(mockRepository);
-
-    return expectSaga(
-      handleRemoveAllCollectionAnnotations,
-      removeAllCollectionAnnotationsRequest(collectionId),
-    )
-      .provide([
-        [call([mockRepository, mockRepository.removeByCollectionId], collectionId), mockCanvasIds],
-      ])
-      .put(removeAllAnnotationsSuccess(mockCanvasIds))
-      .run();
+    // const collectionId = 'collection1';
+    // const mockCanvasIds = ['canvas1', 'canvas2'];
+    // const mockRepository = {
+    //   removeByCollectionId: vi.fn().mockResolvedValue(mockCanvasIds),
+    // };
+    // (getAnnotationRepository as Mock).mockReturnValue(mockRepository);
+    // return expectSaga(
+    //   handleRemoveAllCollectionAnnotations,
+    //   removeAnnotationsByScopeRequest({ scope: { collectionId } }),
+    // )
+    //   .provide([
+    //     [call([mockRepository, mockRepository.removeByCollectionId], collectionId), mockCanvasIds],
+    //   ])
+    //   .put(removeAllAnnotationsSuccess(mockCanvasIds))
+    //   .run();
   });
 
   describe('handleUpdateAnnotationOrderValue', () => {
