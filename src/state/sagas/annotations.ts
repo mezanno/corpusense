@@ -16,7 +16,7 @@ import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { t } from 'i18next';
 import { isEqual, maxBy, minBy } from 'lodash';
-import { call, Effect, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
+import { call, Effect, put, takeEvery } from 'redux-saga/effects';
 import {
   duplicateAnnotationsEach2PagesRequest,
   duplicateAnnotationsToAllPagesRequest,
@@ -29,14 +29,12 @@ import {
   removeAnnotationsSuccess,
   saveAnnotationRequest,
   saveAnnotationSuccess,
-  syncWithDB,
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
 } from '../reducers/annotations';
 // import { setCanvasFromComponent, SetCanvasFromComponentPayload } from '../reducers/canvas';
 import { CanvasScope, Scope } from '@/data/models/Scope';
 import { pushError, pushInfo } from '../reducers/events';
-import { getAnnotations } from '../selectors/annotations';
 
 /**
  * Saga to handle saving an annotation.
@@ -353,19 +351,6 @@ function* handleRecomputeRegions(
   }
 }
 
-function* handleSyncWithDB(
-  action: PayloadAction<{ canvasId: string; collectionId: string }>,
-): Generator<Effect, void, Annotation[]> {
-  const { canvasId, collectionId } = action.payload;
-  try {
-    const annotations = yield select(getAnnotations, canvasId, collectionId);
-    const annotationRepository = getAnnotationRepository();
-    yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
-  } catch (e) {
-    console.warn(e);
-  }
-}
-
 function* handleLoadAnnotationsForCanvas(
   action: PayloadAction<CanvasScope>,
 ): Generator<Effect, void, Annotation[]> {
@@ -389,7 +374,6 @@ export default function* annotationsSaga() {
   yield takeEvery(duplicateAnnotationsToAllPagesRequest, handleDuplicateAnnotationsToAllPages);
   yield takeEvery(duplicateAnnotationsEach2PagesRequest, handleDuplicateAnnotationsEach2Pages);
   yield takeEvery(recomputeRegionsRequest, handleRecomputeRegions);
-  yield takeLatest(syncWithDB, handleSyncWithDB);
 }
 
 export { handleRemoveAnnotation, handleSaveAnnotation, handleUpdateAnnotationOrderValue };

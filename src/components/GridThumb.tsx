@@ -32,8 +32,7 @@ const GridThumb = ({
   const canvas = useAppSelector((state) => getLoadedCanvasById(state, canvasId));
   const idDisplayed = canvasToDisplay?.id === canvas?.id;
   const hasLineAnnotations =
-    useAppSelector((state) => getAnnotationsByType(state, canvasId, collectionId, ElementType.LINE))
-      .length > 0;
+    useAppSelector((state) => getAnnotationsByType(state, ElementType.LINE)).length > 0;
 
   const handleDelete = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.stopPropagation();

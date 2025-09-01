@@ -10,6 +10,7 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
   }
 
   async selectByNameAndScope(workerName: string, scope: Scope): Promise<Worker | undefined> {
+    //TODO return an array
     return await db.workers.where({ scopeKey: getScopeKey(scope), name: workerName }).first();
   }
 

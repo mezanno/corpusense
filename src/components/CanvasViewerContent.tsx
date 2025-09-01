@@ -2,8 +2,7 @@ import { Annotation, ElementType, isAnnotation } from '@/data/models/Annotation'
 import { useAppDispatch } from '@/hooks/hooks';
 import { useAddAnnotation } from '@/hooks/useSaveAnnotation';
 import { saveAnnotationRequest } from '@/state/reducers/annotations';
-import { getAnnotations } from '@/state/selectors/annotations';
-import { RootState } from '@/state/store';
+import { selectAnnotations } from '@/state/selectors/annotations';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import {
   AnnotationState,
@@ -49,9 +48,7 @@ export const CanvasViewerContent = ({
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
 
   const annotationsInAnnotorious = useAnnotations();
-  const annotationsInStore = useSelector((state: RootState) =>
-    getAnnotations(state, canvas.id, collectionId ?? ''),
-  );
+  const annotationsInStore = useSelector(selectAnnotations);
   const addAnnotation = useAddAnnotation(); //logic to add an annotation to the store
 
   const { cvcState, cvcDispatch } = useContext(ReducerContext); //the reducer/state of the canvas viewer
