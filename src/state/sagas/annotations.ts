@@ -40,9 +40,7 @@ import { pushError, pushInfo } from '../reducers/events';
 
 /**
  * Saga to handle saving an annotation.
- * It checks if the annotation already exists in the database.
- * If it does, it updates the annotation if it's different from the existing one.
- * If it doesn't, it creates a new annotation with the correct order value.
+ *  creates a new annotation with the correct order value.
  * @param action
  */
 function* handleSaveAnnotation(
@@ -51,7 +49,6 @@ function* handleSaveAnnotation(
   const annotationToSave = action.payload;
   console.log('handleSaveAnnotationRequest - ', annotationToSave);
 
-  //TODO : this should be done in the repository
   const annotationRepository = getAnnotationRepository();
   const annotationsForCanvas = (yield call(
     [annotationRepository, annotationRepository.getAnnotationsByScope],
@@ -71,7 +68,6 @@ function* handleSaveAnnotation(
  * Saga to handle saving an annotation.
  * It checks if the annotation already exists in the database.
  * If it does, it updates the annotation if it's different from the existing one.
- * If it doesn't, it creates a new annotation with the correct order value.
  * @param action
  */
 function* handleUpdateAnnotation(
@@ -81,39 +77,15 @@ function* handleUpdateAnnotation(
   console.log('handleSaveAnnotationRequest - ', annotationToSave);
   try {
     const annotationRepository = getAnnotationRepository();
-    let existingAnnotation = undefined;
-    try {
-      existingAnnotation = yield call(
-        [annotationRepository, annotationRepository.getById],
-        annotationToSave.id,
-      );
-      //save only if annotations are different to avoid unnecessary writes and call to saveAnnotationSuccess
-      if (!isEqual(existingAnnotation, annotationToSave)) {
-        yield call([annotationRepository, annotationRepository.updateAnnotation], annotationToSave);
-        yield put(saveAnnotationSuccess(annotationToSave));
-      }
-    } catch (error) {
-      // If the annotation does not exist, create it
-      //compute the order value if not set or if set to 1
-      //TODO : this should be done in the repository
-      let newOrder = annotationToSave.order;
-      if (
-        (annotationToSave.order === undefined || annotationToSave.order === 0) &&
-        annotationToSave.canvasId !== undefined &&
-        annotationToSave.collectionId !== undefined
-      ) {
-        const annotationsForCanvas = (yield call(
-          [annotationRepository, annotationRepository.getAnnotationsByScope],
-          { canvasId: annotationToSave.canvasId, collectionId: annotationToSave.collectionId },
-        )) as Annotation[];
-        const regions = annotationsForCanvas
-          .filter((a) => getAnnotationType(a) === getAnnotationType(annotationToSave))
-          .map((a) => a.order ?? -1);
-        newOrder = regions.length > 0 ? Math.max(...regions) + 1 : 1;
-      }
-      const newAnnotation = { ...annotationToSave, order: newOrder };
-      yield call([annotationRepository, annotationRepository.updateAnnotation], newAnnotation);
-      yield put(saveAnnotationSuccess(newAnnotation));
+    const existingAnnotation = yield call(
+      [annotationRepository, annotationRepository.getById],
+      annotationToSave.id,
+    );
+    //save only if annotations are different to avoid unnecessary writes and call to saveAnnotationSuccess
+    if (!isEqual(existingAnnotation, annotationToSave)) {
+      yield call([annotationRepository, annotationRepository.updateAnnotation], annotationToSave);
+      yield put(saveAnnotationSuccess(annotationToSave));
+      yield put(pushInfo(i18n.t('toast_annotation_saved')));
     }
   } catch (e) {
     console.warn(e);
