@@ -1,5 +1,5 @@
 import { Annotation } from '@/data/models/Annotation';
-import reducer, { removeAnnotationSuccess, saveAnnotationSuccess } from '../annotations';
+import reducer, { removeAnnotationsSuccess, saveAnnotationSuccess } from '../annotations';
 
 describe('annotations reducer', () => {
   const initialState = {
@@ -25,7 +25,7 @@ describe('annotations reducer', () => {
         { id: '2', canvasId: 'canvas2', collectionId: 'collection2' },
       ],
     };
-    const action = removeAnnotationSuccess(['1']);
+    const action = removeAnnotationsSuccess(['1']);
     //@ts-expect-error initialStateWithAnnotations
     const state = reducer(initialStateWithAnnotations, action);
 

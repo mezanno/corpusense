@@ -15,7 +15,6 @@ import JSZip from 'jszip';
 import { uniq } from 'lodash';
 import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
-import { removeAllCollectionAnnotationsSuccess } from '../reducers/annotations';
 import {
   addSelectionToCollectionRequest,
   addSelectionToCollectionSuccess,
@@ -108,7 +107,8 @@ function* handleRemoveCollection(
     );
     yield call([collectionRepository, collectionRepository.remove], collectionToRemove);
     yield put(removeCollectionSuccess(collectionId));
-    yield put(removeAllCollectionAnnotationsSuccess(collectionId));
+    //A priori, plus besoin de prévenir le store, si on supprime une collection, c'est que l'on est sur la page des collections
+    // yield put(removeAnnotationSuccess(collectionId));
     yield put(removeWorkerByScopeRequest({ collectionId })); //remove workers associated to the collection
     yield put(pushInfo(i18n.t('toast_collection_removed')));
   } catch (e) {

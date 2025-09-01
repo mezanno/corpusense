@@ -5,8 +5,8 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import {
   duplicateAnnotationsEach2PagesRequest,
   duplicateAnnotationsToAllPagesRequest,
-  removeAllCanvasAnnotationsRequest,
-  removeAnnotationRequest,
+  removeAnnotationsByScopeRequest,
+  removeAnnotationsRequest,
 } from '@/state/reducers/annotations';
 import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import { exportWorkerResultRequest, startWorkerProcess } from '@/state/reducers/workers';
@@ -97,9 +97,11 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const handleDeleteAllAnnotations = () => {
       if (props.collectionId !== undefined) {
         appDispatch(
-          removeAllCanvasAnnotationsRequest({
-            canvasId: props.canvas.id,
-            collectionId: props.collectionId,
+          removeAnnotationsByScopeRequest({
+            scope: {
+              canvasId: props.canvas.id,
+              collectionId: props.collectionId,
+            },
           }),
         );
       }
@@ -150,7 +152,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
 
     const handleDeleteAnnotation = () => {
       const ids = selected.map((s) => s.annotation.id);
-      appDispatch(removeAnnotationRequest(ids)); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
+      appDispatch(removeAnnotationsRequest(ids)); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {

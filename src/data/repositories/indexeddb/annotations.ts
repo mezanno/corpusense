@@ -30,8 +30,11 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     return [];
   }
 
-  async getAnnotationsByScopeAndType(scope: Scope, types: ElementType[]): Promise<Annotation[]> {
+  async getAnnotationsByScopeAndType(scope: Scope, types?: ElementType[]): Promise<Annotation[]> {
     const annotations = await this.getAnnotationsByScope(scope);
+    if (types === undefined || types.length === 0) {
+      return annotations;
+    }
     return annotations.filter((annotation) => types.includes(getAnnotationType(annotation)));
   }
 
@@ -61,7 +64,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     return this.removeAllById(annotations.map((annotation) => annotation.id));
   }
 
-  async removeByScopeAndType(scope: Scope, types: ElementType[]): Promise<string[]> {
+  async removeByScopeAndType(scope: Scope, types?: ElementType[]): Promise<string[]> {
     const annotations = await this.getAnnotationsByScopeAndType(scope, types);
     return this.removeAllById(annotations.map((annotation) => annotation.id));
   }
