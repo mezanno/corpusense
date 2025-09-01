@@ -1,5 +1,6 @@
 import {
   Annotation,
+  AnnotationDTO,
   createAnnotation,
   duplicateAnnotation,
   ElementType,
@@ -31,6 +32,7 @@ import {
   saveAnnotationSuccess,
   updateAnnotationOrderValueRequest,
   updateAnnotationOrderValueSuccess,
+  updateAnnotationRequest,
 } from '../reducers/annotations';
 // import { setCanvasFromComponent, SetCanvasFromComponentPayload } from '../reducers/canvas';
 import { CanvasScope, Scope } from '@/data/models/Scope';
@@ -44,6 +46,35 @@ import { pushError, pushInfo } from '../reducers/events';
  * @param action
  */
 function* handleSaveAnnotation(
+  action: PayloadAction<AnnotationDTO>,
+): Generator<Effect, void, Annotation | Annotation[]> {
+  const annotationToSave = action.payload;
+  console.log('handleSaveAnnotationRequest - ', annotationToSave);
+
+  //TODO : this should be done in the repository
+  const annotationRepository = getAnnotationRepository();
+  const annotationsForCanvas = (yield call(
+    [annotationRepository, annotationRepository.getAnnotationsByScope],
+    { canvasId: annotationToSave.canvasId, collectionId: annotationToSave.collectionId },
+  )) as Annotation[];
+  const regions = annotationsForCanvas
+    .filter((a) => getAnnotationType(a) === getAnnotationType(annotationToSave))
+    .map((a) => a.order ?? -1);
+  const newOrder = regions.length > 0 ? Math.max(...regions) + 1 : 1;
+
+  const newAnnotation = { ...annotationToSave, order: newOrder };
+  yield call([annotationRepository, annotationRepository.updateAnnotation], newAnnotation);
+  yield put(saveAnnotationSuccess(newAnnotation));
+}
+
+/**
+ * Saga to handle saving an annotation.
+ * It checks if the annotation already exists in the database.
+ * If it does, it updates the annotation if it's different from the existing one.
+ * If it doesn't, it creates a new annotation with the correct order value.
+ * @param action
+ */
+function* handleUpdateAnnotation(
   action: PayloadAction<Annotation>,
 ): Generator<Effect, void, Annotation | Annotation[]> {
   const annotationToSave = action.payload;
@@ -63,7 +94,7 @@ function* handleSaveAnnotation(
       }
     } catch (error) {
       // If the annotation does not exist, create it
-      //compute the order value if not set or if set to 0
+      //compute the order value if not set or if set to 1
       //TODO : this should be done in the repository
       let newOrder = annotationToSave.order;
       if (
@@ -276,15 +307,16 @@ function* handleRecomputeRegions(
 
   const annotationRepository = getAnnotationRepository();
   let removedAnnotations: string[] = [];
-  const newRegionsAnnotations: Annotation[] = [];
+  const newRegionsAnnotations: AnnotationDTO[] = [];
   /*
     for each canvas, compute the new region annotation
     first, remove the existing region annotation
     then compute the new region annotation that contains all the lines
     if there is no line on the canvas, create a region annotation that covers the whole canvas
   */
+  const collectionRepository = getCollectionRepository();
   const canvases = (yield call(
-    [getCollectionRepository(), getCollectionRepository().getCanvasesByCollectionId],
+    [collectionRepository, collectionRepository.getCanvasesByCollectionId],
     collectionId,
   )) as Canvas[];
   for (const canvas of canvases) {
@@ -317,7 +349,7 @@ function* handleRecomputeRegions(
         const region = createAnnotation({
           canvasId: canvas.id,
           collectionId,
-          order: 1,
+          // order: 1,
           type: ElementType.REGION,
           value: '',
           minX,
@@ -348,6 +380,7 @@ function* handleRecomputeRegions(
       [annotationRepository, annotationRepository.saveAllAnnotations],
       newRegionsAnnotations,
     );
+    //TODO : update store yield put(update...)
   }
 }
 
@@ -367,6 +400,7 @@ function* handleLoadAnnotationsForCanvas(
 export default function* annotationsSaga() {
   yield takeEvery(fetchAnnotationsRequest, handleLoadAnnotationsForCanvas);
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotation);
+  yield takeEvery(updateAnnotationRequest, handleUpdateAnnotation);
   yield takeEvery(removeAnnotationsByScopeRequest, handleRemoveAnnotationsByScope);
   yield takeEvery(removeAnnotationsRequest, handleRemoveAnnotation);
   yield takeEvery(removeAllRegionAnnotationsRequest, handleRemoveAllRegionAnnotations);

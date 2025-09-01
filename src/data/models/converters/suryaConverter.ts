@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Annotation, createAnnotation, ElementType } from '../Annotation';
+import { AnnotationDTO, createAnnotation, ElementType } from '../Annotation';
 import { suryaLineSchema, suryaResultSchema } from './suryaSchema';
 
 export type SuryaResult = z.infer<typeof suryaResultSchema>;
@@ -9,12 +9,10 @@ export function convertPeroLineToAnnotation(
   line: SuryaLine,
   canvasId: string,
   collectionId: string,
-  order: number,
-): Annotation {
+): AnnotationDTO {
   return createAnnotation({
     canvasId,
     collectionId,
-    order,
     // minX: Math.min(...line.polygon.map((point) => point[0])),
     // minY: Math.min(...line.polygon.map((point) => point[1])),
     // maxX: Math.max(...line.polygon.map((point) => point[0])),
@@ -32,12 +30,11 @@ export function convertSuryaPredictionsToAnnotations(
   result: SuryaResult,
   canvasId: string,
   collectionId: string,
-): Annotation[] {
-  const annotations: Annotation[] = [];
-  let order = 0;
+): AnnotationDTO[] {
+  const annotations: AnnotationDTO[] = [];
   for (let i = 0; i < result.predictions[0].text_lines.length; i++) {
     const lines = result.predictions[0].text_lines[i];
-    annotations.push(convertPeroLineToAnnotation(lines, canvasId, collectionId, order++));
+    annotations.push(convertPeroLineToAnnotation(lines, canvasId, collectionId));
   }
 
   return annotations;

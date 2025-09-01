@@ -1,4 +1,4 @@
-import { Annotation, ElementType } from '@/data/models/Annotation';
+import { Annotation, AnnotationDTO, ElementType } from '@/data/models/Annotation';
 import { CanvasScope, Scope } from '@/data/models/Scope';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -22,7 +22,8 @@ const annotationsSlice = createSlice({
   name: 'annotations',
   initialState,
   reducers: {
-    saveAnnotationRequest(_state, _action: PayloadAction<Annotation>) {},
+    saveAnnotationRequest(_state, _action: PayloadAction<Annotation | AnnotationDTO>) {},
+    updateAnnotationRequest(_state, _action: PayloadAction<Annotation>) {},
     saveAnnotationSuccess(state, action: PayloadAction<Annotation>) {
       //if the annotation already exists in the store, update it
       if (state.values.find((a) => a.id === action.payload.id)) {
@@ -93,6 +94,7 @@ const annotationsSlice = createSlice({
 export const {
   addAnnotationsSuccess,
   saveAnnotationRequest,
+  updateAnnotationRequest,
   saveAnnotationSuccess,
   removeAnnotationsByScopeRequest,
   removeAnnotationsRequest,

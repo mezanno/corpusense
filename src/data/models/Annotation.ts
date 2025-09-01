@@ -28,12 +28,32 @@ export enum ElementType {
 }
 
 export interface Annotation extends ImageAnnotation {
-  partOf?: string;
   canvasId: string;
+  collectionId: string;
+  order: number;
+  partOf?: string;
   previous?: string;
   next?: string;
-  order?: number;
+}
+
+export interface AnnotationDTO extends ImageAnnotation {
+  canvasId: string;
   collectionId: string;
+}
+
+export interface AnnotationCreateDTO {
+  canvasId: string;
+  collectionId: string;
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  type: ElementType;
+  value: string | undefined;
+}
+
+export interface AnnotationWithIdCreateDTO extends AnnotationCreateDTO {
+  id: string;
 }
 
 export function isAnnotation(annotation: ImageAnnotation): annotation is Annotation {
@@ -59,7 +79,7 @@ export function getAnnotationText(annotation: Annotation) {
   return getAnnotationValue(annotation) ?? '';
 }
 
-export function getAnnotationType(annotation: Annotation) {
+export function getAnnotationType(annotation: Annotation | AnnotationDTO) {
   const type = getValueForMotivation(annotation, W3CMotivationEnum.Classifying);
   return type === undefined ? ElementType.TAG : convertToElementTypeEnum(type);
 }
@@ -69,41 +89,27 @@ function getAnnotationValue(annotation: Annotation) {
   return value === undefined ? '' : getValueForMotivation(annotation, W3CMotivationEnum.Tagging);
 }
 
-function getValueForMotivation(annotation: Annotation, motivation: W3CMotivationEnum) {
+function getValueForMotivation(
+  annotation: Annotation | AnnotationDTO,
+  motivation: W3CMotivationEnum,
+) {
   return annotation.bodies.find((b) => b.purpose === motivation)?.value;
-}
-
-export interface AnnotationCreateDTO {
-  canvasId: string;
-  collectionId: string;
-  order: number;
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
-  type: ElementType;
-  value: string | undefined;
-}
-
-export interface AnnotationWithIdCreateDTO extends AnnotationCreateDTO {
-  id: string;
 }
 
 export const URL_CLASSIFYING = '/class';
 export const URL_TAGGING = '/tag';
 
 export function createAnnotation<T extends AnnotationCreateDTO | AnnotationWithIdCreateDTO>(
-  annotationDTO: T,
-): Annotation {
-  const annotationId = (annotationDTO as AnnotationWithIdCreateDTO).id ?? uuid();
-  const { canvasId, collectionId, minX, minY, maxX, maxY, type, value, order } = annotationDTO;
+  params: T,
+): AnnotationDTO {
+  const annotationId = (params as AnnotationWithIdCreateDTO).id ?? uuid();
+  const { canvasId, collectionId, minX, minY, maxX, maxY, type, value } = params;
   const bounds = { minX, minY, maxX, maxY };
 
   return {
     id: annotationId,
     canvasId,
     collectionId,
-    order,
     target: {
       annotation: annotationId,
       selector: {
@@ -118,32 +124,29 @@ export function createAnnotation<T extends AnnotationCreateDTO | AnnotationWithI
       },
     },
     bodies: createBodies(type, value ?? '', annotationId),
-  } as Annotation;
+  } as AnnotationDTO;
 }
 
-export const createAnnotationFromExistingAnnotation = ({
-  annotation,
-  type,
-  value,
-  collectionId,
-  canvasId,
-  order,
-}: {
-  annotation: Annotation;
-  canvasId?: string;
-  collectionId?: string;
-  order?: number;
-  type: ElementType;
-  value: string;
-}): Annotation => {
-  return {
-    ...annotation,
-    collectionId: collectionId ?? annotation.collectionId,
-    canvasId: canvasId ?? annotation.canvasId,
-    order: order ?? annotation.order,
-    bodies: createBodies(type, value, annotation.id),
-  };
-};
+// export const createAnnotationFromExistingAnnotation = ({
+//   annotation,
+//   type,
+//   value,
+//   collectionId,
+//   canvasId,
+// }: {
+//   annotation: Annotation;
+//   canvasId?: string;
+//   collectionId?: string;
+//   type: ElementType;
+//   value: string;
+// }): AnnotationDTO => {
+//   return {
+//     ...annotation,
+//     collectionId: collectionId ?? annotation.collectionId,
+//     canvasId: canvasId ?? annotation.canvasId,
+//     bodies: createBodies(type, value, annotation.id),
+//   };
+// };
 
 export const createAnnotationFromAnnotorious = ({
   annotation,
@@ -157,7 +160,7 @@ export const createAnnotationFromAnnotorious = ({
   value: string;
   collectionId: string;
   canvasId: string;
-}): Annotation => {
+}): AnnotationDTO => {
   return {
     ...annotation,
     collectionId,
@@ -166,6 +169,7 @@ export const createAnnotationFromAnnotorious = ({
   };
 };
 
+//TODO : revoir l'order
 export const duplicateAnnotation = (annotation: Annotation, canvasId?: string): Annotation => {
   const newId = uuid();
   return {

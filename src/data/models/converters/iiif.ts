@@ -109,11 +109,9 @@ export function convertAnnotationPageToW3CAnnotations(
         W3CMotivationEnum.Tagging,
       );
       const annotationId = extractAnnotationIdFromBody(idValue);
-
       const a = createAnnotation({
         canvasId: baseUrl,
         collectionId,
-        order: r,
         minX: xywh.x,
         minY: xywh.y,
         maxX: xywh.x + xywh.w,
@@ -122,10 +120,7 @@ export function convertAnnotationPageToW3CAnnotations(
         value: valueValue,
         id: annotationId,
       });
-
-      console.log('convertAnnotationPageToW3CAnnotations -> ', a);
-
-      annotations.push(a);
+      annotations.push({ ...a, order: r });
     } catch (error) {
       console.warn('Error while extracting information from target', error);
       continue;

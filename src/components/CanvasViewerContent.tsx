@@ -1,7 +1,7 @@
 import { Annotation, ElementType, isAnnotation } from '@/data/models/Annotation';
 import { useAppDispatch } from '@/hooks/hooks';
 import { useAddAnnotation } from '@/hooks/useSaveAnnotation';
-import { saveAnnotationRequest } from '@/state/reducers/annotations';
+import { updateAnnotationRequest } from '@/state/reducers/annotations';
 import { selectAnnotations } from '@/state/selectors/annotations';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import {
@@ -104,7 +104,7 @@ export const CanvasViewerContent = ({
     };
     const onUpdate = (annotation: ImageAnnotation) => {
       if (isAnnotation(annotation)) {
-        appDispatch(saveAnnotationRequest(annotation));
+        appDispatch(updateAnnotationRequest(annotation));
       }
     };
 

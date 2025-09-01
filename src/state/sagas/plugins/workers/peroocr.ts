@@ -88,8 +88,11 @@ export default function* peroSaga(
         task.canvas.id,
         task.scope.collectionId,
       );
-      yield put(addAnnotationsSuccess(annotations));
-      yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
+      const newAnnotations = (yield call(
+        [annotationRepository, annotationRepository.saveAllAnnotations],
+        annotations,
+      )) as Annotation[];
+      yield put(addAnnotationsSuccess(newAnnotations));
       return {
         status: WorkerStatus.COMPLETED,
       };
