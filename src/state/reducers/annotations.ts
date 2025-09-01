@@ -3,7 +3,7 @@ import { CanvasScope, Scope } from '@/data/models/Scope';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 type AnnotationState = {
-  currentScope?: Scope;
+  currentScope?: CanvasScope;
   values: Annotation[];
   isLoading: boolean;
   deleted: Annotation;
@@ -61,7 +61,10 @@ const annotationsSlice = createSlice({
       state.values = [
         ...state.values,
         ...action.payload.filter(
-          (item) => !state.values.some((existing) => existing.id === item.id),
+          (item) =>
+            item.collectionId === state.currentScope?.collectionId &&
+            item.canvasId === state.currentScope?.canvasId &&
+            !state.values.some((existing) => existing.id === item.id),
         ),
       ];
     },
