@@ -229,6 +229,7 @@
   "menu_copy_clipboard": "Copier l'URL dans le presse-papier",
   "toast_collection_created": "Nouvelle collection créée",
   "toast_collection_saved": "Collection sauvegardée",
+  "toast_annotation_saved": "Annotation sauvegardée",
   "toast_element_removed": "Un élément a été supprimé de la collection",
   "toast_one_element_added": "Un élément a été ajouté à la collection",
   "toast_multiple_elements_added": "{{count}} éléments ont été ajoutés à la collection",
