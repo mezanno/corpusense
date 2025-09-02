@@ -8,7 +8,7 @@ import {
 } from '@/data/models/Annotation';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
-import { removeAllRegionAnnotationsRequest } from '@/state/reducers/annotations';
+import { removeAllAnnotationsInsideRequest } from '@/state/reducers/annotations';
 import { exportTextOfAnnotationRequest } from '@/state/reducers/export';
 import { startWorkerProcess } from '@/state/reducers/workers';
 import { isWorkerOrTaskRunning } from '@/state/selectors/workers';
@@ -103,7 +103,7 @@ const AnnotationForm = ({
 
   const handleRemoveAllAnnotationsInside = () => {
     if (editedAnnotation !== null) {
-      appDispatch(removeAllRegionAnnotationsRequest(editedAnnotation));
+      appDispatch(removeAllAnnotationsInsideRequest(editedAnnotation));
     }
   };
 

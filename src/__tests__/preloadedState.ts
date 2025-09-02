@@ -1,4 +1,3 @@
-import { Annotation } from '@/data/models/Annotation';
 import { authInitialState } from '@/state/reducers/auth';
 import { eventsInitialState } from '@/state/reducers/events';
 import { manifestInitialState } from '@/state/reducers/manifests';
@@ -24,8 +23,6 @@ const defaultPreloadedState: RootState = {
   annotations: {
     values: [],
     isLoading: false,
-    deleted: {} as Annotation,
-    updated: {} as Annotation,
   },
   workers: workerInitialState,
   models: modelsInitialState,
