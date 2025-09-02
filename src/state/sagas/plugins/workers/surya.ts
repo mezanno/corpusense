@@ -1,6 +1,6 @@
 import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
-import { convertSuryaPredictionsToAnnotations } from '@/data/models/converters/suryaConverter';
-import { suryaResultSchema } from '@/data/models/converters/suryaSchema';
+import { convertSuryaTablePredictionsToAnnotations } from '@/data/models/converters/suryaConverter';
+import { suryaTableResultSchema } from '@/data/models/converters/suryaSchema';
 import { isCanvasScope, toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
@@ -84,13 +84,14 @@ export default function* peroSaga(
         };
       }
 
-      const response = yield call(postOCR, image.id);
+      const response = yield call(post, image.id, 'table');
       console.log(response);
 
       try {
-        const suryaResult = suryaResultSchema.parse(response);
+        const suryaResult = suryaTableResultSchema.parse(response);
         console.log('suryaResult: ', suryaResult);
-        const annotations = convertSuryaPredictionsToAnnotations(
+
+        const annotations = convertSuryaTablePredictionsToAnnotations(
           suryaResult,
           canvas.id,
           task.scope.collectionId,
@@ -143,10 +144,10 @@ export default function* peroSaga(
   };
 }
 
-async function postOCR(url: string): Promise<unknown> {
+async function post(url: string, endpoint: 'ocr' | 'layout' | 'table'): Promise<unknown> {
   const suryaUrl = localStorage.getItem('suryaUrl') ?? 'http://localhost:8000';
 
-  const res = await fetch(`${suryaUrl}/predict`, {
+  const res = await fetch(`${suryaUrl}/${endpoint}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
