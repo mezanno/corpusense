@@ -6,6 +6,7 @@ import {
   ElementType,
   getAnnotationType,
 } from '@/data/models/Annotation';
+import { CanvasScope, Scope } from '@/data/models/Scope';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -24,7 +25,7 @@ import {
   fetchAnnotationsRequest,
   fetchAnnotationsSuccess,
   recomputeRegionsRequest,
-  removeAllRegionAnnotationsRequest,
+  removeAllAnnotationsInsideRequest,
   removeAnnotationsByScopeRequest,
   removeAnnotationsRequest,
   removeAnnotationsSuccess,
@@ -34,8 +35,6 @@ import {
   updateAnnotationOrderValueSuccess,
   updateAnnotationRequest,
 } from '../reducers/annotations';
-// import { setCanvasFromComponent, SetCanvasFromComponentPayload } from '../reducers/canvas';
-import { CanvasScope, Scope } from '@/data/models/Scope';
 import { pushError, pushInfo } from '../reducers/events';
 
 /**
@@ -105,6 +104,7 @@ function* handleRemoveAnnotation(action: PayloadAction<string[]>) {
     }
   }
   yield put(removeAnnotationsSuccess(annotationsDeleted));
+  yield put(pushInfo(i18n.t('toast_annotation_deleted', { count: annotationsDeleted.length })));
 }
 
 function* handleRemoveAnnotationsByScope(
@@ -119,6 +119,7 @@ function* handleRemoveAnnotationsByScope(
   );
 
   yield put(removeAnnotationsSuccess(annotationsDeleted));
+  yield put(pushInfo(i18n.t('toast_annotation_deleted', { count: annotationsDeleted.length })));
 }
 
 function* handleRemoveAllRegionAnnotations(
@@ -147,6 +148,9 @@ function* handleRemoveAllRegionAnnotations(
         annotationsIdsToRemove,
       );
       yield put(removeAnnotationsSuccess(annotationsIdsToRemove));
+      yield put(
+        pushInfo(i18n.t('toast_annotation_deleted', { count: annotationsIdsToRemove.length })),
+      );
     }
   } catch (e) {
     console.warn(e);
@@ -356,11 +360,10 @@ function* handleRecomputeRegions(
   }
 }
 
-function* handleLoadAnnotationsForCanvas(
+function* handleFetchAnnotations(
   action: PayloadAction<CanvasScope>,
 ): Generator<Effect, void, Annotation[]> {
   const { collectionId, canvasId } = action.payload;
-  // load all the annotations of the collection
   const annotationRepository = getAnnotationRepository();
   const annotations = yield call(
     [annotationRepository, annotationRepository.getAnnotationsByScope],
@@ -370,12 +373,12 @@ function* handleLoadAnnotationsForCanvas(
 }
 
 export default function* annotationsSaga() {
-  yield takeEvery(fetchAnnotationsRequest, handleLoadAnnotationsForCanvas);
+  yield takeEvery(fetchAnnotationsRequest, handleFetchAnnotations);
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotation);
   yield takeEvery(updateAnnotationRequest, handleUpdateAnnotation);
   yield takeEvery(removeAnnotationsByScopeRequest, handleRemoveAnnotationsByScope);
   yield takeEvery(removeAnnotationsRequest, handleRemoveAnnotation);
-  yield takeEvery(removeAllRegionAnnotationsRequest, handleRemoveAllRegionAnnotations);
+  yield takeEvery(removeAllAnnotationsInsideRequest, handleRemoveAllRegionAnnotations);
   yield takeEvery(updateAnnotationOrderValueRequest, handleUpdateAnnotationOrderValue);
   yield takeEvery(duplicateAnnotationsToAllPagesRequest, handleDuplicateAnnotationsToAllPages);
   yield takeEvery(duplicateAnnotationsEach2PagesRequest, handleDuplicateAnnotationsEach2Pages);
