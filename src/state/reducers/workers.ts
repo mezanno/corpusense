@@ -9,6 +9,9 @@ export interface WorkerState {
   workerPluginsInfo: {
     name: string;
     hasExport: boolean;
+    displayName?: string;
+    description?: string;
+    category?: string;
   }[];
 }
 
@@ -84,7 +87,18 @@ export const workerSlice = createSlice({
     setResults: (state, action: PayloadAction<Result[]>) => {
       state.results = action.payload;
     },
-    setPlugins(state, action: PayloadAction<{ name: string; hasExport: boolean }[]>) {
+    setPlugins(
+      state,
+      action: PayloadAction<
+        {
+          name: string;
+          hasExport: boolean;
+          displayName?: string;
+          description?: string;
+          category?: string;
+        }[]
+      >,
+    ) {
       state.workerPluginsInfo = action.payload;
     },
     removeWorkerRequest: (_state, _action: PayloadAction<string>) => {

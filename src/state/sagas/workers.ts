@@ -427,6 +427,9 @@ function* loadWorkerPluginsInfo(): Generator<Effect, void, { name: string; hasEx
   const pluginsInfo = Object.keys(workerPlugins).map((name) => ({
     name,
     hasExport: workerPlugins[name].export !== undefined,
+    displayName: workerPlugins[name].info.displayName,
+    description: workerPlugins[name].info.description,
+    category: workerPlugins[name].info.category,
   }));
   yield put(setPlugins(pluginsInfo));
 }
