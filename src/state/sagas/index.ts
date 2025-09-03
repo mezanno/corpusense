@@ -7,7 +7,7 @@ import manifestsSaga, { loadHistorySaga } from './manifests';
 import modelsSaga, { fetchModels } from './models';
 import namedEntitiesSaga from './namedEntities';
 import tagsSaga, { fetchAllTags } from './tags';
-import workerSaga, { fetchWorkers } from './workers';
+import workerSaga, { fetchWorkers, loadWorkerPluginsInfo } from './workers';
 
 function* launchSaga(saga: () => Generator) {
   while (true) {
@@ -40,6 +40,7 @@ function getRootSaga() {
     yield fork(fetchAllTags); //load types list at startup
     yield fork(fetchModels); //load models at startup
     yield fork(fetchWorkers); //load workers at startup
+    yield fork(loadWorkerPluginsInfo);
   };
 }
 
