@@ -10,20 +10,13 @@ import { generateSchema } from '@/data/utils/model';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
+import { Mistral } from '@mistralai/mistralai';
+import { ChatCompletionResponse } from '@mistralai/mistralai/models/components';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
 import { call, Effect } from 'redux-saga/effects';
 
 export const pluginName = 'mistral';
-
-function isValidJson(str: string): boolean {
-  try {
-    JSON.parse(str);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 //TODO: à déplacer dans un fichier utils
 async function getText(scope: Scope) {
@@ -56,7 +49,7 @@ function hasModel(params: PluginParams): params is PluginParams & { model: DataM
 export default function* mistralSaga(
   task: Task,
   params: PluginParams,
-): Generator<Effect, WorkerResponse, string | Response> {
+): Generator<Effect, WorkerResponse, string | ChatCompletionResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
 
   //TODO! à déplacer dans saga workers
@@ -83,78 +76,49 @@ export default function* mistralSaga(
   const prompt = model.prompt.replace('{{schema}}', generateSchema(model));
   const mistralModel = localStorage.getItem('mistralModel') ?? 'mistral-medium-latest';
   console.log('prompt: ', prompt);
-  const body = {
-    model: mistralModel,
-    messages: [
-      {
-        role: 'system',
-        content: prompt,
-      },
-      {
-        role: 'user',
-        content: text,
-      },
-    ],
-    temperature: 0,
-    max_tokens: text.length * 2,
-    response_format: { type: 'json_object' },
-  };
 
   try {
-    const response = (yield call(() =>
-      fetch('https://api.mistral.ai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
+    const client = new Mistral({
+      apiKey,
+      retryConfig: {
+        strategy: 'backoff',
+        backoff: {
+          initialInterval: 500, // intervalle initial en millisecondes
+          maxInterval: 10000, // intervalle maximal en millisecondes entre tentatives
+          exponent: 1.5, // facteur exponentiel
+          maxElapsedTime: 60000, // durée max (en millisecondes) totale pour toutes les tentatives
         },
-        body: JSON.stringify(body),
-      }),
-    )) as Response;
-    const data = (yield call([response, 'json'])) as object;
-    console.log('Response from Mistral:', data);
+        retryConnectionErrors: true, // réessayer en cas d'erreurs de connexion
+      },
+    });
+    const response = (yield call([client.chat, client.chat.complete], {
+      model: mistralModel,
+      messages: [
+        {
+          role: 'system',
+          content: prompt,
+        },
+        {
+          role: 'user',
+          content: text,
+        },
+      ],
+      temperature: 0,
+      maxTokens: text.length * 2,
+      responseFormat: { type: 'json_object' },
+    })) as ChatCompletionResponse;
 
-    //TODO! si data.object === 'error' alors on retourne une erreur
-    if (typeof data === 'object') {
-      if (
-        data !== null &&
-        'choices' in data &&
-        Array.isArray(data.choices) &&
-        data.choices.length > 0 &&
-        'message' in data.choices[0]
-      ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const message = data.choices[0].message as object;
-        if ('content' in message && typeof message.content === 'string') {
-          console.log('Response length : ', message.content.length);
-          if (isValidJson(message.content)) {
-            return { status: WorkerStatus.COMPLETED, content: message.content };
-          }
-        }
-      } else if (
-        'object' in data &&
-        data.object === 'error' &&
-        'code' in data &&
-        typeof data.code === 'string' &&
-        'message' in data &&
-        typeof data.message === 'string'
-      ) {
-        // Handle the case where data is an error object
-        console.error('Error from Mistral API:', data);
-        return {
-          status: WorkerStatus.ERROR,
-          statusMessage: `Mistral API error: ${data.code} - ${data.message}`,
-        };
-      }
-    }
+    console.log('Response from Mistral:', response);
+    return {
+      status: WorkerStatus.COMPLETED,
+      content: response.choices[0].message.content as string,
+    };
   } catch (error) {
     return {
       status: WorkerStatus.ERROR,
       statusMessage: getErrorMessage(error),
     };
   }
-
-  return { status: WorkerStatus.ERROR, statusMessage: 'Invalid response format from Mistral API' };
 }
 
 /*
