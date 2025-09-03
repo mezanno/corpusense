@@ -44,7 +44,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
   };
 
   return (
-    <div className='overflow-auto p-4'>
+    <div className='flex h-screen flex-col p-4'>
       <div>
         <h2 className='text-lg font-bold'>{t('title_worker_details')}</h2>
         <ul>
@@ -89,37 +89,34 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
           )}
         </div>
       </div>
-      <div>
+      <div className='flex-1 overflow-y-auto'>
         <h3 className='text-md mt-4 font-semibold'>
           {t('title_worker_queue')}{' '}
           <span>({t('info_worker_queue_size', { size: worker.queue.length })})</span>
         </h3>
+
         <ul>
-          <li>
-            <ul>
-              {worker.queue.map((task) => (
-                <li
-                  key={task.id}
-                  className={`flex items-center gap-2 ${getTaskStatusColor(task.status)}`}
-                >
-                  <span
-                    className={`rounded px-2 py-1 text-sm ${getTaskStatusColor(task.status)} bg-opacity-10`}
-                  >
-                    {getWorkerStatusIcon(task.status)}
-                  </span>
-                  <strong>{t('table_col_title_taskID')}</strong>
-                  {task.id} -<strong>{t('table_col_title_status')}</strong>
-                  {t(`worker_status_${task.status}`)}
-                  {task.statusMessage !== undefined && (
-                    <span>
-                      {' '}
-                      - <em>{task.statusMessage}</em>
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </li>
+          {worker.queue.map((task) => (
+            <li
+              key={task.id}
+              className={`flex items-center gap-2 ${getTaskStatusColor(task.status)}`}
+            >
+              <span
+                className={`rounded px-2 py-1 text-sm ${getTaskStatusColor(task.status)} bg-opacity-10`}
+              >
+                {getWorkerStatusIcon(task.status)}
+              </span>
+              <strong>{t('table_col_title_taskID')}</strong>
+              {task.id} -<strong>{t('table_col_title_status')}</strong>
+              {t(`worker_status_${task.status}`)}
+              {task.statusMessage !== undefined && (
+                <span>
+                  {' '}
+                  - <em>{task.statusMessage}</em>
+                </span>
+              )}
+            </li>
+          ))}
         </ul>
       </div>
     </div>
