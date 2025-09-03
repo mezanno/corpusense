@@ -8,7 +8,7 @@ import {
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
-import { fetchAnnotationsSuccess } from '@/state/reducers/annotations';
+import { addAnnotationsSuccess } from '@/state/reducers/annotations';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
@@ -101,12 +101,7 @@ export default function* peroSaga(
           annotations,
         )) as Annotation[];
 
-        yield put(
-          fetchAnnotationsSuccess({
-            scope: { collectionId: task.scope.collectionId, canvasId: canvas.id },
-            annotations: newAnnotations,
-          }),
-        );
+        yield put(addAnnotationsSuccess(newAnnotations));
         return {
           status: WorkerStatus.COMPLETED,
         };

@@ -50,6 +50,7 @@ const annotationsSlice = createSlice({
     fetchAnnotationsRequest(state, _action: PayloadAction<CanvasScope>) {
       state.isLoading = true;
       state.currentScope = undefined;
+      state.values = [];
     },
     fetchAnnotationsSuccess(
       state,
