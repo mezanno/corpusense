@@ -6,7 +6,7 @@ import {
   recoverWorkerRequest,
   stopWorkerProcessRequest,
 } from '@/state/reducers/workers';
-import { getWorkerById, hasResult } from '@/state/selectors/workers';
+import { getWorkerById, hasExport, hasResult } from '@/state/selectors/workers';
 import { useTranslation } from 'react-i18next';
 import { getTaskStatusColor, getWorkerStatusIcon } from './workerUtils';
 
@@ -14,7 +14,9 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const worker = useAppSelector((state) => getWorkerById(state, workerId));
-  const resultExists = useAppSelector((state) => hasResult(state, workerId));
+  const resultExists = useAppSelector((state) =>
+    worker ? hasExport(state, worker?.name) && hasResult(state, workerId) : false,
+  );
 
   if (worker === undefined) {
     return (
