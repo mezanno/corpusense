@@ -1,4 +1,4 @@
-import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
+import { ElementType, getAnnotationType } from '@/data/models/Annotation';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
 import { toString } from '@/data/models/Scope';
@@ -9,9 +9,7 @@ import { addAnnotationsSuccess } from '@/state/reducers/annotations';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
-import { Canvas } from '@iiif/presentation-3';
-import { PredictReturn } from 'node_modules/@gradio/client/dist/types';
-import { call, Effect, put } from 'redux-saga/effects';
+import { put } from 'redux-saga/effects';
 
 export const pluginName = 'peroocr';
 
@@ -31,14 +29,9 @@ function hasRegion(params: PluginParams): params is PluginParams & {
   return 'region' in params;
 }
 
-export default function* peroSaga(
-  task: Task,
-  params: PluginParams,
-): Generator<Effect, WorkerResponse, Canvas | Annotation[] | Client | PredictReturn> {
+export default async function peroSaga(task: Task, params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
-
   const annotationRepository = getAnnotationRepository();
-
   try {
     const image = getImage(task.canvas);
     let regions = JSON.stringify([]);
@@ -52,10 +45,10 @@ export default function* peroSaga(
         },
       ]);
     } else {
-      const annotations = (yield call(
-        [annotationRepository, annotationRepository.getAnnotationsByScope],
-        { canvasId: task.canvas.id, collectionId: task.scope.collectionId },
-      )) as Annotation[];
+      const annotations = await annotationRepository.getAnnotationsByScope({
+        canvasId: task.canvas.id,
+        collectionId: task.scope.collectionId,
+      });
       const annotationRegions = annotations.filter(
         (a) => getAnnotationType(a) === ElementType.REGION,
       );
@@ -75,11 +68,8 @@ export default function* peroSaga(
       }
     }
 
-    const client = (yield call(() => Client.connect('https://api.mezanno.xyz/ocr/'))) as Client;
-    const gradioResult = (yield call(() =>
-      client.predict('/transcribe', { image_url: image.id, regions }),
-    )) as PredictReturn;
-
+    const client = await Client.connect('https://api.mezanno.xyz/ocr/');
+    const gradioResult = await client.predict('/transcribe', { image_url: image.id, regions });
     console.log(gradioResult.data);
     try {
       const peroResult = peroResultSchema.parse(gradioResult.data);
@@ -88,11 +78,8 @@ export default function* peroSaga(
         task.canvas.id,
         task.scope.collectionId,
       );
-      const newAnnotations = (yield call(
-        [annotationRepository, annotationRepository.saveAllAnnotations],
-        annotations,
-      )) as Annotation[];
-      yield put(addAnnotationsSuccess(newAnnotations));
+      const newAnnotations = await annotationRepository.saveAllAnnotations(annotations);
+      put(addAnnotationsSuccess(newAnnotations));
       return {
         status: WorkerStatus.COMPLETED,
       };

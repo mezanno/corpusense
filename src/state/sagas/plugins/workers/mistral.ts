@@ -11,10 +11,8 @@ import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import { Mistral } from '@mistralai/mistralai';
-import { ChatCompletionResponse } from '@mistralai/mistralai/models/components';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
-import { call, Effect } from 'redux-saga/effects';
 
 export const pluginName = 'mistral';
 
@@ -46,10 +44,10 @@ function hasModel(params: PluginParams): params is PluginParams & { model: DataM
  * It fetches the text from the scope, sends it to the Mistral API,
  * and returns the response.
  */
-export default function* mistralSaga(
+export default async function mistralSaga(
   task: Task,
   params: PluginParams,
-): Generator<Effect, WorkerResponse, string | ChatCompletionResponse> {
+): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
 
   //TODO! à déplacer dans saga workers
@@ -59,7 +57,7 @@ export default function* mistralSaga(
   }
   const { model } = params;
 
-  const text = (yield call(getText, task.scope)) as string;
+  const text = await getText(task.scope);
   //return an error if no text is found
   if (text === undefined || text.length === 0) {
     console.log('No text found for this canvas');
@@ -91,7 +89,7 @@ export default function* mistralSaga(
         retryConnectionErrors: true, // réessayer en cas d'erreurs de connexion
       },
     });
-    const response = (yield call([client.chat, client.chat.complete], {
+    const response = await client.chat.complete({
       model: mistralModel,
       messages: [
         {
@@ -106,7 +104,7 @@ export default function* mistralSaga(
       temperature: 0,
       maxTokens: text.length * 2,
       responseFormat: { type: 'json_object' },
-    })) as ChatCompletionResponse;
+    });
 
     console.log('Response from Mistral:', response);
     return {
@@ -125,7 +123,7 @@ export default function* mistralSaga(
  * Export function to export results from the Mistral plugin saga.
  * It takes an array of Result objects, extracts the data, and saves it as JSON and CSV files.
  */
-export function* exportResult(results: Result[]): Generator<Effect, void, Tag[]> {
+export async function exportResult(results: Result[]) {
   if (results.length === 0) {
     console.warn('No results to export from Mistral plugin');
     return;
@@ -136,10 +134,7 @@ export function* exportResult(results: Result[]): Generator<Effect, void, Tag[]>
     const canvasId = isCanvasScope(result.scope) ? toGallicaUrl(result.scope.canvasId) : undefined;
 
     const collectionRepository = getCollectionRepository();
-    const tags: Tag[] = yield call(
-      [collectionRepository, collectionRepository.getTagsByCollectionId],
-      result.scope.collectionId,
-    );
+    const tags: Tag[] = await collectionRepository.getTagsByCollectionId(result.scope.collectionId);
     const tagsAsColumns = tags.reduce(
       (acc, t, index) => {
         acc[`tag${index + 1}`] = t.label;
@@ -169,16 +164,11 @@ export function* exportResult(results: Result[]): Generator<Effect, void, Tag[]>
     }
   }
 
-  yield call(
-    FileSaver.saveAs,
+  FileSaver.saveAs(
     new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
     'exported_data.json',
   );
 
   const csv = json2csv((allTheData as object[]).filter(Boolean));
-  yield call(
-    FileSaver.saveAs,
-    new Blob([csv], { type: 'text/plain;charset=utf-8' }),
-    'exported_data.csv',
-  );
+  FileSaver.saveAs(new Blob([csv], { type: 'text/plain;charset=utf-8' }), 'exported_data.csv');
 }

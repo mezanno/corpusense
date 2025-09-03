@@ -1,4 +1,4 @@
-import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
+import { ElementType, getAnnotationType } from '@/data/models/Annotation';
 import { convertSuryaTablePredictionsToAnnotations } from '@/data/models/converters/suryaConverter';
 import { suryaTableResultSchema } from '@/data/models/converters/suryaSchema';
 import { isCanvasScope, toString } from '@/data/models/Scope';
@@ -11,8 +11,7 @@ import { getImage } from '@/data/utils/canvas';
 import { addAnnotationsSuccess } from '@/state/reducers/annotations';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
-import { Canvas } from '@iiif/presentation-3';
-import { call, Effect, put } from 'redux-saga/effects';
+import { put } from 'redux-saga/effects';
 
 export const pluginName = 'surya';
 
@@ -32,10 +31,7 @@ function hasRegion(params: PluginParams): params is PluginParams & {
   return 'region' in params;
 }
 
-export default function* peroSaga(
-  task: Task,
-  params: PluginParams,
-): Generator<Effect, WorkerResponse, Canvas | Annotation[] | Blob> {
+export default async function peroSaga(task: Task, params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
 
   const annotationRepository = getAnnotationRepository();
@@ -43,20 +39,19 @@ export default function* peroSaga(
   if (isCanvasScope(task.scope)) {
     const collectionRepository = getCollectionRepository();
     try {
-      const canvas = (yield call(
-        [collectionRepository, collectionRepository.getCanvasInCollectionById],
+      const canvas = await collectionRepository.getCanvasInCollectionById(
         task.scope.canvasId,
         task.scope.collectionId,
-      )) as Canvas;
+      );
       const image = getImage(canvas);
       let regions = JSON.stringify([]);
       if (hasRegion(params)) {
         regions = JSON.stringify(params.region);
       } else {
-        const annotations = (yield call(
-          [annotationRepository, annotationRepository.getAnnotationsByScope],
-          { canvasId: task.canvas.id, collectionId: task.scope.collectionId },
-        )) as Annotation[];
+        const annotations = await annotationRepository.getAnnotationsByScope({
+          canvasId: task.canvas.id,
+          collectionId: task.scope.collectionId,
+        });
         const annotationRegions = annotations.filter(
           (a) => getAnnotationType(a) === ElementType.REGION,
         );
@@ -84,7 +79,7 @@ export default function* peroSaga(
         };
       }
 
-      const response = yield call(post, image.id, 'table');
+      const response = await post(image.id, 'table');
       console.log(response);
 
       try {
@@ -96,30 +91,13 @@ export default function* peroSaga(
           canvas.id,
           task.scope.collectionId,
         );
-        const newAnnotations = (yield call(
-          [annotationRepository, annotationRepository.saveAllAnnotations],
-          annotations,
-        )) as Annotation[];
+        const newAnnotations = await annotationRepository.saveAllAnnotations(annotations);
 
-        yield put(addAnnotationsSuccess(newAnnotations));
+        put(addAnnotationsSuccess(newAnnotations));
         return {
           status: WorkerStatus.COMPLETED,
         };
       } catch (error) {
-        //   try {
-        //     const peroError = peroResultError.parse(gradioResult.data);
-        //     console.error('peroError: ', peroError[0].result.error);
-        //     return {
-        //       status: WorkerStatus.ERROR,
-        //       statusMessage: peroError[0].result.error,
-        //     };
-        //   } catch (err) {
-        //     console.error('Error parsing peroResult:', err);
-        //     return {
-        //       status: WorkerStatus.ERROR,
-        //       statusMessage: getErrorMessage(err),
-        //     };
-        //   }
         return {
           status: WorkerStatus.ERROR,
           statusMessage: getErrorMessage(error),

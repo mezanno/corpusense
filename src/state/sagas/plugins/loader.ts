@@ -1,9 +1,12 @@
 import { Result } from '@/data/models/Result';
-import { Task } from '@/data/models/Worker';
+import { Task, WorkerResponse } from '@/data/models/Worker';
 
 export type WorkerPlugin = { run: WorkerRunFunction; export?: WorkerExportFunction };
-export type WorkerRunFunction = (task: Task, params?: Record<string, unknown>) => Generator;
-export type WorkerExportFunction = (results: Result[]) => Generator;
+export type WorkerRunFunction = (
+  task: Task,
+  params?: Record<string, unknown>,
+) => Promise<WorkerResponse>;
+export type WorkerExportFunction = (results: Result[]) => void;
 type WorkerModule = {
   default: WorkerRunFunction;
   pluginName: string;
@@ -11,7 +14,7 @@ type WorkerModule = {
 };
 
 export type ImporterPlugin = { import: ImportFunction };
-export type ImportFunction = (url: string) => Generator;
+export type ImportFunction = (url: string) => Promise<object>;
 type ImporterModule = {
   default: ImportFunction;
   pluginName: string;
