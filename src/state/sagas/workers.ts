@@ -39,6 +39,7 @@ import {
   recoverWorkerRequest,
   removeWorkerRequest,
   removeWorkerSuccess,
+  setPlugins,
   setResults,
   setWorkers,
   startWorkerProcess,
@@ -422,6 +423,14 @@ function* handleRemoveWorker(action: PayloadAction<string>) {
   yield put(removeWorkerSuccess(workerId));
 }
 
+function* loadWorkerPluginsInfo(): Generator<Effect, void, { name: string; hasExport: boolean }[]> {
+  const pluginsInfo = Object.keys(workerPlugins).map((name) => ({
+    name,
+    hasExport: workerPlugins[name].export !== undefined,
+  }));
+  yield put(setPlugins(pluginsInfo));
+}
+
 export default function* workerSaga() {
   yield takeEvery(startWorkerProcess, handleStartWorkerProcess);
   yield takeEvery(exportWorkerResultRequest, handleExportWorkerResult);
@@ -429,4 +438,4 @@ export default function* workerSaga() {
   yield takeEvery(removeWorkerRequest, handleRemoveWorker);
 }
 
-export { fetchWorkers };
+export { fetchWorkers, loadWorkerPluginsInfo };

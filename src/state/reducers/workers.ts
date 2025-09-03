@@ -6,12 +6,17 @@ export interface WorkerState {
   workers: Worker[];
   results: Result[];
   status: { scope: Scope; status: WorkerStatus }[];
+  workerPluginsInfo: {
+    name: string;
+    hasExport: boolean;
+  }[];
 }
 
 export const workerInitialState: WorkerState = {
   workers: [],
   results: [],
   status: [],
+  workerPluginsInfo: [],
 };
 
 export interface PluginParams {
@@ -79,6 +84,9 @@ export const workerSlice = createSlice({
     setResults: (state, action: PayloadAction<Result[]>) => {
       state.results = action.payload;
     },
+    setPlugins(state, action: PayloadAction<{ name: string; hasExport: boolean }[]>) {
+      state.workerPluginsInfo = action.payload;
+    },
     removeWorkerRequest: (_state, _action: PayloadAction<string>) => {
       //payload is workerId
     },
@@ -104,6 +112,7 @@ export const {
   addResult,
   setWorkers,
   setResults,
+  setPlugins,
   removeWorkerRequest,
   removeWorkerSuccess,
   removeWorkerByScopeRequest,
