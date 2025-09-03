@@ -1,7 +1,16 @@
 import { Result } from '@/data/models/Result';
 import { Task, WorkerResponse } from '@/data/models/Worker';
 
-export type WorkerPlugin = { run: WorkerRunFunction; export?: WorkerExportFunction };
+export type WorkerPluginInfo = {
+  displayName?: string;
+  description?: string;
+  category?: string;
+};
+export type WorkerPlugin = {
+  run: WorkerRunFunction;
+  export?: WorkerExportFunction;
+  info: WorkerPluginInfo;
+};
 export type WorkerRunFunction = (
   task: Task,
   params?: Record<string, unknown>,
@@ -10,6 +19,9 @@ export type WorkerExportFunction = (results: Result[]) => void;
 type WorkerModule = {
   default: WorkerRunFunction;
   pluginName: string;
+  pluginDisplayName?: string;
+  pluginDescription?: string;
+  pluginCategory?: string;
   exportResult?: WorkerExportFunction;
 };
 
@@ -20,23 +32,41 @@ type ImporterModule = {
   pluginName: string;
 };
 
+//typeguard to check if an object is a WorkerModule
+const isWorkerModule = (mod: unknown): mod is WorkerModule => {
+  if (mod === null || typeof mod !== 'object') return false;
+
+  const m = mod as Partial<WorkerModule>;
+
+  return (
+    typeof m.default === 'function' &&
+    typeof m.pluginName === 'string' &&
+    // les champs optionnels sont simplement ignorés ici
+    (m.pluginDisplayName === undefined || typeof m.pluginDisplayName === 'string') &&
+    (m.pluginDescription === undefined || typeof m.pluginDescription === 'string') &&
+    (m.pluginCategory === undefined || typeof m.pluginCategory === 'string') &&
+    (m.exportResult === undefined || typeof m.exportResult === 'function')
+  );
+};
+
 export function loadWorkerPlugins() {
   const modules = import.meta.glob('./workers/*.ts', { eager: true });
   const workerPlugins: Record<string, WorkerPlugin> = {};
 
   for (const path in modules) {
-    //TODO : check if it is a valid plugin saga
     const mod = modules[path] as WorkerModule;
-    console.log('mod: ', mod);
+    if (isWorkerModule(mod)) {
+      workerPlugins[mod.pluginName] = {
+        run: mod.default,
+        info: {
+          displayName: mod.pluginDisplayName,
+          description: mod.pluginDescription,
+          category: mod.pluginCategory,
+        },
+        export: mod.exportResult,
+      };
 
-    if (typeof mod.default === 'function') {
-      workerPlugins[mod.pluginName] = { run: mod.default };
-      if (typeof mod.exportResult === 'function') {
-        workerPlugins[mod.pluginName].export = mod.exportResult;
-      }
       console.info(`Plugin saga ${mod.pluginName} loaded successfully`);
-    } else {
-      console.warn(`Plugin saga at ${mod.pluginName} does not export a default generator`);
     }
   }
 
