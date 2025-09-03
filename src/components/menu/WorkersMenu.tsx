@@ -3,7 +3,7 @@ import { PocketKnife, Puzzle, ScanText, TableProperties } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
-const AnalysisMenu = ({
+const WorkersMenu = ({
   scope,
   handleLayout,
   handleOcr,
@@ -48,4 +48,4 @@ const AnalysisMenu = ({
   return <MultiOptionsMenu params={params} scope={scope} />;
 };
 
-export default AnalysisMenu;
+export default WorkersMenu;

@@ -1,9 +1,9 @@
 import { Scope } from '@/data/models/Scope';
 import { Worker } from '@/data/models/Worker';
-import AnalysisMenu from './menu/AnalysisMenu';
 import DangerousMenu from './menu/DangerousMenu';
 import ExportMenu from './menu/ExportMenu';
 import UnfinishedWorkerMenu from './menu/UnfinishedWorkerMenu';
+import WorkersMenu from './menu/WorkersMenu';
 
 const Toolbar = ({
   title,
@@ -33,7 +33,7 @@ const Toolbar = ({
   return (
     <div className='flex items-center space-x-2'>
       {title !== undefined && <h2 className='text-md'>{title}</h2>}
-      <AnalysisMenu
+      <WorkersMenu
         handleLayout={handleLayout}
         handleOcr={handleOcr}
         handleOcrWrite={handleOcrWrite}
