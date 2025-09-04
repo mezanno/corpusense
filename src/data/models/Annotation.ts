@@ -56,11 +56,36 @@ export interface AnnotationWithIdCreateDTO extends AnnotationCreateDTO {
   id: string;
 }
 
-export function isAnnotation(annotation: ImageAnnotation): annotation is Annotation {
-  return (
-    (annotation as Annotation).canvasId !== undefined &&
-    (annotation as Annotation).collectionId !== undefined
-  );
+// Type guard to check if an object is of type Annotation
+// export function isAnnotation(annotation: ImageAnnotation): annotation is Annotation {
+//   return (
+//     (annotation as Annotation).canvasId !== undefined &&
+//     (annotation as Annotation).collectionId !== undefined
+//   );
+// }
+//TODO :à revoir ?
+export function isAnnotation(obj: unknown): obj is Annotation {
+  if (typeof obj !== 'object' || obj === null) return false;
+
+  const a = obj as Partial<Annotation>;
+
+  // Vérifier d'abord que c'est bien une ImageAnnotation
+  const isImageAnnotation =
+    typeof a.id === 'string' &&
+    // typeof a.body !== 'undefined' && // body existe dans ImageAnnotation
+    typeof a.target !== 'undefined'; // target existe aussi
+
+  // Vérifier les propriétés spécifiques à Annotation
+  const hasRequiredFields =
+    typeof a.canvasId === 'string' &&
+    typeof a.collectionId === 'string' &&
+    typeof a.order === 'number';
+
+  return isImageAnnotation && hasRequiredFields;
+}
+
+export function isAnnotationArray(value: unknown): value is Annotation[] {
+  return Array.isArray(value) && value.every(isAnnotation);
 }
 
 export function convertToElementTypeEnum(str: string | undefined): ElementType {
