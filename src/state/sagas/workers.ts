@@ -301,14 +301,15 @@ function* startWorker(
 
     if (hasError) {
       currentWorker = { ...currentWorker, status: WorkerStatus.COMPLETED_WITH_ERRORS };
+      yield put(pushError(i18n.t('info_worker_completed_with_error')));
     } else {
       currentWorker = { ...currentWorker, status: WorkerStatus.COMPLETED };
+      yield put(pushInfo(i18n.t('info_worker_completed')));
     }
     yield call([workerRepository, workerRepository.patch], currentWorker.id, {
       status: currentWorker.status,
     });
     yield put(updateWorker(currentWorker));
-    yield put(pushInfo(i18n.t('info_worker_completed')));
   } finally {
     if (yield cancelled()) {
       //if the saga is cancelled, we set the worker status to UNFINISHED or UNFINISHED_WITH_ERRORS
