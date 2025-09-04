@@ -1,9 +1,11 @@
-import { DataModel } from '@/data/models/DataModel';
 import { Result } from '@/data/models/Result';
 import { isAnnotationScope, isCanvasScope, Scope, toString } from '@/data/models/Scope';
 import { Tag } from '@/data/models/Tag';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
-import { getCollectionRepository } from '@/data/repositories/indexeddb/dbFactory';
+import {
+  getCollectionRepository,
+  getModelRepository,
+} from '@/data/repositories/indexeddb/dbFactory';
 import { toGallicaUrl } from '@/data/utils/canvas';
 import { generateNumberedTextFromCanvas } from '@/data/utils/export';
 import { generateSchema } from '@/data/utils/model';
@@ -30,14 +32,14 @@ async function getText(scope: Scope) {
   return text.replace(/["«»]/g, '');
 }
 
-/*
- * Type guard to check if params contains a model.
- * This is used to ensure that the params passed to the Mistral plugin saga
- * contains a DataModel object.
- */
-function hasModel(params: PluginParams): params is PluginParams & { model: DataModel } {
-  return 'model' in params;
-}
+// /*
+//  * Type guard to check if params contains a model.
+//  * This is used to ensure that the params passed to the Mistral plugin saga
+//  * contains a DataModel object.
+//  */
+// function hasModel(params: PluginParams): params is PluginParams & { model: DataModel } {
+//   return 'model' in params;
+// }
 
 /*
  * Mistral entry point for the Mistral plugin saga (default export)
@@ -46,16 +48,28 @@ function hasModel(params: PluginParams): params is PluginParams & { model: DataM
  */
 export default async function mistralSaga(
   task: Task,
-  params: PluginParams,
+  _params: PluginParams,
 ): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
-
-  //TODO! à déplacer dans saga workers
-  if (!hasModel(params)) {
-    console.log('Invalid parameters for Mistral plugin saga:', params);
-    throw new Error('Invalid parameters for Mistral plugin saga');
+  let model = undefined;
+  const collectionRepository = getCollectionRepository();
+  try {
+    const collection = await collectionRepository.getCollectionById(task.scope.collectionId);
+    const modelId = collection.modelId;
+    if (modelId === undefined) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: i18n.t('error_model_undefined'),
+      };
+    }
+    const modelRepository = getModelRepository();
+    model = await modelRepository.getById(modelId);
+  } catch (error) {
+    return {
+      status: WorkerStatus.ERROR,
+      statusMessage: getErrorMessage(error),
+    };
   }
-  const { model } = params;
 
   const text = await getText(task.scope);
   //return an error if no text is found
