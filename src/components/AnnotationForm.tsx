@@ -1,6 +1,5 @@
 import {
   Annotation,
-  convertToElementTypeEnum,
   ElementType,
   getAnnotationText,
   getAnnotationType,
@@ -15,7 +14,7 @@ import { isWorkerOrTaskRunning } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -45,66 +44,57 @@ const AnnotationForm = ({
   const isWorkerRunning = useAppSelector((state) =>
     isWorkerOrTaskRunning(state, { collectionId: annotation.collectionId }),
   );
-  const [editedAnnotation, setEditedAnnotation] = useState<Annotation | null>(null);
 
   const form = useForm<z.infer<typeof annotationFormSchema>>({
     resolver: zodResolver(annotationFormSchema),
     defaultValues: {
-      type:
-        editedAnnotation !== null
-          ? convertToElementTypeEnum(getAnnotationType(editedAnnotation))
-          : undefined,
-      value: editedAnnotation !== null ? getAnnotationText(editedAnnotation) : '',
+      type: getAnnotationType(annotation),
+      value: getAnnotationText(annotation),
     },
   });
 
   function onSubmit(values: z.infer<typeof annotationFormSchema>) {
-    if (editedAnnotation !== null) {
-      modifyAnnotation(editedAnnotation, values.type, values.value ?? '');
-    }
+    modifyAnnotation(annotation, values.type, values.value ?? '');
   }
 
   useEffect(() => {
-    setEditedAnnotation(annotation);
     const { type, value } = getBodies(annotation);
     form.setValue('type', type);
     form.setValue('value', value);
   }, [annotation]);
 
-  const startOcrAsync = () => {
-    if (editedAnnotation !== null) {
-      const rect = editedAnnotation.target.selector.geometry;
-      appDispatch(
-        startWorkerProcess({
-          workerName: 'peroocr',
-          params: {
-            region: {
-              left: rect.bounds.minX,
-              top: rect.bounds.minY,
-              width: rect.bounds.maxX - rect.bounds.minX,
-              height: rect.bounds.maxY - rect.bounds.minY,
+  const getActions = (pluginName: string) => {
+    if (pluginName === 'peroocr') {
+      return () => {
+        const rect = annotation.target.selector.geometry;
+        appDispatch(
+          startWorkerProcess({
+            workerName: 'peroocr',
+            params: {
+              region: {
+                left: rect.bounds.minX,
+                top: rect.bounds.minY,
+                width: rect.bounds.maxX - rect.bounds.minX,
+                height: rect.bounds.maxY - rect.bounds.minY,
+              },
             },
-          },
-          scope: {
-            canvasId: annotation.canvasId,
-            collectionId: annotation.collectionId,
-            annotationId: annotation.id,
-          },
-        }),
-      );
+            scope: {
+              canvasId: annotation.canvasId,
+              collectionId: annotation.collectionId,
+              annotationId: annotation.id,
+            },
+          }),
+        );
+      };
     }
   };
 
   const handleExportText = () => {
-    if (editedAnnotation !== null) {
-      appDispatch(exportTextOfAnnotationRequest(editedAnnotation));
-    }
+    appDispatch(exportTextOfAnnotationRequest(annotation));
   };
 
   const handleRemoveAllAnnotationsInside = () => {
-    if (editedAnnotation !== null) {
-      appDispatch(removeAllAnnotationsInsideRequest(editedAnnotation));
-    }
+    appDispatch(removeAllAnnotationsInsideRequest(annotation));
   };
 
   const handleDeleteButton: React.MouseEventHandler<HTMLButtonElement> = (event) => {
@@ -122,7 +112,6 @@ const AnnotationForm = ({
       ) : (
         <div className='flex items-center justify-end space-x-2'>
           <Toolbar
-            handleOcr={startOcrAsync}
             handleExportText={handleExportText}
             handleDeleteAllAnnotations={handleRemoveAllAnnotationsInside}
             scope={{
@@ -130,6 +119,7 @@ const AnnotationForm = ({
               canvasId: annotation.canvasId,
               collectionId: annotation.collectionId,
             }}
+            getActions={getActions}
           />
           <Button
             title={t('btn_delete_annotation')}
@@ -207,7 +197,7 @@ const AnnotationForm = ({
         </form>
       </Form>
 
-      {editedAnnotation !== null && <Entities annotation={editedAnnotation} />}
+      <Entities annotation={annotation} />
     </section>
   );
 };
