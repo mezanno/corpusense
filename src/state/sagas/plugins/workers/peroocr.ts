@@ -1,7 +1,7 @@
 import { ElementType, getAnnotationType } from '@/data/models/Annotation';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
-import { toString } from '@/data/models/Scope';
+import { isAnnotationScope, toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
@@ -12,36 +12,24 @@ import { Client } from '@gradio/client';
 import { put } from 'redux-saga/effects';
 
 export const pluginName = 'peroocr';
+export const pluginDisplayName = 'Pero OCR';
+export const pluginDescription = 'Reconnaissance de texte';
+export const pluginCategory = 'OCR';
 
-/*
- * Type guard to check if params contains a model.
- * This is used to ensure that the params passed to the Mistral plugin saga
- * contains a DataModel object.
- */
-function hasRegion(params: PluginParams): params is PluginParams & {
-  region: {
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-  };
-} {
-  return 'region' in params;
-}
-
-export default async function peroSaga(task: Task, params: PluginParams): Promise<WorkerResponse> {
+export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
   const annotationRepository = getAnnotationRepository();
   try {
     const image = getImage(task.canvas);
     let regions = JSON.stringify([]);
-    if (hasRegion(params)) {
+    if (isAnnotationScope(task.scope)) {
+      const annotation = await annotationRepository.getById(task.scope.annotationId);
       regions = JSON.stringify([
         {
-          xtl: params.region.left,
-          ytl: params.region.top,
-          xbr: params.region.left + params.region.width,
-          ybr: params.region.top + params.region.height,
+          xtl: annotation.target.selector.geometry.bounds.minX,
+          ytl: annotation.target.selector.geometry.bounds.minY,
+          xbr: annotation.target.selector.geometry.bounds.maxX,
+          ybr: annotation.target.selector.geometry.bounds.maxY,
         },
       ]);
     } else {
