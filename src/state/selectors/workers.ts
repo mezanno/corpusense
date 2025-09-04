@@ -127,3 +127,5 @@ export const hasExport = (state: RootState, workerName: string) =>
   state.workers.workerPluginsInfo?.some(
     (plugin) => plugin.name === workerName && plugin.hasExport,
   ) ?? false;
+
+export const selectWorkerPluginsInfo = (state: RootState) => state.workers.workerPluginsInfo;
