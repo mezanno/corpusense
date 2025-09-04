@@ -1,0 +1,149 @@
+import { AnnotationDTO, ElementType, getAnnotationType } from '@/data/models/Annotation';
+import {
+  convertSuryaLayoutPredictionsToAnnotations,
+  convertSuryaOcrPredictionsToAnnotations,
+  convertSuryaTablePredictionsToAnnotations,
+} from '@/data/models/converters/suryaConverter';
+import {
+  suryaLayoutResultSchema,
+  suryaOcrResultSchema,
+  suryaTableResultSchema,
+} from '@/data/models/converters/suryaSchema';
+import { isAnnotationScope, isCanvasScope } from '@/data/models/Scope';
+import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
+import {
+  getAnnotationRepository,
+  getCollectionRepository,
+} from '@/data/repositories/indexeddb/dbFactory';
+import { getImage } from '@/data/utils/canvas';
+import { addAnnotationsSuccess } from '@/state/reducers/annotations';
+import { getErrorMessage } from '@/utils/utils';
+import { put } from 'redux-saga/effects';
+
+async function post(url: string, endpoint: 'ocr' | 'layout' | 'table'): Promise<unknown> {
+  const suryaUrl = localStorage.getItem('suryaUrl') ?? 'http://localhost:8000';
+
+  const res = await fetch(`${suryaUrl}/${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      url: url,
+    }),
+  });
+  return await res.json();
+}
+
+export async function suryaRun(
+  task: Task,
+  endpoint: 'ocr' | 'layout' | 'table',
+): Promise<WorkerResponse> {
+  const annotationRepository = getAnnotationRepository();
+  if (isCanvasScope(task.scope)) {
+    const collectionRepository = getCollectionRepository();
+    try {
+      const canvas = await collectionRepository.getCanvasInCollectionById(
+        task.scope.canvasId,
+        task.scope.collectionId,
+      );
+      const image = getImage(canvas);
+      let regions = JSON.stringify([]);
+      if (isAnnotationScope(task.scope)) {
+        const annotation = await annotationRepository.getById(task.scope.annotationId);
+        regions = JSON.stringify([
+          {
+            xtl: annotation.target.selector.geometry.bounds.minX,
+            ytl: annotation.target.selector.geometry.bounds.minY,
+            xbr: annotation.target.selector.geometry.bounds.maxX,
+            ybr: annotation.target.selector.geometry.bounds.maxY,
+          },
+        ]);
+      } else {
+        const annotations = await annotationRepository.getAnnotationsByScope({
+          canvasId: task.canvas.id,
+          collectionId: task.scope.collectionId,
+        });
+        const annotationRegions = annotations.filter(
+          (a) => getAnnotationType(a) === ElementType.REGION,
+        );
+        if (annotationRegions.length > 0) {
+          regions = JSON.stringify(
+            annotationRegions
+              .sort((a1, a2) => (a1.order ?? 0) - (a2.order ?? 0))
+              .map((annotation) => {
+                return {
+                  xtl: annotation.target.selector.geometry.bounds.minX,
+                  ytl: annotation.target.selector.geometry.bounds.minY,
+                  xbr: annotation.target.selector.geometry.bounds.maxX,
+                  ybr: annotation.target.selector.geometry.bounds.maxY,
+                };
+              }),
+          );
+        }
+      }
+      console.log(`Regions: ${regions}`);
+
+      if (image?.id === undefined) {
+        return {
+          status: WorkerStatus.ERROR,
+          statusMessage: 'No image found for the canvas.',
+        };
+      }
+
+      const response = await post(image.id, endpoint);
+      console.log(response);
+
+      try {
+        let annotations: AnnotationDTO[] = [];
+        if (endpoint === 'ocr') {
+          const suryaResult = suryaOcrResultSchema.parse(response);
+          console.log('suryaResult: ', suryaResult);
+          annotations = convertSuryaOcrPredictionsToAnnotations(
+            suryaResult,
+            canvas.id,
+            task.scope.collectionId,
+          );
+        } else if (endpoint === 'layout') {
+          const suryaResult = suryaLayoutResultSchema.parse(response);
+          console.log('suryaResult: ', suryaResult);
+          annotations = convertSuryaLayoutPredictionsToAnnotations(
+            suryaResult,
+            canvas.id,
+            task.scope.collectionId,
+          );
+        } else if (endpoint === 'table') {
+          const suryaResult = suryaTableResultSchema.parse(response);
+          console.log('suryaResult: ', suryaResult);
+          annotations = convertSuryaTablePredictionsToAnnotations(
+            suryaResult,
+            canvas.id,
+            task.scope.collectionId,
+          );
+        }
+        if (annotations.length > 0) {
+          const newAnnotations = await annotationRepository.saveAllAnnotations(annotations);
+          put(addAnnotationsSuccess(newAnnotations));
+        }
+        return {
+          status: WorkerStatus.COMPLETED,
+        };
+      } catch (error) {
+        return {
+          status: WorkerStatus.ERROR,
+          statusMessage: getErrorMessage(error),
+        };
+      }
+    } catch (error) {
+      console.error(getErrorMessage(error));
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: getErrorMessage(error),
+      };
+    }
+  }
+
+  return {
+    status: WorkerStatus.COMPLETED,
+  };
+}

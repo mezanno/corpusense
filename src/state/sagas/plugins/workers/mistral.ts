@@ -17,6 +17,10 @@ import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
 
 export const pluginName = 'mistral';
+export const pluginDisplayName = 'Extraction de données Mistral';
+export const pluginDescription =
+  "Extrait des données structurées à partir du texte. Nécessite que l'OCR soit fait ainsi qu'un modèle de données.";
+export const pluginCategory = 'LLM';
 
 //TODO: à déplacer dans un fichier utils
 async function getText(scope: Scope) {
@@ -46,10 +50,7 @@ async function getText(scope: Scope) {
  * It fetches the text from the scope, sends it to the Mistral API,
  * and returns the response.
  */
-export default async function mistralSaga(
-  task: Task,
-  _params: PluginParams,
-): Promise<WorkerResponse> {
+export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
   let model = undefined;
   const collectionRepository = getCollectionRepository();
