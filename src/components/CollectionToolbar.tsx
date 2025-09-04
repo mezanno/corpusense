@@ -1,5 +1,4 @@
 import { ElementType } from '@/data/models/Annotation';
-import { DataModel } from '@/data/models/DataModel';
 import { Worker } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import {
@@ -7,16 +6,11 @@ import {
   removeAnnotationsByScopeRequest,
 } from '@/state/reducers/annotations';
 import { exportTextOfCollectionRequest } from '@/state/reducers/export';
-import {
-  exportWorkerResultRequest,
-  recoverWorkerRequest,
-  startWorkerProcess,
-} from '@/state/reducers/workers';
+import { exportWorkerResultRequest } from '@/state/reducers/workers';
 import { isWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import RemoveAnnotationsForm from './RemoveAnnotationsForm';
-import SelectModelForm from './textviewer/SelectModelForm';
 import Toolbar from './ToolBar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 
@@ -24,7 +18,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const isWorkerRunning = useAppSelector((state) => isWorkerOrTaskRunning(state, { collectionId }));
-  const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
+  // const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
   const [removeAnnotationsDialogOpen, setRemoveAnnotationsDialogOpen] = useState(false);
 
   if (isWorkerRunning) {
@@ -34,36 +28,6 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
       </div>
     );
   }
-
-  const handleOcr = () => {
-    appDispatch(
-      startWorkerProcess({
-        workerName: 'peroocr',
-        params: {},
-        scope: { collectionId },
-      }),
-    );
-  };
-
-  const handleOcrWrite = () => {
-    appDispatch(
-      startWorkerProcess({
-        workerName: 'surya',
-        params: {},
-        scope: { collectionId },
-      }),
-    );
-  };
-
-  const handleLayout = () => {
-    appDispatch(
-      startWorkerProcess({
-        workerName: 'edwin',
-        params: {},
-        scope: { collectionId },
-      }),
-    );
-  };
 
   const handleDeleteAllAnnotations = () => {
     setRemoveAnnotationsDialogOpen(true);
@@ -77,34 +41,31 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
     appDispatch(exportTextOfCollectionRequest(collectionId));
   };
 
-  const handleExtractData = () => {
-    setAnalysisDialogOpen(true);
-  };
+  //TODO! voir comment transmettre des params dynamiques
+  // const handleExtractData = () => {
+  //   setAnalysisDialogOpen(true);
+  // };
 
   const handleExportResult = (worker: Worker) => {
     appDispatch(exportWorkerResultRequest({ worker }));
   };
 
-  const handleRecoverWorker = (worker: Worker) => {
-    appDispatch(recoverWorkerRequest(worker));
-  };
+  // const closeAnalysisDialog = (model: DataModel) => {
+  //   setAnalysisDialogOpen(false);
 
-  const closeAnalysisDialog = (model: DataModel) => {
-    setAnalysisDialogOpen(false);
-
-    if (collectionId !== undefined) {
-      appDispatch(
-        startWorkerProcess({
-          workerName: 'mistral',
-          params: {
-            model,
-            workerName: 'mistral',
-          },
-          scope: { collectionId },
-        }),
-      );
-    }
-  };
+  //   if (collectionId !== undefined) {
+  //     appDispatch(
+  //       startWorkerProcess({
+  //         workerName: 'mistral',
+  //         params: {
+  //           model,
+  //           workerName: 'mistral',
+  //         },
+  //         scope: { collectionId },
+  //       }),
+  //     );
+  //   }
+  // };
 
   const closeRemoveAnnotationsDialog = (types: ElementType[]) => {
     setRemoveAnnotationsDialogOpen(false);
@@ -118,18 +79,13 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
     <div className='panel'>
       <Toolbar
         title={t('title_collection_actions')}
-        handleLayout={handleLayout}
-        handleOcr={handleOcr}
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleExportText={handleExportText}
-        handleExtractData={handleExtractData}
         handleRecomputeRegions={handleRecomputeRegions}
         handleExportResult={handleExportResult}
-        handleRecoverWorker={handleRecoverWorker}
-        handleOcrWrite={handleOcrWrite}
         scope={{ collectionId }}
       />
-      <Dialog open={analysisDialogOpen} onOpenChange={setAnalysisDialogOpen}>
+      {/* <Dialog open={analysisDialogOpen} onOpenChange={setAnalysisDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('title_generate_data')}</DialogTitle>
@@ -137,7 +93,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
           </DialogHeader>
           <SelectModelForm close={closeAnalysisDialog} collectionId={collectionId} />
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
       <Dialog open={removeAnnotationsDialogOpen} onOpenChange={setRemoveAnnotationsDialogOpen}>
         <DialogContent>
           <DialogHeader>

@@ -19,6 +19,7 @@ export interface MultiOptionsMenuParams {
   info: string;
   items: {
     name: string;
+    description?: string;
     icon: React.ReactNode;
     action?: () => void;
   }[];
@@ -63,7 +64,12 @@ const MultiOptionsMenu = ({
           {params.items
             .filter((p) => p.action !== undefined)
             .map((item, index) => (
-              <DropdownMenuItem key={index} disabled={isRunning} onClick={item.action}>
+              <DropdownMenuItem
+                key={index}
+                disabled={isRunning}
+                onClick={item.action}
+                title={item.description}
+              >
                 {item.icon}
                 {item.name}
               </DropdownMenuItem>

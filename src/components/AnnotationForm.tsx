@@ -9,7 +9,6 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
 import { removeAllAnnotationsInsideRequest } from '@/state/reducers/annotations';
 import { exportTextOfAnnotationRequest } from '@/state/reducers/export';
-import { startWorkerProcess } from '@/state/reducers/workers';
 import { isWorkerOrTaskRunning } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -63,32 +62,6 @@ const AnnotationForm = ({
     form.setValue('value', value);
   }, [annotation]);
 
-  const getActions = (pluginName: string) => {
-    if (pluginName === 'peroocr') {
-      return () => {
-        const rect = annotation.target.selector.geometry;
-        appDispatch(
-          startWorkerProcess({
-            workerName: 'peroocr',
-            params: {
-              region: {
-                left: rect.bounds.minX,
-                top: rect.bounds.minY,
-                width: rect.bounds.maxX - rect.bounds.minX,
-                height: rect.bounds.maxY - rect.bounds.minY,
-              },
-            },
-            scope: {
-              canvasId: annotation.canvasId,
-              collectionId: annotation.collectionId,
-              annotationId: annotation.id,
-            },
-          }),
-        );
-      };
-    }
-  };
-
   const handleExportText = () => {
     appDispatch(exportTextOfAnnotationRequest(annotation));
   };
@@ -119,7 +92,6 @@ const AnnotationForm = ({
               canvasId: annotation.canvasId,
               collectionId: annotation.collectionId,
             }}
-            getActions={getActions}
           />
           <Button
             title={t('btn_delete_annotation')}

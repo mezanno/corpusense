@@ -1,48 +1,51 @@
 import { Scope } from '@/data/models/Scope';
-import { PocketKnife, Puzzle, ScanText, TableProperties } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { startWorkerProcess } from '@/state/reducers/workers';
+import { selectWorkerPluginsInfo } from '@/state/selectors/workers';
+import { PocketKnife, ScanText } from 'lucide-react';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 const WorkersMenu = ({
   scope,
-  handleLayout,
-  handleOcr,
-  handleExtractData,
-  handleOcrWrite,
+  // getActions,
 }: {
   scope: Scope;
-  handleLayout?: () => void;
-  handleOcr?: () => void;
-  handleExtractData?: () => void;
-  handleOcrWrite?: () => void;
+  // getActions?: (pluginName: string) => (() => void) | undefined;
 }) => {
-  const { t } = useTranslation();
+  const appDispatch = useAppDispatch();
+  const pluginsInfo = useAppSelector(selectWorkerPluginsInfo);
+
   const params = {
     name: 'btn_start_analysis',
     icon: <PocketKnife />,
     info: 'info_start_analysis',
-    items: [
-      {
-        name: t('btn_detect_layout'),
-        icon: <TableProperties />,
-        action: handleLayout,
-      },
-      {
-        name: t('btn_OCR_analyze'),
+    items: pluginsInfo.map((plugin) => {
+      // const action = getActions
+      //   ? getActions(plugin.name)
+      //   : () => {
+      //       appDispatch(
+      //         startWorkerProcess({
+      //           workerName: plugin.name,
+      //           params: {},
+      //           scope,
+      //         }),
+      //       );
+      //     };
+      return {
+        name: plugin.displayName ?? plugin.name,
+        description: plugin.description,
         icon: <ScanText />,
-        action: handleOcr,
-      },
-      {
-        name: t('btn_OCR_surya'),
-        icon: <ScanText />,
-        action: handleOcrWrite,
-      },
-      {
-        name: t('btn_data_extraction'),
-        icon: <Puzzle />,
-        action: handleExtractData,
-      },
-    ],
+        action: () => {
+          appDispatch(
+            startWorkerProcess({
+              workerName: plugin.name,
+              params: {},
+              scope,
+            }),
+          );
+        },
+      };
+    }),
   };
 
   return <MultiOptionsMenu params={params} scope={scope} />;
