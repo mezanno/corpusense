@@ -1,6 +1,6 @@
 import { PluginParams } from '@/state/reducers/workers';
 import { Canvas } from '@iiif/presentation-3';
-import { Scope } from './Scope';
+import { AnnotationScope, CanvasScope, Scope } from './Scope';
 
 export enum WorkerStatus {
   WAITING = 'waiting', // Worker is waiting to be processed
@@ -16,7 +16,7 @@ export enum WorkerStatus {
 export interface Task {
   id: number;
   canvas: Canvas; // The canvas associated with the task
-  scope: Scope;
+  scope: CanvasScope | AnnotationScope;
   status: WorkerStatus;
   statusMessage?: string; //optional message to display in the UI
 }
