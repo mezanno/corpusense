@@ -11,5 +11,5 @@ export const pluginCategory = 'Layout';
 
 export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
-  return suryaRun(task, 'layout');
+  return await suryaRun(task, 'layout');
 }

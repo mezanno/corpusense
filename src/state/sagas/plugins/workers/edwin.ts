@@ -2,17 +2,15 @@ import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagi
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
-import { addAnnotationsSuccess } from '@/state/reducers/annotations';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
-import { put } from 'redux-saga/effects';
 
 export const pluginName = 'edwin';
+export const pluginDisplayName = 'Détection de layout Edwin';
+export const pluginDescription = "Détection de layout avec utilisant la magie d'Edwin";
+export const pluginCategory = 'Layout';
 
-export default async function edwinSaga(
-  task: Task,
-  _params: PluginParams,
-): Promise<WorkerResponse> {
+export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   try {
     const image = getImage(task.canvas);
 
@@ -35,14 +33,14 @@ export default async function edwinSaga(
     //and send it to the redux store
     const annotationRepository = getAnnotationRepository();
     const newAnnotations = await annotationRepository.saveAllAnnotations(annotations);
-    put(addAnnotationsSuccess(newAnnotations));
+    return {
+      status: WorkerStatus.COMPLETED,
+      content: newAnnotations,
+    };
   } catch (error) {
     return {
       status: WorkerStatus.ERROR,
       statusMessage: getErrorMessage(error),
     };
   }
-  return {
-    status: WorkerStatus.COMPLETED,
-  };
 }
