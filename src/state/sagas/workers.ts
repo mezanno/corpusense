@@ -1,3 +1,4 @@
+import { isAnnotationArray } from '@/data/models/Annotation';
 import { Collection } from '@/data/models/Collection';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { isAnnotationScope, isCanvasScope, isCollectionScope, toString } from '@/data/models/Scope';
@@ -30,6 +31,7 @@ import {
   take,
   takeEvery,
 } from 'redux-saga/effects';
+import { addAnnotationsSuccess } from '../reducers/annotations';
 import { pushError, pushInfo } from '../reducers/events';
 import {
   addResult,
@@ -145,20 +147,7 @@ function* startWorker(
 
       //initialize the worker queue if the scope is collection
       currentWorker.queue = [];
-      if (isAnnotationScope(worker.scope)) {
-        const canvas = (yield call(
-          [collectionRepository, collectionRepository.getCanvasInCollectionById],
-          worker.scope.canvasId,
-          worker.scope.collectionId,
-        )) as Canvas;
-        //add the canvas to the worker queue
-        currentWorker.queue.push({
-          id: 0,
-          scope: worker.scope,
-          canvas,
-          status: WorkerStatus.WAITING,
-        });
-      } else if (isCanvasScope(worker.scope)) {
+      if (isAnnotationScope(worker.scope) || isCanvasScope(worker.scope)) {
         const canvas = (yield call(
           [collectionRepository, collectionRepository.getCanvasInCollectionById],
           worker.scope.canvasId,
@@ -237,7 +226,8 @@ function* startWorker(
                 scope: task.scope,
                 workerName: currentWorker.name,
                 workerId: currentWorker.id,
-                value: taskResult.content,
+                // value: taskResult.content,
+                value: '',
                 taskId: task.id,
                 params: worker.params,
               };
@@ -250,6 +240,9 @@ function* startWorker(
                 ...currentWorker,
                 queue: updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.COMPLETED, ''), //on ajoute un message vide pour supprimer un potentiel précédent message d'erreur
               };
+              if (taskResult.content !== undefined && isAnnotationArray(taskResult.content)) {
+                yield put(addAnnotationsSuccess(taskResult.content));
+              }
               yield put(addResult(newResult));
             }
             break;
