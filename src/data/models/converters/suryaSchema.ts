@@ -17,7 +17,7 @@ export const suryaOcrLineSchema = z.object({
     }),
   ),
   original_text_good: z.boolean(),
-  words: z.array(z.unknown()), // tableau vide pour l'instant
+  words: z.array(z.unknown()).nullable(), // tableau vide pour l'instant
   bbox: z.tuple([z.number(), z.number(), z.number(), z.number()]),
 });
 
