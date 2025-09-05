@@ -5,11 +5,9 @@ import { isAnnotationScope, toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
-import { addAnnotationsSuccess } from '@/state/reducers/annotations';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
-import { put } from 'redux-saga/effects';
 
 export const pluginName = 'peroocr';
 export const pluginDisplayName = 'Pero OCR';
@@ -67,9 +65,9 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
         task.scope.collectionId,
       );
       const newAnnotations = await annotationRepository.saveAllAnnotations(annotations);
-      put(addAnnotationsSuccess(newAnnotations));
       return {
         status: WorkerStatus.COMPLETED,
+        content: newAnnotations,
       };
     } catch (error) {
       try {

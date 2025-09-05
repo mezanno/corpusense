@@ -36,17 +36,8 @@ async function getText(scope: Scope) {
   return text.replace(/["«»]/g, '');
 }
 
-// /*
-//  * Type guard to check if params contains a model.
-//  * This is used to ensure that the params passed to the Mistral plugin saga
-//  * contains a DataModel object.
-//  */
-// function hasModel(params: PluginParams): params is PluginParams & { model: DataModel } {
-//   return 'model' in params;
-// }
-
 /*
- * Mistral entry point for the Mistral plugin saga (default export)
+ * Mistral entry point for the Mistral plugin (default export)
  * It fetches the text from the scope, sends it to the Mistral API,
  * and returns the response.
  */
