@@ -22,8 +22,8 @@ export interface AnnotationRepository {
   removeById(id: string): Promise<void>;
   removeByScope(scope: Scope): Promise<string[]>;
   removeByScopeAndType(scope: Scope, types: ElementType[]): Promise<string[]>;
-  updateAnnotation(annotation: Annotation): Promise<void>;
-  updateOrder(annotationId: string, order: number): Promise<void>;
+  updateAnnotation(annotation: Annotation): Promise<Annotation[]>;
+  updateOrder(annotationId: string, order: number): Promise<Annotation[]>;
 }
 
 export interface CollectionRepository {
