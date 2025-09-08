@@ -6,22 +6,24 @@ const EMPTY_ARRAY: StoredManifestDetails[] = [];
 /**
  * @returns The content of the loaded manifest (+ metadata) or null if no manifest is loaded
  */
-export const getLoadedManifest = (state: RootState) => state?.manifests.loadedData ?? null;
+export const selectLoadedManifest = (state: RootState) => state?.manifests.loadedData ?? null;
 
 /**
  * @returns The manifest ID of the loaded manifest or an empty string if no manifest is loaded
  */
-export const getManifestURL = (state: RootState) => state?.manifests?.loadedData?.content?.id ?? '';
+export const selectManifestURL = (state: RootState) =>
+  state?.manifests?.loadedData?.content?.id ?? '';
 
 /**
  * @returns The history of loaded manifests or an empty array if no manifest is loaded
  */
 
-export const getHistory = (state: RootState) => state.manifests.historyDetails ?? EMPTY_ARRAY;
+export const selectHistory = (state: RootState) => state.manifests.historyDetails ?? EMPTY_ARRAY;
 
 /**
  * @returns The canvases of the loaded manifest or an empty array if no manifest is loaded
  */
-export const getCanvases = (state: RootState) => state?.manifests?.loadedData?.content?.items ?? [];
+export const selectCanvases = (state: RootState) =>
+  state?.manifests?.loadedData?.content?.items ?? [];
 
-export const getManifestOpenEvent = (state: RootState) => state.manifests.manifestOpenEvent;
+export const selectManifestOpenEvent = (state: RootState) => state.manifests.manifestOpenEvent;

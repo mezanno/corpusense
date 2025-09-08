@@ -1,9 +1,9 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
-export const getCollections = (state: RootState) => state?.collections?.values ?? [];
+export const selectCollections = (state: RootState) => state?.collections?.values ?? [];
 
-export const getCollectionById = createSelector(
+export const selectCollectionById = createSelector(
   [
     (state: RootState) => state.collections?.values ?? [],
     (_: RootState, collectionId: string) => collectionId,
@@ -11,9 +11,9 @@ export const getCollectionById = createSelector(
   (values, collectionId) => values.find((elt) => elt.id === collectionId),
 );
 
-export const getCurrentCollection = (state: RootState) => state.collections?.currentCollection;
+export const selectCurrentCollection = (state: RootState) => state.collections?.currentCollection;
 
-export const getOpenedCollections = createSelector(
+export const selectOpenedCollections = createSelector(
   [
     (state: RootState) => state.collections?.values ?? [],
     (state: RootState) => state.collections?.openedCollections ?? [],
@@ -22,10 +22,10 @@ export const getOpenedCollections = createSelector(
     values.filter((elt) => openedCollections.find((id) => id === elt.id) !== undefined),
 );
 
-export const getLoadedCanvasById = (state: RootState, canvasId: string) =>
+export const selectLoadedCanvasById = (state: RootState, canvasId: string) =>
   state.collections?.loadedCanvases?.find((canvas) => canvas.id === canvasId);
 
-export const getModelIdOfCollection = createSelector(
+export const selectModelIdOfCollection = createSelector(
   [
     (state: RootState) => state.collections?.values ?? [],
     (_: RootState, collectionId: string) => collectionId,

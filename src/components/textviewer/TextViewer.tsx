@@ -1,8 +1,8 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
 import { getAnnotationsByType } from '@/data/utils/annotations';
 import { useAppSelector } from '@/hooks/hooks';
-import { getCollectionById } from '@/state/selectors/collections';
-import { getModelById } from '@/state/selectors/models';
+import { selectCollectionById } from '@/state/selectors/collections';
+import { selectModelById } from '@/state/selectors/models';
 import { Canvas } from '@iiif/presentation-3';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,11 +12,11 @@ import TextViewerStage from './TextViewerStage';
 
 const TextViewer = ({ collectionId, canvas }: { collectionId: string; canvas: Canvas }) => {
   const { t } = useTranslation();
-  const collection = useAppSelector((state) => getCollectionById(state, collectionId));
+  const collection = useAppSelector((state) => selectCollectionById(state, collectionId));
   const containerRef = useRef(null);
   const [text, setText] = useState<Annotation[]>([]);
 
-  const model = useAppSelector((state) => getModelById(state, collection?.modelId ?? ''));
+  const model = useAppSelector((state) => selectModelById(state, collection?.modelId ?? ''));
 
   useEffect(() => {
     const getText = async (c: Canvas) => {

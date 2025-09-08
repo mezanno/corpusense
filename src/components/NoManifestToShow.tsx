@@ -1,11 +1,11 @@
 import { useAppSelector } from '@/hooks/hooks';
-import { getHistory } from '@/state/selectors/manifests';
+import { selectHistory } from '@/state/selectors/manifests';
 import { useTranslation } from 'react-i18next';
 import HistoryNav from './HistoryNav';
 import NothingToShow from './NothingToShow';
 
 const NoManifestToShow = () => {
-  const history = useAppSelector(getHistory);
+  const history = useAppSelector(selectHistory);
   const { t } = useTranslation();
 
   return (

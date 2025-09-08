@@ -20,7 +20,7 @@ import {
   addSelectionToCollectionRequest,
   createCollectionWithSelectionRequest,
 } from '@/state/reducers/collections';
-import { getCollections } from '@/state/selectors/collections';
+import { selectCollections } from '@/state/selectors/collections';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from './ui/button';
@@ -46,7 +46,7 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const collections: CollectionDetails[] = useAppSelector(getCollections);
+  const collections: CollectionDetails[] = useAppSelector(selectCollections);
   const {
     isSelected,
     hasSelectedElements,

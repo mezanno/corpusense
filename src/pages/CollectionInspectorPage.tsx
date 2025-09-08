@@ -17,7 +17,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fetchAnnotationsRequest } from '@/state/reducers/annotations';
 import { loadCollectionRequest } from '@/state/reducers/collections';
 import { loadEntitiesRequest } from '@/state/reducers/namedEntities';
-import { getCurrentCollection } from '@/state/selectors/collections';
+import { selectCurrentCollection } from '@/state/selectors/collections';
 import { Canvas } from '@iiif/presentation-3';
 import 'gridstack/dist/gridstack.min.css';
 import { FC, useEffect, useState } from 'react';
@@ -77,7 +77,7 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
 const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const currentCollection = useAppSelector(getCurrentCollection);
+  const currentCollection = useAppSelector(selectCurrentCollection);
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | undefined>(undefined);
   const [activeTab, setActiveTab] = useState('document');
 

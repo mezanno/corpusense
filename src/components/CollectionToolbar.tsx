@@ -7,7 +7,7 @@ import {
 } from '@/state/reducers/annotations';
 import { exportTextOfCollectionRequest } from '@/state/reducers/export';
 import { exportWorkerResultRequest } from '@/state/reducers/workers';
-import { isWorkerOrTaskRunning } from '@/state/selectors/workers';
+import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import RemoveAnnotationsForm from './RemoveAnnotationsForm';
@@ -17,7 +17,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const isWorkerRunning = useAppSelector((state) => isWorkerOrTaskRunning(state, { collectionId }));
+  const isWorkerRunning = useAppSelector((state) =>
+    selectIsWorkerOrTaskRunning(state, { collectionId }),
+  );
   // const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
   const [removeAnnotationsDialogOpen, setRemoveAnnotationsDialogOpen] = useState(false);
 

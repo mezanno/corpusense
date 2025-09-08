@@ -1,7 +1,7 @@
 import { ItemMetadataAttribute } from '@/data/models/Metadata';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { saveMetadataRequest } from '@/state/reducers/manifests';
-import { getLoadedManifest } from '@/state/selectors/manifests';
+import { selectLoadedManifest } from '@/state/selectors/manifests';
 import { CirclePlus, CircleX } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,7 @@ import { Input } from './ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 
 const MetadataTable = ({ manifestId }: { manifestId: string }) => {
-  const metadata = useAppSelector(getLoadedManifest)?.metadata;
+  const metadata = useAppSelector(selectLoadedManifest)?.metadata;
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 

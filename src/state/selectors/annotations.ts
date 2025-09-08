@@ -6,7 +6,7 @@ const selectAnnotations = (state: RootState) => state.annotations.values ?? [];
 
 const selectAnnotationType = (_: RootState, annotationType: ElementType) => annotationType;
 
-const getAnnotationsByType = createSelector(
+const selectAnnotationsByType = createSelector(
   [selectAnnotations, selectAnnotationType],
   (annotations, annotationType): Annotation[] => {
     return annotations
@@ -17,11 +17,11 @@ const getAnnotationsByType = createSelector(
 
 const selectCurrentScope = (state: RootState) => state.annotations.currentScope;
 
-const selectLastOrderByType = createSelector([getAnnotationsByType], (annotations): number => {
+const selectLastOrderByType = createSelector([selectAnnotationsByType], (annotations): number => {
   if (annotations.length === 0) {
     return 1;
   }
   return annotations[annotations.length - 1].order ?? 1;
 });
 
-export { getAnnotationsByType, selectAnnotations, selectCurrentScope, selectLastOrderByType };
+export { selectAnnotations, selectAnnotationsByType, selectCurrentScope, selectLastOrderByType };

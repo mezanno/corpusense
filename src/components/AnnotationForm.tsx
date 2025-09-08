@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
 import { removeAllAnnotationsInsideRequest } from '@/state/reducers/annotations';
 import { exportTextOfAnnotationRequest } from '@/state/reducers/export';
-import { isWorkerOrTaskRunning } from '@/state/selectors/workers';
+import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, Trash2 } from 'lucide-react';
@@ -41,7 +41,7 @@ const AnnotationForm = ({
   const modifyAnnotation = useModifyAnnotation();
   const { t } = useTranslation();
   const isWorkerRunning = useAppSelector((state) =>
-    isWorkerOrTaskRunning(state, { collectionId: annotation.collectionId }),
+    selectIsWorkerOrTaskRunning(state, { collectionId: annotation.collectionId }),
   );
 
   const form = useForm<z.infer<typeof annotationFormSchema>>({

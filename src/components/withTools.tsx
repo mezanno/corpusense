@@ -9,8 +9,8 @@ import {
 } from '@/state/reducers/annotations';
 import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import { exportWorkerResultRequest } from '@/state/reducers/workers';
-import { getAnnotationsByType } from '@/state/selectors/annotations';
-import { isWorkerOrTaskRunning } from '@/state/selectors/workers';
+import { selectAnnotationsByType } from '@/state/selectors/annotations';
+import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { RootState } from '@/state/store';
 import { useSelection } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
@@ -32,11 +32,11 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const { cvcState, cvcDispatch } = useContext(ReducerContext);
     const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
     const isWorkerRunning = useAppSelector((state) =>
-      isWorkerOrTaskRunning(state, { collectionId: props.collectionId }),
+      selectIsWorkerOrTaskRunning(state, { collectionId: props.collectionId }),
     );
 
     const regionAnnotations = useSelector((state: RootState) =>
-      getAnnotationsByType(state, ElementType.REGION),
+      selectAnnotationsByType(state, ElementType.REGION),
     );
 
     const handleExportText = () => {

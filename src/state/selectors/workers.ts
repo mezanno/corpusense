@@ -3,7 +3,7 @@ import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
-export const isWorkerOrTaskRunning = (state: RootState, scope: Scope) => {
+export const selectIsWorkerOrTaskRunning = (state: RootState, scope: Scope) => {
   //check if there is a worker running for the given scope
   //a worker is running if its status is INPROGRESS, INPROGRESS_WITH_ERRORS
   const isRunning = state.workers.workers.some(
@@ -45,7 +45,7 @@ export const isWorkerOrTaskRunning = (state: RootState, scope: Scope) => {
 //  * @param scope The scope of the canvas (collectionId + canvasId)
 //  * @returns
 //  */
-export const getStatus = (state: RootState, scope: Scope) => {
+export const selectStatus = (state: RootState, scope: Scope) => {
   const existingWorker = state.workers.workers.find((worker) => isSameScope(worker.scope, scope));
   if (existingWorker !== undefined) {
     return existingWorker.status;
@@ -71,13 +71,13 @@ export const getStatus = (state: RootState, scope: Scope) => {
   return undefined;
 };
 
-export const getWorkers = (state: RootState) => state.workers.workers;
+export const selectWorkers = (state: RootState) => state.workers.workers;
 
-export const getWorkerById = (state: RootState, id: string): Worker | undefined => {
+export const selectWorkerById = (state: RootState, id: string): Worker | undefined => {
   return state.workers.workers.find((worker) => worker.id === id);
 };
 
-export const getWorkersByStatus = createSelector(
+export const selectWorkersByStatus = createSelector(
   [
     (state: RootState) => state.workers.workers,
     (_state: RootState, status: WorkerStatus | WorkerStatus[]) => status,
@@ -90,7 +90,7 @@ export const getWorkersByStatus = createSelector(
   },
 );
 
-export const getWorkersByScopeAndStatus = createSelector(
+export const selectWorkersByScopeAndStatus = createSelector(
   [
     (state: RootState) => state.workers.workers,
     (_state: RootState, scope: Scope) => scope,
@@ -104,7 +104,7 @@ export const getWorkersByScopeAndStatus = createSelector(
   },
 );
 
-export const getCompletedWorkerByScopeAndName = createSelector(
+export const selectCompletedWorkerByScopeAndName = createSelector(
   [
     (state: RootState) => state.workers.workers,
     (_state: RootState, scope: Scope) => scope,
@@ -120,10 +120,10 @@ export const getCompletedWorkerByScopeAndName = createSelector(
   },
 );
 
-export const hasResult = (state: RootState, workerId: string) =>
+export const selectHasResult = (state: RootState, workerId: string) =>
   state.workers.results?.some((result) => result.workerId === workerId) ?? false;
 
-export const hasExport = (state: RootState, workerName: string) =>
+export const selectHasExport = (state: RootState, workerName: string) =>
   state.workers.workerPluginsInfo?.some(
     (plugin) => plugin.name === workerName && plugin.hasExport,
   ) ?? false;

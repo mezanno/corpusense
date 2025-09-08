@@ -4,7 +4,7 @@ import { EventType } from '@/data/models/Event';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { fecthManifestRequest, resetManifestOpenEvent } from '@/state/reducers/manifests';
-import { getManifestOpenEvent, getManifestURL } from '@/state/selectors/manifests';
+import { selectManifestOpenEvent, selectManifestURL } from '@/state/selectors/manifests';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FolderOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -31,8 +31,8 @@ const contentFormSchema = z.object({
 const ManifestPastForm = ({ handleClose }: handleCloseProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const currentManifestId = useAppSelector(getManifestURL) ?? '';
-  const manifestOpenEvent = useAppSelector(getManifestOpenEvent);
+  const currentManifestId = useAppSelector(selectManifestURL) ?? '';
+  const manifestOpenEvent = useAppSelector(selectManifestOpenEvent);
   const navigation = useAppNavigation();
   const [error, setError] = useState<string | undefined>(undefined);
 

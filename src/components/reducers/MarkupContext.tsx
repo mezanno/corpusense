@@ -2,7 +2,7 @@ import { Annotation, getAnnotationText } from '@/data/models/Annotation';
 import { DataField, DataModel } from '@/data/models/DataModel';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { useAppSelector } from '@/hooks/hooks';
-import { getEntities } from '@/state/selectors/namedEntity';
+import { selectEntities } from '@/state/selectors/namedEntity';
 import { IRect } from 'konva/lib/types';
 import { createContext, useContext, useEffect, useReducer } from 'react';
 
@@ -202,7 +202,7 @@ export const MarkupProvider = ({
   text: Annotation[];
   model?: DataModel;
 }) => {
-  const entities = useAppSelector(getEntities);
+  const entities = useAppSelector(selectEntities);
   const [state, dispatch] = useReducer(reducer, initState(text, entities, model));
 
   useEffect(() => {

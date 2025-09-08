@@ -4,8 +4,8 @@ import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { updateCollectionRequest } from '@/state/reducers/collections';
 import { createNewTagRequest } from '@/state/reducers/tags';
-import { getModels } from '@/state/selectors/models';
-import { getTags } from '@/state/selectors/tags';
+import { selectModels } from '@/state/selectors/models';
+import { selectTags } from '@/state/selectors/tags';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Tag as FormTag, TagInput } from 'emblor';
 import { useEffect, useState } from 'react';
@@ -43,8 +43,8 @@ const formSchema = z.object({
 
 const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
   const dispatch = useAppDispatch();
-  const models = useAppSelector(getModels);
-  const storedTags = useAppSelector(getTags);
+  const models = useAppSelector(selectModels);
+  const storedTags = useAppSelector(selectTags);
   //liste des tags existants dans l'application
   const autoCompleteTags = storedTags.map((tag) => ({
     id: tag.id,
