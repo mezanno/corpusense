@@ -18,7 +18,7 @@ import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { t } from 'i18next';
 import { isEqual, maxBy, minBy } from 'lodash';
-import { call, Effect, put, takeEvery } from 'redux-saga/effects';
+import { call, Effect, put, select, takeEvery } from 'redux-saga/effects';
 import {
   duplicateAnnotationsEach2PagesRequest,
   duplicateAnnotationsToAllPagesRequest,
@@ -36,6 +36,7 @@ import {
   updateAnnotationRequest,
 } from '../reducers/annotations';
 import { pushError, pushInfo } from '../reducers/events';
+import { selectCurrentScope } from '../selectors/annotations';
 
 /**
  * Saga to handle saving an annotation.
@@ -91,20 +92,25 @@ function* handleUpdateAnnotation(
   }
 }
 
-function* handleRemoveAnnotation(action: PayloadAction<string[]>) {
+function* handleRemoveAnnotations(
+  action: PayloadAction<string[]>,
+): Generator<Effect, void, CanvasScope | undefined | Annotation[]> {
   const annotationRepository = getAnnotationRepository();
-  const annotationsDeleted: string[] = [];
-  for (let i = 0; i < action.payload.length; i++) {
-    const annotationId = action.payload[i];
-    try {
-      yield call([annotationRepository, annotationRepository.removeById], annotationId);
-      annotationsDeleted.push(annotationId);
-    } catch (e) {
-      console.warn(e);
+
+  const scope = (yield select(selectCurrentScope)) as CanvasScope | undefined;
+  try {
+    yield call([annotationRepository, annotationRepository.removeAllById], action.payload);
+    if (scope !== undefined) {
+      const annotations = (yield call(
+        [annotationRepository, annotationRepository.getAnnotationsByScope],
+        scope,
+      )) as Annotation[];
+      yield put(fetchAnnotationsSuccess({ scope, annotations }));
     }
+    yield put(pushInfo(i18n.t('toast_annotation_deleted', { count: action.payload.length })));
+  } catch (e) {
+    console.warn(e);
   }
-  yield put(removeAnnotationsSuccess(annotationsDeleted));
-  yield put(pushInfo(i18n.t('toast_annotation_deleted', { count: annotationsDeleted.length })));
 }
 
 function* handleRemoveAnnotationsByScope(
@@ -377,7 +383,7 @@ export default function* annotationsSaga() {
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotation);
   yield takeEvery(updateAnnotationRequest, handleUpdateAnnotation);
   yield takeEvery(removeAnnotationsByScopeRequest, handleRemoveAnnotationsByScope);
-  yield takeEvery(removeAnnotationsRequest, handleRemoveAnnotation);
+  yield takeEvery(removeAnnotationsRequest, handleRemoveAnnotations);
   yield takeEvery(removeAllAnnotationsInsideRequest, handleRemoveAllRegionAnnotations);
   yield takeEvery(updateAnnotationOrderValueRequest, handleUpdateAnnotationOrderValue);
   yield takeEvery(duplicateAnnotationsToAllPagesRequest, handleDuplicateAnnotationsToAllPages);
@@ -385,4 +391,8 @@ export default function* annotationsSaga() {
   yield takeEvery(recomputeRegionsRequest, handleRecomputeRegions);
 }
 
-export { handleRemoveAnnotation, handleSaveAnnotation, handleUpdateAnnotationOrderValue };
+export {
+  handleRemoveAnnotations as handleRemoveAnnotation,
+  handleSaveAnnotation,
+  handleUpdateAnnotationOrderValue,
+};
