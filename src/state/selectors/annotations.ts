@@ -17,4 +17,11 @@ const getAnnotationsByType = createSelector(
 
 const selectCurrentScope = (state: RootState) => state.annotations.currentScope;
 
-export { getAnnotationsByType, selectAnnotations, selectCurrentScope };
+const selectLastOrderByType = createSelector([getAnnotationsByType], (annotations): number => {
+  if (annotations.length === 0) {
+    return 1;
+  }
+  return annotations[annotations.length - 1].order ?? 1;
+});
+
+export { getAnnotationsByType, selectAnnotations, selectCurrentScope, selectLastOrderByType };
