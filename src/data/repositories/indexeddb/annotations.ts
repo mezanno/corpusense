@@ -78,17 +78,69 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
   }
 
   async updateOrder(annotationId: string, order: number) {
-    //TODO: rewrite
+    // const annotationToUpdate = await db.annotations.get(annotationId);
+    // if (annotationToUpdate === undefined) {
+    //   throw new Error(i18next.t('error_annotation_not_found'));
+    // }
+    // const { canvasId, collectionId } = annotationToUpdate;
+
     await db.annotations.update(annotationId, { order });
   }
 
   async removeAllById(ids: string[]): Promise<string[]> {
-    await db.annotations.bulkDelete(ids);
+    //1. get the annotations to delete and order them by scope
+    const annotationsToDelete = await db.annotations.bulkGet(ids);
+    const annotationsToDeleteByScopeAndType: { [key in string]?: Annotation[] } = {};
+    for (const annotation of annotationsToDelete) {
+      if (annotation === undefined) {
+        continue;
+      }
+      const key = `${annotation?.canvasId}|${annotation?.collectionId}|${getAnnotationType(annotation)}`;
+      if (!annotationsToDeleteByScopeAndType[key]) {
+        annotationsToDeleteByScopeAndType[key] = [];
+      }
+      annotationsToDeleteByScopeAndType[key].push(annotation);
+    }
+
+    //2. for each scope, get the min order of the annotations to delete, and update the order of the annotations above
+    const annotationsUpdated: Annotation[] = [];
+    for (const key in annotationsToDeleteByScopeAndType) {
+      const canvasId = key.split('|')[0];
+      const collectionId = key.split('|')[1];
+      const type = key.split('|')[2];
+      //get the min order of the annotations to delete
+      const minOrder = Math.min(...annotationsToDeleteByScopeAndType[key]!.map((a) => a.order));
+
+      const annotationsToUpdate = await db.annotations
+        .where('[canvasId+collectionId]')
+        .equals([canvasId, collectionId])
+        .filter(
+          (a) =>
+            a.order > minOrder &&
+            !ids.includes(a.id) &&
+            getAnnotationType(a) === (type as ElementType),
+        )
+        .sortBy('order');
+
+      let newOrder = minOrder;
+      for (let i = 0; i < annotationsToUpdate.length; i++) {
+        const a = annotationsToUpdate[i];
+        annotationsUpdated.push({ ...a, order: newOrder++ });
+      }
+    }
+
+    //3. update the annotations and delete the annotations
+    await db.transaction('rw', db.annotations, async () => {
+      if (annotationsUpdated.length > 0) {
+        await db.annotations.bulkPut(annotationsUpdated);
+      }
+      await db.annotations.bulkDelete(ids);
+    });
     return ids;
   }
 
   async removeById(id: string): Promise<void> {
-    await db.annotations.delete(id);
+    await this.removeAllById([id]);
   }
 
   async removeByScope(scope: Scope): Promise<string[]> {
