@@ -74,17 +74,74 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
   }
 
   async updateAnnotation(annotation: Annotation) {
-    await db.annotations.put(annotation);
+    const annotationToUpdate = await db.annotations.get(annotation.id);
+
+    const annotationsUpdated: Annotation[] = [];
+    if (annotationToUpdate !== undefined) {
+      /*
+      if the annotation already exists, we need to check if the type changed.
+      If the type changed, we need to update the order of the annotation and the order of the annotations above it.
+      */
+      const actualType = getAnnotationType(annotationToUpdate);
+      const newType = getAnnotationType(annotation);
+      if (actualType !== newType) {
+        //type changed, we need to update the order
+        const newOrder = await this.getNextOrderByScopeAndType(
+          { collectionId: annotation.collectionId, canvasId: annotation.canvasId },
+          newType,
+        );
+        annotation.order = newOrder;
+
+        //we need to update the order of the annotations above the old order
+
+        const annotationsToUpdate = await db.annotations
+          .where('[canvasId+collectionId]')
+          .equals([annotation.canvasId, annotation.collectionId])
+          .filter((a) => a.order > annotationToUpdate.order && getAnnotationType(a) === actualType)
+          .sortBy('order');
+        for (let i = 0; i < annotationsToUpdate.length; i++) {
+          const a = annotationsToUpdate[i];
+          annotationsUpdated.push({ ...a, order: a.order - 1 });
+        }
+      }
+    }
+    annotationsUpdated.push(annotation);
+
+    await db.transaction('rw', db.annotations, async () => {
+      await db.annotations.bulkPut(annotationsUpdated);
+    });
+
+    return annotationsUpdated;
   }
 
   async updateOrder(annotationId: string, order: number) {
-    // const annotationToUpdate = await db.annotations.get(annotationId);
-    // if (annotationToUpdate === undefined) {
-    //   throw new Error(i18next.t('error_annotation_not_found'));
-    // }
-    // const { canvasId, collectionId } = annotationToUpdate;
+    const annotationToUpdate = await db.annotations.get(annotationId);
+    if (annotationToUpdate === undefined) {
+      throw new Error(i18next.t('error_annotation_not_found'));
+    }
+    const actualOrder = annotationToUpdate.order;
+    const { canvasId, collectionId } = annotationToUpdate;
+    const type = getAnnotationType(annotationToUpdate);
 
-    await db.annotations.update(annotationId, { order });
+    const annotationToSwapWith = await db.annotations
+      .where('[canvasId+collectionId]')
+      .equals([canvasId, collectionId])
+      .filter((a) => a.order === order && getAnnotationType(a) === type)
+      .first();
+
+    const updatedAnnotations: Annotation[] = [];
+    updatedAnnotations.push({ ...annotationToUpdate, order });
+    if (annotationToSwapWith !== undefined) {
+      updatedAnnotations.push({ ...annotationToSwapWith, order: actualOrder });
+      //swap the order of the two annotations
+      await db.transaction('rw', db.annotations, async () => {
+        await db.annotations.bulkPut(updatedAnnotations);
+      });
+    } else {
+      //just update the order of the annotation
+      await db.annotations.update(annotationId, { order });
+    }
+    return updatedAnnotations;
   }
 
   async removeAllById(ids: string[]): Promise<string[]> {

@@ -32,7 +32,6 @@ import {
   saveAnnotationRequest,
   saveAnnotationSuccess,
   updateAnnotationOrderValueRequest,
-  updateAnnotationOrderValueSuccess,
   updateAnnotationRequest,
 } from '../reducers/annotations';
 import { pushError, pushInfo } from '../reducers/events';
@@ -60,8 +59,11 @@ function* handleSaveAnnotation(
   const newOrder = regions.length > 0 ? Math.max(...regions) + 1 : 1;
 
   const newAnnotation = { ...annotationToSave, order: newOrder };
-  yield call([annotationRepository, annotationRepository.updateAnnotation], newAnnotation);
-  yield put(saveAnnotationSuccess(newAnnotation));
+  const updatedAnnotations = (yield call(
+    [annotationRepository, annotationRepository.updateAnnotation],
+    newAnnotation,
+  )) as Annotation[];
+  yield put(saveAnnotationSuccess(updatedAnnotations));
 }
 
 /**
@@ -83,8 +85,11 @@ function* handleUpdateAnnotation(
     );
     //save only if annotations are different to avoid unnecessary writes and call to saveAnnotationSuccess
     if (!isEqual(existingAnnotation, annotationToSave)) {
-      yield call([annotationRepository, annotationRepository.updateAnnotation], annotationToSave);
-      yield put(saveAnnotationSuccess(annotationToSave));
+      const updatedAnnotations = (yield call(
+        [annotationRepository, annotationRepository.updateAnnotation],
+        annotationToSave,
+      )) as Annotation[];
+      yield put(saveAnnotationSuccess(updatedAnnotations));
       yield put(pushInfo(i18n.t('toast_annotation_saved')));
     }
   } catch (e) {
@@ -166,15 +171,15 @@ function* handleRemoveAllRegionAnnotations(
 
 function* handleUpdateAnnotationOrderValue(
   action: PayloadAction<{ annotationId: string; value: number }>,
-) {
+): Generator<Effect, void, Annotation[]> {
   try {
     const annotationRepository = getAnnotationRepository();
-    yield call(
+    const updatedAnnotations = yield call(
       [annotationRepository, annotationRepository.updateOrder],
       action.payload.annotationId,
       action.payload.value,
     );
-    yield put(updateAnnotationOrderValueSuccess(action.payload));
+    yield put(saveAnnotationSuccess(updatedAnnotations));
   } catch (error) {
     console.warn(error);
   }

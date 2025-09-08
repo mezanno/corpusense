@@ -20,18 +20,24 @@ const annotationsSlice = createSlice({
   reducers: {
     saveAnnotationRequest(_state, _action: PayloadAction<Annotation | AnnotationDTO>) {},
     updateAnnotationRequest(_state, _action: PayloadAction<Annotation>) {},
-    saveAnnotationSuccess(state, action: PayloadAction<Annotation>) {
-      //if the annotation already exists in the store, update it
-      if (state.values.find((a) => a.id === action.payload.id)) {
-        state.values = state.values.map((a) => {
-          if (a.id === action.payload.id) {
-            return action.payload;
-          }
-          return a;
-        });
-      } else {
-        //if the annotation does not exist, add it
-        state.values.push(action.payload);
+    /*
+    on reçoit un tableau d'annotations car lors de la sauvegarde, le type peut changer et donc l'ordre aussi
+    dans ce cas, on met à jour toutes les annotations concernées
+    */
+    saveAnnotationSuccess(state, action: PayloadAction<Annotation[]>) {
+      for (const annotation of action.payload) {
+        //if the annotation already exists in the store, update it
+        if (state.values.find((a) => a.id === annotation.id)) {
+          state.values = state.values.map((a) => {
+            if (a.id === annotation.id) {
+              return annotation;
+            }
+            return a;
+          });
+        } else {
+          //if the annotation does not exist, add it
+          state.values.push(annotation);
+        }
       }
     },
     //removeAnnotationsByScopeRequest : used to remove all annotations of a given scope (canvas, collection or 1 specific annotation)
@@ -75,15 +81,6 @@ const annotationsSlice = createSlice({
       _state,
       _action: PayloadAction<{ annotationId: string; value: number }>,
     ) {},
-    updateAnnotationOrderValueSuccess(
-      state,
-      action: PayloadAction<{ annotationId: string; value: number }>,
-    ) {
-      const annotation = state.values.find((a) => a.id === action.payload.annotationId);
-      if (annotation !== undefined) {
-        annotation.order = action.payload.value;
-      }
-    },
     duplicateAnnotationsToAllPagesRequest(
       _state,
       _action: PayloadAction<{ canvasId: string; collectionId: string }>,
@@ -108,7 +105,6 @@ export const {
   fetchAnnotationsRequest,
   fetchAnnotationsSuccess,
   updateAnnotationOrderValueRequest,
-  updateAnnotationOrderValueSuccess,
   duplicateAnnotationsToAllPagesRequest,
   duplicateAnnotationsEach2PagesRequest,
   recomputeRegionsRequest,
