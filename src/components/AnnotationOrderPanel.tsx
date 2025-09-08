@@ -1,11 +1,15 @@
-import { Annotation } from '@/data/models/Annotation';
-import { useAppDispatch } from '@/hooks/hooks';
+import { Annotation, getAnnotationType } from '@/data/models/Annotation';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { updateAnnotationOrderValueRequest } from '@/state/reducers/annotations';
+import { selectLastOrderByType } from '@/state/selectors/annotations';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { Button } from './ui/button';
 
 const AnnotationOrderPanel = ({ annotation }: { annotation: Annotation }) => {
   const appDispatch = useAppDispatch();
+  const lastOrder = useAppSelector((state) =>
+    selectLastOrderByType(state, getAnnotationType(annotation)),
+  );
 
   const handlePlus = () => {
     appDispatch(
@@ -27,13 +31,17 @@ const AnnotationOrderPanel = ({ annotation }: { annotation: Annotation }) => {
 
   return (
     <div className='flex items-center gap-2 rounded-xl bg-white/75 p-2'>
-      <Button className='soft-button' onClick={handleMinus}>
-        -
-      </Button>
+      {annotation.order > 1 && (
+        <Button className='soft-button' onClick={handleMinus}>
+          -
+        </Button>
+      )}
       {annotation.order}
-      <Button className='soft-button' onClick={handlePlus}>
-        +
-      </Button>
+      {annotation.order < lastOrder && (
+        <Button className='soft-button' onClick={handlePlus}>
+          +
+        </Button>
+      )}
     </div>
   );
 };
