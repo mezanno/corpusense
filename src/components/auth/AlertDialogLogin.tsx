@@ -1,5 +1,5 @@
 import { useAppSelector } from '@/hooks/hooks';
-import { getAuthStatus } from '@/state/selectors/auth';
+import { selectAuthStatus } from '@/state/selectors/auth';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -21,7 +21,7 @@ const AlertDialogLogin = ({
   setIsOpen: (value: boolean) => void;
 }) => {
   const { t } = useTranslation();
-  const authStatus = useAppSelector(getAuthStatus);
+  const authStatus = useAppSelector(selectAuthStatus);
 
   useEffect(() => {
     if (authStatus === 'authenticated') {

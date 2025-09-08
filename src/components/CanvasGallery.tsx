@@ -1,6 +1,6 @@
 import { useAppSelector } from '@/hooks/hooks';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
-import { getCanvases, getManifestURL } from '@/state/selectors/manifests';
+import { selectCanvases, selectManifestURL } from '@/state/selectors/manifests';
 import { Canvas } from '@iiif/presentation-3';
 import { FC, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -59,8 +59,8 @@ const CanvasGallery = ({
   setCanvasToDisplay: (canvas: Canvas) => void;
 }) => {
   const { t } = useTranslation();
-  const canvases = useAppSelector(getCanvases);
-  const manifestId = useAppSelector(getManifestURL);
+  const canvases = useAppSelector(selectCanvases);
+  const manifestId = useAppSelector(selectManifestURL);
   const { setSelection } = useCanvasSelection();
 
   const containerRef = useRef(null);

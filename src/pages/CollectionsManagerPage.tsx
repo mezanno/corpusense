@@ -18,8 +18,8 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { removeCollectionRequest } from '@/state/reducers/collections';
 import { exportMultipleCollectionsRequest } from '@/state/reducers/export';
-import { getCollections } from '@/state/selectors/collections';
-import { getTagsByIds } from '@/state/selectors/tags';
+import { selectCollections } from '@/state/selectors/collections';
+import { selectTagsByIds } from '@/state/selectors/tags';
 import { DownloadIcon, FilePlus, Import, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -37,7 +37,7 @@ const CollectionTableRow = ({
   const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
     (state) => state.export,
   );
-  const tags = useAppSelector((state) => getTagsByIds(state, collection.tags));
+  const tags = useAppSelector((state) => selectTagsByIds(state, collection.tags));
 
   const [downloadLink, setDownloadLink] = useState<string>('');
 
@@ -125,7 +125,7 @@ const CollectionTableRow = ({
 
 const CollectionsManagerPage = () => {
   const dispatch = useAppDispatch();
-  const collections: CollectionDetails[] = useAppSelector(getCollections);
+  const collections: CollectionDetails[] = useAppSelector(selectCollections);
   const { t } = useTranslation();
 
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);

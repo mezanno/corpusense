@@ -1,7 +1,7 @@
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { removeFromHistoryRequest } from '@/state/reducers/manifests';
-import { getHistory } from '@/state/selectors/manifests';
+import { selectHistory } from '@/state/selectors/manifests';
 import { IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import { CircleX, FileImage } from 'lucide-react';
@@ -57,7 +57,7 @@ const Item = ({ item }: { item: StoredManifestDetails }) => {
 };
 
 const HistoryNav = () => {
-  const history: StoredManifestDetails[] = useAppSelector(getHistory);
+  const history: StoredManifestDetails[] = useAppSelector(selectHistory);
 
   return (
     <nav aria-label='historique' className='h-auto overflow-auto'>

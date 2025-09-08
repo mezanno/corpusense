@@ -1,7 +1,7 @@
 import { Scope } from '@/data/models/Scope';
 import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { useAppSelector } from '@/hooks/hooks';
-import { getWorkersByScopeAndStatus } from '@/state/selectors/workers';
+import { selectWorkersByScopeAndStatus } from '@/state/selectors/workers';
 import { Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import MultiOptionsMenu from './MultiOptionsMenu';
@@ -18,7 +18,7 @@ const ExportMenu = ({
   const { t } = useTranslation();
 
   const workers = useAppSelector((state) =>
-    getWorkersByScopeAndStatus(state, scope, [
+    selectWorkersByScopeAndStatus(state, scope, [
       WorkerStatus.COMPLETED,
       WorkerStatus.COMPLETED_WITH_ERRORS,
     ]),

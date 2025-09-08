@@ -1,6 +1,6 @@
 import { WorkerStatus } from '@/data/models/Worker';
 import { useAppSelector } from '@/hooks/hooks';
-import { getWorkersByStatus } from '@/state/selectors/workers';
+import { selectWorkersByStatus } from '@/state/selectors/workers';
 import { useTranslation } from 'react-i18next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import WorkerLabel from './WorkerLabel';
@@ -14,7 +14,7 @@ const WorkerSelector = ({
 }) => {
   const { t } = useTranslation();
   const workers = useAppSelector((state) =>
-    getWorkersByStatus(state, [
+    selectWorkersByStatus(state, [
       WorkerStatus.INPROGRESS,
       WorkerStatus.INPROGRESS_WITH_ERRORS,
       WorkerStatus.UNFINISHED,

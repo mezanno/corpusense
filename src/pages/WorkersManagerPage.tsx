@@ -14,7 +14,7 @@ import { toString } from '@/data/models/Scope';
 import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { removeWorkerRequest } from '@/state/reducers/workers';
-import { getWorkersByStatus } from '@/state/selectors/workers';
+import { selectWorkersByStatus } from '@/state/selectors/workers';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal, Trash } from 'lucide-react';
 import { useState } from 'react';
@@ -37,7 +37,7 @@ const WorkersManagerPage = () => {
     })),
   );
   const workers = useAppSelector((state) =>
-    getWorkersByStatus(
+    selectWorkersByStatus(
       state,
       filters.filter((f) => f.selected).map((f) => f.status),
     ),

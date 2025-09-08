@@ -4,7 +4,7 @@ import ManifestExplorerDrawer from '@/components/drawers/ManifestExplorerDrawer'
 import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { resetLastEvent } from '@/state/reducers/events';
-import { getLastErrorEvent, getLastInfoEvent } from '@/state/selectors/events';
+import { selectLastErrorEvent, selectLastInfoEvent } from '@/state/selectors/events';
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -13,8 +13,8 @@ import LayoutSideBar from './LayoutSidebar';
 
 const Layout = () => {
   const appDispatch = useAppDispatch();
-  const lastInfo = useAppSelector(getLastInfoEvent);
-  const lastError = useAppSelector(getLastErrorEvent);
+  const lastInfo = useAppSelector(selectLastInfoEvent);
+  const lastError = useAppSelector(selectLastErrorEvent);
   const [selectedWorkerId, setSelectedWorkerId] = useState<string>('');
   const [isOpen, setIsOpen] = useState<boolean>(false);
 

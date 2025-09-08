@@ -14,7 +14,7 @@ import {
 import { generateSchema } from '@/data/utils/model';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { exportModelRequest, removeModelRequest } from '@/state/reducers/models';
-import { getModels } from '@/state/selectors/models';
+import { selectModels } from '@/state/selectors/models';
 import ReactJsonView from '@microlink/react-json-view';
 import { Download, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next';
 const ModelsManagerPage = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const models = useAppSelector(getModels);
+  const models = useAppSelector(selectModels);
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
   const handleSelectModel = (modelId: string) => {

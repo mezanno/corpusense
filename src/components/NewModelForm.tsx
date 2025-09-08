@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { createModelRequest } from '@/state/reducers/models';
-import { getModels } from '@/state/selectors/models';
+import { selectModels } from '@/state/selectors/models';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +20,7 @@ const formSchema = z.object({
 const NewModelForm = ({ close }: { close: () => void }) => {
   const appDispatch = useAppDispatch();
   const { t } = useTranslation();
-  const models = useAppSelector(getModels);
+  const models = useAppSelector(selectModels);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

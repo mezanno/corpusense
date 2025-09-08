@@ -13,9 +13,9 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import { logoutRequest } from '@/state/reducers/auth';
 import { removeFromOpenedCollections } from '@/state/reducers/collections';
-import { connectedUser } from '@/state/selectors/auth';
-import { getCollections, getOpenedCollections } from '@/state/selectors/collections';
-import { getWorkersByStatus } from '@/state/selectors/workers';
+import { selectConnectedUser } from '@/state/selectors/auth';
+import { selectCollections, selectOpenedCollections } from '@/state/selectors/collections';
+import { selectWorkersByStatus } from '@/state/selectors/workers';
 import {
   Archive,
   Bolt,
@@ -56,7 +56,7 @@ const WorkersSideBarGroup = ({
 }) => {
   const { t } = useTranslation();
   const workers = useAppSelector((state) =>
-    getWorkersByStatus(state, [WorkerStatus.INPROGRESS, WorkerStatus.INPROGRESS_WITH_ERRORS]),
+    selectWorkersByStatus(state, [WorkerStatus.INPROGRESS, WorkerStatus.INPROGRESS_WITH_ERRORS]),
   );
 
   if (workers.length === 0) {
@@ -96,7 +96,7 @@ const CollectionsSideBarGroup = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const navigation = useAppNavigation();
-  const openedCollections = useAppSelector(getOpenedCollections);
+  const openedCollections = useAppSelector(selectOpenedCollections);
 
   if (openedCollections.length === 0) {
     return null; // No collections opened, nothing to display
@@ -210,10 +210,10 @@ const SourcesSideBarGroup = () => {
 
 const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: string) => void }) => {
   const { t } = useTranslation();
-  const user = useAppSelector(connectedUser);
+  const user = useAppSelector(selectConnectedUser);
   const appDispatch = useAppDispatch();
   const [isOpen, setIsOpen] = useState(false);
-  const collections = useAppSelector(getCollections);
+  const collections = useAppSelector(selectCollections);
 
   const handleLogout = () => {
     appDispatch(logoutRequest());
