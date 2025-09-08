@@ -15,4 +15,6 @@ const getAnnotationsByType = createSelector(
   },
 );
 
-export { getAnnotationsByType, selectAnnotations };
+const selectCurrentScope = (state: RootState) => state.annotations.currentScope;
+
+export { getAnnotationsByType, selectAnnotations, selectCurrentScope };
