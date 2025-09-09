@@ -50,7 +50,7 @@ function* handleSaveAnnotation(
 
   const annotationRepository = getAnnotationRepository();
   const annotationsForCanvas = (yield call(
-    [annotationRepository, annotationRepository.getAnnotationsByScope],
+    [annotationRepository, annotationRepository.getByScope],
     { canvasId: annotationToSave.canvasId, collectionId: annotationToSave.collectionId },
   )) as Annotation[];
   const regions = annotationsForCanvas
@@ -60,7 +60,7 @@ function* handleSaveAnnotation(
 
   const newAnnotation = { ...annotationToSave, order: newOrder };
   const updatedAnnotations = (yield call(
-    [annotationRepository, annotationRepository.updateAnnotation],
+    [annotationRepository, annotationRepository.update],
     newAnnotation,
   )) as Annotation[];
   yield put(saveAnnotationSuccess(updatedAnnotations));
@@ -86,7 +86,7 @@ function* handleUpdateAnnotation(
     //save only if annotations are different to avoid unnecessary writes and call to saveAnnotationSuccess
     if (!isEqual(existingAnnotation, annotationToSave)) {
       const updatedAnnotations = (yield call(
-        [annotationRepository, annotationRepository.updateAnnotation],
+        [annotationRepository, annotationRepository.update],
         annotationToSave,
       )) as Annotation[];
       yield put(saveAnnotationSuccess(updatedAnnotations));
@@ -104,10 +104,10 @@ function* handleRemoveAnnotations(
 
   const scope = (yield select(selectCurrentScope)) as CanvasScope | undefined;
   try {
-    yield call([annotationRepository, annotationRepository.removeAllById], action.payload);
+    yield call([annotationRepository, annotationRepository.deleteByIds], action.payload);
     if (scope !== undefined) {
       const annotations = (yield call(
-        [annotationRepository, annotationRepository.getAnnotationsByScope],
+        [annotationRepository, annotationRepository.getByScope],
         scope,
       )) as Annotation[];
       yield put(fetchAnnotationsSuccess({ scope, annotations }));
@@ -124,7 +124,7 @@ function* handleRemoveAnnotationsByScope(
   const { scope, types } = action.payload;
   const annotationRepository = getAnnotationRepository();
   const annotationsDeleted: string[] = yield call(
-    [annotationRepository, annotationRepository.removeByScopeAndType],
+    [annotationRepository, annotationRepository.deleteByScopeAndType],
     scope,
     types,
   );
@@ -147,17 +147,14 @@ function* handleRemoveAllRegionAnnotations(
     const collectionId = annotation.collectionId;
     if (canvasId !== undefined && collectionId !== undefined) {
       const annotationsInSameCanvas = yield call(
-        [annotationRepository, annotationRepository.getAnnotationsByScope],
+        [annotationRepository, annotationRepository.getByScope],
         { canvasId, collectionId },
       );
       const annotationsIdsToRemove = annotationsInSameCanvas
         .filter((a) => contains(annotation, a))
         .map((a) => a.id);
 
-      yield call(
-        [annotationRepository, annotationRepository.removeAllById],
-        annotationsIdsToRemove,
-      );
+      yield call([annotationRepository, annotationRepository.deleteByIds], annotationsIdsToRemove);
       yield put(removeAnnotationsSuccess(annotationsIdsToRemove));
       yield put(
         pushInfo(i18n.t('toast_annotation_deleted', { count: annotationsIdsToRemove.length })),
@@ -248,7 +245,7 @@ function* handleDuplicateAnnotationsToPages({
     //1st step: get all (region) annotations of the canvas
     const annotationRepository = getAnnotationRepository();
     const annotations = yield call(
-      [annotationRepository, annotationRepository.getAnnotationsByScopeAndType],
+      [annotationRepository, annotationRepository.getByScopeAndTypes],
       { canvasId, collectionId },
       [ElementType.REGION],
     );
@@ -260,13 +257,13 @@ function* handleDuplicateAnnotationsToPages({
         if (id !== canvasId) {
           //3rd step: remove the region annotations that are already on the canvases
           const regions = yield call(
-            [annotationRepository, annotationRepository.getAnnotationsByScopeAndType],
+            [annotationRepository, annotationRepository.getByScopeAndTypes],
             { canvasId: id, collectionId },
             [ElementType.REGION],
           );
           const annotationIds = regions.map((r) => r.id);
           removedAnnotations = [...removedAnnotations, ...annotationIds];
-          yield call([annotationRepository, annotationRepository.removeAllById], annotationIds);
+          yield call([annotationRepository, annotationRepository.deleteByIds], annotationIds);
 
           //4th step: duplicate the annotations to the other canvases
           duplicatedAnnotations = [
@@ -276,10 +273,7 @@ function* handleDuplicateAnnotationsToPages({
         }
       }
       if (duplicatedAnnotations.length > 0) {
-        yield call(
-          [annotationRepository, annotationRepository.saveAllAnnotations],
-          duplicatedAnnotations,
-        );
+        yield call([annotationRepository, annotationRepository.addAll], duplicatedAnnotations);
       }
     }
   } catch (e) {
@@ -309,16 +303,16 @@ function* handleRecomputeRegions(
   for (const canvas of canvases) {
     //remove the region annotations that are already on the canvases
     const regions = yield call(
-      [annotationRepository, annotationRepository.getAnnotationsByScopeAndType],
+      [annotationRepository, annotationRepository.getByScopeAndTypes],
       { canvasId: canvas.id, collectionId },
       [ElementType.REGION],
     );
     const annotationIds = regions.map((r) => r.id);
     removedAnnotations = [...removedAnnotations, ...annotationIds];
-    yield call([annotationRepository, annotationRepository.removeAllById], annotationIds);
+    yield call([annotationRepository, annotationRepository.deleteByIds], annotationIds);
 
     const lines = (yield call(
-      [annotationRepository, annotationRepository.getAnnotationsByScopeAndType],
+      [annotationRepository, annotationRepository.getByScopeAndTypes],
       { canvasId: canvas.id, collectionId },
       [ElementType.LINE],
     )) as Annotation[];
@@ -363,10 +357,7 @@ function* handleRecomputeRegions(
     }
   }
   if (newRegionsAnnotations.length > 0) {
-    yield call(
-      [annotationRepository, annotationRepository.saveAllAnnotations],
-      newRegionsAnnotations,
-    );
+    yield call([annotationRepository, annotationRepository.addAll], newRegionsAnnotations);
     //TODO : update store yield put(update...)
   }
 }
@@ -376,10 +367,10 @@ function* handleFetchAnnotations(
 ): Generator<Effect, void, Annotation[]> {
   const { collectionId, canvasId } = action.payload;
   const annotationRepository = getAnnotationRepository();
-  const annotations = yield call(
-    [annotationRepository, annotationRepository.getAnnotationsByScope],
-    { canvasId, collectionId },
-  );
+  const annotations = yield call([annotationRepository, annotationRepository.getByScope], {
+    canvasId,
+    collectionId,
+  });
   yield put(fetchAnnotationsSuccess({ scope: action.payload, annotations }));
 }
 

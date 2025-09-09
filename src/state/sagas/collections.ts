@@ -46,7 +46,7 @@ function* fetchAllCollections(): Generator<
     const collectionRepository = getCollectionRepository();
     const collections: CollectionDetails[] = yield call([
       collectionRepository,
-      collectionRepository.getAll,
+      collectionRepository.getAllDetails,
     ]);
 
     yield put(setCollections(collections));
@@ -61,7 +61,7 @@ function* handleCreateCollection(action: PayloadAction<string>) {
 
   try {
     const collectionRepository = getCollectionRepository();
-    yield call([collectionRepository, collectionRepository.insertCollection], newCollection);
+    yield call([collectionRepository, collectionRepository.create], newCollection);
     yield put(createCollectionSuccess(newCollection));
     yield put(pushInfo(i18n.t('toast_collection_created')));
   } catch (e) {
@@ -102,10 +102,10 @@ function* handleRemoveCollection(
   try {
     const collectionRepository = getCollectionRepository();
     const collectionToRemove = yield call(
-      [collectionRepository, collectionRepository.getCollectionById],
+      [collectionRepository, collectionRepository.getById],
       collectionId,
     );
-    yield call([collectionRepository, collectionRepository.remove], collectionToRemove);
+    yield call([collectionRepository, collectionRepository.delete], collectionToRemove);
     yield put(removeCollectionSuccess(collectionId));
     //A priori, plus besoin de prévenir le store, si on supprime une collection, c'est que l'on est sur la page des collections
     // yield put(removeAnnotationSuccess(collectionId));
@@ -129,7 +129,7 @@ function* handleAddSelectionToCollection(
   try {
     const collectionRepository = getCollectionRepository();
     const collection = yield call(
-      [collectionRepository, collectionRepository.getCollectionById],
+      [collectionRepository, collectionRepository.getById],
       collectionId,
     );
     //we check the existing content of the collection and add only the new canvases
@@ -148,13 +148,13 @@ function* handleAddSelectionToCollection(
       content: [...existingContent, ...newContent],
     };
     yield call(
-      [collectionRepository, collectionRepository.saveCollectionContent],
+      [collectionRepository, collectionRepository.addContentToCollection],
       updatedCollection,
     );
     //Add first annotations for the new canvases
     const firstAnnotations = generateFirstAnnotation(selection, collectionId, existingCanvasIds);
     const annotationRepository = getAnnotationRepository();
-    yield call([annotationRepository, annotationRepository.saveAllAnnotations], firstAnnotations);
+    yield call([annotationRepository, annotationRepository.addAll], firstAnnotations);
     yield put(addSelectionToCollectionSuccess(updatedCollection));
     if (selection.length === 1) {
       yield put(pushInfo(i18n.t('toast_one_element_added')));
@@ -193,7 +193,7 @@ function* handleCreateCollectionWithSelection(
 
   try {
     const collectionRepository = getCollectionRepository();
-    yield call([collectionRepository, collectionRepository.insertCollection], {
+    yield call([collectionRepository, collectionRepository.create], {
       ...newCollection,
       content,
     });
@@ -201,7 +201,7 @@ function* handleCreateCollectionWithSelection(
       //if an id was provided, it means it is an import, so we don't need to create the first annotations
       const firstAnnotations = generateFirstAnnotation(selection, collectionId);
       const annotationRepository = getAnnotationRepository();
-      yield call([annotationRepository, annotationRepository.saveAllAnnotations], firstAnnotations);
+      yield call([annotationRepository, annotationRepository.addAll], firstAnnotations);
     }
     yield put(createCollectionSuccess(newCollection));
     yield put(pushInfo(i18n.t('toast_collection_created')));
@@ -219,7 +219,7 @@ function* handleRemoveElementFromCollection(
   try {
     const collectionRepository = getCollectionRepository();
     const updatedCollection = yield call(
-      [collectionRepository, collectionRepository.removeElement],
+      [collectionRepository, collectionRepository.deleteElement],
       collectionId,
       canvasId,
     );
@@ -270,7 +270,7 @@ function* handleImportOneCollection(
 
   //save the manifest in indexedDB
   const manifestRepository = getManifestRepository();
-  yield call([manifestRepository, manifestRepository.saveManifest], manifest);
+  yield call([manifestRepository, manifestRepository.add], manifest);
 
   const collectionName = manifest.label?.none?.[0] ?? 'Imported collection'; //TODO change default name
   const collectionId = uuid(); //TODO change default id
@@ -280,7 +280,7 @@ function* handleImportOneCollection(
   //add the tags
   const tags = manifest.tags ?? [];
   const tagRepository = getTagRepository();
-  yield call([tagRepository, tagRepository.saveTags], tags);
+  yield call([tagRepository, tagRepository.addAll], tags);
 
   //add the canvas
   for (let i = 0; i < items.length; i++) {
@@ -331,7 +331,7 @@ function* handleLoadCollection(
 
     //get the collection to load
     const collectionToLoad = (yield call(
-      [collectionRepository, collectionRepository.getCollectionById],
+      [collectionRepository, collectionRepository.getById],
       action.payload,
     )) as Collection;
     if (collectionToLoad === undefined) {

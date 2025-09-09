@@ -13,11 +13,11 @@ import {
 import { CollectionRepository } from './types';
 
 export class IndexedDBCollectionRepository implements CollectionRepository {
-  async getAll(): Promise<CollectionDetails[]> {
+  async getAllDetails(): Promise<CollectionDetails[]> {
     return await db.collections.toArray();
   }
 
-  async getCollectionById(id: string): Promise<Collection> {
+  async getById(id: string): Promise<Collection> {
     const details = await db.collections.get(id);
     if (details === undefined) {
       throw new Error(`Collection with id ${id} not found`);
@@ -28,17 +28,17 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
   }
 
   async getTagsByCollectionId(collectionId: string): Promise<Tag[]> {
-    const collection = await this.getCollectionById(collectionId);
+    const collection = await this.getById(collectionId);
     const tagIds = collection.tags;
     if (tagIds.length === 0) {
       return [];
     }
     const tagRepository = getTagRepository();
-    return await tagRepository.getTagsByIds(tagIds);
+    return await tagRepository.getByIds(tagIds);
   }
 
   async getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]> {
-    const collection = await this.getCollectionById(collectionId);
+    const collection = await this.getById(collectionId);
     if (collection === undefined) {
       throw new Error(`Collection with id ${collectionId} not found`);
     }
@@ -60,7 +60,7 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     for (const manifestId in groupedCanvasesIds) {
       const canvasIds = groupedCanvasesIds[manifestId];
       if (canvasIds.length > 0) {
-        const result = await manifestRepository.getCanvasByIds(manifestId, canvasIds);
+        const result = await manifestRepository.getCanvasesByIds(manifestId, canvasIds);
         canvases.push(...result);
       }
     }
@@ -68,8 +68,8 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     return canvases;
   }
 
-  async getCanvasInCollectionById(canvasId: string, collectionId: string): Promise<Canvas> {
-    const collection = await this.getCollectionById(collectionId);
+  async getCanvasById(canvasId: string, collectionId: string): Promise<Canvas> {
+    const collection = await this.getById(collectionId);
     if (collection === undefined) {
       throw new Error(`Collection with id ${collectionId} not found`);
     }
@@ -82,7 +82,7 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     return await getManifestRepository().getCanvasById(collectionElement.manifestId, canvasId);
   }
 
-  async insertCollection(collection: Collection): Promise<void> {
+  async create(collection: Collection): Promise<void> {
     const { content, ...collectionDetails } = collection;
     await db.transaction('rw', db.collections, db.collectionContents, async () => {
       await db.collections.add(collectionDetails);
@@ -120,7 +120,7 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     });
   }
 
-  async saveCollectionContent(collection: Collection): Promise<void> {
+  async addContentToCollection(collection: Collection): Promise<void> {
     const { content, ...collectionDetails } = collection;
     await db.transaction('rw', db.collections, db.collectionContents, async () => {
       await db.collections.put(collectionDetails);
@@ -131,14 +131,14 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     });
   }
 
-  async remove(collectionToRemove: Collection): Promise<void> {
+  async delete(collectionToRemove: Collection): Promise<void> {
     await db.transaction(
       'rw',
       [db.collections, db.collectionContents, db.annotations, db.workers, db.results],
       async () => {
         //remove the annotations of the collection
         const annotationRepository = getAnnotationRepository();
-        await annotationRepository.removeByScope({
+        await annotationRepository.deleteByScope({
           collectionId: collectionToRemove.id,
         });
         //remove the workers associated to the collection
@@ -151,8 +151,8 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     );
   }
 
-  async removeElement(collectionId: string, canvasId: string): Promise<Collection> {
-    const collection = await this.getCollectionById(collectionId);
+  async deleteElement(collectionId: string, canvasId: string): Promise<Collection> {
+    const collection = await this.getById(collectionId);
     if (collection === undefined) {
       throw new Error(`Collection with id ${collectionId} not found`);
     }
@@ -162,13 +162,13 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     const updatedDetails = { ...collectionDetails, contentSize: updatedContent.length };
 
     const annotationRepository = getAnnotationRepository();
-    await annotationRepository.removeByScope({
+    await annotationRepository.deleteByScope({
       collectionId,
       canvasId,
     });
 
     const updatedCollection = { ...updatedDetails, content: updatedContent };
-    await this.saveCollectionContent(updatedCollection);
+    await this.addContentToCollection(updatedCollection);
 
     return updatedCollection;
   }

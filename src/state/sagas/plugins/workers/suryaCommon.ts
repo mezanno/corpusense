@@ -62,7 +62,7 @@ export async function suryaRun(
         },
       ];
     } else {
-      const annotations = await annotationRepository.getAnnotationsByScope({
+      const annotations = await annotationRepository.getByScope({
         canvasId: task.canvas.id,
         collectionId: task.scope.collectionId,
       });
@@ -121,7 +121,7 @@ export async function suryaRun(
           task.scope.collectionId,
         );
       }
-      const newAnnotations = await annotationRepository.saveAllAnnotations(annotations);
+      const newAnnotations = await annotationRepository.addAll(annotations);
       return {
         status: WorkerStatus.COMPLETED,
         content: newAnnotations,

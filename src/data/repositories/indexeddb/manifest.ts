@@ -13,7 +13,7 @@ export class IndexedDBManifestRepository implements ManifestRepository {
 
   async getCanvasById(manifestId: string, canvasId: string): Promise<Canvas> {
     try {
-      const manifest = await this.getManifestById(manifestId);
+      const manifest = await this.getById(manifestId);
       return getCanvasById(manifest, canvasId);
     } catch (error) {
       // throw new Error(i18next.t('error_canvas_not_found'));
@@ -21,9 +21,9 @@ export class IndexedDBManifestRepository implements ManifestRepository {
     }
   }
 
-  async getCanvasByIds(manifestId: string, canvasIds: string[]): Promise<Canvas[]> {
+  async getCanvasesByIds(manifestId: string, canvasIds: string[]): Promise<Canvas[]> {
     try {
-      const manifest = await this.getManifestById(manifestId);
+      const manifest = await this.getById(manifestId);
       const canvases = getCanvasesByIds(manifest, canvasIds);
       if (canvases?.length > 0) {
         return canvases;
@@ -35,7 +35,7 @@ export class IndexedDBManifestRepository implements ManifestRepository {
     throw new Error(i18next.t('error_canvas_not_found'));
   }
 
-  async getManifestById(manifestId: string): Promise<Manifest> {
+  async getById(manifestId: string): Promise<Manifest> {
     try {
       const manifestContent = await db.storedManifestContents.get(manifestId);
       if (!manifestContent) {
@@ -48,16 +48,16 @@ export class IndexedDBManifestRepository implements ManifestRepository {
     }
   }
 
-  async getManifestDetailsByIds(manifestIds: string[]): Promise<StoredManifestDetails[]> {
+  async getDetailsByManifestIds(manifestIds: string[]): Promise<StoredManifestDetails[]> {
     return await db.storedManifests.where('id').anyOf(manifestIds).toArray();
   }
 
-  async loadMetadataForManifest(manifestId: string) {
+  async getMetadata(manifestId: string) {
     const metadata = await db.itemMetadata.where({ id: manifestId }).toArray();
     return metadata?.map((item) => item.attribute) ?? [];
   }
 
-  async saveManifest(manifest: Manifest) {
+  async add(manifest: Manifest) {
     const { name, thumbnail } = getManifestDetails(manifest);
 
     await db.transaction('rw', db.storedManifests, db.storedManifestContents, async () => {
@@ -66,7 +66,7 @@ export class IndexedDBManifestRepository implements ManifestRepository {
     });
   }
 
-  async getHistory() {
+  async getHistoryEntries() {
     return await db.history.toArray();
   }
 
@@ -76,7 +76,7 @@ export class IndexedDBManifestRepository implements ManifestRepository {
     return addedHistory;
   }
 
-  async removeFromHistory(url: string) {
+  async deleteFromHistory(url: string) {
     await db.history.delete(url);
   }
 }

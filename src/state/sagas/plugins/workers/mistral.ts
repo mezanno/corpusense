@@ -46,7 +46,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   let model = undefined;
   const collectionRepository = getCollectionRepository();
   try {
-    const collection = await collectionRepository.getCollectionById(task.scope.collectionId);
+    const collection = await collectionRepository.getById(task.scope.collectionId);
     const modelId = collection.modelId;
     if (modelId === undefined) {
       return {

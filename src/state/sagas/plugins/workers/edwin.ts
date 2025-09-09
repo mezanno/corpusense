@@ -32,7 +32,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     );
     //and send it to the redux store
     const annotationRepository = getAnnotationRepository();
-    const newAnnotations = await annotationRepository.saveAllAnnotations(annotations);
+    const newAnnotations = await annotationRepository.addAll(annotations);
     return {
       status: WorkerStatus.COMPLETED,
       content: newAnnotations,

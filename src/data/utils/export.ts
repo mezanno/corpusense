@@ -21,7 +21,7 @@ export interface ManifestExport {
 
 const generateManifestFromCollection = async (id: string): Promise<ManifestExport> => {
   try {
-    const collection = await getCollectionRepository().getCollectionById(id);
+    const collection = await getCollectionRepository().getById(id);
 
     if (collection.content.length === 0) {
       throw new Error(i18next.t('error_export_collection_empty', { name: collection.name }));
@@ -35,7 +35,7 @@ const generateManifestFromCollection = async (id: string): Promise<ManifestExpor
       items.push(canvas);
     }
 
-    const tags = await getTagRepository().getTagsByIds(collection.tags);
+    const tags = await getTagRepository().getByIds(collection.tags);
 
     return {
       name: collection.name,
@@ -64,10 +64,7 @@ const generateCanvas = async (
   collectionId: string,
 ): Promise<Canvas> => {
   try {
-    const canvas = await getCollectionRepository().getCanvasInCollectionById(
-      canvasId,
-      collectionId,
-    );
+    const canvas = await getCollectionRepository().getCanvasById(canvasId, collectionId);
 
     let allAnnotationPages: AnnotationPage[] = [];
     //TODO: il faudra ajouter les annotations déjà existantes
@@ -97,7 +94,7 @@ const generateCanvas = async (
 };
 
 const generateAnnotationPage = async (canvasId: string, collectionId: string) => {
-  const result = await getAnnotationRepository().getAnnotationsByScope({ canvasId, collectionId });
+  const result = await getAnnotationRepository().getByScope({ canvasId, collectionId });
   if (result === undefined || result.length === 0) {
     throw new Error(`No annotations found in canvas ${canvasId}`);
   }
@@ -112,7 +109,7 @@ const generateTextForAnnotation = async (annotation: Annotation) => {
     const canvasId = annotation.canvasId;
     const collectionId = annotation.collectionId;
     if (canvasId !== undefined && collectionId !== undefined) {
-      const annotations = await getAnnotationRepository().getAnnotationsByScope({
+      const annotations = await getAnnotationRepository().getByScope({
         canvasId,
         collectionId,
       });
@@ -133,7 +130,7 @@ const generateTextForAnnotation = async (annotation: Annotation) => {
 };
 
 const generateTextFromCanvas = async (canvasId: string, collectionId: string) => {
-  const annotations = await getAnnotationRepository().getAnnotationsByScope({
+  const annotations = await getAnnotationRepository().getByScope({
     canvasId,
     collectionId,
   });
@@ -152,7 +149,7 @@ const generateTextFromCanvas = async (canvasId: string, collectionId: string) =>
 };
 
 const generateNumberedTextFromCanvas = async (canvasId: string, collectionId: string) => {
-  const annotations = await getAnnotationRepository().getAnnotationsByScope({
+  const annotations = await getAnnotationRepository().getByScope({
     canvasId,
     collectionId,
   });

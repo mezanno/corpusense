@@ -38,7 +38,7 @@ function* handleFetchManifestFromURL(url: string): Generator<Effect, Manifest, M
   try {
     const manifestRepository = getManifestRepository();
     //if the manifest is already stored in IndexedDB, we return it
-    return yield call([manifestRepository, manifestRepository.getManifestById], url);
+    return yield call([manifestRepository, manifestRepository.getById], url);
   } catch (error) {
     // If the manifest is not found in IndexedDB, we try to fetch it from the URL
     const importerKey = keys.find((key) => url.includes(key));
@@ -50,7 +50,7 @@ function* handleFetchManifestFromURL(url: string): Generator<Effect, Manifest, M
           fetchFunction: () => importer.import(url),
         });
         const manifestRepository = getManifestRepository();
-        yield call([manifestRepository, manifestRepository.saveManifest], manifest);
+        yield call([manifestRepository, manifestRepository.add], manifest);
         return manifest;
       } catch (err) {
         const msg = i18n.t('error_loading_manifest', { error: getErrorMessage(err) });
@@ -82,10 +82,7 @@ function* handleFetchManifest(action: {
 
       //load the metadata
       const manifestRepository = getManifestRepository();
-      const result = yield call(
-        [manifestRepository, manifestRepository.loadMetadataForManifest],
-        manifest.id,
-      );
+      const result = yield call([manifestRepository, manifestRepository.getMetadata], manifest.id);
       const metadata: ItemMetadataAttribute[] = Array.isArray(result) ? result : [];
 
       yield put(
@@ -153,7 +150,7 @@ function* handleRemoveFromHistory(action: { payload: string }) {
   const url = action.payload;
   try {
     const manifestRepository = getManifestRepository();
-    yield call([manifestRepository, manifestRepository.removeFromHistory], url);
+    yield call([manifestRepository, manifestRepository.deleteFromHistory], url);
     yield put(removeFromHistorySuccess(url));
   } catch (error) {
     console.warn('Error removing url from indexedDB history: ', error);
@@ -167,9 +164,12 @@ function* handleRemoveFromHistory(action: { payload: string }) {
 function* loadHistorySaga(): Generator<Effect, void, History[] | StoredManifestDetails[]> {
   try {
     const manifestRepository = getManifestRepository();
-    const history = (yield call([manifestRepository, manifestRepository.getHistory])) as History[];
+    const history = (yield call([
+      manifestRepository,
+      manifestRepository.getHistoryEntries,
+    ])) as History[];
     const manifestDetails = (yield call(
-      [manifestRepository, manifestRepository.getManifestDetailsByIds],
+      [manifestRepository, manifestRepository.getDetailsByManifestIds],
       history.map((item) => item.url),
     )) as StoredManifestDetails[];
     yield put(setHistory({ history, manifestDetails }));
@@ -198,7 +198,7 @@ function* handleSaveMetadata({
       attribute: item,
     }));
     const itemMetadataRepository = getItemMetadataRepository();
-    yield call([itemMetadataRepository, itemMetadataRepository.addMetadata], manifestMetadata);
+    yield call([itemMetadataRepository, itemMetadataRepository.addAll], manifestMetadata);
     yield put(saveMetadataSuccess(payload));
   }
 }

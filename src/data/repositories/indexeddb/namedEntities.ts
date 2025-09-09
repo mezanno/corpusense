@@ -6,7 +6,7 @@ export class IndexedDBNamedEntityRepository implements NamedEntityRepository {
   async getByAnnotationId(annotationId: string): Promise<NamedEntity[]> {
     return await db.namedEntities.where('annotationIds').equals(annotationId).toArray();
   }
-  async getNamedEntitiesByAnnotationsIds(annotationIds: string[]): Promise<NamedEntity[]> {
+  async getByAnnotationIds(annotationIds: string[]): Promise<NamedEntity[]> {
     return await db.namedEntities.where('annotationIds').anyOf(annotationIds).toArray();
   }
   async add(entity: NamedEntity): Promise<void> {
@@ -14,9 +14,9 @@ export class IndexedDBNamedEntityRepository implements NamedEntityRepository {
     await db.namedEntities.add(entity);
   }
 
-  async removeByAnnotationIds(annotationIds: string[]): Promise<void> {
+  async deleteByAnnotationIds(annotationIds: string[]): Promise<void> {
     // Get all named entities that contain any of the specified annotation IDs
-    const entitiesToRemove = await this.getNamedEntitiesByAnnotationsIds(annotationIds);
+    const entitiesToRemove = await this.getByAnnotationIds(annotationIds);
 
     // If there are no entities to remove, return early
     if (entitiesToRemove.length === 0) return;

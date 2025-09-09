@@ -66,7 +66,7 @@ function* handleSaveModel(action: PayloadAction<DataModel>) {
 
 function* handleRemoveModel(action: PayloadAction<string>) {
   const modelRespository = getModelRepository();
-  yield call([modelRespository, modelRespository.delete], action.payload);
+  yield call([modelRespository, modelRespository.deleteById], action.payload);
   yield put(removeModelSuccess(action.payload));
 }
 
