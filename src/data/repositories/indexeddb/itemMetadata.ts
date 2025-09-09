@@ -3,7 +3,7 @@ import { db } from './db';
 import { ItemMetadataRepository } from './types';
 
 export class IndexedDBItemMetadataRepository implements ItemMetadataRepository {
-  async addMetadata(metadata: ItemMetadata[]): Promise<void> {
+  async addAll(metadata: ItemMetadata[]): Promise<void> {
     await db.itemMetadata.bulkPut(metadata);
   }
 

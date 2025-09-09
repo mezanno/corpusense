@@ -7,7 +7,7 @@ import { createNewTagRequest, createNewTagSuccess, setTags } from '../reducers/t
 function* fetchAllTags(): Generator<CallEffect<Tag[]> | PutEffect, void, Tag[]> {
   try {
     const tagRepository = getTagRepository();
-    const typesList: Tag[] = yield call([tagRepository, tagRepository.getAllTags]);
+    const typesList: Tag[] = yield call([tagRepository, tagRepository.getAll]);
 
     yield put(setTags(typesList));
   } catch (e) {
@@ -19,7 +19,7 @@ function* handleCreateNewTag(action: PayloadAction<Tag>): Generator<Effect, void
   try {
     const newTag = action.payload;
     const tagRepository = getTagRepository();
-    yield call([tagRepository, tagRepository.createTag], newTag);
+    yield call([tagRepository, tagRepository.add], newTag);
     yield put(createNewTagSuccess(newTag));
   } catch (error) {
     console.error(error);

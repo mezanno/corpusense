@@ -5,11 +5,11 @@ import { db } from './db';
 import { WorkerRepository } from './types';
 import { getScopeKey } from './utils';
 export class IndexedDBWorkerRepository implements WorkerRepository {
-  async selectAll(): Promise<Worker[]> {
+  async getAll(): Promise<Worker[]> {
     return await db.workers.toArray();
   }
 
-  async selectByNameAndScope(workerName: string, scope: Scope): Promise<Worker | undefined> {
+  async getByNameAndScope(workerName: string, scope: Scope): Promise<Worker | undefined> {
     //TODO return an array
     return await db.workers.where({ scopeKey: getScopeKey(scope), name: workerName }).first();
   }
@@ -36,7 +36,7 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     await db.workers.update(id, changes);
   }
 
-  async delete(workerId: string): Promise<void> {
+  async deleteById(workerId: string): Promise<void> {
     await db.transaction('rw', db.workers, db.results, async () => {
       await db.workers.delete(workerId);
       await db.results.where('workerId').equals(workerId).delete();

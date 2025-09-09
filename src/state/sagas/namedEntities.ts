@@ -36,7 +36,7 @@ function* handleLoadEntities(
 ): Generator<Effect, void, Result | Annotation[]> {
   const resultRepository = getResultRepository();
   const result = (yield call(
-    [resultRepository, resultRepository.selectByScopeAndWorkerName],
+    [resultRepository, resultRepository.getByScopeAndWorkerName],
     action.payload,
     'mistral',
   )) as Result;
@@ -48,7 +48,7 @@ function* handleLoadEntities(
 
   const annotationRepository = getAnnotationRepository();
   const annotations = (yield call(
-    [annotationRepository, annotationRepository.getAnnotationsByScope],
+    [annotationRepository, annotationRepository.getByScope],
     scope,
   )) as Annotation[];
 

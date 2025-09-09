@@ -67,9 +67,7 @@ function generateFirstAnnotation(
 
 //TODO! ? ça fait redit avec la fonction dans AnnotationRepository
 async function getAnnotationsByType(type: ElementType, canvasId: string, collectionId: string) {
-  return await getAnnotationRepository().getAnnotationsByScopeAndType({ canvasId, collectionId }, [
-    type,
-  ]);
+  return await getAnnotationRepository().getByScopeAndTypes({ canvasId, collectionId }, [type]);
 }
 
 function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {
@@ -78,7 +76,7 @@ function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {
   console.log(`importAnnotationFromJson out - ${collectionId}: `, annotationsW3C);
   // return await db.annotations.bulkPut(annotationsW3C);
   const annotationRepository = getAnnotationRepository();
-  return annotationRepository.saveAllAnnotations(annotationsW3C);
+  return annotationRepository.addAll(annotationsW3C);
 }
 
 export {

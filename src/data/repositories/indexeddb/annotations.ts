@@ -13,7 +13,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     return annotation;
   }
 
-  async getAnnotationsByScope(scope: Scope): Promise<Annotation[]> {
+  async getByScope(scope: Scope): Promise<Annotation[]> {
     if (isAnnotationScope(scope)) {
       const annotation = await this.getById(scope.annotationId);
       return [annotation];
@@ -29,8 +29,8 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     }
   }
 
-  async getAnnotationsByScopeAndType(scope: Scope, types?: ElementType[]): Promise<Annotation[]> {
-    const annotations = await this.getAnnotationsByScope(scope);
+  async getByScopeAndTypes(scope: Scope, types?: ElementType[]): Promise<Annotation[]> {
+    const annotations = await this.getByScope(scope);
     if (types === undefined || types.length === 0) {
       return annotations;
     }
@@ -38,14 +38,14 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
   }
 
   async getNextOrderByScopeAndType(scope: Scope, type: ElementType): Promise<number> {
-    const annotations = await this.getAnnotationsByScopeAndType(scope, [type]);
+    const annotations = await this.getByScopeAndTypes(scope, [type]);
     if (annotations.length === 0) {
       return 1;
     }
     return annotations[annotations.length - 1].order + 1;
   }
 
-  async saveAllAnnotations(annotations: AnnotationDTO[]) {
+  async addAll(annotations: AnnotationDTO[]) {
     /* set the order for each annotation. We get the last order for the scope and type, and increment it for each new annotation.
     To optimize it, we order annotations by type and then we loop on each type */
     const newAnnotations: Annotation[] = [];
@@ -73,7 +73,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     return newAnnotations;
   }
 
-  async updateAnnotation(annotation: Annotation) {
+  async update(annotation: Annotation) {
     const annotationToUpdate = await db.annotations.get(annotation.id);
 
     const annotationsUpdated: Annotation[] = [];
@@ -144,7 +144,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     return updatedAnnotations;
   }
 
-  async removeAllById(ids: string[]): Promise<string[]> {
+  async deleteByIds(ids: string[]): Promise<string[]> {
     //1. get the annotations to delete and order them by scope
     const annotationsToDelete = await db.annotations.bulkGet(ids);
     const annotationsToDeleteByScopeAndType: { [key in string]?: Annotation[] } = {};
@@ -196,17 +196,17 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     return ids;
   }
 
-  async removeById(id: string): Promise<void> {
-    await this.removeAllById([id]);
+  async deleteById(id: string): Promise<void> {
+    await this.deleteByIds([id]);
   }
 
-  async removeByScope(scope: Scope): Promise<string[]> {
-    const annotations = await this.getAnnotationsByScope(scope);
-    return this.removeAllById(annotations.map((annotation) => annotation.id));
+  async deleteByScope(scope: Scope): Promise<string[]> {
+    const annotations = await this.getByScope(scope);
+    return this.deleteByIds(annotations.map((annotation) => annotation.id));
   }
 
-  async removeByScopeAndType(scope: Scope, types?: ElementType[]): Promise<string[]> {
-    const annotations = await this.getAnnotationsByScopeAndType(scope, types);
-    return this.removeAllById(annotations.map((annotation) => annotation.id));
+  async deleteByScopeAndType(scope: Scope, types?: ElementType[]): Promise<string[]> {
+    const annotations = await this.getByScopeAndTypes(scope, types);
+    return this.deleteByIds(annotations.map((annotation) => annotation.id));
   }
 }

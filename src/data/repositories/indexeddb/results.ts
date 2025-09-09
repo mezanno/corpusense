@@ -5,7 +5,7 @@ import { ResultRepository } from './types';
 import { getScopeKey } from './utils';
 
 export class IndexedDBResultRepository implements ResultRepository {
-  async addResult(result: ResultCreateDTO): Promise<Result> {
+  async add(result: ResultCreateDTO): Promise<Result> {
     const newResult = {
       ...result,
       scopeKey: getScopeKey(result.scope),
@@ -18,21 +18,21 @@ export class IndexedDBResultRepository implements ResultRepository {
     await db.results.update(id, changes);
   }
 
-  async selectAll(): Promise<Result[]> {
+  async getAll(): Promise<Result[]> {
     return await db.results.orderBy('id').toArray();
   }
 
-  async selectByWorkerName(workerName: string): Promise<Result[]> {
+  async getAllByWorkerName(workerName: string): Promise<Result[]> {
     // Note: Using sortBy('taskId') to ensure results are returned in the order of their taskId
     return await db.results.where('workerName').equals(workerName).sortBy('taskId');
   }
 
-  async selectByWorkerId(workerId: string): Promise<Result[]> {
+  async getAllByWorkerId(workerId: string): Promise<Result[]> {
     // Note: Using sortBy('taskId') to ensure results are returned in the order of their taskId
     return await db.results.where('workerId').equals(workerId).sortBy('taskId');
   }
 
-  async selectByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result> {
+  async getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result> {
     const result = await db.results
       .where({ scopeKey: getScopeKey(scope), workerName: workerName })
       .first();

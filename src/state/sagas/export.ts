@@ -37,10 +37,7 @@ function* handleExportRequest(
 ): Generator<Effect, void, Collection | Canvas | Tag[] | ItemMetadata[]> {
   const collectionId = action.payload;
   const collectionRepository = getCollectionRepository();
-  const result = yield call(
-    [collectionRepository, collectionRepository.getCollectionById],
-    collectionId,
-  );
+  const result = yield call([collectionRepository, collectionRepository.getById], collectionId);
   const collectionToExport = result as Collection;
   console.log('Collection to export', collectionToExport);
 
@@ -56,7 +53,7 @@ function* handleExportRequest(
       const collectionElement = collectionToExport.content[i];
       try {
         const canvas = (yield call(
-          [collectionRepository, collectionRepository.getCanvasInCollectionById],
+          [collectionRepository, collectionRepository.getCanvasById],
           collectionElement.canvasId,
           collectionId,
         )) as Canvas;
@@ -72,7 +69,7 @@ function* handleExportRequest(
 
           if (collectionToExport.tags?.length > 0) {
             const tags = (yield call(
-              [tagRepository, tagRepository.getTagsByIds],
+              [tagRepository, tagRepository.getByIds],
               collectionToExport.tags,
             )) as Tag[];
             const tagLabels = tags.reduce((acc, tag) => acc.concat(tag.label).concat(','), '');

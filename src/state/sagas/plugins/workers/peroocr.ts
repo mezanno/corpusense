@@ -31,7 +31,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
         },
       ]);
     } else {
-      const annotations = await annotationRepository.getAnnotationsByScope({
+      const annotations = await annotationRepository.getByScope({
         canvasId: task.canvas.id,
         collectionId: task.scope.collectionId,
       });
@@ -64,7 +64,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
         task.canvas.id,
         task.scope.collectionId,
       );
-      const newAnnotations = await annotationRepository.saveAllAnnotations(annotations);
+      const newAnnotations = await annotationRepository.addAll(annotations);
       return {
         status: WorkerStatus.COMPLETED,
         content: newAnnotations,

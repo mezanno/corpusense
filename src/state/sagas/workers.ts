@@ -133,7 +133,7 @@ function* startWorker(
       //else, if it's a WorkerCreateDTO, we need to create a new worker
       //but we delete previous worker with same name and same scope if it exists
       const existingWorker = (yield call(
-        [workerRepository, workerRepository.selectByNameAndScope],
+        [workerRepository, workerRepository.getByNameAndScope],
         worker.name,
         worker.scope,
       )) as Worker | undefined;
@@ -149,7 +149,7 @@ function* startWorker(
       currentWorker.queue = [];
       if (isAnnotationScope(worker.scope) || isCanvasScope(worker.scope)) {
         const canvas = (yield call(
-          [collectionRepository, collectionRepository.getCanvasInCollectionById],
+          [collectionRepository, collectionRepository.getCanvasById],
           worker.scope.canvasId,
           worker.scope.collectionId,
         )) as Canvas;
@@ -233,7 +233,7 @@ function* startWorker(
               };
 
               const newResult = (yield call(
-                [resultRepository, resultRepository.addResult],
+                [resultRepository, resultRepository.add],
                 result,
               )) as Result;
               currentWorker = {
@@ -349,7 +349,7 @@ function* handleExportWorkerResult(
   //get the results for the worker
   const resultRepository = getResultRepository();
   const results = (yield call(
-    [resultRepository, resultRepository.selectByWorkerId],
+    [resultRepository, resultRepository.getAllByWorkerId],
     worker.id,
   )) as Result[];
 
@@ -377,7 +377,7 @@ function* handleExportWorkerResult(
  */
 function* fetchWorkers(): Generator<Effect, void, Worker[] | Result[]> {
   const workerRepository = getWorkerRepository();
-  const workers = (yield call([workerRepository, workerRepository.selectAll])) as Worker[];
+  const workers = (yield call([workerRepository, workerRepository.getAll])) as Worker[];
 
   //if there are workers with status INPROGRESS or INPROGRESS_WITH_ERRORS, we set them to UNFINISHED or UNFINISHED_WITH_ERRORS
   for (const worker of workers) {
@@ -406,14 +406,14 @@ function* fetchWorkers(): Generator<Effect, void, Worker[] | Result[]> {
 
   //!Est-qu'on en a besoin ?
   const resultRepository = getResultRepository();
-  const results = (yield call([resultRepository, resultRepository.selectAll])) as Result[];
+  const results = (yield call([resultRepository, resultRepository.getAll])) as Result[];
   yield put(setResults(results));
 }
 
 function* handleRemoveWorker(action: PayloadAction<string>) {
   const workerId = action.payload;
   const workerRepository = getWorkerRepository();
-  yield call([workerRepository, workerRepository.delete], workerId);
+  yield call([workerRepository, workerRepository.deleteById], workerId);
   yield put(removeWorkerSuccess(workerId));
 }
 

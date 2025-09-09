@@ -13,8 +13,8 @@ const mockTags: Tag[] = [
 const mockGetAllTags = vi.fn().mockResolvedValue(mockTags);
 const mockCreateTag = vi.fn().mockResolvedValue(1);
 const mockRepository: Partial<TagRepository> = {
-  getAllTags: mockGetAllTags,
-  createTag: mockCreateTag,
+  getAll: mockGetAllTags,
+  add: mockCreateTag,
 };
 
 describe('tags saga', () => {
