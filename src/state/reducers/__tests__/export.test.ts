@@ -1,5 +1,5 @@
 import reducer, {
-  exportMultipleCollectionsRequest,
+  exportCollectionsRequest,
   exportRequest,
   exportSuccess,
   exportTextOfCanvasRequest,
@@ -43,7 +43,7 @@ describe('export reducer', () => {
   });
 
   it('should handle exportMultipleCollectionsRequest', () => {
-    const action = exportMultipleCollectionsRequest(['collection1', 'collection2']);
+    const action = exportCollectionsRequest(['collection1', 'collection2']);
     //@ts-expect-error initialState incompatible
     const state = reducer(initialState, action);
 

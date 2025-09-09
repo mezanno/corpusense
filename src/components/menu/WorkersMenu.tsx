@@ -1,6 +1,6 @@
 import { Scope } from '@/data/models/Scope';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { startWorkerProcess } from '@/state/reducers/workers';
+import { startWorkerProcessRequest } from '@/state/reducers/workers';
 import { selectWorkerPluginsInfo } from '@/state/selectors/workers';
 import { PocketKnife, ScanText } from 'lucide-react';
 import MultiOptionsMenu from './MultiOptionsMenu';
@@ -37,7 +37,7 @@ const WorkersMenu = ({
         icon: <ScanText />,
         action: () => {
           appDispatch(
-            startWorkerProcess({
+            startWorkerProcessRequest({
               workerName: plugin.name,
               params: {},
               scope,

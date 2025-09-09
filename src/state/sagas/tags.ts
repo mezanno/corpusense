@@ -2,7 +2,7 @@ import { Tag } from '@/data/models/Tag';
 import { getTagRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/effects';
-import { createNewTagRequest, createNewTagSuccess, setTags } from '../reducers/tags';
+import { createTagRequest, createTagSuccess, setTags } from '../reducers/tags';
 
 function* fetchAllTags(): Generator<CallEffect<Tag[]> | PutEffect, void, Tag[]> {
   try {
@@ -20,14 +20,14 @@ function* handleCreateNewTag(action: PayloadAction<Tag>): Generator<Effect, void
     const newTag = action.payload;
     const tagRepository = getTagRepository();
     yield call([tagRepository, tagRepository.add], newTag);
-    yield put(createNewTagSuccess(newTag));
+    yield put(createTagSuccess(newTag));
   } catch (error) {
     console.error(error);
   }
 }
 
 export default function* tagsSaga() {
-  yield takeEvery(createNewTagRequest, handleCreateNewTag);
+  yield takeEvery(createTagRequest, handleCreateNewTag);
 }
 
 export { fetchAllTags, handleCreateNewTag };

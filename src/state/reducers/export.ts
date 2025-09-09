@@ -25,7 +25,7 @@ export const exportSlice = createSlice({
       state.lastExportDate = new Date();
       state.lastExportStatus = 'OK';
     },
-    exportMultipleCollectionsRequest: (_state, _action: PayloadAction<string[]>) => {},
+    exportCollectionsRequest: (_state, _action: PayloadAction<string[]>) => {},
     exportTextOfCollectionRequest: (_state, _action: PayloadAction<string>) => {}, //paylad = collectionId
     exportTextOfCanvasRequest: (
       _state,
@@ -38,7 +38,7 @@ export const exportSlice = createSlice({
 export const {
   exportRequest,
   exportSuccess,
-  exportMultipleCollectionsRequest,
+  exportCollectionsRequest,
   exportTextOfCollectionRequest,
   exportTextOfCanvasRequest,
   exportTextOfAnnotationRequest,

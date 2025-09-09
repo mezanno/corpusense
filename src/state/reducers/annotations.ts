@@ -24,7 +24,7 @@ const annotationsSlice = createSlice({
     on reçoit un tableau d'annotations car lors de la sauvegarde, le type peut changer et donc l'ordre aussi
     dans ce cas, on met à jour toutes les annotations concernées
     */
-    saveAnnotationSuccess(state, action: PayloadAction<Annotation[]>) {
+    saveAnnotationsSuccess(state, action: PayloadAction<Annotation[]>) {
       for (const annotation of action.payload) {
         //if the annotation already exists in the store, update it
         if (state.values.find((a) => a.id === annotation.id)) {
@@ -46,9 +46,9 @@ const annotationsSlice = createSlice({
       _action: PayloadAction<{ scope: Scope; types?: ElementType[] }>,
     ) {},
     //removeAnnotationsRequest : remove multiple annotations by their IDs
-    removeAnnotationsRequest(_state, _action: PayloadAction<string[]>) {},
+    removeAnnotationsByIdsRequest(_state, _action: PayloadAction<string[]>) {},
     //removeAllAnnotationsInsideRequest : remove all annotations inside a specific annotation
-    removeAllAnnotationsInsideRequest(_state, _action: PayloadAction<Annotation>) {},
+    removeAnnotationsInsideRequest(_state, _action: PayloadAction<Annotation>) {},
     removeAnnotationsSuccess(state, action: PayloadAction<string[]>) {
       state.values = state.values.filter((a) => !action.payload.includes(a.id));
     },
@@ -77,7 +77,7 @@ const annotationsSlice = createSlice({
         ),
       ];
     },
-    updateAnnotationOrderValueRequest(
+    updateAnnotationOrderRequest(
       _state,
       _action: PayloadAction<{ annotationId: string; value: number }>,
     ) {},
@@ -97,14 +97,14 @@ export const {
   addAnnotationsSuccess,
   saveAnnotationRequest,
   updateAnnotationRequest,
-  saveAnnotationSuccess,
+  saveAnnotationsSuccess,
   removeAnnotationsByScopeRequest,
-  removeAnnotationsRequest,
+  removeAnnotationsByIdsRequest,
   removeAnnotationsSuccess,
-  removeAllAnnotationsInsideRequest,
+  removeAnnotationsInsideRequest,
   fetchAnnotationsRequest,
   fetchAnnotationsSuccess,
-  updateAnnotationOrderValueRequest,
+  updateAnnotationOrderRequest,
   duplicateAnnotationsToAllPagesRequest,
   duplicateAnnotationsEach2PagesRequest,
   recomputeRegionsRequest,

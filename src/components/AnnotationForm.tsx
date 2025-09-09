@@ -7,7 +7,7 @@ import {
 } from '@/data/models/Annotation';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
-import { removeAllAnnotationsInsideRequest } from '@/state/reducers/annotations';
+import { removeAnnotationsInsideRequest } from '@/state/reducers/annotations';
 import { exportTextOfAnnotationRequest } from '@/state/reducers/export';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
@@ -67,7 +67,7 @@ const AnnotationForm = ({
   };
 
   const handleRemoveAllAnnotationsInside = () => {
-    appDispatch(removeAllAnnotationsInsideRequest(annotation));
+    appDispatch(removeAnnotationsInsideRequest(annotation));
   };
 
   const handleDeleteButton: React.MouseEventHandler<HTMLButtonElement> = (event) => {

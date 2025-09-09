@@ -3,7 +3,7 @@
 import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { updateCollectionRequest } from '@/state/reducers/collections';
-import { createNewTagRequest } from '@/state/reducers/tags';
+import { createTagRequest } from '@/state/reducers/tags';
 import { selectModels } from '@/state/selectors/models';
 import { selectTags } from '@/state/selectors/tags';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -99,7 +99,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
     const diff = newTags.filter((tag) => !tags.some((elt) => elt.id === tag.id));
     if (diff.length > 0) {
       console.log(diff[0]);
-      dispatch(createNewTagRequest({ id: diff[0].id, label: diff[0].text }));
+      dispatch(createTagRequest({ id: diff[0].id, label: diff[0].text }));
     }
   };
 

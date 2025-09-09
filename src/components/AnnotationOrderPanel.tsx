@@ -1,6 +1,6 @@
 import { Annotation, getAnnotationType } from '@/data/models/Annotation';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { updateAnnotationOrderValueRequest } from '@/state/reducers/annotations';
+import { updateAnnotationOrderRequest } from '@/state/reducers/annotations';
 import { selectLastOrderByType } from '@/state/selectors/annotations';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { Button } from './ui/button';
@@ -13,7 +13,7 @@ const AnnotationOrderPanel = ({ annotation }: { annotation: Annotation }) => {
 
   const handlePlus = () => {
     appDispatch(
-      updateAnnotationOrderValueRequest({
+      updateAnnotationOrderRequest({
         annotationId: annotation.id,
         value: (annotation.order ?? 0) + 1,
       }),
@@ -22,7 +22,7 @@ const AnnotationOrderPanel = ({ annotation }: { annotation: Annotation }) => {
 
   const handleMinus = () => {
     appDispatch(
-      updateAnnotationOrderValueRequest({
+      updateAnnotationOrderRequest({
         annotationId: annotation.id,
         value: (annotation.order ?? 0) - 1,
       }),

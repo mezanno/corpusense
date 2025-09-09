@@ -24,7 +24,7 @@ import JSZIP from 'jszip';
 import { call, CallEffect, Effect, put, takeEvery, takeLatest } from 'redux-saga/effects';
 import { pushInfo } from '../reducers/events';
 import {
-  exportMultipleCollectionsRequest,
+  exportCollectionsRequest,
   exportRequest,
   exportSuccess,
   exportTextOfAnnotationRequest,
@@ -205,7 +205,7 @@ function* handleExportTextOfAnnotation(
 
 export default function* exportSaga() {
   yield takeLatest(exportRequest, handleExportRequest);
-  yield takeEvery(exportMultipleCollectionsRequest, handleExportMultipleCollectionsRequest);
+  yield takeEvery(exportCollectionsRequest, handleExportMultipleCollectionsRequest);
   yield takeEvery(exportTextOfCollectionRequest, handleExportTextOfCollection);
   yield takeEvery(exportTextOfCanvasRequest, handleExportTextOfCanvas);
   yield takeEvery(exportTextOfAnnotationRequest, handleExportTextOfAnnotation);

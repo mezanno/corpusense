@@ -25,13 +25,13 @@ import {
   fetchAnnotationsRequest,
   fetchAnnotationsSuccess,
   recomputeRegionsRequest,
-  removeAllAnnotationsInsideRequest,
+  removeAnnotationsByIdsRequest,
   removeAnnotationsByScopeRequest,
-  removeAnnotationsRequest,
+  removeAnnotationsInsideRequest,
   removeAnnotationsSuccess,
   saveAnnotationRequest,
-  saveAnnotationSuccess,
-  updateAnnotationOrderValueRequest,
+  saveAnnotationsSuccess,
+  updateAnnotationOrderRequest,
   updateAnnotationRequest,
 } from '../reducers/annotations';
 import { pushError, pushInfo } from '../reducers/events';
@@ -63,7 +63,7 @@ function* handleSaveAnnotation(
     [annotationRepository, annotationRepository.update],
     newAnnotation,
   )) as Annotation[];
-  yield put(saveAnnotationSuccess(updatedAnnotations));
+  yield put(saveAnnotationsSuccess(updatedAnnotations));
 }
 
 /**
@@ -89,7 +89,7 @@ function* handleUpdateAnnotation(
         [annotationRepository, annotationRepository.update],
         annotationToSave,
       )) as Annotation[];
-      yield put(saveAnnotationSuccess(updatedAnnotations));
+      yield put(saveAnnotationsSuccess(updatedAnnotations));
       yield put(pushInfo(i18n.t('toast_annotation_saved')));
     }
   } catch (e) {
@@ -176,7 +176,7 @@ function* handleUpdateAnnotationOrderValue(
       action.payload.annotationId,
       action.payload.value,
     );
-    yield put(saveAnnotationSuccess(updatedAnnotations));
+    yield put(saveAnnotationsSuccess(updatedAnnotations));
   } catch (error) {
     console.warn(error);
   }
@@ -379,9 +379,9 @@ export default function* annotationsSaga() {
   yield takeEvery(saveAnnotationRequest, handleSaveAnnotation);
   yield takeEvery(updateAnnotationRequest, handleUpdateAnnotation);
   yield takeEvery(removeAnnotationsByScopeRequest, handleRemoveAnnotationsByScope);
-  yield takeEvery(removeAnnotationsRequest, handleRemoveAnnotations);
-  yield takeEvery(removeAllAnnotationsInsideRequest, handleRemoveAllRegionAnnotations);
-  yield takeEvery(updateAnnotationOrderValueRequest, handleUpdateAnnotationOrderValue);
+  yield takeEvery(removeAnnotationsByIdsRequest, handleRemoveAnnotations);
+  yield takeEvery(removeAnnotationsInsideRequest, handleRemoveAllRegionAnnotations);
+  yield takeEvery(updateAnnotationOrderRequest, handleUpdateAnnotationOrderValue);
   yield takeEvery(duplicateAnnotationsToAllPagesRequest, handleDuplicateAnnotationsToAllPages);
   yield takeEvery(duplicateAnnotationsEach2PagesRequest, handleDuplicateAnnotationsEach2Pages);
   yield takeEvery(recomputeRegionsRequest, handleRecomputeRegions);

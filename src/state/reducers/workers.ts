@@ -46,7 +46,7 @@ export const workerSlice = createSlice({
       const scope = action.payload;
       state.status = state.status.filter((s) => !isSameScope(s.scope, scope));
     },
-    startWorkerProcess: (_state, _action: PayloadAction<StartWorkerProcessPayload>) => {},
+    startWorkerProcessRequest: (_state, _action: PayloadAction<StartWorkerProcessPayload>) => {},
     stopWorkerProcessRequest: (_state, _action: PayloadAction<Worker>) => {},
     updateWorker: (state, action: PayloadAction<Worker>) => {
       if (state.workers.find((w) => w.id === action.payload.id)) {
@@ -120,7 +120,7 @@ export const workerSlice = createSlice({
 
 export const {
   processSuccess,
-  startWorkerProcess,
+  startWorkerProcessRequest,
   stopWorkerProcessRequest,
   updateWorker,
   addResult,
