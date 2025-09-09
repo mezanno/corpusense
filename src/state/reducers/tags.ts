@@ -13,15 +13,15 @@ export const tagSlice = createSlice({
   name: 'tags',
   initialState,
   reducers: {
-    createNewTagRequest: (_state, _action: PayloadAction<Tag>) => {},
+    createTagRequest: (_state, _action: PayloadAction<Tag>) => {},
     setTags: (state, action: PayloadAction<Tag[]>) => {
       state.values = action.payload;
     },
-    createNewTagSuccess: (state, action: PayloadAction<Tag>) => {
+    createTagSuccess: (state, action: PayloadAction<Tag>) => {
       state.values.push(action.payload);
     },
   },
 });
 
-export const { createNewTagRequest, setTags, createNewTagSuccess } = tagSlice.actions;
+export const { createTagRequest, setTags, createTagSuccess } = tagSlice.actions;
 export default tagSlice.reducer;

@@ -1,5 +1,5 @@
 import { Tag } from '@/data/models/Tag';
-import reducer, { createNewTagRequest, createNewTagSuccess, setTags } from '../tags';
+import reducer, { createTagRequest, createTagSuccess, setTags } from '../tags';
 
 describe('tags reducer', () => {
   const initialState = {
@@ -19,7 +19,7 @@ describe('tags reducer', () => {
 
   it('should handle createNewTagSuccess', () => {
     const newTag: Tag = { id: '3', label: 'Tag 3' };
-    const action = createNewTagSuccess(newTag);
+    const action = createTagSuccess(newTag);
     const state = reducer(initialState, action);
 
     expect(state.values).toContainEqual(newTag);
@@ -27,7 +27,7 @@ describe('tags reducer', () => {
 
   it('should handle createNewTagRequest without modifying state', () => {
     const newTag: Tag = { id: '4', label: 'Tag 4' };
-    const action = createNewTagRequest(newTag);
+    const action = createTagRequest(newTag);
     const state = reducer(initialState, action);
 
     expect(state).toEqual(initialState);

@@ -1,5 +1,5 @@
 import { Annotation } from '@/data/models/Annotation';
-import reducer, { removeAnnotationsSuccess, saveAnnotationSuccess } from '../annotations';
+import reducer, { removeAnnotationsSuccess, saveAnnotationsSuccess } from '../annotations';
 
 describe('annotations reducer', () => {
   const initialState = {
@@ -11,7 +11,7 @@ describe('annotations reducer', () => {
 
   it('should handle saveAnnotationSuccess', () => {
     const newAnnotation = { id: '1', canvasId: 'canvas1', collectionId: 'collection1' };
-    const action = saveAnnotationSuccess([newAnnotation] as Annotation[]);
+    const action = saveAnnotationsSuccess([newAnnotation] as Annotation[]);
     const state = reducer(initialState, action);
 
     expect(state.values).toContainEqual(newAnnotation);

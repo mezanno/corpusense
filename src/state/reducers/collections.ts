@@ -99,8 +99,8 @@ export const collectionsSlice = createSlice({
       const collectionId: string = action.payload;
       state.openedCollections = state.openedCollections.filter((id) => id !== collectionId);
     },
-    importOneCollectionRequest: (_state, _action: PayloadAction<object>) => {},
-    importMultipleCollectionsRequest: (_state, _action: PayloadAction<ArrayBuffer>) => {},
+    importCollectionRequest: (_state, _action: PayloadAction<object>) => {},
+    importCollectionsRequest: (_state, _action: PayloadAction<ArrayBuffer>) => {},
   },
 });
 
@@ -120,7 +120,7 @@ export const {
   removeElementFromCollectionRequest,
   removeElementFromCollectionSuccess,
   removeFromOpenedCollections,
-  importOneCollectionRequest,
-  importMultipleCollectionsRequest,
+  importCollectionRequest,
+  importCollectionsRequest,
 } = collectionsSlice.actions;
 export default collectionsSlice.reducer;

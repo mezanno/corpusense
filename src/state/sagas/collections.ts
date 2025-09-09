@@ -21,8 +21,8 @@ import {
   createCollectionRequest,
   createCollectionSuccess,
   createCollectionWithSelectionRequest,
-  importMultipleCollectionsRequest,
-  importOneCollectionRequest,
+  importCollectionRequest,
+  importCollectionsRequest,
   loadCollectionRequest,
   loadCollectionSuccess,
   removeCollectionRequest,
@@ -243,7 +243,7 @@ function* handleImportMultipleCollections(
         const json = JSON.parse(fileContent) as object;
         yield call(handleImportOneCollection, {
           payload: json,
-          type: importOneCollectionRequest.type,
+          type: importCollectionRequest.type,
         });
       } catch (e) {
         yield put(pushError(getErrorMessage(e)));
@@ -379,8 +379,8 @@ export default function* collectionsSaga() {
   yield takeEvery(addSelectionToCollectionRequest, handleAddSelectionToCollection);
   yield takeEvery(removeElementFromCollectionRequest, handleRemoveElementFromCollection);
   yield takeEvery(updateCollectionRequest, handleUpdateCollection);
-  yield takeEvery(importOneCollectionRequest, handleImportOneCollection);
-  yield takeEvery(importMultipleCollectionsRequest, handleImportMultipleCollections);
+  yield takeEvery(importCollectionRequest, handleImportOneCollection);
+  yield takeEvery(importCollectionsRequest, handleImportMultipleCollections);
   yield takeEvery(loadCollectionRequest, handleLoadCollection);
 }
 

@@ -17,7 +17,7 @@ import { CollectionDetails } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { removeCollectionRequest } from '@/state/reducers/collections';
-import { exportMultipleCollectionsRequest } from '@/state/reducers/export';
+import { exportCollectionsRequest } from '@/state/reducers/export';
 import { selectCollections } from '@/state/selectors/collections';
 import { selectTagsByIds } from '@/state/selectors/tags';
 import { DownloadIcon, FilePlus, Import, Trash2 } from 'lucide-react';
@@ -141,7 +141,7 @@ const CollectionsManagerPage = () => {
   };
 
   const handleExport = () => {
-    dispatch(exportMultipleCollectionsRequest(selectedCollections));
+    dispatch(exportCollectionsRequest(selectedCollections));
   };
 
   return (
