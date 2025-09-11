@@ -28,9 +28,9 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     return newWorker;
   }
 
-  async update(worker: Worker): Promise<void> {
-    await db.workers.put(worker);
-  }
+  // async update(worker: Worker): Promise<void> {
+  //   await db.workers.put(worker);
+  // }
 
   async patch(id: string, changes: Partial<Worker>): Promise<void> {
     await db.workers.update(id, changes);
