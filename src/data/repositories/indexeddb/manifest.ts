@@ -1,5 +1,9 @@
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
-import { getCanvasById, getCanvasesByIds, getManifestDetails } from '@/data/utils/manifest';
+import {
+  extractCanvasById,
+  extractCanvasesByIds,
+  extractManifestDetails,
+} from '@/data/utils/manifest';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas, Manifest } from '@iiif/presentation-3';
 import i18next from 'i18next';
@@ -7,14 +11,14 @@ import { db } from './db';
 import { ManifestRepository } from './types';
 
 export class IndexedDBManifestRepository implements ManifestRepository {
-  async exists(id: string): Promise<boolean> {
-    return !!(await db.storedManifests.get(id));
-  }
+  // async exists(id: string): Promise<boolean> {
+  //   return !!(await db.storedManifests.get(id));
+  // }
 
   async getCanvasById(manifestId: string, canvasId: string): Promise<Canvas> {
     try {
       const manifest = await this.getById(manifestId);
-      return getCanvasById(manifest, canvasId);
+      return extractCanvasById(manifest, canvasId);
     } catch (error) {
       // throw new Error(i18next.t('error_canvas_not_found'));
       throw new Error(getErrorMessage(error));
@@ -24,7 +28,7 @@ export class IndexedDBManifestRepository implements ManifestRepository {
   async getCanvasesByIds(manifestId: string, canvasIds: string[]): Promise<Canvas[]> {
     try {
       const manifest = await this.getById(manifestId);
-      const canvases = getCanvasesByIds(manifest, canvasIds);
+      const canvases = extractCanvasesByIds(manifest, canvasIds);
       if (canvases?.length > 0) {
         return canvases;
       }
@@ -58,7 +62,7 @@ export class IndexedDBManifestRepository implements ManifestRepository {
   }
 
   async add(manifest: Manifest) {
-    const { name, thumbnail } = getManifestDetails(manifest);
+    const { name, thumbnail } = extractManifestDetails(manifest);
 
     await db.transaction('rw', db.storedManifests, db.storedManifestContents, async () => {
       await db.storedManifests.add({ id: manifest.id, name, thumbnail });
