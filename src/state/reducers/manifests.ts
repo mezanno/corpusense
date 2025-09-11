@@ -2,7 +2,7 @@ import { Event, EventType } from '@/data/models/Event';
 import { History } from '@/data/models/History';
 import { ItemMetadataAttribute } from '@/data/models/Metadata';
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
-import { getManifestDetails } from '@/data/utils/manifest';
+import { extractManifestDetails } from '@/data/utils/manifest';
 import { Manifest } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -63,7 +63,7 @@ export const manifestsSlice = createSlice({
       state.loadedData = action.payload;
       state.manifestOpenEvent = { message: 'OK', type: EventType.INFO }; // Set the manifestOpenEvent when a manifest is successfully loaded
 
-      const details = getManifestDetails(action.payload.content);
+      const details = extractManifestDetails(action.payload.content);
       state.historyDetails = state.historyDetails.filter(
         (item) => item.id !== action.payload.content.id,
       );

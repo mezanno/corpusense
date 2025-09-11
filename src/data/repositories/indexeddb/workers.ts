@@ -3,7 +3,7 @@ import { Worker, WorkerCreateDTO, WorkerStatus } from '@/data/models/Worker';
 import { v4 as uuid } from 'uuid';
 import { db } from './db';
 import { WorkerRepository } from './types';
-import { getScopeKey } from './utils';
+import { computeScopeKey } from './utils';
 export class IndexedDBWorkerRepository implements WorkerRepository {
   async getAll(): Promise<Worker[]> {
     return await db.workers.toArray();
@@ -11,14 +11,14 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
 
   async getByNameAndScope(workerName: string, scope: Scope): Promise<Worker | undefined> {
     //TODO return an array
-    return await db.workers.where({ scopeKey: getScopeKey(scope), name: workerName }).first();
+    return await db.workers.where({ scopeKey: computeScopeKey(scope), name: workerName }).first();
   }
 
   async add(worker: WorkerCreateDTO): Promise<Worker> {
     const newWorker: Worker = {
       ...worker,
       id: uuid(),
-      scopeKey: getScopeKey(worker.scope),
+      scopeKey: computeScopeKey(worker.scope),
       status: WorkerStatus.INPROGRESS,
       createdAt: new Date().toISOString(),
       queue: [],
@@ -44,7 +44,7 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
   }
 
   async deleteByScope(scope: Scope): Promise<void> {
-    const scopeKey = getScopeKey(scope);
+    const scopeKey = computeScopeKey(scope);
     const workersToDelete = await db.workers.where('scopeKey').equals(scopeKey).toArray();
     const workerIds = workersToDelete.map((worker) => worker.id);
     await db.transaction('rw', db.workers, db.results, async () => {
