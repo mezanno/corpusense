@@ -175,6 +175,7 @@
   "error_export_collection_not_found": "La collection à exporter n'existe pas",
   "error_export_collection_empty": "La collection {{name}} est vide",
   "error_export_no_text": "Aucun texte trouvé. Avez-vous lancé l'OCR sur ce corpus ?",
+  "error_import_not_a_manifest": "Le fichier importé n'est pas un manifest IIIF valide",
   "error_image_dimensions": "Les dimensions de l'image sont invalides",
   "error_annotation_is_not_region": "L'annotation n'est pas de type 'région'",
   "error_no_mistral_key": "Vous n'avez pas de clé API Mistral.",
