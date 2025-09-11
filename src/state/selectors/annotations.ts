@@ -4,10 +4,8 @@ import { RootState } from '../store';
 
 const selectAnnotations = (state: RootState) => state.annotations.values ?? [];
 
-const selectAnnotationType = (_: RootState, annotationType: ElementType) => annotationType;
-
 const selectAnnotationsByType = createSelector(
-  [selectAnnotations, selectAnnotationType],
+  [selectAnnotations, (_: RootState, annotationType: ElementType) => annotationType],
   (annotations, annotationType): Annotation[] => {
     return annotations
       .filter((a) => getAnnotationType(a) === annotationType)
