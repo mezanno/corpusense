@@ -35,7 +35,7 @@ import {
 } from '../reducers/collections';
 import { pushError, pushInfo } from '../reducers/events';
 import { removeWorkerByScopeRequest } from '../reducers/workers';
-import { handleFetchManifestFromURL } from './manifests';
+import { fetchManifestFromURL } from './manifests';
 
 function* fetchAllCollections(): Generator<
   CallEffect<CollectionDetails[]> | PutEffect,
@@ -230,7 +230,7 @@ function* handleRemoveElementFromCollection(
   }
 }
 
-function* handleImportMultipleCollections(
+function* handleImportCollections(
   action: PayloadAction<ArrayBuffer>,
 ): Generator<Effect, void, JSZip | string> {
   const zip = new JSZip();
@@ -241,7 +241,7 @@ function* handleImportMultipleCollections(
       const fileContent = (yield call(() => file.async('string'))) as string;
       try {
         const json = JSON.parse(fileContent) as object;
-        yield call(handleImportOneCollection, {
+        yield call(handleImportCollection, {
           payload: json,
           type: importCollectionRequest.type,
         });
@@ -252,19 +252,19 @@ function* handleImportMultipleCollections(
   }
 }
 
-function* handleImportOneCollection(
+function* handleImportCollection(
   _action: PayloadAction<object>,
 ): Generator<Effect, void, Collection> {
   const json = _action.payload;
   if ('type' in json && json.type !== 'Manifest') {
-    console.log('not a manifest');
+    yield put(pushError(i18n.t('error_import_not_a_manifest')));
     return;
   }
   const manifest = json as ExportedCollection;
 
   const items = manifest.items ?? [];
   if (items.length === 0) {
-    console.log('no items to import');
+    yield put(pushError(i18n.t('info_empty_manifest')));
     return;
   }
 
@@ -350,7 +350,7 @@ function* handleLoadCollection(
     //   }),
     // );
     for (const manifestId of manifestIds) {
-      yield call(handleFetchManifestFromURL, manifestId);
+      yield call(fetchManifestFromURL, manifestId);
     }
 
     const canvases: Canvas[] = (yield call(
@@ -379,8 +379,8 @@ export default function* collectionsSaga() {
   yield takeEvery(addSelectionToCollectionRequest, handleAddSelectionToCollection);
   yield takeEvery(removeElementFromCollectionRequest, handleRemoveElementFromCollection);
   yield takeEvery(updateCollectionRequest, handleUpdateCollection);
-  yield takeEvery(importCollectionRequest, handleImportOneCollection);
-  yield takeEvery(importCollectionsRequest, handleImportMultipleCollections);
+  yield takeEvery(importCollectionRequest, handleImportCollection);
+  yield takeEvery(importCollectionsRequest, handleImportCollections);
   yield takeEvery(loadCollectionRequest, handleLoadCollection);
 }
 
@@ -389,8 +389,8 @@ export {
   handleAddSelectionToCollection,
   handleCreateCollection,
   handleCreateCollectionWithSelection,
-  handleImportMultipleCollections,
-  handleImportOneCollection,
+  handleImportCollection,
+  handleImportCollections,
   handleLoadCollection,
   handleRemoveCollection,
   handleRemoveElementFromCollection,

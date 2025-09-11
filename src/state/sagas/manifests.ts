@@ -32,7 +32,7 @@ const keys = Object.keys(importerPlugins);
  * from the URL.
  * @param action The action containing the URL of the manifest to fetch.
  */
-function* handleFetchManifestFromURL(url: string): Generator<Effect, Manifest, Manifest> {
+function* fetchManifestFromURL(url: string): Generator<Effect, Manifest, Manifest> {
   console.log('handleFetchManifestFromURL ', url);
 
   try {
@@ -72,12 +72,12 @@ function* handleFetchManifest(action: {
     if (isManifestUrl(manifestInput) || containsArkIdentifier(manifestInput)) {
       let manifest: Manifest;
       if (isManifestUrl(manifestInput)) {
-        manifest = (yield call(handleFetchManifestFromURL, manifestInput)) as Manifest;
+        manifest = (yield call(fetchManifestFromURL, manifestInput)) as Manifest;
       } else {
         //build the URL based on old Gallica API
         //TODO: il faudrait pouvoir s'adapter à d'autres ark que ceux de Gallica. Infos : https://arks.org/ark:/12148 https://n2t-dev.n2t.net/e/n2t_apidoc.html
         const url = `https://gallica.bnf.fr/iiif/${manifestInput}/manifest.json`;
-        manifest = (yield call(handleFetchManifestFromURL, url)) as Manifest;
+        manifest = (yield call(fetchManifestFromURL, url)) as Manifest;
       }
 
       //load the metadata
@@ -210,8 +210,8 @@ export default function* viewerSaga() {
 }
 
 export {
+  fetchManifestFromURL,
   handleFetchManifest,
-  handleFetchManifestFromURL,
   handleRemoveFromHistory,
   handleSaveMetadata,
   loadHistorySaga,
