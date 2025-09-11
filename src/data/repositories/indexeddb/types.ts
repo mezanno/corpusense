@@ -55,7 +55,7 @@ export interface ItemMetadataRepository {
 }
 
 export interface ManifestRepository {
-  exists(id: string): Promise<boolean>;
+  // exists(id: string): Promise<boolean>;
 
   getCanvasById(manifestId: string, canvasId: string): Promise<Canvas>;
   getCanvasesByIds(manifestId: string, canvasId: string[]): Promise<Canvas[]>;
@@ -101,13 +101,13 @@ export interface NamedEntityRepository {
 
 export interface ResultRepository {
   getAll(): Promise<Result[]>;
-  getAllByWorkerName(workerName: string): Promise<Result[]>;
+  // getAllByWorkerName(workerName: string): Promise<Result[]>;
   getAllByWorkerId(workerId: string): Promise<Result[]>;
   getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result>;
 
   add(result: ResultCreateDTO): Promise<Result>;
 
-  patch(id: number, changes: Partial<Result>): Promise<void>;
+  // patch(id: number, changes: Partial<Result>): Promise<void>;
 }
 
 export interface WorkerRepository {
@@ -116,7 +116,7 @@ export interface WorkerRepository {
 
   add(worker: Worker): Promise<Worker>;
 
-  update(worker: Worker): Promise<void>;
+  // update(worker: Worker): Promise<void>;
   patch(id: string, changes: Partial<Worker>): Promise<void>;
 
   deleteById(workerId: string): Promise<void>;
