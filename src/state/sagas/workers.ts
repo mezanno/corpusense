@@ -44,8 +44,8 @@ import {
   setPlugins,
   setResults,
   setWorkers,
-  startWorkerProcess,
   StartWorkerProcessPayload,
+  startWorkerProcessRequest,
   stopWorkerProcessRequest,
   updateWorker,
 } from '../reducers/workers';
@@ -429,7 +429,7 @@ function* loadWorkerPluginsInfo(): Generator<Effect, void, { name: string; hasEx
 }
 
 export default function* workerSaga() {
-  yield takeEvery(startWorkerProcess, handleStartWorkerProcess);
+  yield takeEvery(startWorkerProcessRequest, handleStartWorkerProcess);
   yield takeEvery(exportWorkerResultRequest, handleExportWorkerResult);
   yield takeEvery(recoverWorkerRequest, handleRecoverWorker);
   yield takeEvery(removeWorkerRequest, handleRemoveWorker);
