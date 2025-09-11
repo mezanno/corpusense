@@ -2,41 +2,36 @@
 
 ## Priority
 
-TODO : lors de l'export du CSV, ajouter les tags de la collection, les informations du canvas/ark
-TODO : charger le modèle utiliser en fonction des datafield utiliser dans les annotations
+FIX : lors d'une tâche, le l'icone n'apparaît plus
 TODO : ajouter des exemples lors de la recherche de données structurées
-TODO : une fois que la collection a été créée, comment l'ouvrir facilement
-TODO : supprimer plusieurs annotations en même temps
-TODO : revoir icone 'Lancer un traitement'
+TODO : revoir gestion en mémoire des workers (la queue peut prendre bcp de place)
 
 TODO : workers :
 
-- passer OCR en mode worker
-- passer Edwin en mode worker
-- en cas d'erreur, ajouter un paramètre retry
-- comment regrouper les résultats dans le menu export ?
-- menu reprise ? Peut-être le mixer avec le menu de lancement
+- comment combiner le code des converters/schéma/configuration des plugins ?
 
 ## Later
 
-TODO : revoir la création d'un modèle
-TODO : bibliothèque de manifests
 TODO : collections de listes --> utilisation de tags à la place ?
-TODO : ajouter un bouton permettant de passer une annotation en premier/dernier (ordre)
-TODO : supprimer les annotations d'un certain type
-TODO : pouvoir modifier taille police à Konva
+TODO : workers :
+
+- envoyer le texte complet d'une collection à Mistral pour gérer les cas d'entrées sur plusieurs pages
 
 ## BUGS
 
-FIX : lorsqu'un worker est en cours sur une collection/canvas, il est encore possible de supprimer des annotations/lancer des workers si on sélectionne une annotation
-FIX : lorsque l'on fait une sélection en glisser et en prenant plusieurs morceaux différents (avec la touche maj), l'ordre des canvas dans le manifest n'est pas respecté
-FIX : revoir l'ensemble des suppressions pour s'assurer que tout est bien supprimé lors de la suppression d'une collection
+FIX : si on supprime les results à la main, il faut mettre à jour le statut des task d'un worker.
+FIX: récupèrer l'erreur detail:"Unauthorized" de mistral
 FIX : la miniature dans le panneau est déformée (problème avec le composant Thumbnail)
-FIX : à l'ouverture d'un manifest : en cas d'erreur lors de l'ouverture, afficher un message d'erreur.
-FIX : agrandir les miniatures
-FIX : bug export texte : si on exporte le texte d'un canvas qui possède plusieurs régions et que les OCR n'ont pas été fait en même temps, l'ordre repars à 0 à chaque région.
 
 ## A discuter
 
-DISCUSS : comment associer plusieurs modèles à une même page d'une collection ? dans le cadre du cinéma, on ne peut avoir qu'un type de modèle par collection
-DISCUSS : empêcher l'utilisation de plusieurs modèles dans une collection
+DISCUSS ; importer des listes d'ARK/catalogue ?
+
+DISCUSS: Zone par défaut orange qui recouvre toute la page : prête à confusion. Peut-être commencer sans zones ou bien avec une petite zone centrale à déplacer / agrandir ?
+
+Appliquer les colonnes sur les autres pages : modifie les colonnes qui ont déjà été faites à la main. Peut-être faire ignorer les pages déjà annotées ?
+Appliquer à tous les éléments à gauche/droit de cette page
+Réappliquer les ajustements à gauche/droite
+Modèle : pouvoir soumettre une liste de choix ? du style references_pages: Union[List[int], str]
+Magnétisme entre les boîtes (en optionnel)
+Pouvoir tracer des zones polygonales
