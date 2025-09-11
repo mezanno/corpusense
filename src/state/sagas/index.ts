@@ -1,6 +1,6 @@
 import { all, call, fork, spawn } from 'redux-saga/effects';
 import annotationsSaga from './annotations';
-import authSaga from './auth';
+import authSaga, { loadConnectedUser } from './auth';
 import collectionsSaga, { fetchAllCollections } from './collections';
 import exportSaga from './export';
 import manifestsSaga, { loadHistorySaga } from './manifests';
@@ -41,6 +41,7 @@ function getRootSaga() {
     yield fork(fetchModels); //load models at startup
     yield fork(fetchWorkers); //load workers at startup
     yield fork(loadWorkerPluginsInfo);
+    yield fork(loadConnectedUser); //load connected user at startup
   };
 }
 

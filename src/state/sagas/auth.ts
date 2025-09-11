@@ -7,6 +7,19 @@ import { call, Effect, put, takeLatest } from 'redux-saga/effects';
 import { LoginPayload } from '../reducers/auth';
 import { pushError } from '../reducers/events';
 
+function* loadConnectedUser(): Generator<
+  Effect,
+  void,
+  { data: { user: User; session: Session }; error: Error | null }
+> {
+  const { data, error } = yield call([supabase.auth, supabase.auth.getUser]);
+  if (error !== null) {
+    yield put(loginFailure(getErrorMessage(error)));
+    throw error;
+  }
+  yield put(loginSuccess({ user: data.user, session: data.session }));
+}
+
 function* handleLogin(
   action: PayloadAction<LoginPayload>,
 ): Generator<Effect, void, { data: { user: User; session: Session }; error: Error | null }> {
@@ -42,3 +55,4 @@ export default function* authSaga() {
   yield takeLatest(loginRequest, handleLogin);
   yield takeLatest(logoutRequest, handleLogout);
 }
+export { loadConnectedUser };
