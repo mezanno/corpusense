@@ -14,7 +14,7 @@ export type WorkerPlugin = {
 export type WorkerRunFunction = (
   task: Task,
   params?: Record<string, unknown>,
-) => Promise<WorkerResponse>;
+) => Promise<WorkerResponse>; //saga or async function : if we need to call an effect (eg: call, put, select), we have to use a saga
 export type WorkerExportFunction = (results: Result[]) => void;
 type WorkerModule = {
   default: WorkerRunFunction;
