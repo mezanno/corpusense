@@ -27,7 +27,7 @@ const db = new Dexie('mezanno') as Dexie & {
 
 db.version(1).stores({
   collections: '&id, name, *tags.id',
-  collectionContents: 'id',
+  collectionContents: '&id',
   history: '&url',
   storedManifests: '&id, name',
   storedManifestContents: '&id',
