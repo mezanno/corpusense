@@ -138,7 +138,6 @@ function* handleAddSelectionToCollection(
     const newContent = generateCollectionContent(
       existingContent.length - 1,
       selection.map((canvas) => canvas.id),
-      collectionId,
       manifestId,
       existingCanvasIds,
     );
@@ -187,7 +186,6 @@ function* handleCreateCollectionWithSelection(
   const content = generateCollectionContent(
     0,
     selection.map((c) => c.id),
-    collectionId,
     manifestId,
   );
 

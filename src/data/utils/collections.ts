@@ -1,7 +1,6 @@
 function generateCollectionContent(
   position: number,
   canvasIds: string[],
-  collectionId: string,
   manifestId: string,
   existingCanvasIds: string[] = [],
 ) {
@@ -11,7 +10,6 @@ function generateCollectionContent(
         ? null
         : {
             canvasId: id,
-            collectionId,
             position: ++position,
             manifestId,
           },
