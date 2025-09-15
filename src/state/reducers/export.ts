@@ -19,12 +19,6 @@ export const exportSlice = createSlice({
   name: 'export',
   initialState,
   reducers: {
-    exportRequest: (_state, _action: PayloadAction<string>) => {},
-    exportSuccess: (state, action: PayloadAction<object | string>) => {
-      state.lastExportContent = action.payload;
-      state.lastExportDate = new Date();
-      state.lastExportStatus = 'OK';
-    },
     exportCollectionsRequest: (_state, _action: PayloadAction<string[]>) => {},
     exportTextOfCollectionRequest: (_state, _action: PayloadAction<string>) => {}, //paylad = collectionId
     exportTextOfCanvasRequest: (
@@ -36,8 +30,6 @@ export const exportSlice = createSlice({
 });
 
 export const {
-  exportRequest,
-  exportSuccess,
   exportCollectionsRequest,
   exportTextOfCollectionRequest,
   exportTextOfCanvasRequest,
