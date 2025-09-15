@@ -1,6 +1,6 @@
-import { toString } from '@/data/models/Scope';
 import { Worker } from '@/data/models/Worker';
 import { useTranslation } from 'react-i18next';
+import ScopeLabel from './ScopeLabel';
 import { getTaskStatusColor, getWorkerStatusIcon } from './workerUtils';
 
 const WorkerLabel = ({ worker }: { worker: Worker }) => {
@@ -14,7 +14,7 @@ const WorkerLabel = ({ worker }: { worker: Worker }) => {
       </span>
 
       <span className='break-words'>
-        {worker.name} [{t(`worker_status_${worker.status}`)}] {toString(worker.scope)}
+        {worker.name} [{t(`worker_status_${worker.status}`)}] <ScopeLabel scope={worker.scope} />
       </span>
     </div>
   );

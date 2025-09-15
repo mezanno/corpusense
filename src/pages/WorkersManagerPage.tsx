@@ -1,3 +1,4 @@
+import ScopeLabel from '@/components/ScopeLabel';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,7 +11,6 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import WorkerDataTable from '@/components/WorkerDataTable';
 import WorkerDetails from '@/components/WorkerDetails';
 import { getWorkerStatusIcon } from '@/components/workerUtils';
-import { toString } from '@/data/models/Scope';
 import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { removeWorkerRequest } from '@/state/reducers/workers';
@@ -67,7 +67,7 @@ const WorkersManagerPage = () => {
       accessorKey: 'scope',
       header: 'Scope',
       cell: ({ row }) => {
-        return <div>{toString(row.getValue('scope'))}</div>;
+        return <ScopeLabel scope={row.getValue('scope')} />;
       },
     },
     {

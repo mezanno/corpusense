@@ -1,4 +1,3 @@
-import { toString } from '@/data/models/Scope';
 import { WorkerStatus } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import {
@@ -8,6 +7,7 @@ import {
 } from '@/state/reducers/workers';
 import { selectHasExport, selectHasResult, selectWorkerById } from '@/state/selectors/workers';
 import { useTranslation } from 'react-i18next';
+import ScopeLabel from './ScopeLabel';
 import { getTaskStatusColor, getWorkerStatusIcon } from './workerUtils';
 
 const WorkerDetails = ({ workerId }: { workerId: string }) => {
@@ -49,18 +49,18 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
     <div className='flex h-screen flex-col p-4'>
       <div>
         <h2 className='text-lg font-bold'>{t('title_worker_details')}</h2>
-        <ul>
+        <ul className='my-2 border-b pb-2'>
           <li>
             {t('list_title_worker_name')}
             {worker.name}
           </li>
-          <li>
+          <li className='my-2 border-b pb-2'>
             {t('list_title_worker_createdAt')}
             {new Date(worker.createdAt).toLocaleString()}
           </li>
-          <li>
+          <li className='my-2 border-b pb-2'>
             {t('list_title_worker_scope')}
-            {toString(worker.scope)}
+            <ScopeLabel scope={worker.scope} />
           </li>
           <li>
             {t('list_title_worker_status')}
