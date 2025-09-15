@@ -1,5 +1,6 @@
 import { Worker } from '@/data/models/Worker';
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { useTranslation } from 'react-i18next';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from './ui/table';
 import { getTaskStatusColor } from './workerUtils';
 
@@ -16,6 +17,7 @@ const WorkerDataTable = <TData, TValue>({
   selectedWorkerId,
   setSelectedWorkerId,
 }: WorkerDataTableProps<TData, TValue>) => {
+  const { t } = useTranslation();
   const table = useReactTable({
     data,
     columns,
@@ -56,7 +58,7 @@ const WorkerDataTable = <TData, TValue>({
           ) : (
             <TableRow>
               <td colSpan={columns.length} className='h-24 text-center'>
-                No results.
+                {t('info_there_is_no_worker')}
               </td>
             </TableRow>
           )}

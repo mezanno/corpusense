@@ -60,12 +60,12 @@ const WorkersManagerPage = () => {
     {
       accessorFn: (row: Worker) => row.name,
       accessorKey: 'name',
-      header: 'Nom du traitement',
+      header: t('list_title_worker_name'),
     },
     {
       accessorFn: (row: Worker) => row.scope,
       accessorKey: 'scope',
-      header: 'Scope',
+      header: t('list_title_worker_scope'),
       cell: ({ row }) => {
         return <ScopeLabel scope={row.getValue('scope')} />;
       },
@@ -73,7 +73,7 @@ const WorkersManagerPage = () => {
     {
       accessorFn: (row: Worker) => row.status,
       accessorKey: 'status',
-      header: 'Status',
+      header: t('list_title_worker_status'),
       cell: ({ row }) => {
         const status: WorkerStatus = row.getValue('status');
         const value = t(`worker_status_${status}`);
@@ -88,7 +88,7 @@ const WorkersManagerPage = () => {
     {
       accessorFn: (row: Worker) => row.createdAt,
       accessorKey: 'createdAt',
-      header: 'Créé le',
+      header: t('list_title_worker_createdAt'),
       cell: ({ row }) => {
         const date = new Date(row.getValue('createdAt'));
         return <div>{date.toLocaleString()}</div>;

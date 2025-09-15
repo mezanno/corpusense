@@ -20,7 +20,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
 
   if (worker === undefined) {
     return (
-      <div className='p-4 text-center text-gray-500 italic'>{t('info_worker__not_selected')}</div>
+      <div className='p-4 text-center text-gray-500 italic'>{t('info_no_worker_selected')}</div>
     );
   }
 
@@ -51,20 +51,18 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
         <h2 className='text-lg font-bold'>{t('title_worker_details')}</h2>
         <ul className='my-2 border-b pb-2'>
           <li>
-            {t('list_title_worker_name')}
-            {worker.name}
+            {t('list_title_worker_name')} : {worker.name}
           </li>
           <li className='my-2 border-b pb-2'>
             {t('list_title_worker_createdAt')}
             {new Date(worker.createdAt).toLocaleString()}
           </li>
           <li className='my-2 border-b pb-2'>
-            {t('list_title_worker_scope')}
+            {t('list_title_worker_scope')} :
             <ScopeLabel scope={worker.scope} />
           </li>
           <li>
-            {t('list_title_worker_status')}
-            {t(`worker_status_${worker.status}`)}
+            {t('list_title_worker_status')} : {t(`worker_status_${worker.status}`)}
           </li>
         </ul>
         <div className='flex gap-2'>
