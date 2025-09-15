@@ -114,7 +114,7 @@ function* handleRemoveCollection(
     yield put(removeWorkersSuccess(workersIds)); //remove workers associated to the collection
     //A priori, plus besoin de prévenir le store, si on supprime une collection, c'est que l'on est sur la page des collections
     // yield put(removeAnnotationSuccess(collectionId));
-    yield put(pushInfo(i18n.t('toast_collection_removed')));
+    yield put(pushInfo(i18n.t('toast_collection_deleted')));
   } catch (e) {
     yield put(pushError(getErrorMessage(e)));
   }
