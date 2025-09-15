@@ -104,22 +104,6 @@ export const selectWorkersByScopeAndStatus = createSelector(
   },
 );
 
-export const selectCompletedWorkerByScopeAndName = createSelector(
-  [
-    (state: RootState) => state.workers.workers,
-    (_state: RootState, scope: Scope) => scope,
-    (_state: RootState, _scope: Scope, name: string) => name,
-  ],
-  (workers, scope, name): Worker | undefined => {
-    return Object.values(workers).find(
-      (worker) =>
-        isSameScope(worker.scope, scope) &&
-        worker.name === name &&
-        worker.status === WorkerStatus.COMPLETED,
-    );
-  },
-);
-
 export const selectHasResult = (state: RootState, workerId: string) =>
   state.workers.results?.some((result) => result.workerId === workerId) ?? false;
 
