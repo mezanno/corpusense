@@ -5,7 +5,9 @@ import { generateManifest } from '@/utils/manifest';
 import { Manifest } from '@iiif/presentation-3';
 import { Archive } from 'lucide-react';
 // import imageBlobReduce from 'image-blob-reduce';
+import { useAppSelector } from '@/hooks/hooks';
 import { useUserManifests } from '@/hooks/useUserManifests';
+import { selectAuthStatus } from '@/state/selectors/auth';
 import * as pdfjsLib from 'pdfjs-dist';
 import { useState } from 'react';
 import Fireworks from 'react-canvas-confetti/dist/presets/fireworks';
@@ -110,6 +112,18 @@ const StoragePage = () => {
   const [manifestUrl, setManifestUrl] = useState<string | null>(null);
   const { existingManifests, loading, error } = useUserManifests();
   const [uploading, setUploading] = useState(false);
+  const isConnected = useAppSelector(selectAuthStatus) === 'authenticated';
+
+  if (!isConnected) {
+    return (
+      <div className='panel h-full w-full flex-col space-y-2'>
+        <h1 className='flex items-center text-2xl font-bold'>
+          <Archive className='mr-2' /> {t('page_title_storage')}
+        </h1>
+        <p>{t('info_not_connected_description')}</p>
+      </div>
+    );
+  }
 
   const hrefPath = `${window.location.origin}${import.meta.env.VITE_BASE_PATH ?? ''}/manifest?manifestId=`;
 

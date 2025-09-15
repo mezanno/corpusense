@@ -210,6 +210,7 @@
   "info_duplicate_menu": "Appliquer les regions de la page actuelle à d'autres pages",
   "info_recover_worker": "Reprendre un traitement non terminé",
   "info_not_connected": "Vous n'êtes pas connecté",
+  "info_not_connected_description": "Connectez-vous pour accéder à toutes les fonctionnalités de Corpusense.",
   "info_configuration_saved": "Configuration enregistrée",
   "info_manifest_loaded": "Manifest chargé avec succès",
   "info_model_saved": "Modèle de données enregistré avec succès",
