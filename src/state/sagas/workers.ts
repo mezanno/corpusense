@@ -103,7 +103,7 @@ function* forkStartWorker(worker: Worker | WorkerCreateDTO): Generator<Effect, v
  */
 function* startWorker(
   worker: Worker | WorkerCreateDTO,
-): Generator<Effect, void, WorkerResponse | Worker | undefined | Canvas | Canvas[] | Result> {
+): Generator<Effect, void, WorkerResponse | Worker | undefined | Canvas[] | Result> {
   const workerRepository = getWorkerRepository();
   let currentWorker: Worker | undefined = undefined;
   let task: Task | undefined = undefined;
@@ -148,16 +148,10 @@ function* startWorker(
       //initialize the worker queue if the scope is collection
       currentWorker.queue = [];
       if (isAnnotationScope(worker.scope) || isCanvasScope(worker.scope)) {
-        const canvas = (yield call(
-          [collectionRepository, collectionRepository.getCanvasById],
-          worker.scope.canvasId,
-          worker.scope.collectionId,
-        )) as Canvas;
         //add the canvas to the worker queue
         currentWorker.queue.push({
           id: 0,
           scope: worker.scope,
-          canvas,
           status: WorkerStatus.WAITING,
         });
       } else if (isCollectionScope(worker.scope)) {
@@ -180,7 +174,6 @@ function* startWorker(
         currentWorker.queue = canvases.map((canvas, index) => ({
           id: index,
           scope: { collectionId: collectionId, canvasId: canvas.id },
-          canvas,
           status: WorkerStatus.WAITING,
         }));
         yield call([workerRepository, workerRepository.patch], currentWorker.id, {

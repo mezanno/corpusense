@@ -3,7 +3,10 @@ import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
 import { isAnnotationScope, toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
-import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
+import {
+  getAnnotationRepository,
+  getCollectionRepository,
+} from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
@@ -18,7 +21,9 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   console.log(`Processing task for scope ${toString(task.scope)}`);
   const annotationRepository = getAnnotationRepository();
   try {
-    const image = getImage(task.canvas);
+    const collectionRepository = getCollectionRepository();
+    const canvas = await collectionRepository.getCanvasByScope(task.scope);
+    const image = getImage(canvas);
     let regions = JSON.stringify([]);
     if (isAnnotationScope(task.scope)) {
       const annotation = await annotationRepository.getById(task.scope.annotationId);
@@ -32,7 +37,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       ]);
     } else {
       const annotations = await annotationRepository.getByScope({
-        canvasId: task.canvas.id,
+        canvasId: canvas.id,
         collectionId: task.scope.collectionId,
       });
       const annotationRegions = annotations.filter(
@@ -61,7 +66,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       const peroResult = peroResultSchema.parse(gradioResult.data);
       const annotations = convertPeroTranscriptionsToAnnotations(
         peroResult,
-        task.canvas.id,
+        task.scope.canvasId,
         task.scope.collectionId,
       );
       const newAnnotations = await annotationRepository.addAll(annotations);

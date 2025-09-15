@@ -11,7 +11,10 @@ import {
 } from '@/data/models/converters/suryaSchema';
 import { isAnnotationScope } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
-import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
+import {
+  getAnnotationRepository,
+  getCollectionRepository,
+} from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
 import { getErrorMessage } from '@/utils/utils';
 
@@ -48,7 +51,8 @@ export async function suryaRun(
 ): Promise<WorkerResponse> {
   const annotationRepository = getAnnotationRepository();
   try {
-    const canvas = task.canvas;
+    const collectionRepository = getCollectionRepository();
+    const canvas = await collectionRepository.getCanvasByScope(task.scope);
     const image = getImage(canvas);
     let regions: Region[] = [];
     if (isAnnotationScope(task.scope)) {
@@ -63,7 +67,7 @@ export async function suryaRun(
       ];
     } else {
       const annotations = await annotationRepository.getByScope({
-        canvasId: task.canvas.id,
+        canvasId: task.scope.canvasId,
         collectionId: task.scope.collectionId,
       });
       const annotationRegions = annotations.filter(

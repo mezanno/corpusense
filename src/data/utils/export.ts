@@ -64,7 +64,7 @@ const generateCanvas = async (
   collectionId: string,
 ): Promise<Canvas> => {
   try {
-    const canvas = await getCollectionRepository().getCanvasById(canvasId, collectionId);
+    const canvas = await getCollectionRepository().getCanvasByScope({ canvasId, collectionId });
 
     let allAnnotationPages: AnnotationPage[] = [];
     //TODO: il faudra ajouter les annotations déjà existantes

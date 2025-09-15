@@ -1,4 +1,5 @@
 import { CollectionElement } from '@/data/models/CollectionElement';
+import { AnnotationScope, CanvasScope } from '@/data/models/Scope';
 import { Tag } from '@/data/models/Tag';
 import { Canvas } from '@iiif/presentation-3';
 import { groupBy, mapValues } from 'lodash';
@@ -68,18 +69,23 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     return canvases;
   }
 
-  async getCanvasById(canvasId: string, collectionId: string): Promise<Canvas> {
-    const collection = await this.getById(collectionId);
+  async getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<Canvas> {
+    const collection = await this.getById(scope.collectionId);
     if (collection === undefined) {
-      throw new Error(`Collection with id ${collectionId} not found`);
+      throw new Error(`Collection with id ${scope.collectionId} not found`);
     }
 
-    const collectionElement = collection.content.find((elt) => elt.canvasId === canvasId);
+    const collectionElement = collection.content.find((elt) => elt.canvasId === scope.canvasId);
     if (!collectionElement) {
-      throw new Error(`Canvas with id ${canvasId} not found in collection ${collectionId}`);
+      throw new Error(
+        `Canvas with id ${scope.canvasId} not found in collection ${scope.collectionId}`,
+      );
     }
 
-    return await getManifestRepository().getCanvasById(collectionElement.manifestId, canvasId);
+    return await getManifestRepository().getCanvasById(
+      collectionElement.manifestId,
+      scope.canvasId,
+    );
   }
 
   async create(collection: Collection): Promise<void> {

@@ -52,11 +52,10 @@ function* handleExportRequest(
       let csvLine = collectionToExport.name;
       const collectionElement = collectionToExport.content[i];
       try {
-        const canvas = (yield call(
-          [collectionRepository, collectionRepository.getCanvasById],
-          collectionElement.canvasId,
+        const canvas = (yield call([collectionRepository, collectionRepository.getCanvasByScope], {
+          canvasId: collectionElement.canvasId,
           collectionId,
-        )) as Canvas;
+        })) as Canvas;
 
         const image = getImage(canvas);
         const url = image.id;

@@ -6,7 +6,7 @@ import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
-import { Scope } from '@/data/models/Scope';
+import { AnnotationScope, CanvasScope, Scope } from '@/data/models/Scope';
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
@@ -34,7 +34,7 @@ export interface CollectionRepository {
   getById(id: string): Promise<Collection>;
   getTagsByCollectionId(collectionId: string): Promise<Tag[]>;
   getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]>;
-  getCanvasById(canvasId: string, collectionId: string): Promise<Canvas>;
+  getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<Canvas>;
 
   create(collection: Collection): Promise<void>;
   addContentToCollection(collection: Collection): Promise<void>;

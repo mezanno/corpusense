@@ -1,5 +1,4 @@
 import { PluginParams } from '@/state/reducers/workers';
-import { Canvas } from '@iiif/presentation-3';
 import { AnnotationScope, CanvasScope, Scope } from './Scope';
 
 export enum WorkerStatus {
@@ -15,7 +14,6 @@ export enum WorkerStatus {
 
 export interface Task {
   id: number;
-  canvas: Canvas; // The canvas associated with the task
   scope: CanvasScope | AnnotationScope;
   status: WorkerStatus;
   statusMessage?: string; //optional message to display in the UI

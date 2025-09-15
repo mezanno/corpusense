@@ -1,6 +1,9 @@
 import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
-import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
+import {
+  getAnnotationRepository,
+  getCollectionRepository,
+} from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
@@ -12,7 +15,9 @@ export const pluginCategory = 'Layout';
 
 export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   try {
-    const image = getImage(task.canvas);
+    const collectionRepository = getCollectionRepository();
+    const canvas = await collectionRepository.getCanvasByScope(task.scope);
+    const image = getImage(canvas);
 
     const response: Response = await fetch(`https://api.mezanno.xyz/layout?image_url=${image.id}`);
     if (!response.ok) {
@@ -26,9 +31,9 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     //convert the result into an array of Annotation
     const annotations = convertEdwinResult(
       data as EdwinBox[],
-      task.canvas.id,
+      canvas.id,
       task.scope.collectionId,
-      task.canvas.width ?? 0,
+      canvas.width ?? 0,
     );
     //and send it to the redux store
     const annotationRepository = getAnnotationRepository();
