@@ -1,3 +1,4 @@
+import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
 import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
@@ -7,6 +8,7 @@ interface CollectionsState {
   openedCollections: string[];
   currentCollection?: Collection; //the collection currently being viewed in the collection inspector
   loadedCanvases?: Canvas[]; //the canvases loaded for the current collection
+  canvasHasOcrAnnotations?: { [canvasId: string]: boolean }; //dictionary of canvas id -> hasOcrAnnotations
 }
 
 const initialState: CollectionsState = {
@@ -49,14 +51,19 @@ export const collectionsSlice = createSlice({
     loadCollectionRequest: (_state, _action: PayloadAction<string>) => {},
     loadCollectionSuccess: (
       state,
-      action: PayloadAction<{ collection: Collection; canvases: Canvas[] }>,
+      action: PayloadAction<{
+        collection: Collection;
+        canvases: Canvas[];
+        canvasHasOcrAnnotations: { [canvasId: string]: boolean };
+      }>,
     ) => {
-      const { collection, canvases } = action.payload;
+      const { collection, canvases, canvasHasOcrAnnotations } = action.payload;
       state.currentCollection = collection;
       if (state.openedCollections.find((id) => id === collection.id) === undefined) {
         state.openedCollections.push(collection.id);
       }
       state.loadedCanvases = canvases;
+      state.canvasHasOcrAnnotations = canvasHasOcrAnnotations;
     },
     setCollections: (state, action: PayloadAction<CollectionDetails[]>) => {
       state.values = action.payload;
@@ -101,6 +108,20 @@ export const collectionsSlice = createSlice({
     },
     importCollectionRequest: (_state, _action: PayloadAction<object>) => {},
     importCollectionsRequest: (_state, _action: PayloadAction<ArrayBuffer>) => {},
+    updateOcrStatus: (state, action: PayloadAction<Annotation[]>) => {
+      action.payload.forEach((annotation) => {
+        if (
+          annotation.collectionId === state.currentCollection?.id &&
+          state.canvasHasOcrAnnotations?.[annotation.canvasId] !== undefined &&
+          getAnnotationType(annotation) === ElementType.LINE
+        ) {
+          state.canvasHasOcrAnnotations = {
+            ...state.canvasHasOcrAnnotations,
+            [annotation.canvasId]: true,
+          };
+        }
+      });
+    },
   },
 });
 
@@ -122,5 +143,6 @@ export const {
   removeFromOpenedCollections,
   importCollectionRequest,
   importCollectionsRequest,
+  updateOcrStatus,
 } = collectionsSlice.actions;
 export default collectionsSlice.reducer;

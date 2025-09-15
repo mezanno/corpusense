@@ -32,6 +32,7 @@ import {
   takeEvery,
 } from 'redux-saga/effects';
 import { addAnnotationsSuccess } from '../reducers/annotations';
+import { updateOcrStatus } from '../reducers/collections';
 import { pushError, pushInfo } from '../reducers/events';
 import {
   addResult,
@@ -235,6 +236,7 @@ function* startWorker(
               };
               if (taskResult.content !== undefined && isAnnotationArray(taskResult.content)) {
                 yield put(addAnnotationsSuccess(taskResult.content));
+                yield put(updateOcrStatus(taskResult.content));
               }
               yield put(addResult(newResult));
             }

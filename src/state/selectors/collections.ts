@@ -32,3 +32,6 @@ export const selectModelIdOfCollection = createSelector(
   ],
   (values, collectionId) => values.find((elt) => elt.id === collectionId)?.modelId,
 );
+
+export const selectCanvasHasOcrAnnotations = (state: RootState, canvasId: string) =>
+  state.collections?.canvasHasOcrAnnotations?.[canvasId] ?? false;

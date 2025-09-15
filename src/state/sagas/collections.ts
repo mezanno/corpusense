@@ -1,3 +1,4 @@
+import { Annotation, ElementType } from '@/data/models/Annotation';
 import { Collection, CollectionDetails, ExportedCollection } from '@/data/models/Collection';
 import {
   getAnnotationRepository,
@@ -326,7 +327,7 @@ function* handleImportCollection(
 function* handleLoadCollection(
   action: PayloadAction<string>,
   // ): Generator<Effect, void, Collection | StoredItem[] | Canvas | Annotation[] | NamedEntity[]> {
-): Generator<Effect, void, Collection | Canvas[]> {
+): Generator<Effect, void, Collection | Canvas[] | Annotation[]> {
   try {
     const collectionRepository = getCollectionRepository();
 
@@ -358,7 +359,22 @@ function* handleLoadCollection(
       [collectionRepository, collectionRepository.getCanvasesByCollectionId],
       collectionToLoad.id,
     )) as Canvas[];
-    yield put(loadCollectionSuccess({ collection: collectionToLoad, canvases }));
+
+    //create a dictionary of canvas id -> hasOcrAnnotations
+    const annotationRepository = getAnnotationRepository();
+    const canvasHasOcrAnnotations: { [key: string]: boolean } = {};
+    for (const canvas of canvases) {
+      const annotations = (yield call(
+        [annotationRepository, annotationRepository.getByScopeAndTypes],
+        { collectionId: action.payload, canvasId: canvas.id },
+        [ElementType.LINE],
+      )) as Annotation[];
+      canvasHasOcrAnnotations[canvas.id] = annotations.length > 0;
+    }
+
+    yield put(
+      loadCollectionSuccess({ collection: collectionToLoad, canvases, canvasHasOcrAnnotations }),
+    );
 
     //load the entities of the collection
     // const annotationsIds = annotations.map((annotation) => annotation.id);
