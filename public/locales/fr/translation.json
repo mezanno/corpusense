@@ -254,5 +254,6 @@
   "worker_status_completed_with_errors": "Terminé (avec erreurs)",
   "worker_status_error": "Erreur",
   "worker_status_unfinished": "Non terminé",
-  "worker_status_unfinished_with_errors": "Non terminé (avec erreurs)"
+  "worker_status_unfinished_with_errors": "Non terminé (avec erreurs)",
+  "worker_status_all": "Tous les statuts"
 }

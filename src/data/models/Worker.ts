@@ -2,6 +2,7 @@ import { PluginParams } from '@/state/reducers/workers';
 import { AnnotationScope, CanvasScope, Scope } from './Scope';
 
 export enum WorkerStatus {
+  ALL = 'all', // Special status to represent all workers
   WAITING = 'waiting', // Worker is waiting to be processed
   INPROGRESS = 'inprogress', // Worker is currently being processed
   INPROGRESS_WITH_ERRORS = 'inprogress_with_errors', // Worker is being processed but encountered errors

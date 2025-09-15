@@ -121,6 +121,18 @@ const WorkersManagerPage = () => {
     },
   ];
 
+  const updateFilter = (filter: Filter) => {
+    if (filter.status === WorkerStatus.ALL) {
+      const allSelected = filters.every((f) => f.selected);
+      setFilters((prev) => prev.map((f) => ({ ...f, selected: !allSelected })));
+      return;
+    } else {
+      setFilters((prev) =>
+        prev.map((f) => (f.status === filter.status ? { ...f, selected: !f.selected } : f)),
+      );
+    }
+  };
+
   return (
     <div className='panel h-full w-full'>
       <ResizablePanelGroup direction='horizontal'>
@@ -128,16 +140,7 @@ const WorkersManagerPage = () => {
           <div className='flex h-full flex-col'>
             <div className='m-2 flex flex-wrap space-y-2 space-x-2'>
               {filters.map((filter) => (
-                <div
-                  key={filter.status}
-                  onClick={() =>
-                    setFilters((prev) =>
-                      prev.map((f) =>
-                        f.status === filter.status ? { ...f, selected: !f.selected } : f,
-                      ),
-                    )
-                  }
-                >
+                <div key={filter.status} onClick={() => updateFilter(filter)}>
                   <input
                     type='checkbox'
                     checked={filter.selected}
