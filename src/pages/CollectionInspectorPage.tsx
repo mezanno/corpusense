@@ -114,29 +114,37 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-              <CollectionToolbar collectionId={collectionId} />
+              {currentCollection.content.length > 0 && (
+                <CollectionToolbar collectionId={collectionId} />
+              )}
               <div className='panel h-full w-full overflow-hidden'>
-                <AutoSizer role='list'>
-                  {({ height, width }) => (
-                    <Grid
-                      columnCount={COLUMN_COUNT}
-                      columnWidth={width / COLUMN_COUNT}
-                      height={height}
-                      rowCount={Math.ceil(currentCollection.content.length / COLUMN_COUNT)}
-                      rowHeight={175}
-                      width={width}
-                      itemData={{
-                        collection: currentCollection,
-                        width: width / COLUMN_COUNT - 20,
-                        height: 165,
-                        setCanvasToDisplay,
-                        canvasToDisplay,
-                      }}
-                    >
-                      {GridCell}
-                    </Grid>
-                  )}
-                </AutoSizer>
+                {currentCollection.content.length > 0 ? (
+                  <AutoSizer role='list'>
+                    {({ height, width }) => (
+                      <Grid
+                        columnCount={COLUMN_COUNT}
+                        columnWidth={width / COLUMN_COUNT}
+                        height={height}
+                        rowCount={Math.ceil(currentCollection.content.length / COLUMN_COUNT)}
+                        rowHeight={175}
+                        width={width}
+                        itemData={{
+                          collection: currentCollection,
+                          width: width / COLUMN_COUNT - 20,
+                          height: 165,
+                          setCanvasToDisplay,
+                          canvasToDisplay,
+                        }}
+                      >
+                        {GridCell}
+                      </Grid>
+                    )}
+                  </AutoSizer>
+                ) : (
+                  <div className='flex h-full w-full items-center justify-center text-muted-foreground'>
+                    {t('info_empty_collection')}
+                  </div>
+                )}
               </div>
             </div>
           ) : (
