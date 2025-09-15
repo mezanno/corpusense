@@ -131,8 +131,10 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     });
   }
 
-  async delete(collectionToRemove: Collection): Promise<void> {
-    await db.transaction(
+  async delete(
+    collectionToRemove: Collection,
+  ): Promise<{ workersIds: string[]; collectionId: string }> {
+    return await db.transaction(
       'rw',
       [db.collections, db.collectionContents, db.annotations, db.workers, db.results],
       async () => {
@@ -143,10 +145,13 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
         });
         //remove the workers associated to the collection
         const workerRepository = getWorkerRepository();
-        await workerRepository.deleteByScope({ collectionId: collectionToRemove.id });
+        const workersIds = await workerRepository.deleteByScope({
+          collectionId: collectionToRemove.id,
+        });
         //remove the collection
         await db.collections.delete(collectionToRemove.id);
         await db.collectionContents.delete(collectionToRemove.id);
+        return { workersIds, collectionId: collectionToRemove.id };
       },
     );
   }

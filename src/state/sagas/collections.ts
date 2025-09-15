@@ -34,7 +34,7 @@ import {
   updateCollectionSuccess,
 } from '../reducers/collections';
 import { pushError, pushInfo } from '../reducers/events';
-import { removeWorkerByScopeRequest } from '../reducers/workers';
+import { removeWorkersSuccess } from '../reducers/workers';
 import { fetchManifestFromURL } from './manifests';
 
 function* fetchAllCollections(): Generator<
@@ -97,19 +97,22 @@ function* handleUpdateCollection(action: PayloadAction<Collection>) {
  */
 function* handleRemoveCollection(
   action: PayloadAction<string>,
-): Generator<Effect, void, Collection> {
-  const collectionId = action.payload; //id of the collection to remove
+): Generator<Effect, void, Collection | { workersIds: string[]; collectionId: string }> {
+  const id = action.payload; //id of the collection to remove
   try {
     const collectionRepository = getCollectionRepository();
-    const collectionToRemove = yield call(
+    const collectionToRemove = (yield call(
       [collectionRepository, collectionRepository.getById],
-      collectionId,
-    );
-    yield call([collectionRepository, collectionRepository.delete], collectionToRemove);
+      id,
+    )) as Collection;
+    const { workersIds, collectionId } = (yield call(
+      [collectionRepository, collectionRepository.delete],
+      collectionToRemove,
+    )) as { workersIds: string[]; collectionId: string };
     yield put(removeCollectionSuccess(collectionId));
+    yield put(removeWorkersSuccess(workersIds)); //remove workers associated to the collection
     //A priori, plus besoin de prévenir le store, si on supprime une collection, c'est que l'on est sur la page des collections
     // yield put(removeAnnotationSuccess(collectionId));
-    yield put(removeWorkerByScopeRequest({ collectionId })); //remove workers associated to the collection
     yield put(pushInfo(i18n.t('toast_collection_removed')));
   } catch (e) {
     yield put(pushError(getErrorMessage(e)));

@@ -45,7 +45,7 @@ export interface CollectionRepository {
   ): Promise<void>;
   updateTags(id: string, tags: string[]): Promise<void>;
 
-  delete(collectionToRemove: Collection): Promise<void>;
+  delete(collectionToRemove: Collection): Promise<{ workersIds: string[]; collectionId: string }>;
   deleteElement(collectionId: string, canvasId: string): Promise<Collection>;
 }
 
@@ -120,5 +120,5 @@ export interface WorkerRepository {
   patch(id: string, changes: Partial<Worker>): Promise<void>;
 
   deleteById(workerId: string): Promise<void>;
-  deleteByScope(scope: Scope): Promise<void>;
+  deleteByScope(scope: Scope): Promise<string[]>;
 }

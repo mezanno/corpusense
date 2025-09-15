@@ -1,4 +1,4 @@
-import { Scope } from '@/data/models/Scope';
+import { isCollectionScope, Scope } from '@/data/models/Scope';
 import { Worker, WorkerCreateDTO, WorkerStatus } from '@/data/models/Worker';
 import { v4 as uuid } from 'uuid';
 import { db } from './db';
@@ -43,13 +43,20 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     });
   }
 
-  async deleteByScope(scope: Scope): Promise<void> {
+  async deleteByScope(scope: Scope): Promise<string[]> {
     const scopeKey = computeScopeKey(scope);
-    const workersToDelete = await db.workers.where('scopeKey').equals(scopeKey).toArray();
+    let workersToDelete = [];
+    if (isCollectionScope(scope)) {
+      workersToDelete = await db.workers.where('scopeKey').startsWithIgnoreCase(scopeKey).toArray();
+    } else {
+      workersToDelete = await db.workers.where('scopeKey').equals(scopeKey).toArray();
+    }
     const workerIds = workersToDelete.map((worker) => worker.id);
     await db.transaction('rw', db.workers, db.results, async () => {
-      await db.workers.where('scopeKey').equals(scopeKey).delete();
+      await db.workers.bulkDelete(workerIds);
       await db.results.where('workerId').anyOf(workerIds).delete();
+      return workerIds;
     });
+    return [];
   }
 }
