@@ -32,6 +32,9 @@ const ModelsManagerPage = () => {
 
   const handleRemoveModel = (modelId: string) => {
     appDispatch(removeModelRequest(modelId));
+    if (selectedModelId === modelId) {
+      setSelectedModelId(null);
+    }
   };
 
   const handleDownloadModel = (modelId: string) => {
