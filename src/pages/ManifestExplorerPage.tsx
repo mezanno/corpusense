@@ -88,7 +88,10 @@ const ManifestExplorerPage = () => {
                     minSize={25}
                   >
                     <CanvasSelectionProvider canvasesLoaded={loadedData.content.items}>
-                      <CanvasGallery setCanvasToDisplay={setCanvasToDisplay} />
+                      <CanvasGallery
+                        setCanvasToDisplay={setCanvasToDisplay}
+                        canvasToDisplay={canvasToDisplay}
+                      />
                     </CanvasSelectionProvider>
                   </ResizablePanel>
                   <ResizableHandle withHandle />
@@ -116,5 +119,3 @@ export default ManifestExplorerPage;
 On est obligé de séparer CanvasesViewer et CanvasImageViewer à cause de Selecto. Si les deux sont dans le même composant, 
 Selecto empêche le fonctionnement correct de Annotorious.
 */
-
-//TODO il va falloir attribuer un uuid aux composants qui veulent afficher un CanvasImageViewer (à transmettre dans le store)

@@ -1,6 +1,5 @@
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
-import { Label as LabelIif, Thumbnail } from '@samvera/clover-iiif/primitives';
-import { Card, CardContent, CardHeader } from './ui/card';
+import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -23,6 +22,7 @@ import {
 import { selectCollections } from '@/state/selectors/collections';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import AutoSizer from 'react-virtualized-auto-sizer';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -39,10 +39,21 @@ interface CanvasCardProps {
   index: number;
   canvas: Canvas;
   manifestId: string;
-  onClick: (target: EventTarget, canvas: Canvas) => void;
+  thumbWidth: number;
+  thumbHeight: number;
+  canvasToDisplay: Canvas | undefined;
+  setCanvasToDisplay: (canvas: Canvas) => void;
 }
 
-const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => {
+const CanvasCard = ({
+  index,
+  canvas,
+  manifestId,
+  thumbWidth,
+  thumbHeight,
+  setCanvasToDisplay,
+  canvasToDisplay,
+}: CanvasCardProps) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -54,8 +65,6 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
     setSelectionEnd,
     setSelectionStart,
   } = useCanvasSelection();
-
-  if (isSelected(index)) console.log('is selected');
 
   const inputCollectionName = useRef(null);
   const thumbnail = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
@@ -86,8 +95,8 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
     );
   };
 
-  const handleClick = (target: EventTarget) => {
-    onClick(target, canvas);
+  const handleOnClick = () => {
+    setCanvasToDisplay(canvas);
   };
 
   const handleCopyToClipboard = () => {
@@ -114,6 +123,10 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
     setDialogOpen(false);
   };
 
+  const idDisplayed = canvasToDisplay?.id === canvas?.id;
+  const match = canvas.id.match(/f\d+/);
+  const canvasItemId = match ? match[0] : '';
+
   //TODO : il faut corriger le aria-label pour qu'il prenne une chaine de caractère
   return (
     <>
@@ -121,27 +134,33 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
       <ContextMenu modal={false}>
         <div className='flex h-full w-full justify-center'>
           <ContextMenuTrigger>
-            <Card
-              onClick={(e) => handleClick(e.target)}
-              className={`selectable-item h-fit w-fit ${isSelected(index) ? 'bg-blue-300' : 'bg-white'}`}
+            <div
+              className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition hover:scale-110 ${idDisplayed ? 'bg-amber-400' : 'bg-amber-100'} ${isSelected(index) ? 'border-2 border-amber-600' : ''} selectable-item`}
+              style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+              onClick={handleOnClick}
               data-index={index}
               data-canvas-id={canvas.id}
               role='listitem'
             >
-              <CardHeader>
-                <LabelIif className='text-center' label={canvas.label ? canvas.label : {}} />
-              </CardHeader>
-              <CardContent>
-                <Thumbnail
-                  thumbnail={thumbnail}
-                  style={{ width: 'auto', height: '100px', objectFit: 'contain' }}
-                  className='w-fit'
-                  aria-label={t('aria_label_thumbnail_canvas', {
-                    canvas: canvas.label ? canvas.label : '',
-                  })}
-                />
-              </CardContent>
-            </Card>
+              <div className='w-fit flex-1'>
+                <AutoSizer disableWidth>
+                  {({ height }) => (
+                    <Thumbnail
+                      thumbnail={thumbnail}
+                      style={{ width: 'auto', height: `${height}px`, objectFit: 'contain' }}
+                      aria-label='canvas thumbnail'
+                      draggable={false}
+                    />
+                  )}
+                </AutoSizer>
+              </div>
+              <div className='flex w-full justify-between p-1 text-xs'>
+                {canvas.label !== undefined && canvas.label !== null && (
+                  <span>{canvas.label.none}</span>
+                )}
+                <span className='text-gray-600 italic'>{canvasItemId}</span>
+              </div>
+            </div>
           </ContextMenuTrigger>
         </div>
 

@@ -16,12 +16,16 @@ interface GridCellProps {
   data: {
     canvases: Canvas[];
     manifestId: string;
-    handleCardClick: (target: EventTarget, canvas: Canvas) => void;
+    width: number;
+    height: number;
+    colCount: number;
+    canvasToDisplay: Canvas | undefined;
+    setCanvasToDisplay: (canvas: Canvas) => void;
   };
 }
 
 const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => {
-  const index = rowIndex * 4 + columnIndex;
+  const index = rowIndex * data.colCount + columnIndex;
   //we return an empty div if the index is out of bounds
   //this is to avoid the error "index out of bounds" when using react-window
   if (index >= data.canvases.length) {
@@ -45,17 +49,22 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
     >
       <CanvasCard
         canvas={canvas}
-        onClick={data.handleCardClick}
         index={index}
         manifestId={data.manifestId}
+        thumbWidth={data.width}
+        thumbHeight={data.height}
+        setCanvasToDisplay={data.setCanvasToDisplay}
+        canvasToDisplay={data.canvasToDisplay}
       />
     </div>
   );
 };
 
 const CanvasGallery = ({
+  canvasToDisplay,
   setCanvasToDisplay,
 }: {
+  canvasToDisplay: Canvas | undefined;
   setCanvasToDisplay: (canvas: Canvas) => void;
 }) => {
   const { t } = useTranslation();
@@ -63,27 +72,24 @@ const CanvasGallery = ({
   const manifestId = useAppSelector(selectManifestURL);
   const { setSelection } = useCanvasSelection();
 
+  const [colCount, setColCount] = useState(5);
+
   const containerRef = useRef(null);
-  const [_focused, setFocused] = useState<EventTarget | null>(null);
-
-  const handleCardClick = (target: EventTarget, canvas: Canvas) => {
-    setFocused((prev) => {
-      if (prev !== null) {
-        (prev as HTMLElement).classList.remove('border-red-500');
-        (prev as HTMLElement).classList.remove('border-2');
-      }
-      (target as HTMLElement).classList.add('border-red-500');
-      (target as HTMLElement).classList.add('border-2');
-      return target;
-    });
-
-    if (canvas != null) {
-      setCanvasToDisplay(canvas);
-    }
-  };
 
   const handleSelect = (e: OnSelect) => {
     setSelection(e.selected.map((el) => el.dataset.index).map(Number));
+  };
+
+  const handleOnResize = (size: { height: number; width: number }) => {
+    if (size.width < 200) {
+      setColCount(2);
+    } else if (size.width < 400) {
+      setColCount(3);
+    } else if (size.width < 600) {
+      setColCount(4);
+    } else {
+      setColCount(5);
+    }
   };
 
   return (
@@ -91,7 +97,7 @@ const CanvasGallery = ({
       {canvases.length == 0 ? (
         <div role='alert'>{t('info_empty_manifest')}</div>
       ) : (
-        <>
+        <div className='h-full w-full overflow-hidden'>
           <Selecto
             container={containerRef.current}
             selectableTargets={['.selectable-item']}
@@ -101,22 +107,30 @@ const CanvasGallery = ({
             hitRate={0}
             onSelect={handleSelect}
           />
-          <AutoSizer ref={containerRef} role='list'>
+          <AutoSizer ref={containerRef} role='list' onResize={handleOnResize}>
             {({ height, width }) => (
               <Grid
-                columnCount={4}
-                columnWidth={width / 4 - 10}
+                columnCount={colCount}
+                columnWidth={width / colCount}
                 height={height}
-                rowCount={Math.ceil(canvases.length / 4)}
-                rowHeight={150}
+                rowCount={Math.ceil(canvases.length / colCount)}
+                rowHeight={175}
                 width={width}
-                itemData={{ canvases, manifestId, handleCardClick }}
+                itemData={{
+                  canvases,
+                  manifestId,
+                  canvasToDisplay,
+                  setCanvasToDisplay,
+                  width: width / colCount - 20,
+                  height: 165,
+                  colCount: colCount,
+                }}
               >
                 {GridCell}
               </Grid>
             )}
           </AutoSizer>
-        </>
+        </div>
       )}
     </section>
   );
