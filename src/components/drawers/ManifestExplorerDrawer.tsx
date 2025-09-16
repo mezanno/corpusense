@@ -6,6 +6,7 @@ import useAppNavigation from '@/hooks/useAppNavigation';
 import { fecthManifestRequest, resetManifestOpenEvent } from '@/state/reducers/manifests';
 import { selectManifestOpenEvent, selectManifestURL } from '@/state/selectors/manifests';
 import { zodResolver } from '@hookform/resolvers/zod';
+import i18next from 'i18next';
 import { FolderOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -25,7 +26,10 @@ import {
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form';
 
 const contentFormSchema = z.object({
-  manifestInput: z.string(),
+  manifestInput: z
+    .string()
+    .trim()
+    .min(1, { message: i18next.t('form_error_required') }),
 });
 
 const ManifestPastForm = ({ handleClose }: handleCloseProps) => {
