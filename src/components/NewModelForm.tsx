@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { createModelRequest } from '@/state/reducers/models';
 import { selectModels } from '@/state/selectors/models';
 import { zodResolver } from '@hookform/resolvers/zod';
+import i18next from 'i18next';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -12,7 +13,10 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const formSchema = z.object({
-  name: z.string(),
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: i18next.t('form_error_required') }),
   description: z.string().optional(),
   fromModelId: z.string().optional(),
 });
@@ -26,14 +30,10 @@ const NewModelForm = ({ close }: { close: () => void }) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      description: '',
-      fromModelId: '',
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log('values', values);
-
     appDispatch(
       createModelRequest({
         name: values.name,

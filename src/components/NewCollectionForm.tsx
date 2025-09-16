@@ -18,9 +18,10 @@ import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 const formSchema = z.object({
-  name: z.string().min(4, {
-    message: i18next.t('error_collection_name_length'),
-  }),
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: i18next.t('form_error_required') }),
 });
 
 const NewCollectionForm = ({ close }: { close: () => void }) => {

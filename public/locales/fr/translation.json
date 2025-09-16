@@ -124,6 +124,7 @@
   "form_label_mistral_api_key": "Clé API Mistral",
   "form_label_mistral_modelname": "Modèle API Mistral",
   "form_label_prompt_mistral": "Prompt Mistral (laissez vide pour utiliser le prompt par défaut - utilisez {{schema}} pour ajouter le schéma du modèle)",
+  "form_error_required": "Ce champ est requis",
   "title_metadata_gallica": "Métadonnées Gallica",
   "title_metadata_corpusense": "Métadonnées Corpusense",
   "title_metadata_collection": "Métadonnées de la collection",
