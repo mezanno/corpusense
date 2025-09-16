@@ -101,7 +101,11 @@ function* handleFetchManifest(action: {
       }
     } else {
       // yield call(fetchManifest, { fetchFunction: () => JSON.parse(manifestInput) as object });
-      yield put(fetchManifestError(i18n.t('error_loading_manifest')));
+      yield put(
+        fetchManifestError(
+          i18n.t('error_loading_manifest', { error: i18n.t('error_invalid_manifest_input') }),
+        ),
+      );
     }
   } catch (error) {
     const msg = i18n.t('error_loading_manifest', { error: getErrorMessage(error) });
