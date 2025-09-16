@@ -49,9 +49,9 @@ const ModelsManagerPage = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nom du modèle</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>{t('form_label_model_name')}</TableHead>
+              <TableHead>{t('form_label_model_description')}</TableHead>
+              <TableHead>{t('table_col_title_actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

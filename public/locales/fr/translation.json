@@ -129,7 +129,7 @@
   "title_metadata_collection": "Métadonnées de la collection",
   "title_recently_opened": "Ouvert(s) récemment :",
   "title_collection_actions": "Actions sur la collection :",
-  "title_active_model": "Modèle actif : ",
+  "title_active_model": "Modèle sélectionné : ",
   "title_generate_data": "Généreration de données structurées",
   "title_entities_in_annotation": "Entités nommées dans cette annotation",
   "title_login": "Connectez-vous !",
@@ -261,5 +261,7 @@
   "worker_status_error": "Erreur",
   "worker_status_unfinished": "Non terminé",
   "worker_status_unfinished_with_errors": "Non terminé (avec erreurs)",
-  "worker_status_all": "Tous les statuts"
+  "worker_status_all": "Tous les statuts",
+  "model_field_string": "Texte",
+  "model_field_number": "Nombre"
 }

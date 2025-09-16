@@ -29,12 +29,13 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
   const [modelName, setModelName] = useState(model?.name ?? '');
 
   const options = [
-    { value: 'string', label: 'Texte' },
-    { value: 'number', label: 'Nombre' },
+    { value: 'string', label: t('model_field_string') },
+    { value: 'number', label: t('model_field_number') },
   ];
 
   useEffect(() => {
     if (model !== undefined) {
+      setModelName(model.name);
       setFields(model.fields);
       setDescription(model.description ?? '');
       setPrompt(model.prompt ?? '');
