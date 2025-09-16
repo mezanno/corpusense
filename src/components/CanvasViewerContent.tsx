@@ -135,6 +135,7 @@ export const CanvasViewerContent = ({
     const value = annotation.bodies[0]?.value ?? ElementType.TAG;
     return {
       stroke: colors[value] || '#000000',
+      strokeWidth: 2,
       fill: colors[value] || '#000000',
       fillOpacity: (state?.hovered ?? false) || hoveredElement === annotation.id ? 0.3 : 0.1,
     } as DrawingStyleExpression;
@@ -155,6 +156,8 @@ export const CanvasViewerContent = ({
       gestureSettingsMouse: {
         clickToZoom: false,
       },
+      tileRetryMax: 5,
+      tileRetryDelay: 2000,
     }),
     [cvcState?.source],
   );
