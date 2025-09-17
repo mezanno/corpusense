@@ -220,8 +220,10 @@ function* startWorker(
                 scope: task.scope,
                 workerName: currentWorker.name,
                 workerId: currentWorker.id,
-                // value: taskResult.content,
-                value: '',
+                value:
+                  taskResult.content !== undefined && typeof taskResult.content === 'string'
+                    ? taskResult.content
+                    : undefined,
                 taskId: task.id,
                 params: worker.params,
               };
