@@ -26,8 +26,6 @@ import { useParams } from 'react-router-dom';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeGrid as Grid } from 'react-window';
 
-const COLUMN_COUNT = 5;
-
 interface GridCellProps {
   columnIndex: number;
   rowIndex: number;
@@ -36,13 +34,14 @@ interface GridCellProps {
     collection: Collection;
     width: number;
     height: number;
+    colCount: number;
     canvasToDisplay: Canvas | undefined;
     setCanvasToDisplay: (canvas: Canvas) => void;
   };
 }
 
 const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => {
-  const index = rowIndex * COLUMN_COUNT + columnIndex;
+  const index = rowIndex * data.colCount + columnIndex;
   //we return an empty div if the index is out of bounds
   //this is to avoid the error "index out of bounds" when using react-window
   if (index >= data.collection.content.length) {
@@ -80,6 +79,7 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
   const currentCollection = useAppSelector(selectCurrentCollection);
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | undefined>(undefined);
   const [activeTab, setActiveTab] = useState('document');
+  const [colCount, setColCount] = useState(6);
 
   useEffect(() => {
     if (canvasToDisplay !== undefined) {
@@ -87,6 +87,20 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
       appDispatch(loadEntitiesRequest({ canvasId: canvasToDisplay.id, collectionId }));
     }
   }, [canvasToDisplay]);
+
+  const handleOnResize = (size: { height: number; width: number }) => {
+    if (size.width < 200) {
+      setColCount(3);
+    } else if (size.width < 800) {
+      setColCount(4);
+    } else if (size.width < 1000) {
+      setColCount(5);
+    } else if (size.width < 1200) {
+      setColCount(6);
+    } else {
+      setColCount(7);
+    }
+  };
 
   return (
     <section className='h-full max-h-full w-full max-w-full'>
@@ -119,21 +133,22 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
               )}
               <div className='panel h-full w-full overflow-hidden'>
                 {currentCollection.content.length > 0 ? (
-                  <AutoSizer role='list'>
+                  <AutoSizer role='list' onResize={handleOnResize}>
                     {({ height, width }) => (
                       <Grid
-                        columnCount={COLUMN_COUNT}
-                        columnWidth={width / COLUMN_COUNT}
+                        columnCount={colCount}
+                        columnWidth={width / colCount}
                         height={height}
-                        rowCount={Math.ceil(currentCollection.content.length / COLUMN_COUNT)}
+                        rowCount={Math.ceil(currentCollection.content.length / colCount)}
                         rowHeight={175}
                         width={width}
                         itemData={{
                           collection: currentCollection,
-                          width: width / COLUMN_COUNT - 20,
+                          width: width / colCount - 20,
                           height: 165,
                           setCanvasToDisplay,
                           canvasToDisplay,
+                          colCount: colCount,
                         }}
                       >
                         {GridCell}
