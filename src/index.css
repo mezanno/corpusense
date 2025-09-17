@@ -72,7 +72,7 @@
 
 :root {
   /* Couleurs principales */
-  --background: var(--color-eggshell); /* ok */
+  --background: var(--color-saffron-700); /* ok */
   --foreground: var(--color-dark-slate-gray-100); /* ok */
   --foreground-secondary: var(--color-dark-slate-gray-100);
   --foreground-button: var(--color-eggshell-500);

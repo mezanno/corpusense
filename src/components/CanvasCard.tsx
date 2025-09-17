@@ -135,7 +135,7 @@ const CanvasCard = ({
         <div className='flex h-full w-full justify-center'>
           <ContextMenuTrigger>
             <div
-              className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-700' : 'bg-saffron-900'} ${isSelected(index) ? 'ring-2 ring-saffron-300' : ''} selectable-item`}
+              className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-400' : 'bg-saffron-900'} ${isSelected(index) ? 'ring-2 ring-saffron-300' : ''} selectable-item`}
               style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
               onClick={handleOnClick}
               data-index={index}

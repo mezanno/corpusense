@@ -175,7 +175,7 @@ export const CanvasViewerContent = ({
       >
         <OpenSeadragonViewer
           aria-label='canvas viewer'
-          className='h-full w-full bg-cerulean-900'
+          className='h-full w-full'
           options={options}
         />
       </div>

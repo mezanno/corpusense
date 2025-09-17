@@ -61,7 +61,7 @@ const GridThumb = ({
 
   return (
     <div
-      className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-700' : 'bg-saffron-900'} `}
+      className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-400' : 'bg-saffron-900'} `}
       style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
       onClick={handleOnClick}
       role='listitem'
