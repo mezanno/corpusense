@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -67,7 +66,7 @@ const ConfigurationPage = () => {
   }
 
   return (
-    <section className='panel h-full'>
+    <section className='panel h-full flex-col'>
       <h1 className='text-xl'>{t('page_title_configuration')}</h1>
       <div className='mt-2 w-1/2'>
         <Form {...form}>
@@ -111,9 +110,9 @@ const ConfigurationPage = () => {
                 </FormItem>
               )}
             />
-            <Button type='submit' title={t('btn_save')}>
+            <button className='soft-button' type='submit' title={t('btn_save')}>
               {t('btn_save')}
-            </Button>
+            </button>
           </form>
         </Form>
       </div>
