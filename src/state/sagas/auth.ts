@@ -15,7 +15,6 @@ function* loadConnectedUser(): Generator<
   const { data, error } = yield call([supabase.auth, supabase.auth.getUser]);
   if (error !== null) {
     yield put(loginFailure(getErrorMessage(error)));
-    throw error;
   }
   yield put(loginSuccess({ user: data.user, session: data.session }));
 }
