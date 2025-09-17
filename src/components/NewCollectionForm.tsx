@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -56,9 +55,9 @@ const NewCollectionForm = ({ close }: { close: () => void }) => {
             </FormItem>
           )}
         />
-        <Button type='submit' title={t('btn_create')}>
+        <button className='soft-button' type='submit' title={t('btn_create')}>
           {t('btn_create')}
-        </Button>
+        </button>
       </form>
     </Form>
   );

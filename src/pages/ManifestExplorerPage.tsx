@@ -53,7 +53,7 @@ const ManifestExplorerPage = () => {
             </>
           )}
 
-          <ResizablePanel id='canvas-panel' order={3} minSize={30} className='panel relative'>
+          <ResizablePanel id='canvas-panel' order={3} minSize={30} className='panel'>
             <CanvasViewer canvas={canvasToDisplay} />
           </ResizablePanel>
         </>

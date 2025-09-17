@@ -127,7 +127,7 @@ const CollectionsSideBarGroup = () => {
                       <SidebarMenuSubItem key={col.id}>
                         <SidebarMenuSubButton className='h-auto' asChild>
                           <div>
-                            <CornerDownRight />
+                            <CornerDownRight color='#fcfbf6' />
                             <Link
                               to={`/${CorpusenseRoutes.COLLECTIONS}/${col.id}`}
                               className='h-full w-full'
@@ -193,7 +193,7 @@ const SourcesSideBarGroup = () => {
                   <SidebarMenuSubItem key={item.title}>
                     <SidebarMenuSubButton className='h-auto' asChild>
                       <Link to={item.url}>
-                        <item.icon />
+                        <item.icon color='#fcfbf6' />
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuSubButton>

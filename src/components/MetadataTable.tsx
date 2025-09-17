@@ -5,7 +5,6 @@ import { selectLoadedManifest } from '@/state/selectors/manifests';
 import { CirclePlus, CircleX } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 
@@ -77,17 +76,13 @@ const MetadataTable = ({ manifestId }: { manifestId: string }) => {
         </TableBody>
       </Table>
 
-      <button
-        title={t('btn_add_metadata')}
-        onClick={handleAddMetadata}
-        className='flex cursor-pointer items-center justify-center space-x-2 rounded-xl border-2 p-2'
-      >
+      <button title={t('btn_add_metadata')} onClick={handleAddMetadata} className='soft-button'>
         <CirclePlus />
         <span>{t('btn_add_metadata')}</span>
       </button>
-      <Button onClick={handleOnSave} title={t('btn_save')}>
+      <button onClick={handleOnSave} title={t('btn_save')} className='soft-button'>
         {t('btn_save')}
-      </Button>
+      </button>
     </div>
   );
 };

@@ -135,7 +135,7 @@ const CanvasCard = ({
         <div className='flex h-full w-full justify-center'>
           <ContextMenuTrigger>
             <div
-              className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition hover:scale-110 ${idDisplayed ? 'bg-amber-400' : 'bg-amber-100'} ${isSelected(index) ? 'border-2 border-amber-600' : ''} selectable-item`}
+              className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-700' : 'bg-saffron-900'} ${isSelected(index) ? 'ring-2 ring-saffron-300' : ''} selectable-item`}
               style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
               onClick={handleOnClick}
               data-index={index}
@@ -154,11 +154,11 @@ const CanvasCard = ({
                   )}
                 </AutoSizer>
               </div>
-              <div className='flex w-full justify-between p-1 text-xs'>
+              <div className='flex w-full justify-between p-1 text-xs font-bold text-dark-slate-gray-300'>
                 {canvas.label !== undefined && canvas.label !== null && (
                   <span>{canvas.label.none}</span>
                 )}
-                <span className='text-gray-600 italic'>{canvasItemId}</span>
+                <span className='italic'>{canvasItemId}</span>
               </div>
             </div>
           </ContextMenuTrigger>

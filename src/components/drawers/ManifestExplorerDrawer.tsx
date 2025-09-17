@@ -12,7 +12,6 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { Button } from '../ui/button';
 import {
   Drawer,
   DrawerClose,
@@ -89,7 +88,9 @@ const ManifestPastForm = ({ handleClose }: handleCloseProps) => {
               </FormItem>
             )}
           />
-          <Button type='submit'>{t('btn_open')}</Button>
+          <button className='soft-button' type='submit'>
+            {t('btn_open')}
+          </button>
         </form>
       </Form>
     </div>
@@ -115,10 +116,7 @@ const ManifestExplorerDrawer = () => {
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
-        <button
-          className='align-center flex cursor-pointer items-center justify-center gap-2 space-x-2 rounded-xl border-2 bg-white p-2 hover:bg-gray-400 hover:text-white'
-          aria-label={t('btn_open_manifest')}
-        >
+        <button className='soft-button' aria-label={t('btn_open_manifest')}>
           <FolderOpen size={16} />
           {t('btn_open_manifest')}
         </button>
@@ -133,7 +131,7 @@ const ManifestExplorerDrawer = () => {
         <ManifestPastForm handleClose={() => setIsOpen(false)} />
         <DrawerFooter>
           <DrawerClose>
-            <div className='rounded-md border border-black p-2'>{t('btn_cancel')}</div>
+            <div className='soft-button'>{t('btn_cancel')}</div>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

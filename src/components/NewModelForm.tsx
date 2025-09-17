@@ -7,7 +7,6 @@ import i18next from 'i18next';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { Button } from './ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -98,9 +97,9 @@ const NewModelForm = ({ close }: { close: () => void }) => {
             </FormItem>
           )}
         />
-        <Button type='submit' title={t('btn_create')}>
+        <button className='soft-button' type='submit' title={t('btn_create')}>
           {t('btn_create')}
-        </Button>
+        </button>
       </form>
     </Form>
   );

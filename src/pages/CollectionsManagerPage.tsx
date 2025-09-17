@@ -110,6 +110,7 @@ const CollectionTableRow = ({
       </TableCell>
       <TableCell className='space-x-2 align-middle'>
         <Button
+          className='cursor-pointer'
           variant='destructive'
           onClick={(event) => {
             event.stopPropagation();
@@ -163,8 +164,8 @@ const CollectionsManagerPage = () => {
   };
 
   return (
-    <div className='flex h-full w-full flex-col items-center space-y-4 rounded-2xl border-1 bg-white'>
-      <section className='mt-2 ml-4 flex w-full space-x-2'>
+    <div className='panel flex-col items-center space-y-4'>
+      <section className='mt-2 ml-4 flex w-full justify-center space-x-2'>
         <AlertDialogForm
           title={t('btn_create_collection')}
           description={t('description_create_collection')}
@@ -251,11 +252,9 @@ const CollectionsManagerPage = () => {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className='soft-button bg-white'>
-                  {t('btn_no')}
-                </AlertDialogCancel>
+                <AlertDialogCancel className='soft-button'>{t('btn_no')}</AlertDialogCancel>
                 <AlertDialogAction
-                  className='soft-button bg-red-400 hover:bg-red-700'
+                  className='soft-button bg-red-400 text-white hover:bg-red-700'
                   onClick={handleDelete}
                 >
                   {t('btn_yes')}

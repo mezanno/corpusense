@@ -38,10 +38,7 @@ const HistoryDrawer = () => {
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
-        <button
-          className='align-center flex cursor-pointer items-center justify-center gap-2 space-x-2 rounded-xl border-2 bg-white p-2 hover:bg-gray-400 hover:text-white'
-          aria-label={t('btn_open_history')}
-        >
+        <button className='soft-button' aria-label={t('btn_open_history')}>
           <History size={16} />
           {t('btn_open_history')}
         </button>
@@ -56,7 +53,7 @@ const HistoryDrawer = () => {
         <HistoryNav />
         <DrawerFooter>
           <DrawerClose>
-            <div className='rounded-md border border-black p-2'>{t('btn_cancel')}</div>
+            <div className='soft-button'>{t('btn_cancel')}</div>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

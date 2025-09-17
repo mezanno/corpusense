@@ -111,7 +111,7 @@ const AnnotationForm = ({
         <form
           // eslint-disable-next-line @typescript-eslint/no-misused-promises
           onSubmit={form.handleSubmit(onSubmit)}
-          className='relative mx-auto flex-col space-y-2'
+          className='mx-auto w-full flex-col space-y-2'
         >
           <div className='flex flex-col gap-2'>
             <FormField
@@ -163,9 +163,9 @@ const AnnotationForm = ({
               )}
             />
           </div>
-          <Button type='submit' variant='outline' className='cursor-pointer'>
+          <button type='submit' className='soft-button'>
             <Save /> {t('btn_save')}
-          </Button>
+          </button>
         </form>
       </Form>
 

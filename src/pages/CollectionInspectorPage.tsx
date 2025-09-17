@@ -96,7 +96,7 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
             <div className='flex h-full max-h-full w-full max-w-full flex-col gap-2'>
               <Accordion
                 asChild
-                className='panel'
+                className='panel flex-col'
                 type='single'
                 collapsible
                 defaultValue='metadata' //this open the metadata by default

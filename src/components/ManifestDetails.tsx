@@ -42,16 +42,12 @@ const ManifestDetails = () => {
         <div className='flex h-full w-full flex-col items-center space-y-2'>
           <Summary
             as='h2'
-            className='text-center text-lg font-bold text-mezanno-4'
+            className='text-center text-lg font-bold'
             summary={manifest.summary as InternationalString}
           />
           <Thumbnail thumbnail={thumbnail} />
-          <Label
-            label={manifest.label ?? { none: [''] }}
-            as='h3'
-            className='text-center text-mezanno-4'
-          />
-          <h4 className='w-full text-sm font-bold break-words text-mezanno-4'>{manifest.id}</h4>
+          <Label label={manifest.label ?? { none: [''] }} as='h3' className='text-center' />
+          <h4 className='w-full text-sm font-bold break-words'>{manifest.id}</h4>
           <section className='w-full rounded-md border p-2' aria-labelledby='metadata_gallica'>
             <h3 id='metadata_gallica' className='text-xl'>
               {t('title_metadata_gallica')}

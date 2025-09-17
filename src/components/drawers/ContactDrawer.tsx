@@ -9,7 +9,6 @@ import Fireworks from 'react-canvas-confetti/dist/presets/fireworks';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { Button } from '../ui/button';
 import {
   Drawer,
   DrawerClose,
@@ -134,7 +133,9 @@ const ContactForm = ({ handleClose }: handleCloseProps) => {
               </FormItem>
             )}
           />
-          <Button type='submit'>{t('btn_send')}</Button>
+          <button className='soft-button' type='submit'>
+            {t('btn_send')}
+          </button>
           {showFireworks && <Fireworks autorun={{ speed: 2, duration: 4 }} />}
         </form>
       </Form>
@@ -157,10 +158,7 @@ const ContactDrawer = () => {
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
-        <button
-          className='align-center flex cursor-pointer items-center justify-center gap-2 space-x-2 rounded-xl border-2 bg-white p-2 hover:bg-gray-400 hover:text-white'
-          aria-label={t('btn_open_contact')}
-        >
+        <button className='soft-button' aria-label={t('btn_open_contact')}>
           <Mail size={16} />
           {t('btn_open_contact')}
         </button>
@@ -175,7 +173,7 @@ const ContactDrawer = () => {
         <ContactForm handleClose={() => setIsOpen(false)} />
         <DrawerFooter>
           <DrawerClose>
-            <div className='rounded-md border border-black p-2'>{t('btn_cancel')}</div>
+            <div className='soft-button'>{t('btn_cancel')}</div>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

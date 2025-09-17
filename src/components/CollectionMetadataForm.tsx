@@ -14,7 +14,6 @@ import { useTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import { z } from 'zod';
 import './taginput.css'; //permet d'enlever le background transparent du taginput
-import { Button } from './ui/button';
 import {
   Form,
   FormControl,
@@ -188,7 +187,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
               control={form.control}
               name='tags'
               render={({ field }) => (
-                <FormItem className='flex w-1/2 flex-col items-start'>
+                <FormItem className='flex flex-col items-start'>
                   <FormLabel className='text-left'>{t('form_label_tags')}</FormLabel>
                   <FormControl id='test'>
                     {/* @ts-expect-error TagInput */}
@@ -219,9 +218,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
           </div>
         </div>
         <div className='flex w-full items-center justify-start pt-3'>
-          <Button className='rounded-lg' size='sm'>
-            {t('btn_save')}
-          </Button>
+          <button className='soft-button'>{t('btn_save')}</button>
         </div>
       </form>
     </Form>

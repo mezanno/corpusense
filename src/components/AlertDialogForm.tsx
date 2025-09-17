@@ -33,10 +33,7 @@ const AlertDialogForm = ({
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       {trigger !== undefined && (
-        <AlertDialogTrigger
-          title={title}
-          className='align-center flex cursor-pointer items-center justify-center gap-2 space-x-2 rounded-xl border-2 border-gray-200 p-2 hover:bg-gray-50'
-        >
+        <AlertDialogTrigger title={title} className='soft-button'>
           {trigger}
         </AlertDialogTrigger>
       )}
@@ -47,7 +44,9 @@ const AlertDialogForm = ({
         </AlertDialogHeader>
         {children({ close })}
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setIsOpen(false)}>{t('btn_cancel')}</AlertDialogCancel>
+          <AlertDialogCancel className='soft-button' onClick={() => setIsOpen(false)}>
+            {t('btn_cancel')}
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
