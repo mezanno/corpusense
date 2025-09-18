@@ -24,8 +24,6 @@ import {
   setHistory,
 } from '../reducers/manifests';
 
-const keys = Object.keys(importerPlugins);
-
 /**
  * Side effect to fetch a manifest from a URL. First, it checks if the manifest is already
  * stored in IndexedDB. If it is, it uses the stored manifest. If not, it fetches the manifest
@@ -34,14 +32,13 @@ const keys = Object.keys(importerPlugins);
  */
 function* fetchManifestFromURL(url: string): Generator<Effect, Manifest, Manifest> {
   console.log('handleFetchManifestFromURL ', url);
-
+  const keys = Object.keys(importerPlugins);
   try {
     const manifestRepository = getManifestRepository();
     //if the manifest is already stored in IndexedDB, we return it
     return yield call([manifestRepository, manifestRepository.getById], url);
   } catch (error) {
-    console.log('Manifest not found in IndexedDB, fetching from URL: ', url);
-
+    console.log('Manifest not found in IndexedDB');
     // If the manifest is not found in IndexedDB, we try to fetch it from the URL
     const importerKey = keys.find((key) => url.includes(key));
     const importer =
