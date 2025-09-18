@@ -105,7 +105,7 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
   return (
     <section className='h-full max-h-full w-full max-w-full'>
       <ResizablePanelGroup direction='horizontal'>
-        <ResizablePanel className='mr-1 flex' minSize={30}>
+        <ResizablePanel className='mr-1 flex min-h-0 min-w-0' minSize={30}>
           {currentCollection ? (
             <div className='flex h-full max-h-full w-full max-w-full flex-col gap-2'>
               <Accordion
@@ -168,7 +168,7 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
             </div>
           )}
         </ResizablePanel>
-        <ResizableHandle withHandle />
+        <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
         <ResizablePanel className='ml-1 flex-1 overflow-hidden' minSize={30}>
           {canvasToDisplay === undefined ? (
             <div className='panel flex h-full w-full items-center justify-center text-2xl text-red-500'>

@@ -29,12 +29,12 @@ const ManifestExplorerPage = () => {
         <ResizablePanel
           order={1}
           id='metadata-panel'
-          className='panel flex justify-center'
+          className='panel grow justify-center'
           minSize={25}
         >
           <ManifestDetails />
         </ResizablePanel>
-        <ResizableHandle withHandle />
+        <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
       </>
 
       {!isLoading && isLoaded && (
@@ -49,7 +49,7 @@ const ManifestExplorerPage = () => {
                   />
                 </CanvasSelectionProvider>
               </ResizablePanel>
-              <ResizableHandle withHandle />
+              <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
             </>
           )}
 
