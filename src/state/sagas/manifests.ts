@@ -40,6 +40,8 @@ function* fetchManifestFromURL(url: string): Generator<Effect, Manifest, Manifes
     //if the manifest is already stored in IndexedDB, we return it
     return yield call([manifestRepository, manifestRepository.getById], url);
   } catch (error) {
+    console.log('Manifest not found in IndexedDB, fetching from URL: ', url);
+
     // If the manifest is not found in IndexedDB, we try to fetch it from the URL
     const importerKey = keys.find((key) => url.includes(key));
     const importer =

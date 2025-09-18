@@ -41,6 +41,10 @@ db.version(1).stores({
   workers: '&id, name, status, [scopeKey+name]',
 });
 
+export const clearDatabase = async () => {
+  await Dexie.delete('mezanno');
+};
+
 // db.version(33)
 //   .stores({
 //     collections: '&id, name, *tags.id',

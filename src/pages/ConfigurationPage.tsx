@@ -8,9 +8,11 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { clearDatabase } from '@/data/repositories/indexeddb/db';
 import { useAppDispatch } from '@/hooks/hooks';
 import { pushInfo } from '@/state/reducers/events';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { DatabaseZap } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -65,9 +67,15 @@ const ConfigurationPage = () => {
     }
   }
 
+  const onResetIndexedDB = async () => {
+    await clearDatabase();
+    appDispatch({ type: 'RESET_STORE' });
+  };
+
   return (
     <section className='panel h-full flex-col'>
       <h1 className='text-xl'>{t('page_title_configuration')}</h1>
+      <h2 className='mt-2'>API</h2>
       <div className='mt-2 w-1/2'>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='w-full space-y-4'>
@@ -115,6 +123,13 @@ const ConfigurationPage = () => {
             </button>
           </form>
         </Form>
+      </div>
+      <h2 className='mt-2'>Indexeddb</h2>
+      <div>
+        <button className='soft-button' onClick={onResetIndexedDB}>
+          <DatabaseZap />
+          {t('btn_reset_indexeddb')}
+        </button>
       </div>
     </section>
   );
