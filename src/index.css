@@ -82,7 +82,7 @@
   --card-hover: var(--color-dark-goldenrod-800); /* ok */
   --card-foreground: var(--color-dark-goldenrod-400); /* ok */
 
-  --popover: var(--color-saffron-500); /* ok */
+  --popover: var(--color-eggshell-800); /* ok */
   --popover-foreground: var(--color-dark-slate-gray-500); /* ok */
 
   --primary: var(--color-eggshell-800);
