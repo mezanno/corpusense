@@ -2,9 +2,8 @@
 
 ## Priority
 
-FIX : lors d'une tâche, le l'icone n'apparaît plus
+FIX : la fenêtre de sélection des modèles n'apparaît plus
 TODO : ajouter des exemples lors de la recherche de données structurées
-TODO : revoir gestion en mémoire des workers (la queue peut prendre bcp de place)
 
 TODO : workers :
 
