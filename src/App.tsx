@@ -4,6 +4,7 @@ import { initI18n } from './i18n';
 import CollectionInspectorPage from './pages/CollectionInspectorPage';
 import CollectionsManagerPage from './pages/CollectionsManagerPage';
 import ConfigurationPage from './pages/ConfigurationPage';
+import DocumentationPage from './pages/DocumentationPage';
 import Layout from './pages/Layout';
 import ManifestExplorerPage from './pages/ManifestExplorerPage';
 import ModelsManagerPage from './pages/ModelsManagerPage';
@@ -41,6 +42,7 @@ function App() {
           <Route path={CorpusenseRoutes.STORAGE} element={<StoragePage />} />
           <Route path={CorpusenseRoutes.WORKERS} element={<WorkersManagerPage />} />
           <Route path={`${CorpusenseRoutes.WORKERS}/:workerId`} element={<WorkersManagerPage />} />
+          <Route path={CorpusenseRoutes.DOCUMENTATION} element={<DocumentationPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -32,6 +32,7 @@ export default defineConfig(({ mode }) => {
   ];
 
   return {
+    assetsInclude: ['**/*.md'],
     plugins: [react(), tailwindcss(), visualizer() as PluginOption],
     base: env.VITE_BASE_PATH || '/',
     define: {
