@@ -7,7 +7,7 @@ export const CorpusenseRoutes = {
   MODELS: 'models',
   STORAGE: 'storage',
   WORKERS: 'workers',
-  DOCUMENTATION: 'documentation',
+  DOCUMENTATION: 'doc',
 };
 
 const useAppNavigation = () => {
