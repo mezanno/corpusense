@@ -14,7 +14,12 @@ describe('ManifestDetails', () => {
         isLoading: true,
       },
     };
-    renderWithProviders(<ManifestDetails />, { preloadedState });
+    if (preloadedState.manifests.loadedData?.content) {
+      renderWithProviders(
+        <ManifestDetails manifest={preloadedState.manifests.loadedData?.content} />,
+        { preloadedState },
+      );
+    }
 
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true');

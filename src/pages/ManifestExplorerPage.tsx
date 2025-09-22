@@ -1,16 +1,20 @@
 import CanvasViewer from '@/components/CanvasViewer';
 import NoManifestToShow from '@/components/NoManifestToShow';
 import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
+import { Toggle } from '@/components/ui/toggle';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fecthManifestRequest } from '@/state/reducers/manifests';
 import { Canvas } from '@iiif/presentation-3';
+import { ArrowLeftToLine, ArrowRightToLine } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import CanvasGallery from '../components/CanvasGallery';
 import ManifestDetails from '../components/ManifestDetails';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
 const ManifestExplorerPage = () => {
+  const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const { isLoading, isLoaded, loadedData } = useAppSelector((state) => state.manifests);
 
@@ -37,6 +41,16 @@ const ManifestExplorerPage = () => {
 
   return (
     <div className='flex h-full w-full'>
+      <div className='h-full'>
+        <Toggle
+          className='soft-button mt-4'
+          onClick={() => setMetadataVisible(!metadataVisible)}
+          title={`${metadataVisible ? t('btn_close_metadata') : t('btn_open_metadata')}`}
+          pressed={metadataVisible}
+        >
+          {metadataVisible ? <ArrowLeftToLine /> : <ArrowRightToLine />}
+        </Toggle>
+      </div>
       <ResizablePanelGroup direction='horizontal' className='flex-1 space-x-2'>
         {metadataVisible && (
           <>
@@ -48,6 +62,7 @@ const ManifestExplorerPage = () => {
             >
               <ManifestDetails manifest={manifest} />
             </ResizablePanel>
+
             <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
           </>
         )}
