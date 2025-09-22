@@ -3,7 +3,7 @@ import { Manifest } from '@iiif/presentation-3';
 import i18n from 'i18next';
 
 export function isManifestUrl(str: string): boolean {
-  const regex = /^https?:\/\/[^/\s]+(?:\/.*)?\/manifest\.json$/i;
+  const regex = /^https?:\/\/[^/\s]+(?:\/\S*)?$/i;
   return regex.test(str);
 }
 
