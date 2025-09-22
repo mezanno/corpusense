@@ -6,6 +6,7 @@ import { TileSource } from 'openseadragon';
 export const ACTIONS = {
   SET_MODE: 'SET_MODE',
   SET_CANVAS: 'SET_CANVAS',
+  TOGGLE_ANNOTATIONS: 'TOGGLE_ANNOTATIONS',
 } as const;
 
 export enum CanvasViewerContentMode {
@@ -18,6 +19,7 @@ export interface CanvasViewerContentState {
   source: TileSource[]; //the source of tiles for the viewer from the canvas
   image: IIIFExternalWebResource | undefined;
   canvas: Canvas | undefined;
+  showAnnotations: boolean;
 }
 
 export const initialState: CanvasViewerContentState = {
@@ -26,11 +28,13 @@ export const initialState: CanvasViewerContentState = {
   source: [],
   image: undefined,
   canvas: undefined,
+  showAnnotations: true,
 };
 
 export type CanvasViewerContentAction =
   | { type: typeof ACTIONS.SET_MODE; payload: CanvasViewerContentMode }
-  | { type: typeof ACTIONS.SET_CANVAS; payload: Canvas };
+  | { type: typeof ACTIONS.SET_CANVAS; payload: Canvas }
+  | { type: typeof ACTIONS.TOGGLE_ANNOTATIONS };
 
 export function CanvasViewerContentReducer(
   state = initialState,
@@ -41,6 +45,12 @@ export function CanvasViewerContentReducer(
       return {
         ...state,
         mode: action.payload,
+      };
+    }
+    case ACTIONS.TOGGLE_ANNOTATIONS: {
+      return {
+        ...state,
+        showAnnotations: !state.showAnnotations,
       };
     }
     case ACTIONS.SET_CANVAS: {

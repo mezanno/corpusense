@@ -14,7 +14,7 @@ import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { RootState } from '@/state/store';
 import { useSelection } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
-import { NotebookPen } from 'lucide-react';
+import { Eye, EyeOff, NotebookPen } from 'lucide-react';
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -108,6 +108,10 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       }
     };
 
+    const handleToggleShowAnnotations = () => {
+      cvcDispatch({ type: ACTIONS.TOGGLE_ANNOTATIONS });
+    };
+
     return (
       <div className='flex h-full w-full flex-col' onKeyDown={handleKeyDown}>
         <h4 className='w-full border-b-1 text-center text-sm italic'>{props.canvas?.id}</h4>
@@ -126,15 +130,6 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
                 collectionId: props.collectionId ?? '',
               }}
             />
-            <Toggle
-              className='soft-button'
-              size={null}
-              title={t('btn_add_annotation')}
-              onClick={handleAddAnnotation}
-              pressed={cvcState.mode === CanvasViewerContentMode.DRAW}
-            >
-              <NotebookPen size={24} />
-            </Toggle>
             {regionAnnotations.length > 0 && (
               <LayoutMenu
                 handleDuplicateToAll={handleDuplicateRegionToAllPages}
@@ -145,6 +140,24 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
                 }}
               />
             )}
+            <Toggle
+              className='soft-button'
+              size={null}
+              title={t('btn_add_annotation')}
+              onClick={handleAddAnnotation}
+              pressed={cvcState.mode === CanvasViewerContentMode.DRAW}
+            >
+              <NotebookPen size={24} />
+            </Toggle>
+            <Toggle
+              className='soft-button'
+              size={null}
+              title={`${cvcState.showAnnotations ? t('btn_hide_annotations') : t('btn_show_annotations')}`}
+              onClick={handleToggleShowAnnotations}
+              pressed={cvcState.showAnnotations}
+            >
+              {cvcState.showAnnotations ? <Eye size={24} /> : <EyeOff size={24} />}
+            </Toggle>
           </div>
         )}
         <div className='flex h-full w-full'>

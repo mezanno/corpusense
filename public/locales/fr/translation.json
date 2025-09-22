@@ -29,6 +29,8 @@
   "btn_delete_collection": "Supprimer la collection",
   "btn_delete_from_history": "Supprimer de l'historique",
   "btn_add_annotation": "Ajouter une annotation",
+  "btn_show_annotations": "Afficher les annotations",
+  "btn_hide_annotations": "Masquer les annotations",
   "btn_delete_annotation": "Supprimer l'annotation",
   "btn_delete_metadata": "Supprimer la métadonnée",
   "btn_open": "Ouvrir",

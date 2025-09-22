@@ -131,6 +131,12 @@ export const CanvasViewerContent = ({
     }
   }, [canvas]);
 
+  useEffect(() => {
+    if (anno !== null) {
+      anno.setVisible(cvcState?.showAnnotations ?? true);
+    }
+  }, [cvcState.showAnnotations]);
+
   const style = (annotation: Annotation, state?: AnnotationState) => {
     const value = annotation.bodies[0]?.value ?? ElementType.TAG;
     return {
