@@ -70,7 +70,7 @@ const CanvasGallery = ({
   const { t } = useTranslation();
   const canvases = useAppSelector(selectCanvases);
   const manifestId = useAppSelector(selectManifestURL);
-  const { setSelection } = useCanvasSelection();
+  const { setSelection, getSelectionCount } = useCanvasSelection();
 
   const [colCount, setColCount] = useState(5);
 
@@ -92,12 +92,14 @@ const CanvasGallery = ({
     }
   };
 
+  const selectionCount = getSelectionCount();
+
   return (
     <section className='h-full w-full items-center justify-center p-4' aria-label='canvas gallery'>
       {canvases.length == 0 ? (
         <div role='alert'>{t('info_empty_manifest')}</div>
       ) : (
-        <div className='h-full w-full overflow-hidden'>
+        <div className='relative h-full w-full overflow-hidden'>
           <Selecto
             container={containerRef.current}
             selectableTargets={['.selectable-item']}
@@ -130,6 +132,13 @@ const CanvasGallery = ({
               </Grid>
             )}
           </AutoSizer>
+          {selectionCount > 0 && (
+            <div className='absolute flex w-full justify-center'>
+              <div className='mt-2 rounded-xl border bg-white/85 px-2 font-bold italic'>
+                {t('info_selection_count', { count: selectionCount })}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </section>

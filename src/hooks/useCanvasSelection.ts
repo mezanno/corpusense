@@ -1,7 +1,7 @@
 import { useCanvasSelectionContext } from '@/components/reducers/CanvasSelectionContext';
 
 export const useCanvasSelection = () => {
-  const { isSelected, getSelectedCanvases, hasSelectedElements, dispatch } =
+  const { isSelected, getSelectedCanvases, getSelectionCount, hasSelectedElements, dispatch } =
     useCanvasSelectionContext();
 
   const setSelectionStart = (index: number) => {
@@ -21,6 +21,7 @@ export const useCanvasSelection = () => {
 
   return {
     isSelected,
+    getSelectionCount,
     getSelectedCanvases,
     hasSelectedElements,
     setSelectionStart,

@@ -75,7 +75,9 @@ export function convertSuryaLayoutPredictionsToAnnotations(
   const annotations: AnnotationDTO[] = [];
   for (let i = 0; i < result.predictions[0].bboxes.length; i++) {
     const bbox = result.predictions[0].bboxes[i];
-    annotations.push(convertSuryaLayoutBboxToAnnotation(bbox, canvasId, collectionId));
+    if (bbox.label === 'Text' || bbox.label === 'ListItem') {
+      annotations.push(convertSuryaLayoutBboxToAnnotation(bbox, canvasId, collectionId));
+    }
   }
 
   return annotations;

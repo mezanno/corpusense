@@ -225,6 +225,7 @@
   "info_no_worker_selected": "Aucun traitement sélectionné",
   "info_no_canvas_selected": "Aucun canvas sélectionné",
   "info_no_model_selected": "Aucun modèle de données n'est associé à cette collection. Veuillez en sélectionner un dans le formulaire de détails de la collection.",
+  "info_selection_count": "{{count}} élément(s) sélectionné(s)",
   "description_select_model": "Choisissez un modèle de données",
   "description_import_collection": "Importer une collection (fichier JSON) ou un ensemble de collections (fichier ZIP)",
   "description_create_collection": "Créer une collection en saisissant le nom de la collection.",

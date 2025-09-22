@@ -53,6 +53,7 @@ type CanvasSelectionContextType = {
   isSelected: (index: number) => boolean;
   hasSelectedElements: () => boolean;
   getSelectedCanvases: () => Canvas[];
+  getSelectionCount: () => number;
   dispatch: React.Dispatch<CanvasSelectionAction>;
 };
 
@@ -75,6 +76,8 @@ export const CanvasSelectionProvider = ({
     return state.selectedIndexes.length > 0;
   };
 
+  const getSelectionCount = (): number => state.selectedIndexes.length;
+
   const getSelectedCanvases = (): Canvas[] => {
     //TODO : ça se trouve il y a seulement besoin des id des canvas
     // return state.selectedIndexes.map((index) => state.loadedCanvases[index]).filter(Boolean);
@@ -83,7 +86,7 @@ export const CanvasSelectionProvider = ({
 
   return (
     <CanvasSelectionContext.Provider
-      value={{ isSelected, hasSelectedElements, getSelectedCanvases, dispatch }}
+      value={{ isSelected, hasSelectedElements, getSelectedCanvases, getSelectionCount, dispatch }}
     >
       {children}
     </CanvasSelectionContext.Provider>
