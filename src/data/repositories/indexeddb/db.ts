@@ -9,6 +9,8 @@ import { StoredManifestContent, StoredManifestDetails } from '@/data/models/Stor
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
 import Dexie, { type EntityTable } from 'dexie';
+import 'dexie-observable';
+import { ICreateChange, IDatabaseChange, IDeleteChange, IUpdateChange } from 'dexie-observable/api';
 
 const db = new Dexie('mezanno') as Dexie & {
   collections: EntityTable<CollectionDetails, 'id'>;
@@ -43,6 +45,31 @@ db.version(1).stores({
 
 export const clearDatabase = async () => {
   await Dexie.delete('mezanno');
+};
+
+Dexie.debug = true;
+
+db.on('changes', (changes) => {
+  changes.forEach(formatChangeMessage);
+});
+
+const formatChangeMessage = (change: IDatabaseChange) => {
+  const { table, type } = change;
+  let c;
+  switch (type as number) {
+    case 1: // CREATED
+      c = change as ICreateChange;
+      console.log(`CREATE in ${table}: `, c.obj);
+      break;
+    case 2: // UPDATED
+      c = change as IUpdateChange;
+      console.log(`UPDATE in ${table} (${change.key}): `, c.mods);
+      break;
+    case 3: // DELETED
+      c = change as IDeleteChange;
+      console.log(`DELETE in ${table}: `, c.oldObj);
+      break;
+  }
 };
 
 // db.version(33)
