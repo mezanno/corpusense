@@ -111,7 +111,7 @@ export const CanvasViewerContent = ({
     anno.on('createAnnotation', onCreate);
     anno.on('updateAnnotation', onUpdate);
 
-    if (isNewCanvas.current && annotationsInStore !== undefined) {
+    if (isNewCanvas.current && collectionId !== undefined && annotationsInStore !== undefined) {
       //initializing Annototious with the annotations in the store
       anno.setAnnotations(annotationsInStore);
       isNewCanvas.current = false;
@@ -133,7 +133,7 @@ export const CanvasViewerContent = ({
 
   useEffect(() => {
     if (anno !== null) {
-      anno.setVisible(cvcState?.showAnnotations ?? true);
+      anno.setVisible(cvcState?.showAnnotations);
     }
   }, [cvcState.showAnnotations]);
 
