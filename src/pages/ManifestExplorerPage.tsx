@@ -1,4 +1,5 @@
 import CanvasViewer from '@/components/CanvasViewer';
+import NoManifestToShow from '@/components/NoManifestToShow';
 import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fecthManifestRequest } from '@/state/reducers/manifests';
@@ -15,6 +16,7 @@ const ManifestExplorerPage = () => {
 
   const [searchParams] = useSearchParams();
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | undefined>(undefined);
+  const [metadataVisible, setMetadataVisible] = useState(true);
 
   useEffect(() => {
     const id = searchParams.get('manifestId');
@@ -23,42 +25,52 @@ const ManifestExplorerPage = () => {
     }
   }, [searchParams]);
 
+  if (isLoading || !isLoaded || loadedData == null) {
+    return (
+      <div className='flex h-full w-full flex-col items-center justify-center space-y-2 p-2'>
+        <NoManifestToShow />
+      </div>
+    );
+  }
+
+  const manifest = loadedData.content;
+
   return (
-    <ResizablePanelGroup direction='horizontal' className='flex-1 space-x-2'>
-      <>
-        <ResizablePanel
-          order={1}
-          id='metadata-panel'
-          className='panel grow justify-center'
-          minSize={25}
-        >
-          <ManifestDetails />
+    <div className='flex h-full w-full'>
+      <ResizablePanelGroup direction='horizontal' className='flex-1 space-x-2'>
+        {metadataVisible && (
+          <>
+            <ResizablePanel
+              order={1}
+              id='metadata-panel'
+              className='panel grow justify-center'
+              minSize={25}
+            >
+              <ManifestDetails manifest={manifest} />
+            </ResizablePanel>
+            <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
+          </>
+        )}
+
+        {loadedData?.content?.items !== undefined && loadedData?.content?.items.length > 0 && (
+          <>
+            <ResizablePanel order={2} id='gallery-panel' className='panel' minSize={25}>
+              <CanvasSelectionProvider canvasesLoaded={loadedData.content.items}>
+                <CanvasGallery
+                  setCanvasToDisplay={setCanvasToDisplay}
+                  canvasToDisplay={canvasToDisplay}
+                />
+              </CanvasSelectionProvider>
+            </ResizablePanel>
+            <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
+          </>
+        )}
+
+        <ResizablePanel id='canvas-panel' order={3} minSize={30} className='panel'>
+          <CanvasViewer canvas={canvasToDisplay} />
         </ResizablePanel>
-        <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
-      </>
-
-      {!isLoading && isLoaded && (
-        <>
-          {loadedData?.content?.items !== undefined && loadedData?.content?.items.length > 0 && (
-            <>
-              <ResizablePanel order={2} id='gallery-panel' className='panel' minSize={25}>
-                <CanvasSelectionProvider canvasesLoaded={loadedData.content.items}>
-                  <CanvasGallery
-                    setCanvasToDisplay={setCanvasToDisplay}
-                    canvasToDisplay={canvasToDisplay}
-                  />
-                </CanvasSelectionProvider>
-              </ResizablePanel>
-              <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
-            </>
-          )}
-
-          <ResizablePanel id='canvas-panel' order={3} minSize={30} className='panel'>
-            <CanvasViewer canvas={canvasToDisplay} />
-          </ResizablePanel>
-        </>
-      )}
-    </ResizablePanelGroup>
+      </ResizablePanelGroup>
+    </div>
   );
 };
 
