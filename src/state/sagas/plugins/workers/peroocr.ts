@@ -24,6 +24,12 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     const collectionRepository = getCollectionRepository();
     const canvas = await collectionRepository.getCanvasByScope(task.scope);
     const image = getImage(canvas);
+    if (image.id === undefined) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: 'Image ID is undefined',
+      };
+    }
     let regions = JSON.stringify([]);
     if (isAnnotationScope(task.scope)) {
       const annotation = await annotationRepository.getById(task.scope.annotationId);
@@ -60,7 +66,12 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     }
 
     const client = await Client.connect('https://api.mezanno.xyz/ocr/');
-    const gradioResult = await client.predict('/transcribe', { image_url: image.id, regions });
+    /* We change the image to size to match the maximum size. We do this to avoir lower sizes used in image ids.
+     */
+    const gradioResult = await client.predict('/transcribe', {
+      image_url: setIiifSize(image.id, image.width ?? 0, image.height ?? 0),
+      regions,
+    });
     console.log(gradioResult.data);
     try {
       const peroResult = peroResultSchema.parse(gradioResult.data);
@@ -91,10 +102,15 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       }
     }
   } catch (error) {
-    console.error(getErrorMessage(error));
+    console.log('Error in peroocr worker: ', error);
+
     return {
       status: WorkerStatus.ERROR,
       statusMessage: getErrorMessage(error),
     };
   }
 }
+
+export const setIiifSize = (url: string, width: number, height: number) => {
+  return url.replace(/\/full\/[^/]+\/0\//, `/full/${width},${height}/0/`);
+};
