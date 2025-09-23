@@ -15,12 +15,14 @@ import { getErrorMessage } from '@/utils/utils';
 import { Mistral } from '@mistralai/mistralai';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
+import * as XLSX from 'xlsx';
 
 export const pluginName = 'mistral';
 export const pluginDisplayName = 'Extraction de données Mistral';
 export const pluginDescription =
   "Extrait des données structurées à partir du texte. Nécessite que l'OCR soit fait ainsi qu'un modèle de données.";
 export const pluginCategory = 'LLM';
+export const pluginExportFormats = ['json', 'csv', 'xlsx'];
 
 //TODO: à déplacer dans un fichier utils
 async function getText(scope: Scope) {
@@ -129,7 +131,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
  * Export function to export results from the Mistral plugin saga.
  * It takes an array of Result objects, extracts the data, and saves it as JSON and CSV files.
  */
-export async function exportResult(results: Result[]) {
+export async function exportResult(results: Result[], formats: string[]) {
   if (results.length === 0) {
     console.warn('No results to export from Mistral plugin');
     return;
@@ -170,11 +172,29 @@ export async function exportResult(results: Result[]) {
     }
   }
 
-  FileSaver.saveAs(
-    new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
-    'exported_data.json',
-  );
+  if (formats.includes('xlsx')) {
+    const worksheet = XLSX.utils.json_to_sheet(allTheData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Mistral Data');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    FileSaver.saveAs(
+      new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+      }),
+      'exported_data.xlsx',
+    );
+  }
 
-  const csv = json2csv((allTheData as object[]).filter(Boolean));
-  FileSaver.saveAs(new Blob([csv], { type: 'text/plain;charset=utf-8' }), 'exported_data.csv');
+  if (formats.includes('json')) {
+    FileSaver.saveAs(
+      new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
+      'exported_data.json',
+    );
+  }
+
+  if (formats.includes('csv')) {
+    const csv = json2csv((allTheData as object[]).filter(Boolean));
+    FileSaver.saveAs(new Blob([csv], { type: 'text/plain;charset=utf-8' }), 'exported_data.csv');
+  }
 }

@@ -340,7 +340,7 @@ function updateTaskStatus(
 function* handleExportWorkerResult(
   action: PayloadAction<ExportWorkerPayload>,
 ): Generator<Effect, void, Result[] | Collection> {
-  const { worker } = action.payload;
+  const { worker, formats } = action.payload;
   const saga = workerPlugins[worker.name];
 
   //get the results for the worker
@@ -358,7 +358,7 @@ function* handleExportWorkerResult(
         return;
       }
 
-      yield call(saga.export, results);
+      yield call(saga.export, results, formats);
     }
   } catch (error) {
     console.error(`Error in export plugin saga for ${worker.name}:`, error);
@@ -421,6 +421,7 @@ function* loadWorkerPluginsInfo(): Generator<Effect, void, { name: string; hasEx
     displayName: workerPlugins[name].info.displayName,
     description: workerPlugins[name].info.description,
     category: workerPlugins[name].info.category,
+    exportFormats: workerPlugins[name].info.exportFormats,
   }));
   yield put(setPlugins(pluginsInfo));
 }

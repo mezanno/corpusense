@@ -12,6 +12,7 @@ export interface WorkerState {
     displayName?: string;
     description?: string;
     category?: string;
+    exportFormats?: string[];
   }[];
 }
 
@@ -35,6 +36,7 @@ export interface StartWorkerProcessPayload {
 
 export interface ExportWorkerPayload {
   worker: Worker;
+  formats: string[];
 }
 
 export const workerSlice = createSlice({
@@ -96,6 +98,7 @@ export const workerSlice = createSlice({
           displayName?: string;
           description?: string;
           category?: string;
+          exportFormats?: string[];
         }[]
       >,
     ) {

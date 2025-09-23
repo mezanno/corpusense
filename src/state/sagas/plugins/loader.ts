@@ -5,6 +5,7 @@ export type WorkerPluginInfo = {
   displayName?: string;
   description?: string;
   category?: string;
+  exportFormats?: string[];
 };
 export type WorkerPlugin = {
   run: WorkerRunFunction;
@@ -15,13 +16,14 @@ export type WorkerRunFunction = (
   task: Task,
   params?: Record<string, unknown>,
 ) => Promise<WorkerResponse>; //saga or async function : if we need to call an effect (eg: call, put, select), we have to use a saga
-export type WorkerExportFunction = (results: Result[]) => void;
+export type WorkerExportFunction = (results: Result[], formats: string[]) => void;
 type WorkerModule = {
   default: WorkerRunFunction;
   pluginName: string;
   pluginDisplayName?: string;
   pluginDescription?: string;
   pluginCategory?: string;
+  pluginExportFormats?: string[];
   exportResult?: WorkerExportFunction;
 };
 
@@ -45,6 +47,9 @@ const isWorkerModule = (mod: unknown): mod is WorkerModule => {
     (m.pluginDisplayName === undefined || typeof m.pluginDisplayName === 'string') &&
     (m.pluginDescription === undefined || typeof m.pluginDescription === 'string') &&
     (m.pluginCategory === undefined || typeof m.pluginCategory === 'string') &&
+    (m.pluginExportFormats === undefined ||
+      (Array.isArray(m.pluginExportFormats) &&
+        m.pluginExportFormats.every((f) => typeof f === 'string'))) &&
     (m.exportResult === undefined || typeof m.exportResult === 'function')
   );
 };
@@ -62,6 +67,7 @@ export function loadWorkerPlugins() {
           displayName: mod.pluginDisplayName,
           description: mod.pluginDescription,
           category: mod.pluginCategory,
+          exportFormats: mod.pluginExportFormats,
         },
         export: mod.exportResult,
       };
