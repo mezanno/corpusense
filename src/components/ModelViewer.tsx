@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { analogue } from 'simpler-color';
 import { v4 as uuid } from 'uuid';
 import AlertDialogForm from './AlertDialogForm';
+import { usePopupContext } from './reducers/usePopupContext';
 import { ColorPicker } from './textviewer/ColorPicker';
 import ModelPreview from './textviewer/ModelPreview';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
@@ -22,6 +23,7 @@ const baseColor = '#a4d6f6';
 const ModelViewer = ({ modelId }: { modelId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
+  const { showPopup } = usePopupContext();
   const model = useAppSelector((state) => selectModelById(state, modelId));
   const [fields, setFields] = useState(model?.fields ?? []);
   const [description, setDescription] = useState('');
@@ -91,6 +93,17 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
         ];
       }
       return updatedFields;
+    });
+  };
+
+  const handleDeleteField = (index: number) => {
+    showPopup({
+      title: t('title_are_you_sure'),
+      description: t('description_delete_datafield'),
+      onConfirmMessage: t('btn_yes'),
+      onConfirm: () => {
+        setFields((prev) => prev.filter((_, i) => i !== index));
+      },
     });
   };
 
@@ -235,7 +248,7 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
                           <button
                             title={t('btn_delete_datafield')}
                             className='cursor-pointer'
-                            onClick={() => setFields((prev) => prev.filter((_, i) => i !== index))}
+                            onClick={() => handleDeleteField(index)}
                           >
                             <CircleX />
                           </button>

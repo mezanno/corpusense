@@ -237,6 +237,7 @@
   "description_remove_annotations": "Sélectionnez les types d'annotations à supprimer :",
   "description_delete_collection": "Êtes-vous sûr de vouloir supprimer cette collection ? Cette action est irréversible et supprimera également tous les traitements associés.",
   "description_delete_model": "Êtes-vous sûr de vouloir supprimer ce modèle ? Cette action est irréversible",
+  "description_delete_datafield": "Êtes-vous sûr de vouloir supprimer ce champ ? Cette action est irréversible",
   "menu_create_from_selection": "Créer une collection à partir de la sélection",
   "menu_add_selection_to_collection": "Ajouter la sélection à une collection",
   "menu_define_start": "Définir le début de sélection ici",
