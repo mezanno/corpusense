@@ -1,7 +1,8 @@
 import { WorkerStatus } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useExportFormatDialog } from '@/hooks/ui/useExportFormatDialog';
 import {
-  exportWorkerResultRequest,
+  // exportWorkerResultRequest,
   recoverWorkerRequest,
   stopWorkerProcessRequest,
 } from '@/state/reducers/workers';
@@ -17,6 +18,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
   const resultExists = useAppSelector((state) =>
     worker ? selectHasExport(state, worker?.name) && selectHasResult(state, workerId) : false,
   );
+  const { openSelectFormatDialog } = useExportFormatDialog();
 
   if (worker === undefined) {
     return (
@@ -42,7 +44,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
   };
 
   const handleExportResult = () => {
-    appDispatch(exportWorkerResultRequest({ worker }));
+    openSelectFormatDialog(worker);
   };
 
   return (
