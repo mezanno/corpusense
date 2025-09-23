@@ -27,6 +27,7 @@ const ManifestExplorerPage = () => {
     if (id != null) {
       appDispatch(fecthManifestRequest(id));
     }
+    setCanvasToDisplay(undefined);
   }, [searchParams]);
 
   if (isLoading || !isLoaded || loadedData == null) {
