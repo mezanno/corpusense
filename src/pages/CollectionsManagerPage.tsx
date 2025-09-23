@@ -1,15 +1,6 @@
 import AlertDialogForm from '@/components/AlertDialogForm';
 import NewCollectionForm from '@/components/NewCollectionForm';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { usePopupContext } from '@/components/reducers/usePopupContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -37,14 +28,15 @@ import { useTranslation } from 'react-i18next';
 const CollectionTableRow = ({
   collection,
   addOrRemoveCollection,
-  setCollectionToDelete,
 }: {
   collection: CollectionDetails;
   addOrRemoveCollection: (collectionId: string, isAdd: boolean) => void;
-  setCollectionToDelete: (id: string) => void;
 }) => {
   const { t } = useTranslation();
   const navigation = useAppNavigation();
+  const dispatch = useAppDispatch();
+  const { showPopup } = usePopupContext();
+
   const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
     (state) => state.export,
   );
@@ -61,7 +53,12 @@ const CollectionTableRow = ({
   }, [lastExportContent]);
 
   const handleDelete = (id: string) => {
-    setCollectionToDelete(id);
+    showPopup({
+      title: t('title_are_you_sure'),
+      description: t('description_delete_collection'),
+      onConfirmMessage: t('btn_yes'),
+      onConfirm: () => dispatch(removeCollectionRequest(id)),
+    });
   };
 
   const handleOnClick = async (id: string) => {
@@ -141,7 +138,6 @@ const CollectionsManagerPage = () => {
   const { t } = useTranslation();
 
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
-  const [collectionToDelete, setCollectionToDelete] = useState<string | null>(null);
 
   const addOrRemoveCollection = (id: string, isAdd: boolean) => {
     if (isAdd) {
@@ -155,12 +151,6 @@ const CollectionsManagerPage = () => {
 
   const handleExport = () => {
     dispatch(exportCollectionsRequest(selectedCollections));
-  };
-
-  const handleDelete = () => {
-    if (collectionToDelete === null) return;
-    dispatch(removeCollectionRequest(collectionToDelete));
-    setCollectionToDelete(null);
   };
 
   return (
@@ -214,7 +204,6 @@ const CollectionsManagerPage = () => {
                   collection={col}
                   key={col.id}
                   addOrRemoveCollection={addOrRemoveCollection}
-                  setCollectionToDelete={setCollectionToDelete}
                 />
               ))}
             </TableBody>
@@ -239,29 +228,6 @@ const CollectionsManagerPage = () => {
               </TableRow>
             </TableFooter>
           </Table>
-
-          <AlertDialog
-            open={collectionToDelete !== null}
-            onOpenChange={() => setCollectionToDelete(null)}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{t('title_are_you_sure')}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {t('description_delete_collection')}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className='soft-button'>{t('btn_no')}</AlertDialogCancel>
-                <AlertDialogAction
-                  className='soft-button bg-red-400 text-white hover:bg-red-700'
-                  onClick={handleDelete}
-                >
-                  {t('btn_yes')}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </section>
       ) : (
         <div role='alert' className='text-2xl'>
