@@ -82,6 +82,10 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
   const [colCount, setColCount] = useState(6);
 
   useEffect(() => {
+    setCanvasToDisplay(undefined);
+  }, [collectionId]);
+
+  useEffect(() => {
     if (canvasToDisplay !== undefined) {
       appDispatch(fetchAnnotationsRequest({ canvasId: canvasToDisplay.id, collectionId }));
       appDispatch(loadEntitiesRequest({ canvasId: canvasToDisplay.id, collectionId }));
