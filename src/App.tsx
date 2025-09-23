@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { PopupProvider } from './components/reducers/PopupReducer';
+import { PopupProvider } from './components/reducers/PopupContext';
 import { CorpusenseRoutes } from './hooks/useAppNavigation';
 import { initI18n } from './i18n';
 import CollectionInspectorPage from './pages/CollectionInspectorPage';
