@@ -1,8 +1,8 @@
 import { useContext } from 'react';
-import { PopupContext } from './PopupContext';
+import { AlertDialogContext } from './AlertDialogContext';
 
 export const usePopupContext = () => {
-  const context = useContext(PopupContext);
+  const context = useContext(AlertDialogContext);
   if (!context) {
     throw new Error('usePopupContext must be used within a PopupProvider');
   }

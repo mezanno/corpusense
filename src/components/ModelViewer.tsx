@@ -23,7 +23,7 @@ const baseColor = '#a4d6f6';
 const ModelViewer = ({ modelId }: { modelId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const { showPopup } = usePopupContext();
+  const { openDialog: showPopup } = usePopupContext();
   const model = useAppSelector((state) => selectModelById(state, modelId));
   const [fields, setFields] = useState(model?.fields ?? []);
   const [description, setDescription] = useState('');

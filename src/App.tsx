@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { PopupProvider } from './components/reducers/PopupContext';
+import { AlertDialogProvider } from './components/reducers/AlertDialogContext';
 import { CorpusenseRoutes } from './hooks/useAppNavigation';
 import { initI18n } from './i18n';
 import CollectionInspectorPage from './pages/CollectionInspectorPage';
@@ -27,7 +27,7 @@ initI18n()
 
 function App() {
   return (
-    <PopupProvider>
+    <AlertDialogProvider>
       <BrowserRouter basename={basePath}>
         <Routes>
           <Route element={<Layout />}>
@@ -49,7 +49,7 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
-    </PopupProvider>
+    </AlertDialogProvider>
   );
 }
 

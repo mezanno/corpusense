@@ -35,7 +35,7 @@ const CollectionTableRow = ({
   const { t } = useTranslation();
   const navigation = useAppNavigation();
   const dispatch = useAppDispatch();
-  const { showPopup } = usePopupContext();
+  const { openDialog: showPopup } = usePopupContext();
 
   const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
     (state) => state.export,
