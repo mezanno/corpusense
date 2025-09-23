@@ -1,4 +1,5 @@
 import ModelViewer from '@/components/ModelViewer';
+import { usePopupContext } from '@/components/reducers/usePopupContext';
 import CreateModelButton from '@/components/textviewer/CreateModelButton';
 import ImportModelButton from '@/components/textviewer/ImportModelButton';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ const ModelsManagerPage = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const models = useAppSelector(selectModels);
+  const { showPopup } = usePopupContext();
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
   const handleSelectModel = (modelId: string) => {
@@ -31,10 +33,17 @@ const ModelsManagerPage = () => {
   };
 
   const handleRemoveModel = (modelId: string) => {
-    appDispatch(removeModelRequest(modelId));
-    if (selectedModelId === modelId) {
-      setSelectedModelId(null);
-    }
+    showPopup({
+      title: t('title_are_you_sure'),
+      description: t('description_delete_model'),
+      onConfirmMessage: t('btn_yes'),
+      onConfirm: () => {
+        appDispatch(removeModelRequest(modelId));
+        if (selectedModelId === modelId) {
+          setSelectedModelId(null);
+        }
+      },
+    });
   };
 
   const handleDownloadModel = (modelId: string) => {
