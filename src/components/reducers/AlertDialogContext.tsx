@@ -13,9 +13,11 @@ type DialogProps = {
   title: string;
   description?: string;
   children?: ReactNode;
-  onConfirmMessage?: string;
+  onConfirm?: {
+    message: string;
+    action: () => void;
+  };
   onCancelMessage?: string;
-  onConfirm?: () => void;
 };
 
 type AlertDialogContextType = {
@@ -32,7 +34,7 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
   const closePopup = () => setDialogProps(null);
   const onConfirm = () => {
     if (dialogProps?.onConfirm) {
-      dialogProps.onConfirm();
+      dialogProps.onConfirm.action();
     }
     closePopup();
   };
@@ -52,9 +54,9 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
               <button className='soft-button' onClick={closePopup}>
                 {dialogProps?.onCancelMessage ?? t('btn_cancel')}
               </button>
-              {dialogProps?.onConfirmMessage !== undefined && (
+              {dialogProps?.onConfirm?.message !== undefined && (
                 <button className='soft-button-danger' onClick={onConfirm}>
-                  {dialogProps?.onConfirmMessage}
+                  {dialogProps?.onConfirm?.message}
                 </button>
               )}
             </AlertDialogFooter>

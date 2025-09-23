@@ -12,11 +12,13 @@ export const useExportFormatDialog = () => {
     showPopup({
       title: t('title_export_worker_result', { name: worker.name }),
       children: <ExportFormatSelectionForm worker={worker} formRef={formRef} />,
-      onConfirm() {
-        //! La fenêtre se ferme automatiquement, on doit donc déclencher la validation du formulaire manuellement
-        formRef.current?.requestSubmit();
+      onConfirm: {
+        message: t('btn_export'),
+        action: () => {
+          //! La fenêtre se ferme automatiquement, on doit donc déclencher la validation du formulaire manuellement
+          formRef.current?.requestSubmit();
+        },
       },
-      onConfirmMessage: t('btn_export'),
     });
   };
 

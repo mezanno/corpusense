@@ -36,12 +36,14 @@ const ModelsManagerPage = () => {
     showPopup({
       title: t('title_are_you_sure'),
       description: t('description_delete_model'),
-      onConfirmMessage: t('btn_yes'),
-      onConfirm: () => {
-        appDispatch(removeModelRequest(modelId));
-        if (selectedModelId === modelId) {
-          setSelectedModelId(null);
-        }
+      onConfirm: {
+        message: t('btn_yes'),
+        action: () => {
+          appDispatch(removeModelRequest(modelId));
+          if (selectedModelId === modelId) {
+            setSelectedModelId(null);
+          }
+        },
       },
     });
   };

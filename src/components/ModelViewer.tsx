@@ -100,9 +100,11 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
     showPopup({
       title: t('title_are_you_sure'),
       description: t('description_delete_datafield'),
-      onConfirmMessage: t('btn_yes'),
-      onConfirm: () => {
-        setFields((prev) => prev.filter((_, i) => i !== index));
+      onConfirm: {
+        message: t('btn_yes'),
+        action: () => {
+          setFields((prev) => prev.filter((_, i) => i !== index));
+        },
       },
     });
   };

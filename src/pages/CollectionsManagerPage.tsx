@@ -56,8 +56,10 @@ const CollectionTableRow = ({
     showPopup({
       title: t('title_are_you_sure'),
       description: t('description_delete_collection'),
-      onConfirmMessage: t('btn_yes'),
-      onConfirm: () => dispatch(removeCollectionRequest(id)),
+      onConfirm: {
+        message: t('btn_yes'),
+        action: () => dispatch(removeCollectionRequest(id)),
+      },
     });
   };
 
