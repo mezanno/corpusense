@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { analogue } from 'simpler-color';
 import { v4 as uuid } from 'uuid';
 import AlertDialogForm from './AlertDialogForm';
-import { usePopupContext } from './reducers/usePopupContext';
+import { useAlertDialogContext } from './reducers/useAlertDialogContext';
 import { ColorPicker } from './textviewer/ColorPicker';
 import ModelPreview from './textviewer/ModelPreview';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
@@ -23,7 +23,7 @@ const baseColor = '#a4d6f6';
 const ModelViewer = ({ modelId }: { modelId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const { openDialog: showPopup } = usePopupContext();
+  const { openDialog: showPopup } = useAlertDialogContext();
   const model = useAppSelector((state) => selectModelById(state, modelId));
   const [fields, setFields] = useState(model?.fields ?? []);
   const [description, setDescription] = useState('');

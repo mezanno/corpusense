@@ -1,5 +1,5 @@
 import ModelViewer from '@/components/ModelViewer';
-import { usePopupContext } from '@/components/reducers/usePopupContext';
+import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import CreateModelButton from '@/components/textviewer/CreateModelButton';
 import ImportModelButton from '@/components/textviewer/ImportModelButton';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ const ModelsManagerPage = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const models = useAppSelector(selectModels);
-  const { openDialog: showPopup } = usePopupContext();
+  const { openDialog: showPopup } = useAlertDialogContext();
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
   const handleSelectModel = (modelId: string) => {

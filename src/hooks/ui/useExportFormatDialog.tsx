@@ -1,12 +1,12 @@
 import ExportFormatSelectionForm from '@/components/ExportFormatSelectionForm';
-import { usePopupContext } from '@/components/reducers/usePopupContext';
+import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { Worker } from '@/data/models/Worker';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export const useExportFormatDialog = () => {
   const { t } = useTranslation();
-  const { openDialog: showPopup } = usePopupContext();
+  const { openDialog: showPopup } = useAlertDialogContext();
   const formRef = useRef<HTMLFormElement | null>(null);
   const openSelectFormatDialog = (worker: Worker) => {
     showPopup({

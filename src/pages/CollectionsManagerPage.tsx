@@ -1,6 +1,6 @@
 import AlertDialogForm from '@/components/AlertDialogForm';
 import NewCollectionForm from '@/components/NewCollectionForm';
-import { usePopupContext } from '@/components/reducers/usePopupContext';
+import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -35,7 +35,7 @@ const CollectionTableRow = ({
   const { t } = useTranslation();
   const navigation = useAppNavigation();
   const dispatch = useAppDispatch();
-  const { openDialog: showPopup } = usePopupContext();
+  const { openDialog: showPopup } = useAlertDialogContext();
 
   const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
     (state) => state.export,
