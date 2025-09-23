@@ -1,12 +1,12 @@
 import { ElementType } from '@/data/models/Annotation';
 import { Worker } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useExportFormatDialog } from '@/hooks/ui/useExportFormatDialog';
 import {
   recomputeRegionsRequest,
   removeAnnotationsByScopeRequest,
 } from '@/state/reducers/annotations';
 import { exportTextOfCollectionRequest } from '@/state/reducers/export';
-import { exportWorkerResultRequest } from '@/state/reducers/workers';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
+  const { openSelectFormatDialog } = useExportFormatDialog();
   const isWorkerRunning = useAppSelector((state) =>
     selectIsWorkerOrTaskRunning(state, { collectionId }),
   );
@@ -49,7 +50,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   // };
 
   const handleExportResult = (worker: Worker) => {
-    appDispatch(exportWorkerResultRequest({ worker }));
+    openSelectFormatDialog(worker);
   };
 
   // const closeAnalysisDialog = (model: DataModel) => {

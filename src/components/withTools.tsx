@@ -1,6 +1,7 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
 import { Worker } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useExportFormatDialog } from '@/hooks/ui/useExportFormatDialog';
 import {
   duplicateAnnotationsEach2PagesRequest,
   duplicateAnnotationsToAllPagesRequest,
@@ -8,7 +9,6 @@ import {
   removeAnnotationsByScopeRequest,
 } from '@/state/reducers/annotations';
 import { exportTextOfCanvasRequest } from '@/state/reducers/export';
-import { exportWorkerResultRequest } from '@/state/reducers/workers';
 import { selectAnnotationsByType } from '@/state/selectors/annotations';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { RootState } from '@/state/store';
@@ -30,6 +30,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const appDispatch = useAppDispatch();
     const { t } = useTranslation();
     const { cvcState, cvcDispatch } = useContext(ReducerContext);
+    const { openSelectFormatDialog } = useExportFormatDialog();
     const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
     const isWorkerRunning = useAppSelector((state) =>
       selectIsWorkerOrTaskRunning(state, { collectionId: props.collectionId }),
@@ -51,7 +52,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     };
 
     const handleExportResult = (worker: Worker) => {
-      appDispatch(exportWorkerResultRequest({ worker }));
+      openSelectFormatDialog(worker);
     };
 
     const handleDeleteAllAnnotations = () => {
