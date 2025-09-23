@@ -11,7 +11,7 @@ import {
 
 type PopupProps = {
   title: string;
-  description: string;
+  description?: string;
   children?: ReactNode;
   onConfirmMessage?: string;
   onCancelMessage?: string;
