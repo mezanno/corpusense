@@ -9,7 +9,7 @@ import {
 import WorkerLabel from '@/components/WorkerLabel';
 import { WorkerStatus } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { useLoginDialog } from '@/hooks/ui/useLoginDialog';
+import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import { logoutRequest } from '@/state/reducers/auth';
 import { removeFromOpenedCollections } from '@/state/reducers/collections';
@@ -212,7 +212,7 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
   const appDispatch = useAppDispatch();
   const user = useAppSelector(selectConnectedUser);
   const collections = useAppSelector(selectCollections);
-  const { openSelectFormatDialog } = useLoginDialog();
+  const { openLoginDialog } = useDialog();
 
   const handleLogout = () => {
     appDispatch(logoutRequest());
@@ -241,9 +241,7 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
                       Se déconnecter
                     </DropdownMenuItem>
                   ) : (
-                    <DropdownMenuItem onClick={openSelectFormatDialog}>
-                      Se connecter
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={openLoginDialog}>Se connecter</DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>

@@ -1,7 +1,7 @@
 import { ElementType } from '@/data/models/Annotation';
 import { Worker } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { useExportFormatDialog } from '@/hooks/ui/useExportFormatDialog';
+import useDialog from '@/hooks/ui/useDialog';
 import {
   recomputeRegionsRequest,
   removeAnnotationsByScopeRequest,
@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const { openSelectFormatDialog } = useExportFormatDialog();
+  const { openSelectFormatDialog } = useDialog();
   const isWorkerRunning = useAppSelector((state) =>
     selectIsWorkerOrTaskRunning(state, { collectionId }),
   );

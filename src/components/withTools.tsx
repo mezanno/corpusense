@@ -1,7 +1,7 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
 import { Worker } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { useExportFormatDialog } from '@/hooks/ui/useExportFormatDialog';
+import useDialog from '@/hooks/ui/useDialog';
 import {
   duplicateAnnotationsEach2PagesRequest,
   duplicateAnnotationsToAllPagesRequest,
@@ -30,7 +30,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const appDispatch = useAppDispatch();
     const { t } = useTranslation();
     const { cvcState, cvcDispatch } = useContext(ReducerContext);
-    const { openSelectFormatDialog } = useExportFormatDialog();
+    const { openSelectFormatDialog } = useDialog();
     const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
     const isWorkerRunning = useAppSelector((state) =>
       selectIsWorkerOrTaskRunning(state, { collectionId: props.collectionId }),

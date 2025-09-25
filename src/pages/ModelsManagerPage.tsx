@@ -12,8 +12,7 @@ import {
 } from '@/components/ui/table';
 import { generateSchema } from '@/data/utils/model';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import useCreateModelDialog from '@/hooks/ui/useCreateModelDialog';
-import useImportModelDialog from '@/hooks/ui/useImportModelDialog';
+import useDialog from '@/hooks/ui/useDialog';
 import { exportModelRequest, removeModelRequest } from '@/state/reducers/models';
 import { selectModels } from '@/state/selectors/models';
 import ReactJsonView from '@microlink/react-json-view';
@@ -26,8 +25,7 @@ const ModelsManagerPage = () => {
   const appDispatch = useAppDispatch();
   const models = useAppSelector(selectModels);
   const { openDialog } = useAlertDialogContext();
-  const { openCreateModelDialog } = useCreateModelDialog();
-  const { openImportModelDialog } = useImportModelDialog();
+  const { openImportModelDialog, openCreateModelDialog } = useDialog();
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
   const handleSelectModel = (modelId: string) => {

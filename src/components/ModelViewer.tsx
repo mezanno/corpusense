@@ -1,6 +1,6 @@
 import { DataField } from '@/data/models/DataModel';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import usePreviewModelDialog from '@/hooks/ui/usePreviewModelDialog';
+import useDialog from '@/hooks/ui/useDialog';
 import { saveModelRequest } from '@/state/reducers/models';
 import { selectModelById } from '@/state/selectors/models';
 import { CircleArrowDown, CircleArrowUp, CirclePlus, CircleX, Eye, Save } from 'lucide-react';
@@ -23,7 +23,7 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const { openDialog } = useAlertDialogContext();
-  const { openPreviewModelDialog } = usePreviewModelDialog();
+  const { openModelPreviewDialog } = useDialog();
   const model = useAppSelector((state) => selectModelById(state, modelId));
   const [fields, setFields] = useState(model?.fields ?? []);
   const [description, setDescription] = useState('');
@@ -129,7 +129,7 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
         </button>
         <button
           className='soft-button'
-          onClick={() => openPreviewModelDialog(model)}
+          onClick={() => openModelPreviewDialog(model)}
           title={t('btn_model_preview')}
         >
           <Eye />

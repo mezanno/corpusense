@@ -13,8 +13,7 @@ import {
 } from '@/components/ui/table';
 import { CollectionDetails } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import useImportCollectionDialog from '@/hooks/ui/useImportCollectionDialog';
-import useNewCollectionDialog from '@/hooks/ui/useNewCollectionDialog';
+import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { removeCollectionRequest } from '@/state/reducers/collections';
 import { exportCollectionsRequest } from '@/state/reducers/export';
@@ -137,8 +136,7 @@ const CollectionsManagerPage = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const collections: CollectionDetails[] = useAppSelector(selectCollections);
-  const { openNewCollectionDialog } = useNewCollectionDialog();
-  const { openImportCollectionDialog } = useImportCollectionDialog();
+  const { openImportCollectionDialog, openNewCollectionDialog } = useDialog();
 
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
 
