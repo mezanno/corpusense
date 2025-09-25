@@ -1,6 +1,5 @@
 import ModelViewer from '@/components/ModelViewer';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
-import CreateModelButton from '@/components/textviewer/CreateModelButton';
 import ImportModelButton from '@/components/textviewer/ImportModelButton';
 import { Button } from '@/components/ui/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
@@ -14,10 +13,11 @@ import {
 } from '@/components/ui/table';
 import { generateSchema } from '@/data/utils/model';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useCreateModelDialog from '@/hooks/ui/useCreateModelDialog';
 import { exportModelRequest, removeModelRequest } from '@/state/reducers/models';
 import { selectModels } from '@/state/selectors/models';
 import ReactJsonView from '@microlink/react-json-view';
-import { Download, Trash2 } from 'lucide-react';
+import { Download, Grid2X2Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -26,6 +26,7 @@ const ModelsManagerPage = () => {
   const appDispatch = useAppDispatch();
   const models = useAppSelector(selectModels);
   const { openDialog } = useAlertDialogContext();
+  const { openCreateModelDialog } = useCreateModelDialog();
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
   const handleSelectModel = (modelId: string) => {
@@ -55,7 +56,9 @@ const ModelsManagerPage = () => {
   return (
     <div>
       <div className='panel mb-1 flex items-center space-x-2'>
-        <CreateModelButton />
+        <button className='soft-button' onClick={openCreateModelDialog}>
+          <Grid2X2Plus />
+        </button>
         <ImportModelButton />
       </div>
 

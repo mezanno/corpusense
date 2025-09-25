@@ -4,6 +4,7 @@ import { createModelRequest } from '@/state/reducers/models';
 import { selectModels } from '@/state/selectors/models';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
+import { Ref } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -20,7 +21,7 @@ const formSchema = z.object({
   fromModelId: z.string().optional(),
 });
 
-const NewModelForm = ({ close }: { close: () => void }) => {
+const NewModelForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) => {
   const appDispatch = useAppDispatch();
   const { t } = useTranslation();
   const models = useAppSelector(selectModels);
@@ -45,7 +46,7 @@ const NewModelForm = ({ close }: { close: () => void }) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className='w-full space-y-4'>
+      <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className='w-full space-y-4'>
         <FormField
           control={form.control}
           name='name'
@@ -97,9 +98,6 @@ const NewModelForm = ({ close }: { close: () => void }) => {
             </FormItem>
           )}
         />
-        <button className='soft-button' type='submit' title={t('btn_create')}>
-          {t('btn_create')}
-        </button>
       </form>
     </Form>
   );
