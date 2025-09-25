@@ -1,5 +1,6 @@
 import { DataField } from '@/data/models/DataModel';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import usePreviewModelDialog from '@/hooks/ui/usePreviewModelDialog';
 import { saveModelRequest } from '@/state/reducers/models';
 import { selectModelById } from '@/state/selectors/models';
 import { CircleArrowDown, CircleArrowUp, CirclePlus, CircleX, Eye, Save } from 'lucide-react';
@@ -7,10 +8,8 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { analogue } from 'simpler-color';
 import { v4 as uuid } from 'uuid';
-import AlertDialogForm from './AlertDialogForm';
 import { useAlertDialogContext } from './reducers/useAlertDialogContext';
 import { ColorPicker } from './textviewer/ColorPicker';
-import ModelPreview from './textviewer/ModelPreview';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
@@ -24,6 +23,7 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const { openDialog: showPopup } = useAlertDialogContext();
+  const { openPreviewModelDialog } = usePreviewModelDialog();
   const model = useAppSelector((state) => selectModelById(state, modelId));
   const [fields, setFields] = useState(model?.fields ?? []);
   const [description, setDescription] = useState('');
@@ -127,13 +127,13 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
         <button className='soft-button' title={t('btn_save_model')} onClick={handleSave}>
           <Save color='green' />
         </button>
-        <AlertDialogForm
+        <button
+          className='soft-button'
+          onClick={() => openPreviewModelDialog(model)}
           title={t('btn_model_preview')}
-          description={t('info_preview_model')}
-          trigger={<Eye />}
         >
-          {({ close }) => <ModelPreview close={close} model={model} />}
-        </AlertDialogForm>
+          <Eye />
+        </button>
       </div>
       <div className='m-2 flex w-full items-center justify-center'>
         <Label htmlFor='description'>{t('form_label_model_description')}</Label>
