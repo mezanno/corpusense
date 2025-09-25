@@ -1,4 +1,3 @@
-import AlertDialogLogin from '@/components/auth/AlertDialogLogin';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -10,6 +9,7 @@ import {
 import WorkerLabel from '@/components/WorkerLabel';
 import { WorkerStatus } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useLoginDialog } from '@/hooks/ui/useLoginDialog';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import { logoutRequest } from '@/state/reducers/auth';
 import { removeFromOpenedCollections } from '@/state/reducers/collections';
@@ -30,7 +30,6 @@ import {
   ScrollText,
   User2,
 } from 'lucide-react';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
@@ -210,93 +209,90 @@ const SourcesSideBarGroup = () => {
 
 const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: string) => void }) => {
   const { t } = useTranslation();
-  const user = useAppSelector(selectConnectedUser);
   const appDispatch = useAppDispatch();
-  const [isOpen, setIsOpen] = useState(false);
+  const user = useAppSelector(selectConnectedUser);
   const collections = useAppSelector(selectCollections);
+  const { openSelectFormatDialog } = useLoginDialog();
 
   const handleLogout = () => {
     appDispatch(logoutRequest());
   };
 
   return (
-    <>
-      <Sidebar>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                {/* modal={false} : fix a bug with the Dialog+ContextMenu : https://github.com/radix-ui/primitives/issues/1836 */}
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton>
-                      <div className='flex items-center gap-2'>
-                        <User2 />
-                        {user ? user.email : t('info_not_connected')}
-                        <ChevronDown className='ml-auto' />
-                      </div>
-                    </SidebarMenuButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent side='right'>
-                    {user ? (
-                      <DropdownMenuItem onClick={() => handleLogout()}>
-                        Se déconnecter
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem onClick={() => setIsOpen(true)}>
-                        Se connecter
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-          <SourcesSideBarGroup />
-          <SidebarGroup>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to={CorpusenseRoutes.COLLECTIONS}>
-                    <List />
-                    <span>{t('page_title_collection_manager')}</span>
-                    <Badge>{collections.length}</Badge>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <CollectionsSideBarGroup />
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to={CorpusenseRoutes.MODELS}>
-                    <Container />
-                    <span>{t('page_title_models_manager')}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to={CorpusenseRoutes.WORKERS}>
-                    <PocketKnife />
-                    <span>{t('page_title_workers_manager')}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-          <WorkersSideBarGroup setSelectedWorkerId={setSelectedWorkerId} />
-        </SidebarContent>
+    <Sidebar>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              {/* modal={false} : fix a bug with the Dialog+ContextMenu : https://github.com/radix-ui/primitives/issues/1836 */}
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton>
+                    <div className='flex items-center gap-2'>
+                      <User2 />
+                      {user ? user.email : t('info_not_connected')}
+                      <ChevronDown className='ml-auto' />
+                    </div>
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side='right'>
+                  {user ? (
+                    <DropdownMenuItem onClick={() => handleLogout()}>
+                      Se déconnecter
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={openSelectFormatDialog}>
+                      Se connecter
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+        <SourcesSideBarGroup />
+        <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link to={CorpusenseRoutes.COLLECTIONS}>
+                  <List />
+                  <span>{t('page_title_collection_manager')}</span>
+                  <Badge>{collections.length}</Badge>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <CollectionsSideBarGroup />
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link to={CorpusenseRoutes.MODELS}>
+                  <Container />
+                  <span>{t('page_title_models_manager')}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link to={CorpusenseRoutes.WORKERS}>
+                  <PocketKnife />
+                  <span>{t('page_title_workers_manager')}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+        <WorkersSideBarGroup setSelectedWorkerId={setSelectedWorkerId} />
+      </SidebarContent>
 
-        <SidebarFooter>
-          <div className='flex justify-between'>
-            Corpusense v{import.meta.env.VITE_APP_VERSION}
-            <Link to={CorpusenseRoutes.CONFIGURATION} title={t('page_title_configuration')}>
-              <Bolt />
-            </Link>
-          </div>
-        </SidebarFooter>
-      </Sidebar>
-      <AlertDialogLogin isOpen={isOpen} setIsOpen={setIsOpen} />
-    </>
+      <SidebarFooter>
+        <div className='flex justify-between'>
+          Corpusense v{import.meta.env.VITE_APP_VERSION}
+          <Link to={CorpusenseRoutes.CONFIGURATION} title={t('page_title_configuration')}>
+            <Bolt />
+          </Link>
+        </div>
+      </SidebarFooter>
+    </Sidebar>
   );
 };
 

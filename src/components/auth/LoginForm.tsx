@@ -1,10 +1,10 @@
 import { useAppDispatch } from '@/hooks/hooks';
 import { loginRequest } from '@/state/reducers/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Ref } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { Button } from '../ui/button';
 import {
   Form,
   FormControl,
@@ -21,7 +21,7 @@ const formSchema = z.object({
   password: z.string(),
 });
 
-const LoginForm = () => {
+const LoginForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -29,6 +29,17 @@ const LoginForm = () => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    /*
+    ! la fenêtre se ferme automatiquement
+    il faut qu'elle se ferme en fonction du statut de connexion
+      const authStatus = useAppSelector(selectAuthStatus);
+    
+      useEffect(() => {
+        if (authStatus === 'authenticated') {
+          setIsOpen(false);
+        }
+      }, [authStatus]);
+    */
     appDispatch(loginRequest({ email: values.email, password: values.password }));
   }
 
@@ -37,8 +48,10 @@ const LoginForm = () => {
       <form
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         onSubmit={form.handleSubmit(onSubmit)}
+        ref={formRef}
         className='mx-auto max-w-3xl space-y-8 py-10'
       >
+        <FormDescription>{t('description_login')}</FormDescription>
         <FormField
           control={form.control}
           name='email'
@@ -67,7 +80,6 @@ const LoginForm = () => {
             </FormItem>
           )}
         />
-        <Button type='submit'>{t('btn_login')}</Button>
       </form>
     </Form>
   );
