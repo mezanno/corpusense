@@ -1,3 +1,4 @@
+import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ScopeLabel from '@/components/ScopeLabel';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,13 +43,21 @@ const WorkersManagerPage = () => {
       filters.filter((f) => f.selected).map((f) => f.status),
     ),
   );
+  const { openDialog } = useAlertDialogContext();
 
   const initialSelectedWorkerId =
     workerId !== undefined && workers.find((w) => w.id === workerId) ? workerId : null;
   const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(initialSelectedWorkerId);
 
   const handleDeleteWorker = (id: string) => {
-    appDispatch(removeWorkerRequest(id));
+    openDialog({
+      title: t('title_are_you_sure'),
+      description: t('description_delete_worker'),
+      onConfirm: {
+        message: t('btn_yes'),
+        action: () => appDispatch(removeWorkerRequest(id)),
+      },
+    });
   };
 
   const columns: ColumnDef<Worker, unknown>[] = [
