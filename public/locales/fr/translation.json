@@ -117,6 +117,7 @@
   "form_label_conctact_email": "Votre adresse e-mail",
   "form_label_conctact_message": "Votre message",
   "form_label_model": "Modèle de données de la collection",
+  "form_description_select_collection": "Sélectionnez une collection",
   "form_description_tags": "Tags associés à cette collection",
   "form_description_create_collection": "Créez une nouvelle collection à partir de la sélection que vous avez effectuée.",
   "form_description_create_model": "Créez un nouveau modèle de données.",

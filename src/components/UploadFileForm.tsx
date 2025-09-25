@@ -1,12 +1,11 @@
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAppDispatch } from '@/hooks/hooks';
 import { importCollectionRequest, importCollectionsRequest } from '@/state/reducers/collections';
-import React, { useState } from 'react';
+import React, { Ref, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const UploadFileForm = ({ close }: { close: () => void }) => {
+const UploadFileForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
@@ -18,7 +17,9 @@ const UploadFileForm = ({ close }: { close: () => void }) => {
     }
   };
 
-  const handleImport = () => {
+  const handleImport = (event: React.FormEvent) => {
+    event.preventDefault();
+
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -42,15 +43,18 @@ const UploadFileForm = ({ close }: { close: () => void }) => {
         reader.readAsText(file);
       }
     }
-    close();
   };
 
   return (
-    <div className='flex flex-col items-center gap-1.5 rounded-2xl border-2 border-gray-200 p-2'>
-      <Label htmlFor='collectionFile'>Fichier</Label>
+    <form
+      ref={formRef}
+      onSubmit={handleImport}
+      className='flex flex-col items-center gap-1.5 rounded-2xl border-2 border-gray-200 p-2'
+    >
+      <Label htmlFor='collectionFile'>{t('form_description_select_collection')}</Label>
       <Input id='collectionFile' type='file' onChange={handleFileChange} />
-      {file && <Button onClick={handleImport}>{t('btn_import')}</Button>}
-    </div>
+      {/* {file && <Button onClick={handleImport}>{t('btn_import')}</Button>} */}
+    </form>
   );
 };
 

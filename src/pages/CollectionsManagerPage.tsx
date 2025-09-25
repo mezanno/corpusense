@@ -1,4 +1,3 @@
-import AlertDialogForm from '@/components/AlertDialogForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,9 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import UploadFileForm from '@/components/UploadFileForm';
 import { CollectionDetails } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useImportCollectionDialog from '@/hooks/ui/useImportCollectionDialog';
 import useNewCollectionDialog from '@/hooks/ui/useNewCollectionDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { removeCollectionRequest } from '@/state/reducers/collections';
@@ -139,6 +138,7 @@ const CollectionsManagerPage = () => {
   const dispatch = useAppDispatch();
   const collections: CollectionDetails[] = useAppSelector(selectCollections);
   const { openNewCollectionDialog } = useNewCollectionDialog();
+  const { openImportCollectionDialog } = useImportCollectionDialog();
 
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
 
@@ -167,18 +167,14 @@ const CollectionsManagerPage = () => {
           <FilePlus />
           {t('btn_create_collection')}
         </button>
-        <AlertDialogForm
+        <button
+          className='soft-button'
           title={t('btn_import_collection')}
-          description={t('description_import_collection')}
-          trigger={
-            <>
-              <Import />
-              {t('btn_import_collection')}
-            </>
-          }
+          onClick={openImportCollectionDialog}
         >
-          {({ close }) => <UploadFileForm close={close} />}
-        </AlertDialogForm>
+          <Import />
+          {t('btn_import_collection')}
+        </button>
       </section>
 
       {collections.length > 0 ? (
