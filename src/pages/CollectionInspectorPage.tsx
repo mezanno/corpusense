@@ -2,7 +2,6 @@ import CanvasViewer from '@/components/CanvasViewer';
 import CollectionMetadataForm from '@/components/CollectionMetadataForm';
 import CollectionToolbar from '@/components/CollectionToolbar';
 import GridThumb from '@/components/GridThumb';
-import ModelButtons from '@/components/textviewer/ModelButtons';
 import TextViewer from '@/components/textviewer/TextViewer';
 import {
   Accordion,
@@ -190,7 +189,6 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
                   <TabsTrigger value='document'>Vue document</TabsTrigger>
                   <TabsTrigger value='text'>Vue texte</TabsTrigger>
                 </TabsList>
-                {activeTab === 'text' && <ModelButtons collectionId={collectionId} />}
               </div>
               <TabsContent value='document'>
                 <CanvasViewer colllectionId={collectionId} canvas={canvasToDisplay} />

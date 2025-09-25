@@ -1,6 +1,5 @@
 import ModelViewer from '@/components/ModelViewer';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
-import ImportModelButton from '@/components/textviewer/ImportModelButton';
 import { Button } from '@/components/ui/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import {
@@ -14,6 +13,7 @@ import {
 import { generateSchema } from '@/data/utils/model';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useCreateModelDialog from '@/hooks/ui/useCreateModelDialog';
+import useImportModelDialog from '@/hooks/ui/useImportModelDialog';
 import { exportModelRequest, removeModelRequest } from '@/state/reducers/models';
 import { selectModels } from '@/state/selectors/models';
 import ReactJsonView from '@microlink/react-json-view';
@@ -27,6 +27,7 @@ const ModelsManagerPage = () => {
   const models = useAppSelector(selectModels);
   const { openDialog } = useAlertDialogContext();
   const { openCreateModelDialog } = useCreateModelDialog();
+  const { openImportModelDialog } = useImportModelDialog();
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
   const handleSelectModel = (modelId: string) => {
@@ -59,7 +60,9 @@ const ModelsManagerPage = () => {
         <button className='soft-button' onClick={openCreateModelDialog}>
           <Grid2X2Plus />
         </button>
-        <ImportModelButton />
+        <button className='soft-button' onClick={openImportModelDialog}>
+          <Download />
+        </button>
       </div>
 
       <div className='panel mb-1'>
