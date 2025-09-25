@@ -5,11 +5,11 @@ import { useTranslation } from 'react-i18next';
 
 const useImportCollectionDialog = () => {
   const { t } = useTranslation();
-  const { openDialog: showPopup } = useAlertDialogContext();
+  const { openDialog } = useAlertDialogContext();
   const formRef = useRef<HTMLFormElement | null>(null);
 
   const openImportCollectionDialog = () => {
-    showPopup({
+    openDialog({
       title: t('btn_import_collection'),
       children: <UploadFileForm formRef={formRef} />,
       onConfirm: {

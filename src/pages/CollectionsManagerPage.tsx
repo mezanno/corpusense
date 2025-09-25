@@ -34,7 +34,7 @@ const CollectionTableRow = ({
   const { t } = useTranslation();
   const navigation = useAppNavigation();
   const dispatch = useAppDispatch();
-  const { openDialog: showPopup } = useAlertDialogContext();
+  const { openDialog } = useAlertDialogContext();
 
   const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
     (state) => state.export,
@@ -52,7 +52,7 @@ const CollectionTableRow = ({
   }, [lastExportContent]);
 
   const handleDelete = (id: string) => {
-    showPopup({
+    openDialog({
       title: t('title_are_you_sure'),
       description: t('description_delete_collection'),
       onConfirm: {

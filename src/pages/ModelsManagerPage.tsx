@@ -25,7 +25,7 @@ const ModelsManagerPage = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const models = useAppSelector(selectModels);
-  const { openDialog: showPopup } = useAlertDialogContext();
+  const { openDialog } = useAlertDialogContext();
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
   const handleSelectModel = (modelId: string) => {
@@ -33,7 +33,7 @@ const ModelsManagerPage = () => {
   };
 
   const handleRemoveModel = (modelId: string) => {
-    showPopup({
+    openDialog({
       title: t('title_are_you_sure'),
       description: t('description_delete_model'),
       onConfirm: {

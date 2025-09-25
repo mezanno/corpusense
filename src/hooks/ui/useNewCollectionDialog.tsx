@@ -5,11 +5,11 @@ import { useTranslation } from 'react-i18next';
 
 const useNewCollectionDialog = () => {
   const { t } = useTranslation();
-  const { openDialog: showPopup } = useAlertDialogContext();
+  const { openDialog } = useAlertDialogContext();
   const formRef = useRef<HTMLFormElement | null>(null);
 
   const openNewCollectionDialog = () => {
-    showPopup({
+    openDialog({
       title: t('btn_create_collection'),
       children: <NewCollectionForm formRef={formRef} />,
       onConfirm: {

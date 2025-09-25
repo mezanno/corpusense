@@ -22,7 +22,7 @@ const baseColor = '#a4d6f6';
 const ModelViewer = ({ modelId }: { modelId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const { openDialog: showPopup } = useAlertDialogContext();
+  const { openDialog } = useAlertDialogContext();
   const { openPreviewModelDialog } = usePreviewModelDialog();
   const model = useAppSelector((state) => selectModelById(state, modelId));
   const [fields, setFields] = useState(model?.fields ?? []);
@@ -97,7 +97,7 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
   };
 
   const handleDeleteField = (index: number) => {
-    showPopup({
+    openDialog({
       title: t('title_are_you_sure'),
       description: t('description_delete_datafield'),
       onConfirm: {

@@ -5,11 +5,11 @@ import { useTranslation } from 'react-i18next';
 
 export const useLoginDialog = () => {
   const { t } = useTranslation();
-  const { openDialog: showPopup } = useAlertDialogContext();
+  const { openDialog } = useAlertDialogContext();
   const formRef = useRef<HTMLFormElement | null>(null);
 
   const openSelectFormatDialog = () => {
-    showPopup({
+    openDialog({
       title: t('title_login'),
       children: <LoginForm formRef={formRef} />,
       onConfirm: {

@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next';
 
 const usePreviewModelDialog = () => {
   const { t } = useTranslation();
-  const { openDialog: showPopup } = useAlertDialogContext();
+  const { openDialog } = useAlertDialogContext();
 
   const openPreviewModelDialog = (model: DataModel) => {
-    showPopup({
+    openDialog({
       title: t('btn_model_preview'),
       description: t('info_preview_model'),
       children: <ModelPreview model={model} />,

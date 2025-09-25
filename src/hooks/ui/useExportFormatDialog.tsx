@@ -6,10 +6,10 @@ import { useTranslation } from 'react-i18next';
 
 export const useExportFormatDialog = () => {
   const { t } = useTranslation();
-  const { openDialog: showPopup } = useAlertDialogContext();
+  const { openDialog } = useAlertDialogContext();
   const formRef = useRef<HTMLFormElement | null>(null);
   const openSelectFormatDialog = (worker: Worker) => {
-    showPopup({
+    openDialog({
       title: t('title_export_worker_result', { name: worker.name }),
       children: <ExportFormatSelectionForm worker={worker} formRef={formRef} />,
       onConfirm: {
