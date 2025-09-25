@@ -64,10 +64,19 @@ export class IndexedDBManifestRepository implements ManifestRepository {
   async add(manifest: Manifest) {
     const { name, thumbnail } = extractManifestDetails(manifest);
 
-    await db.transaction('rw', db.storedManifests, db.storedManifestContents, async () => {
-      await db.storedManifests.add({ id: manifest.id, name, thumbnail });
-      await db.storedManifestContents.add({ id: manifest.id, content: manifest });
-    });
+    const existing = await db.storedManifests.get(manifest.id);
+
+    if (!existing) {
+      await db.transaction('rw', db.storedManifests, db.storedManifestContents, async () => {
+        await db.storedManifests.add({ id: manifest.id, name, thumbnail });
+        await db.storedManifestContents.add({ id: manifest.id, content: manifest });
+      });
+    } else {
+      await db.transaction('rw', db.storedManifests, db.storedManifestContents, async () => {
+        await db.storedManifests.update(manifest.id, { name, thumbnail });
+        await db.storedManifestContents.put({ id: manifest.id, content: manifest });
+      });
+    }
   }
 
   async getHistoryEntries() {
