@@ -1,5 +1,4 @@
 import AlertDialogForm from '@/components/AlertDialogForm';
-import NewCollectionForm from '@/components/NewCollectionForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +15,7 @@ import {
 import UploadFileForm from '@/components/UploadFileForm';
 import { CollectionDetails } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useNewCollectionDialog from '@/hooks/ui/useNewCollectionDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { removeCollectionRequest } from '@/state/reducers/collections';
 import { exportCollectionsRequest } from '@/state/reducers/export';
@@ -135,9 +135,10 @@ const CollectionTableRow = ({
 };
 
 const CollectionsManagerPage = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const collections: CollectionDetails[] = useAppSelector(selectCollections);
-  const { t } = useTranslation();
+  const { openNewCollectionDialog } = useNewCollectionDialog();
 
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
 
@@ -158,18 +159,14 @@ const CollectionsManagerPage = () => {
   return (
     <div className='panel flex-col items-center space-y-4'>
       <section className='mt-2 ml-4 flex w-full justify-center space-x-2'>
-        <AlertDialogForm
+        <button
+          className='soft-button'
           title={t('btn_create_collection')}
-          description={t('description_create_collection')}
-          trigger={
-            <>
-              <FilePlus />
-              {t('btn_create_collection')}
-            </>
-          }
+          onClick={openNewCollectionDialog}
         >
-          {({ close }) => <NewCollectionForm close={close} />}
-        </AlertDialogForm>
+          <FilePlus />
+          {t('btn_create_collection')}
+        </button>
         <AlertDialogForm
           title={t('btn_import_collection')}
           description={t('description_import_collection')}

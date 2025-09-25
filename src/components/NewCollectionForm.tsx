@@ -13,7 +13,7 @@ import { createCollectionRequest } from '@/state/reducers/collections';
 import { selectCollectionNameExists } from '@/state/selectors/collections';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
-import { useEffect } from 'react';
+import { Ref, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -25,7 +25,7 @@ const formSchema = z.object({
     .min(2, { message: i18next.t('form_error_required') }),
 });
 
-const NewCollectionForm = ({ close }: { close: () => void }) => {
+const NewCollectionForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
@@ -57,13 +57,15 @@ const NewCollectionForm = ({ close }: { close: () => void }) => {
   }, [canSubmit]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    dispatch(createCollectionRequest(values.name));
-    close();
+    if (canSubmit) {
+      dispatch(createCollectionRequest(values.name));
+    }
+    // close();
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className='w-full space-y-4'>
+      <form onSubmit={form.handleSubmit(onSubmit)} className='w-full space-y-4' ref={formRef}>
         <FormField
           control={form.control}
           name='name'
@@ -78,14 +80,14 @@ const NewCollectionForm = ({ close }: { close: () => void }) => {
           )}
         />
 
-        <button
+        {/* <button
           className={`${canSubmit ? 'soft-button' : 'soft-button-diabled'}`}
           type='submit'
           title={t('btn_create')}
           disabled={!canSubmit}
         >
           {t('btn_create')}
-        </button>
+        </button> */}
       </form>
     </Form>
   );
