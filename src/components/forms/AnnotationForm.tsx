@@ -26,8 +26,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from '../ui/textarea';
 
 const annotationFormSchema = z.object({
-  type: z.nativeEnum(ElementType),
-  value: z.string({ required_error: 'Type is required' }).optional(),
+  type: z.enum(ElementType),
+  value: z.string({ error: 'Type is required' }).optional(),
 });
 
 const AnnotationForm = ({

@@ -37,7 +37,7 @@ export const suryaLayoutBboxSchema = z.object({
   label: z.string(),
   polygon: z.array(PointSchema),
   position: z.number(),
-  top_k: z.record(z.number()),
+  top_k: z.record(z.string(), z.number()),
 });
 
 export const suryaLayoutResultSchema = z.object({
