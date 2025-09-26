@@ -49,7 +49,7 @@ const LoginForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) => {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         onSubmit={form.handleSubmit(onSubmit)}
         ref={formRef}
-        className='mx-auto max-w-3xl space-y-8 py-10'
+        className='space-y-4'
       >
         <FormDescription>{t('description_login')}</FormDescription>
         <FormField
