@@ -232,8 +232,17 @@
   .soft-button-danger {
     @apply flex cursor-pointer items-center justify-center gap-2 space-x-2 rounded-lg border border-[var(--border)] bg-[var(--primary-foreground)] p-2 font-semibold text-[var(--foreground-button)] transition-colors duration-300 hover:border-[var(--primary)] hover:bg-dark-slate-gray-600 hover:shadow-md focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:outline-none;
   }
-  .soft-button-diabled {
-    @apply flex items-center justify-center gap-2 space-x-2 rounded-lg border border-[var(--border)] bg-[var(--primary)] p-2 text-[var(--primary-foreground)] opacity-70 transition-colors duration-300 focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:outline-none;
+  .soft-button-disabled {
+    @apply flex items-center justify-center gap-2 rounded-lg border border-[var(--foreground-button)] p-2 text-[var(--primary-foreground)] opacity-70 transition-colors duration-300 focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:outline-none;
+
+    /* Fond à rayures */
+    background-image: repeating-linear-gradient(
+      45deg,
+      var(--primary),
+      var(--primary) 10px,
+      var(--foreground-button) 10px,
+      var(--foreground-button) 20px
+    );
   }
 }
 
