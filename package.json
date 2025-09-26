@@ -164,7 +164,7 @@
     "vitest-webgl-canvas-mock": "^1.1.0",
     "workbox-cli": "^7.3.0",
     "workbox-window": "^7.3.0",
-    "zod": "^3.24.3"
+    "zod": "^4.1.11"
   },
   "overrides": {
     "react": "^19.0.0",
