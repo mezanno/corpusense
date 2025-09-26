@@ -1,7 +1,9 @@
-import { useAppDispatch } from '@/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { FormProps } from '@/hooks/ui/useDialog';
 import { loginRequest } from '@/state/reducers/auth';
+import { selectAuthStatus } from '@/state/selectors/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Ref } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -21,25 +23,27 @@ const formSchema = z.object({
   password: z.string(),
 });
 
-const LoginForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) => {
+const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
+  const authStatus = useAppSelector(selectAuthStatus);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: 'onChange',
   });
 
+  useEffect(() => {
+    setCanSubmit(form.formState.isDirty && form.formState.isValid);
+  }, [form.formState]);
+
+  useEffect(() => {
+    if (closeDialog && authStatus === 'authenticated') {
+      closeDialog();
+    }
+  }, [authStatus]);
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    /*
-    ! la fenêtre se ferme automatiquement
-    il faut qu'elle se ferme en fonction du statut de connexion
-      const authStatus = useAppSelector(selectAuthStatus);
-    
-      useEffect(() => {
-        if (authStatus === 'authenticated') {
-          setIsOpen(false);
-        }
-      }, [authStatus]);
-    */
     appDispatch(loginRequest({ email: values.email, password: values.password }));
   }
 

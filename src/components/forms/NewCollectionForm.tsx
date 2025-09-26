@@ -9,11 +9,12 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { FormProps } from '@/hooks/ui/useDialog';
 import { createCollectionRequest } from '@/state/reducers/collections';
 import { selectCollectionNameExists } from '@/state/selectors/collections';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
-import { Ref, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -25,7 +26,7 @@ const formSchema = z.object({
     .min(2, { message: i18next.t('form_error_required') }),
 });
 
-const NewCollectionForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) => {
+const NewCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
@@ -34,6 +35,7 @@ const NewCollectionForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }
     defaultValues: {
       name: '',
     },
+    mode: 'onChange',
   });
 
   const name = form.watch('name'); //permet de redéclencher un render à chaque modif du champ name
@@ -46,21 +48,21 @@ const NewCollectionForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }
         type: 'manual',
         message: t('form_collection_name_already_exists'),
       });
+      setCanSubmit(false);
     } else if (!form.formState.isValid) {
       form.setError('name', {
         type: 'manual',
         message: t('form_error_required'),
       });
+      setCanSubmit(false);
     } else {
       form.clearErrors('name');
+      setCanSubmit(form.formState.isDirty && form.formState.isValid);
     }
   }, [canSubmit]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    if (canSubmit) {
-      dispatch(createCollectionRequest(values.name));
-    }
-    // close();
+    dispatch(createCollectionRequest(values.name));
   }
 
   return (

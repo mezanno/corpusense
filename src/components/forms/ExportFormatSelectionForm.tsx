@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { Worker } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { FormProps } from '@/hooks/ui/useDialog';
 import { exportWorkerResultRequest } from '@/state/reducers/workers';
 import { selectExportFormats } from '@/state/selectors/workers';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Ref } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -19,13 +20,15 @@ import {
   FormMessage,
 } from '../ui/form';
 
+type ExportFormatSelectionFormProps = FormProps & {
+  worker: Worker;
+};
+
 const ExportFormatSelectionForm = ({
   worker,
   formRef,
-}: {
-  worker: Worker;
-  formRef: Ref<HTMLFormElement | null>;
-}) => {
+  setCanSubmit,
+}: ExportFormatSelectionFormProps) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
 
@@ -46,7 +49,12 @@ const ExportFormatSelectionForm = ({
   const form = useForm<Record<string, boolean | undefined>>({
     resolver: zodResolver(schema),
     defaultValues: formats.reduce((acc, f) => ({ ...acc, [f]: false }), {}),
+    mode: 'onChange',
   });
+
+  useEffect(() => {
+    setCanSubmit(form.formState.isDirty && form.formState.isValid);
+  }, [form.formState]);
 
   const onSubmit = (values: z.infer<typeof schema>) => {
     const selectedFormats = Object.entries(values)

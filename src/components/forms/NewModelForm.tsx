@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { FormProps } from '@/hooks/ui/useDialog';
 import { createModelRequest } from '@/state/reducers/models';
 import { selectModels } from '@/state/selectors/models';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
-import { Ref } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -21,7 +22,7 @@ const formSchema = z.object({
   fromModelId: z.string().optional(),
 });
 
-const NewModelForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) => {
+const NewModelForm = ({ formRef, setCanSubmit }: FormProps) => {
   const appDispatch = useAppDispatch();
   const { t } = useTranslation();
   const models = useAppSelector(selectModels);
@@ -31,7 +32,12 @@ const NewModelForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) => 
     defaultValues: {
       name: '',
     },
+    mode: 'onChange',
   });
+
+  useEffect(() => {
+    setCanSubmit(form.formState.isDirty && form.formState.isValid);
+  }, [form.formState]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     appDispatch(

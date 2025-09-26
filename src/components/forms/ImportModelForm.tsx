@@ -1,8 +1,9 @@
 import { useAppDispatch } from '@/hooks/hooks';
+import { FormProps } from '@/hooks/ui/useDialog';
 import { importModelRequest } from '@/state/reducers/models';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
-import { Ref } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -18,7 +19,7 @@ const schema = z.object({
     ),
 });
 
-const ImportModelForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) => {
+const ImportModelForm = ({ formRef, setCanSubmit }: FormProps) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
 
@@ -26,6 +27,10 @@ const ImportModelForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) 
     resolver: zodResolver(schema),
     mode: 'onChange',
   });
+
+  useEffect(() => {
+    setCanSubmit(form.formState.isDirty && form.formState.isValid);
+  }, [form.formState]);
 
   function onSubmit(values: z.infer<typeof schema>) {
     const reader = new FileReader();
@@ -62,6 +67,7 @@ const ImportModelForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) 
                 <Input
                   type='file'
                   accept='application/json'
+                  required
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     field.onChange(file);

@@ -1,9 +1,10 @@
 import { Input } from '@/components/ui/input';
 import { useAppDispatch } from '@/hooks/hooks';
+import { FormProps } from '@/hooks/ui/useDialog';
 import { importCollectionRequest, importCollectionsRequest } from '@/state/reducers/collections';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
-import { Ref } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -18,7 +19,7 @@ const schema = z.object({
     ),
 });
 
-const ImportCollectionForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) => {
+const ImportCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
@@ -26,6 +27,20 @@ const ImportCollectionForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null
     resolver: zodResolver(schema),
     mode: 'onChange',
   });
+
+  // // Notify dialog about validity
+  // form.watch('file') => {
+  //   console.log('watch', form.formState.isValid, form.formState.isDirty);
+
+  //   if (setCanSubmit) {
+  //     setCanSubmit(form.formState.isValid && form.formState.isDirty);
+  //   }
+  //   return name;
+  // });
+
+  useEffect(() => {
+    setCanSubmit(form.formState.isDirty && form.formState.isValid);
+  }, [form.formState]);
 
   function onSubmit(values: z.infer<typeof schema>) {
     const reader = new FileReader();

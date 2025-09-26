@@ -11,41 +11,55 @@ import { Worker } from '@/data/models/Worker';
 import { ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 
+export type FormProps = {
+  formRef: RefObject<HTMLFormElement | null>;
+  setCanSubmit: (can: boolean) => void;
+  closeDialog?: () => void;
+};
+
 type FormDialogOptions = {
   title: string;
   confirmLabel: string;
-  renderForm: (formRef: RefObject<HTMLFormElement | null>) => ReactNode;
-};
-
-const useFormDialog = () => {
-  const { openDialog } = useAlertDialogContext();
-  // const formRef = useRef<HTMLFormElement | null>(null); //! Not to do: Moved inside function to avoid stale ref issue
-
-  const openFormDialog = ({ title, confirmLabel, renderForm }: FormDialogOptions) => {
-    const formRef = { current: null } as RefObject<HTMLFormElement | null>; // Create a new ref for each dialog
-    openDialog({
-      title,
-      children: renderForm(formRef),
-      onConfirm: {
-        message: confirmLabel,
-        action: () => formRef.current?.requestSubmit(),
-      },
-    });
-  };
-
-  return { openFormDialog };
+  renderForm: (
+    formRef: RefObject<HTMLFormElement | null>, //référence au formulaire pour pouvoir déclencher le submit
+    setCanSubmit: (can: boolean) => void, //indique si le bouton de confirmation doit être actif (en fonction de la validité du formulaire)
+    closeDialog?: () => void, //fonction de fermeture du dialog à passer aux formulaires qui en auraient besoin
+  ) => ReactNode;
+  closeOnAction?: boolean; //Permet de spécifier si le dialog doit se fermer après l'action de confirmation (défaut true)
 };
 
 const useDialog = () => {
   const { t } = useTranslation();
-  const { openFormDialog } = useFormDialog();
-  const { openDialog } = useAlertDialogContext();
+  const { openDialog, setCanSubmit, closeDialog } = useAlertDialogContext();
+  // const formRef = useRef<HTMLFormElement | null>(null); //! Not to do: Moved inside function to avoid stale ref issue
+
+  //fonction permettant l'ouverture d'un dialog avec un formulaire
+  const openFormDialog = ({
+    title,
+    confirmLabel,
+    renderForm,
+    closeOnAction,
+  }: FormDialogOptions) => {
+    const formRef = { current: null } as RefObject<HTMLFormElement | null>; // Create a new ref for each dialog
+
+    openDialog({
+      title,
+      children: renderForm(formRef, setCanSubmit, closeDialog),
+      onConfirm: {
+        message: confirmLabel,
+        action: () => formRef.current?.requestSubmit(),
+        closeOnAction,
+      },
+    });
+  };
 
   const openImportCollectionDialog = () => {
     openFormDialog({
       title: t('btn_import_collection'),
       confirmLabel: t('btn_import_collection'),
-      renderForm: (formRef) => <ImportCollectionForm formRef={formRef} />,
+      renderForm: (formRef) => (
+        <ImportCollectionForm formRef={formRef} setCanSubmit={setCanSubmit} />
+      ),
     });
   };
 
@@ -53,7 +67,7 @@ const useDialog = () => {
     openFormDialog({
       title: t('btn_create_collection'),
       confirmLabel: t('btn_create'),
-      renderForm: (formRef) => <NewCollectionForm formRef={formRef} />,
+      renderForm: (formRef) => <NewCollectionForm formRef={formRef} setCanSubmit={setCanSubmit} />,
     });
   };
 
@@ -61,7 +75,9 @@ const useDialog = () => {
     openFormDialog({
       title: t('title_export_worker_result'),
       confirmLabel: t('btn_export'),
-      renderForm: (formRef) => <ExportFormatSelectionForm worker={worker} formRef={formRef} />,
+      renderForm: (formRef) => (
+        <ExportFormatSelectionForm worker={worker} formRef={formRef} setCanSubmit={setCanSubmit} />
+      ),
     });
   };
 
@@ -69,7 +85,10 @@ const useDialog = () => {
     openFormDialog({
       title: t('title_login'),
       confirmLabel: t('btn_login'),
-      renderForm: (formRef) => <LoginForm formRef={formRef} />,
+      renderForm: (formRef) => (
+        <LoginForm formRef={formRef} setCanSubmit={setCanSubmit} closeDialog={closeDialog} />
+      ),
+      closeOnAction: false,
     });
   };
 
@@ -77,7 +96,7 @@ const useDialog = () => {
     openFormDialog({
       title: t('btn_import_model'),
       confirmLabel: t('btn_import_model'),
-      renderForm: (formRef) => <ImportModelForm formRef={formRef} />,
+      renderForm: (formRef) => <ImportModelForm formRef={formRef} setCanSubmit={setCanSubmit} />,
     });
   };
 
@@ -85,7 +104,7 @@ const useDialog = () => {
     openFormDialog({
       title: t('btn_create_model'),
       confirmLabel: t('btn_create'),
-      renderForm: (formRef) => <NewModelForm formRef={formRef} />,
+      renderForm: (formRef) => <NewModelForm formRef={formRef} setCanSubmit={setCanSubmit} />,
     });
   };
 
