@@ -35,7 +35,10 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
   const [dialogProps, setDialogProps] = useState<DialogProps | null>(null);
   const [canSubmit, setCanSubmit] = useState<boolean>(true);
 
-  const openDialog = (props: DialogProps) => setDialogProps(props); //fonction permettant d'ouvrir le dialog avec les propriétés spécifiées
+  const openDialog = (props: DialogProps) => {
+    setCanSubmit(true); //initialise canSubmit à true par défaut
+    setDialogProps(props);
+  }; //fonction permettant d'ouvrir le dialog avec les propriétés spécifiées
   const closeDialog = () => setDialogProps(null);
 
   const onConfirm = () => {
