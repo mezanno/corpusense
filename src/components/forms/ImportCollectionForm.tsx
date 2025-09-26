@@ -18,7 +18,7 @@ const schema = z.object({
     ),
 });
 
-const UploadFileForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) => {
+const ImportCollectionForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
@@ -83,4 +83,4 @@ const UploadFileForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) =
   );
 };
 
-export default UploadFileForm;
+export default ImportCollectionForm;

@@ -1,9 +1,9 @@
 import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
+import ImportCollectionForm from '@/components/forms/ImportCollectionForm';
 import ImportModelForm from '@/components/forms/ImportModelForm';
 import LoginForm from '@/components/forms/LoginForm';
 import NewCollectionForm from '@/components/forms/NewCollectionForm';
 import NewModelForm from '@/components/forms/NewModelForm';
-import UploadFileForm from '@/components/forms/UploadFileForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { DataModel } from '@/data/models/DataModel';
@@ -45,7 +45,7 @@ const useDialog = () => {
     openFormDialog({
       title: t('btn_import_collection'),
       confirmLabel: t('btn_import_collection'),
-      renderForm: (formRef) => <UploadFileForm formRef={formRef} />,
+      renderForm: (formRef) => <ImportCollectionForm formRef={formRef} />,
     });
   };
 
