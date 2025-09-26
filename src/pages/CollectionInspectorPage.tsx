@@ -1,6 +1,6 @@
 import CanvasViewer from '@/components/CanvasViewer';
-import CollectionMetadataForm from '@/components/CollectionMetadataForm';
 import CollectionToolbar from '@/components/CollectionToolbar';
+import CollectionMetadataForm from '@/components/forms/CollectionMetadataForm';
 import GridThumb from '@/components/GridThumb';
 import TextViewer from '@/components/textviewer/TextViewer';
 import {

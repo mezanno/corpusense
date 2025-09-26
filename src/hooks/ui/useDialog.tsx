@@ -1,11 +1,11 @@
-import LoginForm from '@/components/auth/LoginForm';
-import ExportFormatSelectionForm from '@/components/ExportFormatSelectionForm';
-import NewCollectionForm from '@/components/NewCollectionForm';
-import NewModelForm from '@/components/NewModelForm';
+import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
+import ImportModelForm from '@/components/forms/ImportModelForm';
+import LoginForm from '@/components/forms/LoginForm';
+import NewCollectionForm from '@/components/forms/NewCollectionForm';
+import NewModelForm from '@/components/forms/NewModelForm';
+import UploadFileForm from '@/components/forms/UploadFileForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
-import ImportModelForm from '@/components/textviewer/ImportModelForm';
 import ModelPreview from '@/components/textviewer/ModelPreview';
-import UploadFileForm from '@/components/UploadFileForm';
 import { DataModel } from '@/data/models/DataModel';
 import { Worker } from '@/data/models/Worker';
 import { ReactNode, RefObject } from 'react';

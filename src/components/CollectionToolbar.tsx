@@ -10,7 +10,7 @@ import { exportTextOfCollectionRequest } from '@/state/reducers/export';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import RemoveAnnotationsForm from './RemoveAnnotationsForm';
+import RemoveAnnotationsForm from './forms/RemoveAnnotationsForm';
 import Toolbar from './ToolBar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 

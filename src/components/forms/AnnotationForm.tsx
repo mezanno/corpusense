@@ -17,13 +17,13 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import AnnotationOrderPanel from './AnnotationOrderPanel';
-import Entities from './Entities';
-import Toolbar from './ToolBar';
-import { Button } from './ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Textarea } from './ui/textarea';
+import AnnotationOrderPanel from '../AnnotationOrderPanel';
+import Entities from '../Entities';
+import Toolbar from '../ToolBar';
+import { Button } from '../ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Textarea } from '../ui/textarea';
 
 const annotationFormSchema = z.object({
   type: z.nativeEnum(ElementType),

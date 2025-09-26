@@ -13,7 +13,6 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import { z } from 'zod';
-import './taginput.css'; //permet d'enlever le background transparent du taginput
 import {
   Form,
   FormControl,
@@ -22,9 +21,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from './ui/form';
-import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
+} from '../ui/form';
+import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
+import './taginput.css'; //permet d'enlever le background transparent du taginput
 
 const formSchema = z.object({
   name: z.string(),

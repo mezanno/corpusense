@@ -3,7 +3,7 @@ import { renderWithProviders } from '@/__tests__/utils';
 import { RootState } from '@/state/store';
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import ManifestDetails from './ManifestDetails';
+import ManifestDetails from '../ManifestDetails';
 
 describe('ManifestDetails', () => {
   it('should display loading if manifest is loading', () => {
