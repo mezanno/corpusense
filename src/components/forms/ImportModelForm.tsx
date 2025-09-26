@@ -24,6 +24,7 @@ const ImportModelForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) 
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
+    mode: 'onChange',
   });
 
   function onSubmit(values: z.infer<typeof schema>) {
@@ -35,7 +36,6 @@ const ImportModelForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null> }) 
           const jsonContent = JSON.parse(content) as object;
           appDispatch(importModelRequest(jsonContent));
           console.log(jsonContent);
-          close();
         } catch (err) {
           console.error('Error parsing JSON:', err);
         }

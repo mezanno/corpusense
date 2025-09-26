@@ -24,6 +24,7 @@ const ImportCollectionForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
+    mode: 'onChange',
   });
 
   function onSubmit(values: z.infer<typeof schema>) {
@@ -67,7 +68,7 @@ const ImportCollectionForm = ({ formRef }: { formRef: Ref<HTMLFormElement | null
               <FormControl>
                 <Input
                   type='file'
-                  accept='application/json'
+                  accept='application/json, application/zip'
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     field.onChange(file);
