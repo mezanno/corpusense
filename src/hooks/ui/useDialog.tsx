@@ -4,6 +4,7 @@ import ImportModelForm from '@/components/forms/ImportModelForm';
 import LoginForm from '@/components/forms/LoginForm';
 import NewCollectionForm from '@/components/forms/NewCollectionForm';
 import NewModelForm from '@/components/forms/NewModelForm';
+import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { DataModel } from '@/data/models/DataModel';
@@ -108,6 +109,20 @@ const useDialog = () => {
     });
   };
 
+  const openRemoveAnnotationsDialog = (collectionId: string) => {
+    openFormDialog({
+      title: t('title_remove_annotations'),
+      confirmLabel: t('btn_delete'),
+      renderForm: (formRef) => (
+        <RemoveAnnotationsForm
+          formRef={formRef}
+          collectionId={collectionId}
+          setCanSubmit={setCanSubmit}
+        />
+      ),
+    });
+  };
+
   const openModelPreviewDialog = (model: DataModel) => {
     openDialog({
       title: t('btn_model_preview'),
@@ -124,6 +139,7 @@ const useDialog = () => {
     openImportModelDialog,
     openCreateModelDialog,
     openModelPreviewDialog,
+    openRemoveAnnotationsDialog,
   };
 };
 

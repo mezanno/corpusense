@@ -1,28 +1,20 @@
-import { ElementType } from '@/data/models/Annotation';
 import { Worker } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
-import {
-  recomputeRegionsRequest,
-  removeAnnotationsByScopeRequest,
-} from '@/state/reducers/annotations';
+import { recomputeRegionsRequest } from '@/state/reducers/annotations';
 import { exportTextOfCollectionRequest } from '@/state/reducers/export';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import RemoveAnnotationsForm from './forms/RemoveAnnotationsForm';
 import Toolbar from './ToolBar';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 
 const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const { openSelectFormatDialog } = useDialog();
+  const { openSelectFormatDialog, openRemoveAnnotationsDialog } = useDialog();
   const isWorkerRunning = useAppSelector((state) =>
     selectIsWorkerOrTaskRunning(state, { collectionId }),
   );
   // const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
-  const [removeAnnotationsDialogOpen, setRemoveAnnotationsDialogOpen] = useState(false);
 
   if (isWorkerRunning) {
     return (
@@ -33,7 +25,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   }
 
   const handleDeleteAllAnnotations = () => {
-    setRemoveAnnotationsDialogOpen(true);
+    openRemoveAnnotationsDialog(collectionId);
   };
 
   const handleRecomputeRegions = () => {
@@ -70,14 +62,6 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   //   }
   // };
 
-  const closeRemoveAnnotationsDialog = (types: ElementType[]) => {
-    setRemoveAnnotationsDialogOpen(false);
-
-    if (collectionId !== undefined) {
-      appDispatch(removeAnnotationsByScopeRequest({ scope: { collectionId }, types }));
-    }
-  };
-
   return (
     <div className='panel'>
       <Toolbar
@@ -97,15 +81,6 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
           <SelectModelForm close={closeAnalysisDialog} collectionId={collectionId} />
         </DialogContent>
       </Dialog> */}
-      <Dialog open={removeAnnotationsDialogOpen} onOpenChange={setRemoveAnnotationsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('title_remove_annotations')}</DialogTitle>
-            <DialogDescription>{t('description_remove_annotations')}</DialogDescription>
-          </DialogHeader>
-          <RemoveAnnotationsForm close={closeRemoveAnnotationsDialog} />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
