@@ -3,7 +3,7 @@ import { FormProps } from '@/hooks/ui/useDialog';
 import { loginRequest } from '@/state/reducers/auth';
 import { selectAuthStatus } from '@/state/selectors/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -27,6 +27,7 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const authStatus = useAppSelector(selectAuthStatus);
+  const newlyOpened = useRef(true);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -38,13 +39,14 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
   }, [form.formState]);
 
   useEffect(() => {
-    if (closeDialog && authStatus === 'authenticated') {
+    if (!newlyOpened.current && closeDialog && authStatus === 'authenticated') {
       closeDialog();
     }
   }, [authStatus]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     appDispatch(loginRequest({ email: values.email, password: values.password }));
+    newlyOpened.current = false;
   }
 
   return (
