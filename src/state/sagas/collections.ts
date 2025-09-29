@@ -31,6 +31,7 @@ import {
   removeElementFromCollectionRequest,
   removeElementFromCollectionSuccess,
   setCollections,
+  toggleCollectionOfflineRequest,
   updateCollectionRequest,
   updateCollectionSuccess,
 } from '../reducers/collections';
@@ -58,7 +59,14 @@ function* fetchAllCollections(): Generator<
 
 function* handleCreateCollection(action: PayloadAction<string>) {
   const name = action.payload;
-  const newCollection: Collection = { id: uuid(), name, tags: [], contentSize: 0, content: [] };
+  const newCollection: Collection = {
+    id: uuid(),
+    name,
+    tags: [],
+    contentSize: 0,
+    content: [],
+    offline: false,
+  };
 
   try {
     const collectionRepository = getCollectionRepository();
@@ -71,7 +79,7 @@ function* handleCreateCollection(action: PayloadAction<string>) {
 }
 
 function* handleUpdateCollection(action: PayloadAction<Collection>) {
-  const { id, name, tags, content, modelId } = action.payload;
+  const { id, name, tags, content, modelId, offline } = action.payload;
   try {
     if (id === undefined) {
       // yield put(setError(i18next.t('error_collection_not_found')));
@@ -83,6 +91,7 @@ function* handleUpdateCollection(action: PayloadAction<Collection>) {
       tags,
       content,
       modelId,
+      offline,
     });
 
     yield put(updateCollectionSuccess(action.payload));
@@ -186,6 +195,7 @@ function* handleCreateCollectionWithSelection(
     name,
     tags: [],
     contentSize: selection.length,
+    offline: false,
   };
   const content = generateCollectionContent(
     0,
@@ -389,6 +399,36 @@ function* handleLoadCollection(
   }
 }
 
+function* handleToggleCollectionOffline(
+  action: PayloadAction<string>,
+): Generator<Effect, void, Collection> {
+  const collectionId = action.payload;
+  try {
+    const collectionRepository = getCollectionRepository();
+    const collection = yield call(
+      [collectionRepository, collectionRepository.getById],
+      collectionId,
+    );
+    if (collection === undefined) {
+      yield put(pushError(i18n.t('error_collection_not_found')));
+      return;
+    }
+    yield call(
+      [collectionRepository, collectionRepository.updateOffline],
+      collectionId,
+      !collection.offline,
+    );
+    yield put(updateCollectionSuccess({ ...collection, offline: !collection.offline }));
+    if (!collection.offline) {
+      yield put(pushInfo(i18n.t('toast_collection_offline')));
+    } else {
+      yield put(pushInfo(i18n.t('toast_collection_online')));
+    }
+  } catch (e) {
+    yield put(pushError(getErrorMessage(e)));
+  }
+}
+
 export default function* collectionsSaga() {
   yield takeEvery(createCollectionRequest, handleCreateCollection);
   yield takeEvery(removeCollectionRequest, handleRemoveCollection);
@@ -399,6 +439,7 @@ export default function* collectionsSaga() {
   yield takeEvery(importCollectionRequest, handleImportCollection);
   yield takeEvery(importCollectionsRequest, handleImportCollections);
   yield takeEvery(loadCollectionRequest, handleLoadCollection);
+  yield takeEvery(toggleCollectionOfflineRequest, handleToggleCollectionOffline);
 }
 
 export {

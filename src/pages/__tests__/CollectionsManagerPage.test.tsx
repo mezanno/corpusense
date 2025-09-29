@@ -38,12 +38,13 @@ describe('CollectionsManagerPage', () => {
       collections: {
         ...getPreloadedState().collections,
         values: [
-          { id: '1', name: 'Collection 1', contentSize: 0, tags: [] },
+          { id: '1', name: 'Collection 1', contentSize: 0, tags: [], offline: false },
           {
             id: '2',
             name: 'Collection 2',
             contentSize: 0,
             tags: [],
+            offline: false,
           },
         ],
       },

@@ -9,6 +9,7 @@ export type CollectionDetails = WithStringId & {
   tags: string[];
   modelId?: string;
   contentSize: number;
+  offline: boolean;
 };
 
 export type CollectionContent = WithStringId & {

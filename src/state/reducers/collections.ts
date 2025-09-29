@@ -46,6 +46,7 @@ export const collectionsSlice = createSlice({
         collection.about = action.payload.about;
         collection.tags = action.payload.tags;
         collection.modelId = action.payload.modelId;
+        collection.offline = action.payload.offline;
       }
     },
     loadCollectionRequest: (_state, _action: PayloadAction<string>) => {},
@@ -122,6 +123,10 @@ export const collectionsSlice = createSlice({
         }
       });
     },
+    toggleCollectionOfflineRequest: (
+      _state,
+      _action: PayloadAction<string>, // collectionId
+    ) => {},
   },
 });
 
@@ -144,5 +149,6 @@ export const {
   importCollectionRequest,
   importCollectionsRequest,
   updateOcrStatus,
+  toggleCollectionOfflineRequest,
 } = collectionsSlice.actions;
 export default collectionsSlice.reducer;

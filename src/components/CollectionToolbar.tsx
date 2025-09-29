@@ -2,10 +2,14 @@ import { Worker } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import { recomputeRegionsRequest } from '@/state/reducers/annotations';
+import { toggleCollectionOfflineRequest } from '@/state/reducers/collections';
 import { exportTextOfCollectionRequest } from '@/state/reducers/export';
+import { selectIsCollectionOffline } from '@/state/selectors/collections';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
+import { Pin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Toolbar from './ToolBar';
+import { Toggle } from './ui/toggle';
 
 const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   const { t } = useTranslation();
@@ -13,6 +17,9 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   const { openSelectFormatDialog, openRemoveAnnotationsDialog } = useDialog();
   const isWorkerRunning = useAppSelector((state) =>
     selectIsWorkerOrTaskRunning(state, { collectionId }),
+  );
+  const isCollectionOffline = useAppSelector((state) =>
+    selectIsCollectionOffline(state, collectionId),
   );
   // const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
 
@@ -45,6 +52,10 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
     openSelectFormatDialog(worker);
   };
 
+  const handleToggleOffline = () => {
+    appDispatch(toggleCollectionOfflineRequest(collectionId));
+  };
+
   // const closeAnalysisDialog = (model: DataModel) => {
   //   setAnalysisDialogOpen(false);
 
@@ -63,7 +74,7 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
   // };
 
   return (
-    <div className='panel'>
+    <div className='panel justify-between'>
       <Toolbar
         title={t('title_collection_actions')}
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
@@ -72,6 +83,18 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
         handleExportResult={handleExportResult}
         scope={{ collectionId }}
       />
+      <div>
+        <Toggle
+          className='soft-button'
+          size={null}
+          pressed={isCollectionOffline}
+          onClick={handleToggleOffline}
+          disabled={isWorkerRunning}
+          title={isCollectionOffline ? t('button_set_offline') : t('button_set_online')}
+        >
+          <Pin size={24} />
+        </Toggle>
+      </div>
       {/* <Dialog open={analysisDialogOpen} onOpenChange={setAnalysisDialogOpen}>
         <DialogContent>
           <DialogHeader>

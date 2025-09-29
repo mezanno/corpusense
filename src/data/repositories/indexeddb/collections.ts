@@ -106,13 +106,21 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       tags,
       content,
       modelId,
-    }: { name: string; tags: string[]; content: CollectionElement[]; modelId?: string },
+      offline,
+    }: {
+      name: string;
+      tags: string[];
+      content: CollectionElement[];
+      modelId?: string;
+      offline: boolean;
+    },
   ): Promise<void> {
     await db.transaction('rw', db.collections, db.collectionContents, async () => {
       await db.collections.update(id, {
         name,
         tags,
         modelId,
+        offline,
       });
       await db.collectionContents.update(id, {
         content,
@@ -123,6 +131,12 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
   async updateTags(id: string, tags: string[]): Promise<void> {
     await db.collections.update(id, {
       tags,
+    });
+  }
+
+  async updateOffline(id: string, offline: boolean): Promise<void> {
+    await db.collections.update(id, {
+      offline,
     });
   }
 

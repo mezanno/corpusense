@@ -41,3 +41,11 @@ export const selectModelIdOfCollection = createSelector(
 
 export const selectCanvasHasOcrAnnotations = (state: RootState, canvasId: string) =>
   state.collections?.canvasHasOcrAnnotations?.[canvasId] ?? false;
+
+export const selectIsCollectionOffline = createSelector(
+  [
+    (state: RootState) => state.collections?.values ?? [],
+    (_: RootState, collectionId: string) => collectionId,
+  ],
+  (values, collectionId) => values.find((elt) => elt.id === collectionId)?.offline ?? false,
+);
