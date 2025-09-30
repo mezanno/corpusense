@@ -133,19 +133,19 @@ const ConfigurationPage = () => {
       </div>
       <div className='mt-2 border border-red-500 p-1 text-red-500'>
         <div>
-          <strong>Warning:</strong> Experimental features are enabled. These features are in active
-          development and may be unstable.
+          <strong>{t('attention')}</strong> {t('info_experimental_features')}
         </div>
         <div className='mt-2 flex items-center gap-2'>
-          <div>Enable experimental features</div>
+          <div>{t('btn_experimental_features')}</div>
           <Checkbox
             checked={experimentalFeaturesActivated}
             onCheckedChange={handleCheckboxChange}
           />
         </div>
       </div>
-      <h2 className='mt-2'>Indexeddb</h2>
-      <div>
+      <div className='mt-2 border border-red-500 p-1 text-red-500'>
+        <strong className='mt-2'>Indexeddb</strong>
+        <div>{t('info_reset_indexeddb')}</div>
         <button className='soft-button' onClick={onResetIndexedDB}>
           <DatabaseZap />
           {t('btn_reset_indexeddb')}
