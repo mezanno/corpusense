@@ -81,15 +81,7 @@ const CanvasGallery = ({
   };
 
   const handleOnResize = (size: { height: number; width: number }) => {
-    if (size.width < 200) {
-      setColCount(2);
-    } else if (size.width < 400) {
-      setColCount(3);
-    } else if (size.width < 600) {
-      setColCount(4);
-    } else {
-      setColCount(5);
-    }
+    setColCount(Math.max(2, Math.floor(size.width / 150)));
   };
 
   const selectionCount = getSelectionCount();
