@@ -7,11 +7,13 @@ type ExperimentalContextType = {
 
 const experimentalContext = createContext<ExperimentalContextType | undefined>(undefined);
 
+export const getIsExperimentalFeaturesActivated = () => {
+  return localStorage.getItem('experimentalFeatures') === 'true';
+};
+
 export const ExperimentalProvider = ({ children }: { children: React.ReactNode }) => {
-  const [experimentalFeaturesActivated, setExperimentalFeaturesActivated] = useState<boolean>(
-    () => {
-      return localStorage.getItem('experimentalFeatures') === 'true';
-    },
+  const [experimentalFeaturesActivated, setExperimentalFeaturesActivated] = useState<boolean>(() =>
+    getIsExperimentalFeaturesActivated(),
   );
 
   // synchronise localStorage quand l’état change
