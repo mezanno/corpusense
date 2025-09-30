@@ -48,18 +48,20 @@ const Layout = () => {
   return (
     <SidebarProvider>
       <LayoutSideBar setSelectedWorkerId={setSelectedWorkerId} />
-      <SidebarInset className='m-2 flex h-screen min-w-0 flex-1 flex-col'>
-        <header className='flex shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
-          <div className='flex items-center space-x-2'>
-            <SidebarTrigger />
-            <ManifestExplorerDrawer />
-            <HistoryDrawer />
-            <ContactDrawer />
-          </div>
-        </header>
-        <main className='flex-1'>
-          <Outlet />
-        </main>
+      <SidebarInset className='flex h-screen min-w-0 flex-col'>
+        <div className='flex h-full w-full flex-col p-2'>
+          <header className='flex shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
+            <div className='flex items-center space-x-2'>
+              <SidebarTrigger />
+              <ManifestExplorerDrawer />
+              <HistoryDrawer />
+              <ContactDrawer />
+            </div>
+          </header>
+          <main className='flex-1 pt-2'>
+            <Outlet />
+          </main>
+        </div>
         <Toaster position='top-right' expand={true} richColors />
       </SidebarInset>
     </SidebarProvider>

@@ -262,7 +262,7 @@
 html,
 body,
 #root {
-  @apply h-full w-full;
+  @apply h-screen w-full overflow-hidden;
 }
 
 input,
