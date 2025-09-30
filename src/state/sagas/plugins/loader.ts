@@ -1,5 +1,6 @@
 import { Result } from '@/data/models/Result';
 import { Task, WorkerResponse } from '@/data/models/Worker';
+import { getIsExperimentalFeaturesActivated } from '@/hooks/useExperimental';
 
 export type WorkerPluginInfo = {
   displayName?: string;
@@ -58,21 +59,30 @@ export function loadWorkerPlugins() {
   const modules = import.meta.glob('./workers/*.ts', { eager: true });
   const workerPlugins: Record<string, WorkerPlugin> = {};
 
+  const experimentalFeaturesEnabled = getIsExperimentalFeaturesActivated();
+
   for (const path in modules) {
     const mod = modules[path] as WorkerModule;
     if (isWorkerModule(mod)) {
-      workerPlugins[mod.pluginName] = {
-        run: mod.default,
-        info: {
-          displayName: mod.pluginDisplayName,
-          description: mod.pluginDescription,
-          category: mod.pluginCategory,
-          exportFormats: mod.pluginExportFormats,
-        },
-        export: mod.exportResult,
-      };
+      // If experimental features are enabled, load all plugins.
+      // If not, only load plugins that are not marked as experimental.
+      if (
+        experimentalFeaturesEnabled === true ||
+        (experimentalFeaturesEnabled === false && !('experimental' in mod))
+      ) {
+        workerPlugins[mod.pluginName] = {
+          run: mod.default,
+          info: {
+            displayName: mod.pluginDisplayName,
+            description: mod.pluginDescription,
+            category: mod.pluginCategory,
+            exportFormats: mod.pluginExportFormats,
+          },
+          export: mod.exportResult,
+        };
 
-      console.info(`Plugin saga ${mod.pluginName} loaded successfully`);
+        console.info(`Plugin saga ${mod.pluginName} loaded successfully`);
+      }
     }
   }
 

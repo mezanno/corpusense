@@ -8,6 +8,7 @@ export const pluginDisplayName = 'Détection de layout Surya';
 export const pluginDescription =
   'Détection et extraction de structures de mise en page (paragraphes, titres, images, tableaux, etc.) dans les images.';
 export const pluginCategory = 'Layout';
+export const experimental = true;
 
 export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
