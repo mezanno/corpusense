@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
@@ -30,6 +31,7 @@ const ConfigurationPage = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const { experimentalFeaturesActivated, setExperimentalFeaturesActivated } = useExperimental();
+  const { openDialog } = useAlertDialogContext();
 
   useEffect(() => {
     // Load the saved Mistral API key from localStorage when the component mounts
@@ -70,9 +72,18 @@ const ConfigurationPage = () => {
     }
   }
 
-  const onResetIndexedDB = async () => {
-    await clearDatabase();
-    appDispatch({ type: 'RESET_STORE' });
+  const onResetIndexedDB = () => {
+    openDialog({
+      title: t('title_are_you_sure'),
+      description: t('info_reset_indexeddb'),
+      onConfirm: {
+        action: async () => {
+          await clearDatabase();
+          appDispatch(pushInfo(t('toast_indexeddb_cleared')));
+        },
+        message: t('btn_yes'),
+      },
+    });
   };
 
   const handleCheckboxChange = (checked: boolean) => {
