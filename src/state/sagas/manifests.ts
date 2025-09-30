@@ -54,6 +54,7 @@ function* fetchManifestFromURL(url: string): Generator<Effect, Manifest, Manifes
       } catch (err) {
         const msg = i18n.t('error_loading_manifest', { error: getErrorMessage(err) });
         yield put(fetchManifestError(msg));
+        throw new Error(getErrorMessage(err));
       }
     }
     throw new Error(i18n.t('no_manifest_importer', { url }));

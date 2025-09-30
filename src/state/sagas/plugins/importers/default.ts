@@ -1,4 +1,4 @@
-import i18next from 'i18next';
+import i18n from 'i18next';
 
 export const pluginName = 'default';
 
@@ -13,11 +13,13 @@ const defaultImporter = async (url: string): Promise<object> => {
     });
     if (!response.ok) {
       if (response.status === 404) {
-        throw new Error(i18next.t('error_404_manifest'));
+        throw new Error(i18n.t('error_404_manifest', { url }));
       } else if (response.status === 403) {
-        throw new Error(i18next.t('error_403_manifest'));
+        throw new Error(i18n.t('error_403_manifest', { url }));
       } else {
-        throw new Error(`Failed to fetch manifest ${response.statusText}`);
+        throw new Error(
+          i18n.t('error_loading_manifest', { error: `${response.status} ${response.statusText}` }),
+        );
       }
     }
     //TODO! gérer cas où ce n'est pas un objet (unknown)
@@ -25,7 +27,7 @@ const defaultImporter = async (url: string): Promise<object> => {
 
     return data;
   } catch (error) {
-    throw new Error(i18next.t('error_unknown'));
+    throw new Error(i18n.t('error_unknown'));
   }
 };
 

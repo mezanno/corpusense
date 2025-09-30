@@ -1,3 +1,5 @@
+import i18n from 'i18next';
+
 export const pluginName = 'bnf.fr';
 
 const gallicaImporter = async (url: string): Promise<object> => {
@@ -36,7 +38,16 @@ const fetchUrl = async (url: string): Promise<object> => {
     //TODO! gérer cas où ce n'est pas un objet (unknown)
     return (await response.json()) as object;
   }
-  throw new Error(`Failed to fetch manifest ${response.statusText}`);
+  console.log(`Error fetching manifest: ${response.status} - ${response.statusText}`);
+  if (response.status === 404) {
+    throw new Error(i18n.t('error_404_manifest', { url }));
+  } else if (response.status === 403) {
+    throw new Error(i18n.t('error_403_manifest', { url }));
+  } else {
+    throw new Error(
+      i18n.t('error_loading_manifest', { error: `${response.status} ${response.statusText}` }),
+    );
+  }
 };
 
 export default gallicaImporter;
