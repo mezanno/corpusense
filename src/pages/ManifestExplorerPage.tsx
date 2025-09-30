@@ -1,6 +1,7 @@
 import CanvasViewer from '@/components/CanvasViewer';
 import NoManifestToShow from '@/components/NoManifestToShow';
 import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
+import { Spinner } from '@/components/ui/spinner';
 import { Toggle } from '@/components/ui/toggle';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fecthManifestRequest } from '@/state/reducers/manifests';
@@ -30,7 +31,16 @@ const ManifestExplorerPage = () => {
     setCanvasToDisplay(undefined);
   }, [searchParams]);
 
-  if (isLoading || !isLoaded || loadedData == null) {
+  if (isLoading) {
+    return (
+      <div className='flex h-full w-full flex-col items-center justify-center space-y-2 p-2'>
+        <Spinner />
+        <span>{t('info_loading')}</span>
+      </div>
+    );
+  }
+
+  if (!isLoaded || loadedData == null) {
     return (
       <div className='flex h-full w-full flex-col items-center justify-center space-y-2 p-2'>
         <NoManifestToShow />
