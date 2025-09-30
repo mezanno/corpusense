@@ -1,3 +1,4 @@
+import useExperimental from '@/hooks/useExperimental';
 import {
   IIIFExternalWebResource,
   InternationalString,
@@ -12,8 +13,9 @@ import { ScrollArea, ScrollBar } from './ui/scroll-area';
 
 const ManifestDetails = ({ manifest }: { manifest: Manifest }) => {
   const { t } = useTranslation();
+  const { experimentalFeaturesActivated } = useExperimental();
 
-  const thumbnail = manifest?.thumbnail as IIIFExternalWebResource[] | undefined;
+  const thumbnail = manifest.thumbnail as IIIFExternalWebResource[] | undefined;
 
   return (
     <section
@@ -38,15 +40,17 @@ const ManifestDetails = ({ manifest }: { manifest: Manifest }) => {
             <ScrollBar orientation='horizontal' />
           </ScrollArea>
         </section>
-        <section className='w-full rounded-md border p-2' aria-labelledby='metadata_corpusense'>
-          <h3 id='metadata_corpusense' className='text-xl'>
-            {t('title_metadata_corpusense')}
-          </h3>
-          <ScrollArea className='h-72 w-full whitespace-nowrap'>
-            <MetadataTable manifestId={manifest.id} />
-            <ScrollBar orientation='horizontal' />
-          </ScrollArea>
-        </section>
+        {experimentalFeaturesActivated && (
+          <section className='w-full rounded-md border p-2' aria-labelledby='metadata_corpusense'>
+            <h3 id='metadata_corpusense' className='text-xl'>
+              {t('title_metadata_corpusense')}
+            </h3>
+            <ScrollArea className='h-72 w-full whitespace-nowrap'>
+              <MetadataTable manifestId={manifest.id} />
+              <ScrollBar orientation='horizontal' />
+            </ScrollArea>
+          </section>
+        )}
       </div>
     </section>
   );
