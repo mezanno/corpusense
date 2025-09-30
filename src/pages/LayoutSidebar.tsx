@@ -11,6 +11,7 @@ import { WorkerStatus } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
+import useExperimental from '@/hooks/useExperimental';
 import { logoutRequest } from '@/state/reducers/auth';
 import { removeFromOpenedCollections } from '@/state/reducers/collections';
 import { selectConnectedUser } from '@/state/selectors/auth';
@@ -162,6 +163,22 @@ const CollectionsSideBarGroup = () => {
 
 const SourcesSideBarGroup = () => {
   const { t } = useTranslation();
+  const { experimentalFeaturesActivated } = useExperimental();
+
+  const menus = [
+    {
+      title: t('page_title_manifexplorer'),
+      url: CorpusenseRoutes.MANIFEST,
+      icon: FolderSearch2,
+    },
+  ];
+  if (experimentalFeaturesActivated) {
+    menus.push({
+      title: t('page_title_storage'),
+      url: CorpusenseRoutes.STORAGE,
+      icon: Archive,
+    });
+  }
 
   return (
     <SidebarGroup id='collections'>
@@ -177,18 +194,7 @@ const SourcesSideBarGroup = () => {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <SidebarMenuSub>
-                {[
-                  {
-                    title: t('page_title_manifexplorer'),
-                    url: CorpusenseRoutes.MANIFEST,
-                    icon: FolderSearch2,
-                  },
-                  {
-                    title: t('page_title_storage'),
-                    url: CorpusenseRoutes.STORAGE,
-                    icon: Archive,
-                  },
-                ].map((item) => (
+                {menus.map((item) => (
                   <SidebarMenuSubItem key={item.title}>
                     <SidebarMenuSubButton className='h-auto' asChild>
                       <Link to={item.url}>
@@ -213,6 +219,8 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
   const user = useAppSelector(selectConnectedUser);
   const collections = useAppSelector(selectCollections);
   const { openLoginDialog } = useDialog();
+  const { experimentalFeaturesActivated } = useExperimental();
+  console.log(experimentalFeaturesActivated);
 
   const handleLogout = () => {
     appDispatch(logoutRequest());
@@ -221,33 +229,35 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
   return (
     <Sidebar>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              {/* modal={false} : fix a bug with the Dialog+ContextMenu : https://github.com/radix-ui/primitives/issues/1836 */}
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton>
-                    <div className='flex items-center gap-2'>
-                      <User2 />
-                      {user ? user.email : t('info_not_connected')}
-                      <ChevronDown className='ml-auto' />
-                    </div>
-                  </SidebarMenuButton>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent side='right'>
-                  {user ? (
-                    <DropdownMenuItem onClick={() => handleLogout()}>
-                      Se déconnecter
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem onClick={openLoginDialog}>Se connecter</DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
+        {experimentalFeaturesActivated && (
+          <SidebarGroup>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                {/* modal={false} : fix a bug with the Dialog+ContextMenu : https://github.com/radix-ui/primitives/issues/1836 */}
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuButton>
+                      <div className='flex items-center gap-2'>
+                        <User2 />
+                        {user ? user.email : t('info_not_connected')}
+                        <ChevronDown className='ml-auto' />
+                      </div>
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side='right'>
+                    {user ? (
+                      <DropdownMenuItem onClick={() => handleLogout()}>
+                        Se déconnecter
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem onClick={openLoginDialog}>Se connecter</DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
         <SourcesSideBarGroup />
         <SidebarGroup>
           <SidebarMenu>

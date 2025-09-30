@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AlertDialogProvider } from './components/reducers/AlertDialogContext';
 import { CorpusenseRoutes } from './hooks/useAppNavigation';
+import { ExperimentalProvider } from './hooks/useExperimental';
 import { initI18n } from './i18n';
 import CollectionInspectorPage from './pages/CollectionInspectorPage';
 import CollectionsManagerPage from './pages/CollectionsManagerPage';
@@ -26,29 +27,33 @@ initI18n()
   });
 
 function App() {
+  // useServiceWorker();
+
   return (
     <AlertDialogProvider>
-      <BrowserRouter basename={basePath}>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route index element={<ManifestExplorerPage />} />
-            <Route path={CorpusenseRoutes.MANIFEST} element={<ManifestExplorerPage />} />
-            <Route path={CorpusenseRoutes.COLLECTIONS} element={<CollectionsManagerPage />} />
-            <Route
-              path={`${CorpusenseRoutes.COLLECTIONS}/:collectionId`}
-              element={<CollectionInspectorPage />}
-            />
-            <Route path={CorpusenseRoutes.MODELS} element={<ModelsManagerPage />} />
-            <Route path={CorpusenseRoutes.CONFIGURATION} element={<ConfigurationPage />} />
-            <Route path={CorpusenseRoutes.STORAGE} element={<StoragePage />} />
-            <Route path={CorpusenseRoutes.WORKERS} element={<WorkersManagerPage />} />
-            <Route
-              path={`${CorpusenseRoutes.WORKERS}/:workerId`}
-              element={<WorkersManagerPage />}
-            />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <ExperimentalProvider>
+        <BrowserRouter basename={basePath}>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route index element={<ManifestExplorerPage />} />
+              <Route path={CorpusenseRoutes.MANIFEST} element={<ManifestExplorerPage />} />
+              <Route path={CorpusenseRoutes.COLLECTIONS} element={<CollectionsManagerPage />} />
+              <Route
+                path={`${CorpusenseRoutes.COLLECTIONS}/:collectionId`}
+                element={<CollectionInspectorPage />}
+              />
+              <Route path={CorpusenseRoutes.MODELS} element={<ModelsManagerPage />} />
+              <Route path={CorpusenseRoutes.CONFIGURATION} element={<ConfigurationPage />} />
+              <Route path={CorpusenseRoutes.STORAGE} element={<StoragePage />} />
+              <Route path={CorpusenseRoutes.WORKERS} element={<WorkersManagerPage />} />
+              <Route
+                path={`${CorpusenseRoutes.WORKERS}/:workerId`}
+                element={<WorkersManagerPage />}
+              />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ExperimentalProvider>
     </AlertDialogProvider>
   );
 }

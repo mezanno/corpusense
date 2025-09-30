@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -10,6 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { clearDatabase } from '@/data/repositories/indexeddb/db';
 import { useAppDispatch } from '@/hooks/hooks';
+import useExperimental from '@/hooks/useExperimental';
 import { pushInfo } from '@/state/reducers/events';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DatabaseZap } from 'lucide-react';
@@ -27,6 +29,7 @@ const formSchema = z.object({
 const ConfigurationPage = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
+  const { experimentalFeaturesActivated, setExperimentalFeaturesActivated } = useExperimental();
 
   useEffect(() => {
     // Load the saved Mistral API key from localStorage when the component mounts
@@ -70,6 +73,10 @@ const ConfigurationPage = () => {
   const onResetIndexedDB = async () => {
     await clearDatabase();
     appDispatch({ type: 'RESET_STORE' });
+  };
+
+  const handleCheckboxChange = (checked: boolean) => {
+    setExperimentalFeaturesActivated(checked === true);
   };
 
   return (
@@ -123,6 +130,19 @@ const ConfigurationPage = () => {
             </button>
           </form>
         </Form>
+      </div>
+      <div className='mt-2 border border-red-500 p-1 text-red-500'>
+        <div>
+          <strong>Warning:</strong> Experimental features are enabled. These features are in active
+          development and may be unstable.
+        </div>
+        <div className='mt-2 flex items-center gap-2'>
+          <div>Enable experimental features</div>
+          <Checkbox
+            checked={experimentalFeaturesActivated}
+            onCheckedChange={handleCheckboxChange}
+          />
+        </div>
       </div>
       <h2 className='mt-2'>Indexeddb</h2>
       <div>
