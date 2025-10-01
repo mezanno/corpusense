@@ -61,8 +61,6 @@ const MultiOptionsMenu = ({
   };
 
   const menus = useMemo(() => {
-    console.log('params.items: ', params.items);
-
     const categories = Array.from(new Set(params.items.map((item) => item.category)));
     return categories.map((category) => (
       <DropdownMenuGroup key={category ?? 'uncategorized'}>

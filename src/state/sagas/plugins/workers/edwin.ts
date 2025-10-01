@@ -12,6 +12,7 @@ export const pluginName = 'edwin';
 export const pluginDisplayName = 'Détection de layout Edwin';
 export const pluginDescription = "Détection de layout avec utilisant la magie d'Edwin";
 export const pluginCategory = 'Layout';
+export const experimental = true;
 
 export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   try {
