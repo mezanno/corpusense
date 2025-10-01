@@ -1,28 +1,37 @@
 import { Scope } from '@/data/models/Scope';
 import { useAppSelector } from '@/hooks/hooks';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClockLoader } from 'react-spinners';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { Spinner } from '../ui/spinner';
+
+interface MultiOptionsMenuItem {
+  name: string;
+  description?: string;
+  icon: React.ReactNode;
+  action?: () => void;
+  category?: string;
+}
 
 export interface MultiOptionsMenuParams {
   name: string;
   icon: React.ReactNode;
   info: string;
-  items: {
-    name: string;
-    description?: string;
-    icon: React.ReactNode;
-    action?: () => void;
-  }[];
+  items: MultiOptionsMenuItem[];
 }
 
 const MultiOptionsMenu = ({
@@ -36,6 +45,46 @@ const MultiOptionsMenu = ({
 }) => {
   const { t } = useTranslation();
   const isRunning = useAppSelector((state) => selectIsWorkerOrTaskRunning(state, scope));
+
+  const generateDropdownMenuItems = (items: MultiOptionsMenuItem[]) => {
+    return items.map((item) => (
+      <DropdownMenuItem
+        key={item.name}
+        disabled={isRunning}
+        onClick={item.action}
+        title={item.description}
+      >
+        {item.icon}
+        {item.name}
+      </DropdownMenuItem>
+    ));
+  };
+
+  const menus = useMemo(() => {
+    console.log('params.items: ', params.items);
+
+    const categories = Array.from(new Set(params.items.map((item) => item.category)));
+    return categories.map((category) => (
+      <DropdownMenuGroup key={category ?? 'uncategorized'}>
+        {category !== undefined ? (
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              {t(`category_${category.toLocaleLowerCase()}`)}
+            </DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                {generateDropdownMenuItems(
+                  params.items.filter((item) => item.category === category),
+                )}
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
+        ) : (
+          generateDropdownMenuItems(params.items.filter((item) => item.category === undefined))
+        )}
+      </DropdownMenuGroup>
+    ));
+  }, [params.items, isRunning]);
 
   //if no action is provided, the menu will not be shown
   if (params.items.every((item) => item.action === undefined)) {
@@ -61,19 +110,7 @@ const MultiOptionsMenu = ({
             )}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {params.items
-            .filter((p) => p.action !== undefined)
-            .map((item, index) => (
-              <DropdownMenuItem
-                key={index}
-                disabled={isRunning}
-                onClick={item.action}
-                title={item.description}
-              >
-                {item.icon}
-                {item.name}
-              </DropdownMenuItem>
-            ))}
+          {menus}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -44,6 +44,7 @@ const WorkersMenu = ({
             }),
           );
         },
+        category: plugin.category,
       };
     }),
   };

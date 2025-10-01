@@ -283,5 +283,9 @@
   "worker_status_unfinished_with_errors": "Non terminé (avec erreurs)",
   "worker_status_all": "Tous les statuts",
   "model_field_string": "Texte",
-  "model_field_number": "Nombre"
+  "model_field_number": "Nombre",
+  "category_other": "Autre",
+  "category_ocr": "Extraction de texte (OCR)",
+  "category_layout": "Mise en page",
+  "category_llm": "Extraction de données"
 }
