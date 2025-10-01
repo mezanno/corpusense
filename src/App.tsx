@@ -6,6 +6,7 @@ import { initI18n } from './i18n';
 import CollectionInspectorPage from './pages/CollectionInspectorPage';
 import CollectionsManagerPage from './pages/CollectionsManagerPage';
 import ConfigurationPage from './pages/ConfigurationPage';
+import Home from './pages/Home';
 import Layout from './pages/Layout';
 import ManifestExplorerPage from './pages/ManifestExplorerPage';
 import ModelsManagerPage from './pages/ModelsManagerPage';
@@ -35,7 +36,7 @@ function App() {
         <BrowserRouter basename={basePath}>
           <Routes>
             <Route element={<Layout />}>
-              <Route index element={<ManifestExplorerPage />} />
+              <Route index element={<Home />} />
               <Route path={CorpusenseRoutes.MANIFEST} element={<ManifestExplorerPage />} />
               <Route path={CorpusenseRoutes.COLLECTIONS} element={<CollectionsManagerPage />} />
               <Route

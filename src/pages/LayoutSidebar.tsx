@@ -40,6 +40,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuButton,
@@ -229,6 +230,11 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
   return (
     <Sidebar>
       <SidebarContent>
+        <SidebarHeader className='w-full bg-white'>
+          <Link className='flex items-center justify-center' to={'/'}>
+            <img src={`${import.meta.env.VITE_BASE_PATH}/images/logo.png`} className='w-2/3'></img>
+          </Link>
+        </SidebarHeader>
         {experimentalFeaturesActivated && (
           <SidebarGroup>
             <SidebarMenu>
