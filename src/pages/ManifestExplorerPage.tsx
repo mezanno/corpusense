@@ -1,5 +1,6 @@
 import CanvasViewer from '@/components/CanvasViewer';
 import NoManifestToShow from '@/components/NoManifestToShow';
+import NothingToShow from '@/components/NothingToShow';
 import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
 import { Spinner } from '@/components/ui/spinner';
 import { Toggle } from '@/components/ui/toggle';
@@ -93,7 +94,16 @@ const ManifestExplorerPage = () => {
         )}
 
         <ResizablePanel id='canvas-panel' order={3} minSize={30} className='panel'>
-          <CanvasViewer canvas={canvasToDisplay} />
+          <section
+            className='flex h-full w-full items-center justify-center'
+            aria-label='canvas viewer'
+          >
+            {canvasToDisplay === undefined ? (
+              <NothingToShow />
+            ) : (
+              <CanvasViewer canvas={canvasToDisplay} />
+            )}
+          </section>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

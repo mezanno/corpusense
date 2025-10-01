@@ -13,23 +13,22 @@ import { selectAnnotationsByType } from '@/state/selectors/annotations';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { RootState } from '@/state/store';
 import { useSelection } from '@annotorious/react';
-import { Canvas } from '@iiif/presentation-3';
 import { Eye, EyeOff, NotebookPen } from 'lucide-react';
-import React, { useContext } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { ReducerContext } from './CanvasViewer';
 import AnnotationForm from './forms/AnnotationForm';
 import LayoutMenu from './menu/LayoutMenu';
-import { ACTIONS, CanvasViewerContentMode } from './reducers/CanvasViewerContentReducer';
+import { CanvasViewerMode } from './reducers/CanvasViewerContext';
+import { useCanvasViewerContext } from './reducers/useCanvasViewerContext';
 import Toolbar from './ToolBar';
 import { Toggle } from './ui/toggle';
 
 export const withTools = <T extends object>(WrappedComponent: React.ComponentType<T>) => {
-  const ComponentWithTools = (props: { collectionId: string; canvas: Canvas }) => {
+  const ComponentWithTools = (props: { collectionId: string }) => {
     const appDispatch = useAppDispatch();
     const { t } = useTranslation();
-    const { cvcState, cvcDispatch } = useContext(ReducerContext);
+    const { setMode, toggleAnnotations, showAnnotations, canvas, mode } = useCanvasViewerContext(); //the reducer/state of the canvas viewer
     const { openSelectFormatDialog } = useDialog();
     const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
     const isWorkerRunning = useAppSelector((state) =>
@@ -40,11 +39,15 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       selectAnnotationsByType(state, ElementType.REGION),
     );
 
+    if (canvas === undefined) {
+      return null;
+    }
+
     const handleExportText = () => {
       if (props.collectionId !== undefined) {
         appDispatch(
           exportTextOfCanvasRequest({
-            canvasId: props.canvas.id,
+            canvasId: canvas.id,
             collectionId: props.collectionId,
           }),
         );
@@ -60,7 +63,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
         appDispatch(
           removeAnnotationsByScopeRequest({
             scope: {
-              canvasId: props.canvas.id,
+              canvasId: canvas.id,
               collectionId: props.collectionId,
             },
           }),
@@ -72,7 +75,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       if (props.collectionId !== undefined) {
         appDispatch(
           duplicateAnnotationsToAllPagesRequest({
-            canvasId: props.canvas.id,
+            canvasId: canvas.id,
             collectionId: props.collectionId,
           }),
         );
@@ -83,7 +86,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       if (props.collectionId !== undefined) {
         appDispatch(
           duplicateAnnotationsEach2PagesRequest({
-            canvasId: props.canvas.id,
+            canvasId: canvas.id,
             collectionId: props.collectionId,
           }),
         );
@@ -91,11 +94,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     };
 
     const handleAddAnnotation = () => {
-      if (cvcState.mode === CanvasViewerContentMode.DRAW) {
-        cvcDispatch({ type: ACTIONS.SET_MODE, payload: CanvasViewerContentMode.MOVE });
-      } else {
-        cvcDispatch({ type: ACTIONS.SET_MODE, payload: CanvasViewerContentMode.DRAW });
-      }
+      setMode(mode === CanvasViewerMode.DRAW ? CanvasViewerMode.MOVE : CanvasViewerMode.DRAW);
     };
 
     const handleDeleteAnnotation = () => {
@@ -110,12 +109,12 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     };
 
     const handleToggleShowAnnotations = () => {
-      cvcDispatch({ type: ACTIONS.TOGGLE_ANNOTATIONS });
+      toggleAnnotations();
     };
 
     return (
       <div className='flex h-full w-full flex-col' onKeyDown={handleKeyDown}>
-        <h4 className='w-full border-b-1 text-center text-sm italic'>{props.canvas?.id}</h4>
+        <h4 className='w-full border-b-1 text-center text-sm italic'>{canvas.id}</h4>
         {isWorkerRunning ? (
           <div>
             <strong>{t('info_worker_running')}</strong>
@@ -127,7 +126,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
               handleDeleteAllAnnotations={handleDeleteAllAnnotations}
               handleExportResult={handleExportResult}
               scope={{
-                canvasId: cvcState.canvas?.id ?? '',
+                canvasId: canvas?.id ?? '',
                 collectionId: props.collectionId ?? '',
               }}
             />
@@ -136,7 +135,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
                 handleDuplicateToAll={handleDuplicateRegionToAllPages}
                 handleDuplicateEach2={handleDuplicateRegionEach2}
                 scope={{
-                  canvasId: cvcState.canvas?.id ?? '',
+                  canvasId: canvas?.id ?? '',
                   collectionId: props.collectionId ?? '',
                 }}
               />
@@ -146,18 +145,18 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
               size={null}
               title={t('btn_add_annotation')}
               onClick={handleAddAnnotation}
-              pressed={cvcState.mode === CanvasViewerContentMode.DRAW}
+              pressed={mode === CanvasViewerMode.DRAW}
             >
               <NotebookPen size={24} />
             </Toggle>
             <Toggle
               className='soft-button'
               size={null}
-              title={`${cvcState.showAnnotations ? t('btn_hide_annotations') : t('btn_show_annotations')}`}
+              title={`${showAnnotations ? t('btn_hide_annotations') : t('btn_show_annotations')}`}
               onClick={handleToggleShowAnnotations}
-              pressed={cvcState.showAnnotations}
+              pressed={showAnnotations}
             >
-              {cvcState.showAnnotations ? <Eye size={24} /> : <EyeOff size={24} />}
+              {showAnnotations ? <Eye size={24} /> : <EyeOff size={24} />}
             </Toggle>
           </div>
         )}
