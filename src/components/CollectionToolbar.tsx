@@ -7,11 +7,16 @@ import { exportTextOfCollectionRequest } from '@/state/reducers/export';
 import { selectIsCollectionOffline } from '@/state/selectors/collections';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { Pin } from 'lucide-react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toolbar from './ToolBar';
 import { Toggle } from './ui/toggle';
 
-const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
+const CollectionToolbar = memo(function CollectionToolbar({
+  collectionId,
+}: {
+  collectionId: string;
+}) {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const { openSelectFormatDialog, openRemoveAnnotationsDialog } = useDialog();
@@ -106,6 +111,6 @@ const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
       </Dialog> */}
     </div>
   );
-};
+});
 
 export default CollectionToolbar;
