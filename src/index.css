@@ -257,6 +257,13 @@
   .panel {
     @apply m-1 flex p-1 text-[var(--foreground-panel)];
   }
+
+  .no-select {
+    user-select: none; /* Empêche la sélection */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE/Edge */
+  }
 }
 
 html,

@@ -137,7 +137,7 @@ const CanvasCard = ({
     <>
       {/* modal={false} : fix a bug with the Dialog+ContextMenu : https://github.com/radix-ui/primitives/issues/1836 */}
       <ContextMenu modal={false}>
-        <div className='flex h-full w-full justify-center'>
+        <div className='no-select flex h-full w-full justify-center' draggable={false}>
           <ContextMenuTrigger>
             <div
               className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-400' : 'bg-saffron-900'} ${isSelected(index) ? 'ring-3 ring-saffron-300' : ''} selectable-item`}
