@@ -29,7 +29,7 @@ export const selectOpenedCollections = createSelector(
 );
 
 export const selectLoadedCanvasById = (state: RootState, canvasId: string) =>
-  state.collections?.loadedCanvases?.find((canvas) => canvas.id === canvasId);
+  state.collections?.loadedCanvases?.[canvasId]?.content;
 
 export const selectModelIdOfCollection = createSelector(
   [
@@ -40,7 +40,7 @@ export const selectModelIdOfCollection = createSelector(
 );
 
 export const selectCanvasHasOcrAnnotations = (state: RootState, canvasId: string) =>
-  state.collections?.canvasHasOcrAnnotations?.[canvasId] ?? false;
+  state.collections?.loadedCanvases?.[canvasId]?.infos.hasOcrAnnotations ?? false;
 
 export const selectIsCollectionOffline = createSelector(
   [
