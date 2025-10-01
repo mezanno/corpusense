@@ -64,6 +64,7 @@ const CanvasCard = ({
     getSelectedCanvases,
     setSelectionEnd,
     setSelectionStart,
+    setSelection,
   } = useCanvasSelection();
 
   const inputCollectionName = useRef(null);
@@ -82,6 +83,10 @@ const CanvasCard = ({
 
   const handleSetSelectionEnd = () => {
     setSelectionEnd(index);
+  };
+
+  const handleResetSelection = () => {
+    setSelection([]);
   };
 
   const handleAddSelectionToCollection = (collectionId: string | undefined) => {
@@ -195,6 +200,10 @@ const CanvasCard = ({
             {t('menu_define_start')}
           </ContextMenuItem>
           <ContextMenuItem onClick={handleSetSelectionEnd}>{t('menu_define_end')}</ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={handleResetSelection}>
+            {t('menu_reset_selection')}
+          </ContextMenuItem>
           <ContextMenuSeparator />
           <ContextMenuItem onClick={handleCopyToClipboard}>
             {t('menu_copy_clipboard')}

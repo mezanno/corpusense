@@ -251,6 +251,7 @@
   "menu_add_selection_to_collection": "Ajouter la sélection à une collection",
   "menu_define_start": "Définir le début de sélection ici",
   "menu_define_end": "Définir la fin de sélection ici",
+  "menu_reset_selection": "Réinitialiser la sélection",
   "menu_copy_clipboard": "Copier l'URL dans le presse-papier",
   "toast_collection_created": "Nouvelle collection créée",
   "toast_collection_saved": "Collection sauvegardée",
