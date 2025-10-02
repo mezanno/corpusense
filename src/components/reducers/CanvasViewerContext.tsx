@@ -69,13 +69,15 @@ export const ACTIONS = {
   TOGGLE_ANNOTATIONS: 'TOGGLE_ANNOTATIONS',
   SET_HOVERED: 'SET_HOVERED',
   SET_CANVAS: 'SET_CANVAS',
+  SET_SOURCE_AS_IMAGE: 'SET_SOURCE_AS_IMAGE',
 } as const;
 
 export type CanvasViewerAction =
   | { type: typeof ACTIONS.SET_MODE; payload: CanvasViewerMode }
   | { type: typeof ACTIONS.TOGGLE_ANNOTATIONS }
   | { type: typeof ACTIONS.SET_HOVERED; payload: string | null }
-  | { type: typeof ACTIONS.SET_CANVAS; payload: Canvas };
+  | { type: typeof ACTIONS.SET_CANVAS; payload: Canvas }
+  | { type: typeof ACTIONS.SET_SOURCE_AS_IMAGE };
 
 function CanvasViewerReducer(state: CanvasViewerState, action: CanvasViewerAction) {
   switch (action.type) {
@@ -87,6 +89,18 @@ function CanvasViewerReducer(state: CanvasViewerState, action: CanvasViewerActio
     }
     case ACTIONS.SET_CANVAS: {
       return initState(action.payload);
+    }
+    case ACTIONS.SET_SOURCE_AS_IMAGE: {
+      if (!state.image) {
+        return state;
+      }
+      console.log('Try to use cache for image ', state.image.id);
+
+      return {
+        ...state,
+        error: 'Tiles failed',
+        source: [{ type: 'image', url: state.image.id }] as unknown as TileSource[],
+      };
     }
     case ACTIONS.TOGGLE_ANNOTATIONS: {
       return {
@@ -110,6 +124,7 @@ type CanvasViewerContextType = CanvasViewerState & {
   setMode: (mode: CanvasViewerMode) => void;
   toggleAnnotations: () => void;
   setHovered: (id: string | null) => void;
+  setSourceAsImage: () => void;
 };
 
 export const CanvasViewerContext = createContext<CanvasViewerContextType | undefined>(undefined);
@@ -142,8 +157,14 @@ export const CanvasViewerProvider = ({
     (id: string | null) => dispatch({ type: ACTIONS.SET_HOVERED, payload: id }),
     [dispatch],
   );
+  const setSourceAsImage = useCallback(
+    () => dispatch({ type: ACTIONS.SET_SOURCE_AS_IMAGE }),
+    [dispatch],
+  );
   return (
-    <CanvasViewerContext.Provider value={{ ...state, setMode, setHovered, toggleAnnotations }}>
+    <CanvasViewerContext.Provider
+      value={{ ...state, setMode, setHovered, toggleAnnotations, setSourceAsImage }}
+    >
       {children}
     </CanvasViewerContext.Provider>
   );

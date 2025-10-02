@@ -38,8 +38,17 @@ const colors = {
 
 export const CanvasViewerContent = ({ collectionId }: { collectionId?: string }) => {
   const appDispatch = useAppDispatch();
-  const { canvas, setMode, setHovered, showAnnotations, source, mode, hoveredElement } =
-    useCanvasViewerContext();
+  const {
+    canvas,
+    setMode,
+    setHovered,
+    setSourceAsImage,
+    showAnnotations,
+    source,
+    mode,
+    hoveredElement,
+    error,
+  } = useCanvasViewerContext();
   console.log(`CanvasViewerContent - render ${canvas.id}, ${collectionId}`);
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
 
@@ -99,6 +108,10 @@ export const CanvasViewerContent = ({ collectionId }: { collectionId?: string })
     // });
     viewer.addHandler('open-failed', (event) => {
       console.log("Erreur lors du chargement d'une source'", event);
+      //Check if the url exists in the cache and update the source
+      if (error === undefined) {
+        setSourceAsImage();
+      }
     });
 
     const onCreate = (annotation: ImageAnnotation) => {
