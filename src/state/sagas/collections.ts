@@ -7,6 +7,7 @@ import {
   getTagRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { generateFirstAnnotation, importAnnotationFromJson } from '@/data/utils/annotations';
+import { getImage } from '@/data/utils/canvas';
 import { generateCollectionContent } from '@/data/utils/collections';
 import i18n from '@/i18n';
 import { getErrorMessage } from '@/utils/utils';
@@ -401,14 +402,14 @@ function* handleLoadCollection(
 
 function* handleToggleCollectionOffline(
   action: PayloadAction<string>,
-): Generator<Effect, void, Collection> {
+): Generator<Effect, void, Collection | Canvas> {
   const collectionId = action.payload;
   try {
     const collectionRepository = getCollectionRepository();
-    const collection = yield call(
+    const collection = (yield call(
       [collectionRepository, collectionRepository.getById],
       collectionId,
-    );
+    )) as Collection;
     if (collection === undefined) {
       yield put(pushError(i18n.t('error_collection_not_found')));
       return;
@@ -420,9 +421,34 @@ function* handleToggleCollectionOffline(
     );
     yield put(updateCollectionSuccess({ ...collection, offline: !collection.offline }));
     if (!collection.offline) {
+      //collection is now available offline
       yield put(pushInfo(i18n.t('toast_collection_offline')));
     } else {
+      //collection is not available offline anymore
       yield put(pushInfo(i18n.t('toast_collection_online')));
+    }
+    console.log('Notifying service worker');
+    if (navigator.serviceWorker?.controller) {
+      const manifestRepository = getManifestRepository();
+      const imageUrls = [];
+      for (let i = 0; i < collection.content.length; i++) {
+        const canvas = (yield call(
+          [manifestRepository, manifestRepository.getCanvasById],
+          collection.content[i].manifestId,
+          collection.content[i].canvasId,
+        )) as Canvas;
+        try {
+          imageUrls.push(getImage(canvas).id);
+        } catch (e) {
+          console.warn(`No image found for canvas ${canvas.id}`);
+        }
+      }
+      console.log(imageUrls);
+
+      navigator.serviceWorker?.controller?.postMessage({
+        action: !collection.offline ? 'addToCache' : 'removeFromCache',
+        imageUrls,
+      });
     }
   } catch (e) {
     yield put(pushError(getErrorMessage(e)));
