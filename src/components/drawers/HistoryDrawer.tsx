@@ -1,8 +1,6 @@
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { resetManifestOpenEvent } from '@/state/reducers/manifests';
-import { selectManifestOpenEvent } from '@/state/selectors/manifests';
+import { useAppSelector } from '@/hooks/hooks';
 import { History } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import HistoryNav from '../HistoryNav';
 import {
@@ -18,22 +16,22 @@ import {
 
 const HistoryDrawer = () => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
-  const manifestOpenEvent = useAppSelector(selectManifestOpenEvent);
-
+  const firstTime = useRef(true); //nécessaire si on veut ouvrir le drawer et qu'un manifest est déjà chargé
+  const { loadedData, isLoading } = useAppSelector((state) => state.manifests);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) {
-      appDispatch(resetManifestOpenEvent());
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (manifestOpenEvent) {
+    if (loadedData !== null && !firstTime.current) {
       setIsOpen(false);
     }
-  }, [manifestOpenEvent]);
+  }, [loadedData]);
+
+  // If a manifest is loading, we consider it's not the first time anymore
+  useEffect(() => {
+    if (isLoading) {
+      firstTime.current = false;
+    }
+  }, [isLoading]);
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
