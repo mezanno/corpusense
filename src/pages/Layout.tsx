@@ -1,18 +1,22 @@
 import ContactDrawer from '@/components/drawers/ContactDrawer';
 import HistoryDrawer from '@/components/drawers/HistoryDrawer';
-import ManifestExplorerDrawer from '@/components/drawers/ManifestExplorerDrawer';
 import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useDialog from '@/hooks/ui/useDialog';
 import { resetLastEvent } from '@/state/reducers/events';
 import { selectLastErrorEvent, selectLastInfoEvent } from '@/state/selectors/events';
+import { FolderOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
 import { toast } from 'sonner';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '../components/ui/sidebar';
 import LayoutSideBar from './LayoutSidebar';
 
 const Layout = () => {
+  const { t } = useTranslation();
   const appDispatch = useAppDispatch();
+  const { openOpenManifestDialog } = useDialog();
   const lastInfo = useAppSelector(selectLastInfoEvent);
   const lastError = useAppSelector(selectLastErrorEvent);
   const [selectedWorkerId, setSelectedWorkerId] = useState<string>('');
@@ -53,7 +57,14 @@ const Layout = () => {
           <header className='flex shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
             <div className='flex items-center space-x-2'>
               <SidebarTrigger />
-              <ManifestExplorerDrawer />
+              <button
+                className='soft-button'
+                aria-label={t('btn_open_manifest')}
+                onClick={openOpenManifestDialog}
+              >
+                <FolderOpen size={16} />
+                {t('btn_open_manifest')}
+              </button>
               <HistoryDrawer />
               <ContactDrawer />
             </div>
