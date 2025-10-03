@@ -35,6 +35,8 @@ export interface CollectionRepository {
   getTagsByCollectionId(collectionId: string): Promise<Tag[]>;
   getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]>;
   getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<Canvas>;
+  getOfflineCollections(): Promise<CollectionDetails[]>;
+  getOfflineCanvases(): Promise<Canvas[]>;
 
   create(collection: Collection): Promise<void>;
   addContentToCollection(collection: Collection): Promise<void>;

@@ -69,6 +69,19 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     return canvases;
   }
 
+  async getOfflineCollections(): Promise<CollectionDetails[]> {
+    return await db.collections.where('offline').equals(1).toArray();
+  }
+
+  async getOfflineCanvases(): Promise<Canvas[]> {
+    const offlineCollections = await this.getOfflineCollections();
+    return await Promise.all(
+      offlineCollections.map(async (collection) => {
+        return await this.getCanvasesByCollectionId(collection.id);
+      }),
+    ).then((canvases) => canvases.flat());
+  }
+
   async getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<Canvas> {
     const collection = await this.getById(scope.collectionId);
     if (collection === undefined) {
