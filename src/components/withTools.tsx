@@ -3,8 +3,6 @@ import { Worker } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import {
-  duplicateAnnotationsEach2PagesRequest,
-  duplicateAnnotationsToAllPagesRequest,
   removeAnnotationsByIdsRequest,
   removeAnnotationsByScopeRequest,
 } from '@/state/reducers/annotations';
@@ -14,13 +12,12 @@ import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { RootState } from '@/state/store';
 import { useSelection } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
-import { Eye, EyeOff, NotebookPen } from 'lucide-react';
+import { Eye, EyeOff, Layout, NotebookPen } from 'lucide-react';
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { ReducerContext } from './CanvasViewer';
 import AnnotationForm from './forms/AnnotationForm';
-import LayoutMenu from './menu/LayoutMenu';
 import { ACTIONS, CanvasViewerContentMode } from './reducers/CanvasViewerContentReducer';
 import Toolbar from './ToolBar';
 import { Toggle } from './ui/toggle';
@@ -30,7 +27,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const appDispatch = useAppDispatch();
     const { t } = useTranslation();
     const { cvcState, cvcDispatch } = useContext(ReducerContext);
-    const { openSelectFormatDialog } = useDialog();
+    const { openSelectFormatDialog, openDuplicateLayoutDialog } = useDialog();
     const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
     const isWorkerRunning = useAppSelector((state) =>
       selectIsWorkerOrTaskRunning(state, { collectionId: props.collectionId }),
@@ -68,26 +65,11 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
       }
     };
 
-    const handleDuplicateRegionToAllPages = () => {
-      if (props.collectionId !== undefined) {
-        appDispatch(
-          duplicateAnnotationsToAllPagesRequest({
-            canvasId: props.canvas.id,
-            collectionId: props.collectionId,
-          }),
-        );
-      }
-    };
-
-    const handleDuplicateRegionEach2 = () => {
-      if (props.collectionId !== undefined) {
-        appDispatch(
-          duplicateAnnotationsEach2PagesRequest({
-            canvasId: props.canvas.id,
-            collectionId: props.collectionId,
-          }),
-        );
-      }
+    const handleDuplicateLayout = () => {
+      openDuplicateLayoutDialog({
+        canvasId: props.canvas.id,
+        collectionId: props.collectionId,
+      });
     };
 
     const handleAddAnnotation = () => {
@@ -132,14 +114,13 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
               }}
             />
             {regionAnnotations.length > 0 && (
-              <LayoutMenu
-                handleDuplicateToAll={handleDuplicateRegionToAllPages}
-                handleDuplicateEach2={handleDuplicateRegionEach2}
-                scope={{
-                  canvasId: cvcState.canvas?.id ?? '',
-                  collectionId: props.collectionId ?? '',
-                }}
-              />
+              <button
+                className='soft-button'
+                title={t('btn_duplicate_regions')}
+                onClick={handleDuplicateLayout}
+              >
+                <Layout />
+              </button>
             )}
             <Toggle
               className='soft-button'

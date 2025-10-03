@@ -2,6 +2,17 @@ import { Annotation, AnnotationDTO, ElementType } from '@/data/models/Annotation
 import { CanvasScope, Scope } from '@/data/models/Scope';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+export enum DuplicateDistribution {
+  ALL_PAGES = 'all_pages',
+  EACH2_PAGES = 'each2_pages',
+}
+
+export enum DuplicateLimit {
+  ALL = 'all',
+  BEFORE = 'before',
+  AFTER = 'after',
+}
+
 type AnnotationState = {
   currentScope?: CanvasScope;
   values: Annotation[];
@@ -13,6 +24,12 @@ const initialState: AnnotationState = {
   values: [],
   isLoading: false,
 };
+
+export interface DuplicateRegionsPayload {
+  distribution: DuplicateDistribution;
+  limit: DuplicateLimit;
+  scope: CanvasScope;
+}
 
 const annotationsSlice = createSlice({
   name: 'annotations',
@@ -81,14 +98,7 @@ const annotationsSlice = createSlice({
       _state,
       _action: PayloadAction<{ annotationId: string; value: number }>,
     ) {},
-    duplicateAnnotationsToAllPagesRequest(
-      _state,
-      _action: PayloadAction<{ canvasId: string; collectionId: string }>,
-    ) {},
-    duplicateAnnotationsEach2PagesRequest(
-      _state,
-      _action: PayloadAction<{ canvasId: string; collectionId: string }>,
-    ) {},
+    duplicateRegionsRequest(_state, _action: PayloadAction<DuplicateRegionsPayload>) {},
     recomputeRegionsRequest(_state, _action: PayloadAction<string>) {},
   },
 });
@@ -105,8 +115,7 @@ export const {
   fetchAnnotationsRequest,
   fetchAnnotationsSuccess,
   updateAnnotationOrderRequest,
-  duplicateAnnotationsToAllPagesRequest,
-  duplicateAnnotationsEach2PagesRequest,
+  duplicateRegionsRequest,
   recomputeRegionsRequest,
 } = annotationsSlice.actions;
 export default annotationsSlice.reducer;

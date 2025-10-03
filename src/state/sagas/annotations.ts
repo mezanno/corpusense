@@ -6,6 +6,8 @@ import {
   ElementType,
   getAnnotationType,
 } from '@/data/models/Annotation';
+import { Collection } from '@/data/models/Collection';
+import { CollectionElement } from '@/data/models/CollectionElement';
 import { CanvasScope, Scope } from '@/data/models/Scope';
 import {
   getAnnotationRepository,
@@ -20,8 +22,10 @@ import { t } from 'i18next';
 import { isEqual, maxBy, minBy } from 'lodash';
 import { call, Effect, put, select, takeEvery } from 'redux-saga/effects';
 import {
-  duplicateAnnotationsEach2PagesRequest,
-  duplicateAnnotationsToAllPagesRequest,
+  DuplicateDistribution,
+  DuplicateLimit,
+  DuplicateRegionsPayload,
+  duplicateRegionsRequest,
   fetchAnnotationsRequest,
   fetchAnnotationsSuccess,
   recomputeRegionsRequest,
@@ -179,48 +183,46 @@ function* handleUpdateAnnotationOrder(
   }
 }
 
-function* handleDuplicateAnnotationsToAllPages(
-  action: PayloadAction<{ canvasId: string; collectionId: string }>,
-): Generator<Effect, void, Canvas[]> {
-  const { canvasId, collectionId } = action.payload;
+function* handleDuplicateRegions(
+  action: PayloadAction<DuplicateRegionsPayload>,
+): Generator<Effect, void, Collection> {
+  const { scope, distribution, limit } = action.payload;
   try {
     const collectionRepository = getCollectionRepository();
-    const canvasOfCollection = yield call(
-      [collectionRepository, collectionRepository.getCanvasesByCollectionId],
-      collectionId,
+    const collection = yield call(
+      [collectionRepository, collectionRepository.getById],
+      scope.collectionId,
     );
-    const canvasIds = canvasOfCollection.map((c) => c.id);
-    yield call(duplicateAnnotationsToPages, {
-      canvasId,
-      collectionId,
-      canvasIds,
-    });
-  } catch (e) {
-    console.warn(e);
-  }
-}
-
-function* handleDuplicateAnnotationsEach2Pages(
-  action: PayloadAction<{ canvasId: string; collectionId: string }>,
-): Generator<Effect, void, Canvas[]> {
-  const { canvasId, collectionId } = action.payload;
-  try {
-    const collectionRepository = getCollectionRepository();
-    const canvasOfCollection = yield call(
-      [collectionRepository, collectionRepository.getCanvasesByCollectionId],
-      collectionId,
+    //Element dans la collection qui sert de référence pour la duplication
+    const baseElement = collection.content.find(
+      (el: CollectionElement) => el.canvasId === scope.canvasId,
     );
-    const canvasIds = canvasOfCollection.map((c) => c.id);
-    const positionOfCanvas = canvasIds.findIndex((id) => id === canvasId);
-    const canvasesIdsToDuplicateTo =
-      positionOfCanvas % 2 === 0
-        ? canvasIds.filter((_, index) => index % 2 === 0)
-        : canvasIds.filter((_, index) => index % 2 !== 0);
+    if (!baseElement) {
+      yield put(pushError(i18n.t('error_collection_no_canvas')));
+      return;
+    }
+
+    //filtrer by distribution
+    let filteredContent: CollectionElement[] = [];
+    if (distribution === DuplicateDistribution.ALL_PAGES) {
+      filteredContent = collection.content;
+    } else {
+      if (baseElement.position % 2 === 0) {
+        filteredContent = collection.content.filter((el) => el.position % 2 === 0);
+      } else {
+        filteredContent = collection.content.filter((el) => el.position % 2 !== 0);
+      }
+    }
+    //filtrer by limit
+    if (limit === DuplicateLimit.BEFORE) {
+      filteredContent = filteredContent.filter((el) => el.position <= baseElement.position);
+    } else if (limit === DuplicateLimit.AFTER) {
+      filteredContent = filteredContent.filter((el) => el.position >= baseElement.position);
+    }
 
     yield call(duplicateAnnotationsToPages, {
-      canvasId,
-      collectionId,
-      canvasIds: canvasesIdsToDuplicateTo,
+      scope,
+      canvasIds: filteredContent.map((el) => el.canvasId).filter((id) => id !== scope.canvasId),
     });
 
     yield put(pushInfo(i18n.t('toast_duplicate_success')));
@@ -230,20 +232,18 @@ function* handleDuplicateAnnotationsEach2Pages(
 }
 
 function* duplicateAnnotationsToPages({
-  canvasId,
-  collectionId,
+  scope,
   canvasIds,
 }: {
-  canvasId: string;
-  collectionId: string;
+  scope: CanvasScope;
   canvasIds: string[];
 }): Generator<Effect, void, Annotation[]> {
   try {
-    //1st step: get all (region) annotations of the canvas
+    //1st step: get all (region) annotations of the canvas to duplicate
     const annotationRepository = getAnnotationRepository();
     const annotations = yield call(
       [annotationRepository, annotationRepository.getByScopeAndTypes],
-      { canvasId, collectionId },
+      scope,
       [ElementType.REGION],
     );
 
@@ -251,18 +251,18 @@ function* duplicateAnnotationsToPages({
       let duplicatedAnnotations: Annotation[] = [];
       let removedAnnotations: string[] = [];
       for (const id of canvasIds) {
-        if (id !== canvasId) {
-          //3rd step: remove the region annotations that are already on the canvases
+        if (id !== scope.canvasId) {
+          //2nd step: remove the region annotations that are already on the canvases
           const regions = yield call(
             [annotationRepository, annotationRepository.getByScopeAndTypes],
-            { canvasId: id, collectionId },
+            { canvasId: id, collectionId: scope.collectionId },
             [ElementType.REGION],
           );
           const annotationIds = regions.map((r) => r.id);
           removedAnnotations = [...removedAnnotations, ...annotationIds];
           yield call([annotationRepository, annotationRepository.deleteByIds], annotationIds);
 
-          //4th step: duplicate the annotations to the other canvases
+          //3rd step: duplicate the annotations to the other canvases
           duplicatedAnnotations = [
             ...duplicatedAnnotations,
             ...annotations.map((a) => duplicateAnnotation(a, id)),
@@ -378,8 +378,7 @@ export default function* annotationsSaga() {
   yield takeEvery(removeAnnotationsByIdsRequest, handleRemoveAnnotationsByIds);
   yield takeEvery(removeAnnotationsInsideRequest, handleRemoveAnnotationsInside);
   yield takeEvery(updateAnnotationOrderRequest, handleUpdateAnnotationOrder);
-  yield takeEvery(duplicateAnnotationsToAllPagesRequest, handleDuplicateAnnotationsToAllPages);
-  yield takeEvery(duplicateAnnotationsEach2PagesRequest, handleDuplicateAnnotationsEach2Pages);
+  yield takeEvery(duplicateRegionsRequest, handleDuplicateRegions);
   yield takeEvery(recomputeRegionsRequest, handleRecomputeRegions);
 }
 

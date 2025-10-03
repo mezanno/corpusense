@@ -1,4 +1,5 @@
 import ContactForm from '@/components/forms/ContactForm';
+import DuplicateLayoutForm from '@/components/forms/DuplicateLayoutForm';
 import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
 import ImportCollectionForm from '@/components/forms/ImportCollectionForm';
 import ImportModelForm from '@/components/forms/ImportModelForm';
@@ -9,6 +10,7 @@ import OpenManifestForm from '@/components/forms/OpenManifestForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { DataModel } from '@/data/models/DataModel';
+import { CanvasScope } from '@/data/models/Scope';
 import { Worker } from '@/data/models/Worker';
 import { ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -132,6 +134,21 @@ const useDialog = () => {
     });
   };
 
+  const openDuplicateLayoutDialog = (scope: CanvasScope) => {
+    openFormDialog({
+      title: t('btn_duplicate_regions'),
+      confirmLabel: t('btn_apply'),
+      renderForm: (formRef) => (
+        <DuplicateLayoutForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          closeDialog={closeDialog}
+          scope={scope}
+        />
+      ),
+    });
+  };
+
   const openModelPreviewDialog = (model: DataModel) => {
     openDialog({
       title: t('btn_model_preview'),
@@ -150,6 +167,7 @@ const useDialog = () => {
     openCreateModelDialog,
     openModelPreviewDialog,
     openContactUsDialog,
+    openDuplicateLayoutDialog,
   };
 };
 
