@@ -31,9 +31,9 @@ function App() {
   // useServiceWorker();
 
   return (
-    <AlertDialogProvider>
+    <BrowserRouter basename={basePath}>
       <ExperimentalProvider>
-        <BrowserRouter basename={basePath}>
+        <AlertDialogProvider>
           <Routes>
             <Route element={<Layout />}>
               <Route index element={<Home />} />
@@ -53,9 +53,9 @@ function App() {
               />
             </Route>
           </Routes>
-        </BrowserRouter>
+        </AlertDialogProvider>
       </ExperimentalProvider>
-    </AlertDialogProvider>
+    </BrowserRouter>
   );
 }
 
