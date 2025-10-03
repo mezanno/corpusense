@@ -8,6 +8,8 @@ const EMPTY_ARRAY: StoredManifestDetails[] = [];
  */
 export const selectLoadedManifest = (state: RootState) => state?.manifests.loadedData ?? null;
 
+export const selectIsManifestLoading = (state: RootState) => state?.manifests.isLoading ?? false;
+
 /**
  * @returns The manifest ID of the loaded manifest or an empty string if no manifest is loaded
  */
@@ -25,5 +27,3 @@ export const selectHistory = (state: RootState) => state.manifests.historyDetail
  */
 export const selectCanvases = (state: RootState) =>
   state?.manifests?.loadedData?.content?.items ?? [];
-
-export const selectManifestOpenEvent = (state: RootState) => state.manifests.manifestOpenEvent;
