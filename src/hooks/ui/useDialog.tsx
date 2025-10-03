@@ -4,6 +4,7 @@ import ImportModelForm from '@/components/forms/ImportModelForm';
 import LoginForm from '@/components/forms/LoginForm';
 import NewCollectionForm from '@/components/forms/NewCollectionForm';
 import NewModelForm from '@/components/forms/NewModelForm';
+import OpenManifestForm from '@/components/forms/OpenManifestForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { DataModel } from '@/data/models/DataModel';
@@ -92,6 +93,17 @@ const useDialog = () => {
     });
   };
 
+  const openOpenManifestDialog = () => {
+    openFormDialog({
+      title: t('btn_open_manifest'),
+      confirmLabel: t('btn_open_manifest'),
+      renderForm: (formRef) => (
+        <OpenManifestForm formRef={formRef} setCanSubmit={setCanSubmit} closeDialog={closeDialog} />
+      ),
+      closeOnAction: false,
+    });
+  };
+
   const openImportModelDialog = () => {
     openFormDialog({
       title: t('btn_import_model'),
@@ -117,6 +129,7 @@ const useDialog = () => {
   };
 
   return {
+    openOpenManifestDialog,
     openImportCollectionDialog,
     openNewCollectionDialog,
     openSelectFormatDialog,
