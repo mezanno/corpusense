@@ -6,13 +6,13 @@ const Loading = () => {
 
   return (
     <div
-      className='flex h-full w-full items-center justify-center'
+      className='flex h-full w-full flex-col items-center justify-center text-dark-slate-gray-300'
       aria-busy='true'
       aria-live='polite'
       role='status'
     >
-      <Spinner size={'large'} />
-      <span className='sr-only'>{t('info_loading')}</span>
+      <Spinner size={'large'} className='text-dark-slate-gray-300' />
+      <span className='text-dark-slate-gray-300'>{t('info_loading')}</span>
     </div>
   );
 };
