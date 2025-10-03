@@ -7,6 +7,7 @@ import LoginForm from '@/components/forms/LoginForm';
 import NewCollectionForm from '@/components/forms/NewCollectionForm';
 import NewModelForm from '@/components/forms/NewModelForm';
 import OpenManifestForm from '@/components/forms/OpenManifestForm';
+import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { DataModel } from '@/data/models/DataModel';
@@ -134,6 +135,20 @@ const useDialog = () => {
     });
   };
 
+  const openRemoveAnnotationsDialog = (collectionId: string) => {
+    openFormDialog({
+      title: t('title_remove_annotations'),
+      confirmLabel: t('btn_delete'),
+      renderForm: (formRef) => (
+        <RemoveAnnotationsForm
+          formRef={formRef}
+          collectionId={collectionId}
+          setCanSubmit={setCanSubmit}
+        />
+      ),
+    });
+  };
+
   const openDuplicateLayoutDialog = (scope: CanvasScope) => {
     openFormDialog({
       title: t('btn_duplicate_regions'),
@@ -168,6 +183,7 @@ const useDialog = () => {
     openModelPreviewDialog,
     openContactUsDialog,
     openDuplicateLayoutDialog,
+    openRemoveAnnotationsDialog,
   };
 };
 

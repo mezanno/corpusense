@@ -7,8 +7,17 @@ interface CollectionsState {
   values: CollectionDetails[]; // List of all collections to show in the collection list
   openedCollections: string[];
   currentCollection?: Collection; //the collection currently being viewed in the collection inspector
-  loadedCanvases?: Canvas[]; //the canvases loaded for the current collection
-  canvasHasOcrAnnotations?: { [canvasId: string]: boolean }; //dictionary of canvas id -> hasOcrAnnotations
+  loadedCanvases?: Record<
+    string, //canvasId
+    {
+      //the canvases loaded for the current collection
+      content: Canvas;
+      infos: {
+        hasOcrAnnotations?: boolean;
+        hasOfflineImage?: boolean;
+      };
+    }
+  >;
 }
 
 const initialState: CollectionsState = {
@@ -46,6 +55,7 @@ export const collectionsSlice = createSlice({
         collection.about = action.payload.about;
         collection.tags = action.payload.tags;
         collection.modelId = action.payload.modelId;
+        collection.offline = action.payload.offline;
       }
     },
     loadCollectionRequest: (_state, _action: PayloadAction<string>) => {},
@@ -54,7 +64,7 @@ export const collectionsSlice = createSlice({
       action: PayloadAction<{
         collection: Collection;
         canvases: Canvas[];
-        canvasHasOcrAnnotations: { [canvasId: string]: boolean };
+        canvasHasOcrAnnotations: Record<string, boolean>;
       }>,
     ) => {
       const { collection, canvases, canvasHasOcrAnnotations } = action.payload;
@@ -62,8 +72,18 @@ export const collectionsSlice = createSlice({
       if (state.openedCollections.find((id) => id === collection.id) === undefined) {
         state.openedCollections.push(collection.id);
       }
-      state.loadedCanvases = canvases;
-      state.canvasHasOcrAnnotations = canvasHasOcrAnnotations;
+      state.loadedCanvases = canvases.reduce(
+        (acc, canvas) => {
+          acc[canvas.id] = {
+            content: canvas,
+            infos: {
+              hasOcrAnnotations: canvasHasOcrAnnotations[canvas.id],
+            },
+          };
+          return acc;
+        },
+        {} as Record<string, { content: Canvas; infos: { hasOcrAnnotations?: boolean } }>,
+      );
     },
     setCollections: (state, action: PayloadAction<CollectionDetails[]>) => {
       state.values = action.payload;
@@ -112,16 +132,23 @@ export const collectionsSlice = createSlice({
       action.payload.forEach((annotation) => {
         if (
           annotation.collectionId === state.currentCollection?.id &&
-          state.canvasHasOcrAnnotations?.[annotation.canvasId] !== undefined &&
+          state.loadedCanvases?.[annotation.canvasId] !== undefined &&
           getAnnotationType(annotation) === ElementType.LINE
         ) {
-          state.canvasHasOcrAnnotations = {
-            ...state.canvasHasOcrAnnotations,
-            [annotation.canvasId]: true,
+          state.loadedCanvases[annotation.canvasId] = {
+            ...state.loadedCanvases[annotation.canvasId],
+            infos: {
+              ...state.loadedCanvases[annotation.canvasId].infos,
+              hasOcrAnnotations: true,
+            },
           };
         }
       });
     },
+    toggleCollectionOfflineRequest: (
+      _state,
+      _action: PayloadAction<string>, // collectionId
+    ) => {},
   },
 });
 
@@ -144,5 +171,6 @@ export const {
   importCollectionRequest,
   importCollectionsRequest,
   updateOcrStatus,
+  toggleCollectionOfflineRequest,
 } = collectionsSlice.actions;
 export default collectionsSlice.reducer;

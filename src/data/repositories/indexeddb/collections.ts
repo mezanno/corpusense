@@ -69,6 +69,19 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     return canvases;
   }
 
+  async getOfflineCollections(): Promise<CollectionDetails[]> {
+    return await db.collections.where('offline').equals(1).toArray();
+  }
+
+  async getOfflineCanvases(): Promise<Canvas[]> {
+    const offlineCollections = await this.getOfflineCollections();
+    return await Promise.all(
+      offlineCollections.map(async (collection) => {
+        return await this.getCanvasesByCollectionId(collection.id);
+      }),
+    ).then((canvases) => canvases.flat());
+  }
+
   async getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<Canvas> {
     const collection = await this.getById(scope.collectionId);
     if (collection === undefined) {
@@ -106,13 +119,21 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       tags,
       content,
       modelId,
-    }: { name: string; tags: string[]; content: CollectionElement[]; modelId?: string },
+      offline,
+    }: {
+      name: string;
+      tags: string[];
+      content: CollectionElement[];
+      modelId?: string;
+      offline: boolean;
+    },
   ): Promise<void> {
     await db.transaction('rw', db.collections, db.collectionContents, async () => {
       await db.collections.update(id, {
         name,
         tags,
         modelId,
+        offline,
       });
       await db.collectionContents.update(id, {
         content,
@@ -123,6 +144,12 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
   async updateTags(id: string, tags: string[]): Promise<void> {
     await db.collections.update(id, {
       tags,
+    });
+  }
+
+  async updateOffline(id: string, offline: boolean): Promise<void> {
+    await db.collections.update(id, {
+      offline,
     });
   }
 

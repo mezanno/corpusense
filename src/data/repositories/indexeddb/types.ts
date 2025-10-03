@@ -35,6 +35,8 @@ export interface CollectionRepository {
   getTagsByCollectionId(collectionId: string): Promise<Tag[]>;
   getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]>;
   getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<Canvas>;
+  getOfflineCollections(): Promise<CollectionDetails[]>;
+  getOfflineCanvases(): Promise<Canvas[]>;
 
   create(collection: Collection): Promise<void>;
   addContentToCollection(collection: Collection): Promise<void>;
@@ -44,6 +46,7 @@ export interface CollectionRepository {
     { name, tags, content }: { name: string; tags: string[]; content: CollectionElement[] },
   ): Promise<void>;
   updateTags(id: string, tags: string[]): Promise<void>;
+  updateOffline(id: string, offline: boolean): Promise<void>;
 
   delete(collectionToRemove: Collection): Promise<{ workersIds: string[]; collectionId: string }>;
   deleteElement(collectionId: string, canvasId: string): Promise<Collection>;

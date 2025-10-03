@@ -13,12 +13,12 @@ import {
   OpenSeadragonViewer,
   useAnnotations,
   useAnnotator,
+  useHover,
 } from '@annotorious/react';
-import { Canvas } from '@iiif/presentation-3';
-import { useContext, useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { HoverContext, ReducerContext } from './CanvasViewer';
-import { ACTIONS, CanvasViewerContentMode } from './reducers/CanvasViewerContentReducer';
+import { CanvasViewerMode } from './reducers/CanvasViewerContext';
+import { useCanvasViewerContext } from './reducers/useCanvasViewerContext';
 import withTools from './withTools';
 
 //bleu foncé : #264653
@@ -36,23 +36,31 @@ const colors = {
   [ElementType.REGION.toString()]: '#e76f51',
 };
 
-export const CanvasViewerContent = ({
-  canvas,
-  collectionId,
-}: {
-  canvas: Canvas;
-  collectionId?: string;
-}) => {
-  console.log(`CanvasViewerContent - render ${canvas.id}, ${collectionId}`);
+export const CanvasViewerContent = ({ collectionId }: { collectionId?: string }) => {
   const appDispatch = useAppDispatch();
+  const {
+    canvas,
+    setMode,
+    setHovered,
+    setSourceAsImage,
+    showAnnotations,
+    source,
+    mode,
+    hoveredElement,
+    error,
+  } = useCanvasViewerContext();
+  console.log(`CanvasViewerContent - render ${canvas.id}, ${collectionId}`);
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
 
   const annotationsInAnnotorious = useAnnotations();
   const annotationsInStore = useSelector(selectAnnotations);
   const addAnnotation = useAddAnnotation(); //logic to add an annotation to the store
 
-  const { cvcState, cvcDispatch } = useContext(ReducerContext); //the reducer/state of the canvas viewer
-  const { hoveredElement } = useContext(HoverContext);
+  const hover = useHover();
+
+  useEffect(() => {
+    setHovered(hover?.id);
+  }, [hover]);
 
   const isNewCanvas = useRef(true); //to check if the canvas is new (to avoid syncing the annotations when the canvas is the same)
 
@@ -90,7 +98,21 @@ export const CanvasViewerContent = ({
 
   //initialize the Annotorious
   useEffect(() => {
+    console.log('CanvasViewerContent - useEffect anno ', anno);
+
     if (anno === null || anno === undefined) return;
+
+    const viewer = anno.viewer;
+    // viewer.addHandler('tile-load-failed', (event) => {
+    //   console.log("Erreur lors du chargement d'une tuile", event);
+    // });
+    viewer.addHandler('open-failed', (event) => {
+      console.log("Erreur lors du chargement d'une source'", event);
+      //Check if the url exists in the cache and update the source
+      if (error === undefined) {
+        setSourceAsImage();
+      }
+    });
 
     const onCreate = (annotation: ImageAnnotation) => {
       if (collectionId !== undefined) {
@@ -100,7 +122,7 @@ export const CanvasViewerContent = ({
       } else {
         console.warn('No collectionId provided, annotation not saved');
       }
-      cvcDispatch({ type: ACTIONS.SET_MODE, payload: CanvasViewerContentMode.MOVE });
+      setMode(CanvasViewerMode.MOVE);
     };
     const onUpdate = (annotation: ImageAnnotation) => {
       if (isAnnotation(annotation)) {
@@ -120,6 +142,8 @@ export const CanvasViewerContent = ({
     return () => {
       anno.off('createAnnotation', onCreate);
       anno.off('updateAnnotation', onUpdate);
+      // viewer.removeAllHandlers('tile-load-failed');
+      viewer.removeAllHandlers('open-failed');
     };
   }, [anno]);
 
@@ -133,9 +157,9 @@ export const CanvasViewerContent = ({
 
   useEffect(() => {
     if (anno !== null) {
-      anno.setVisible(cvcState?.showAnnotations);
+      anno.setVisible(showAnnotations);
     }
-  }, [cvcState.showAnnotations]);
+  }, [showAnnotations]);
 
   const style = (annotation: Annotation, state?: AnnotationState) => {
     const value = annotation.bodies[0]?.value ?? ElementType.TAG;
@@ -153,7 +177,7 @@ export const CanvasViewerContent = ({
       prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
       defaultZoomLevel: 0.5,
       minZoomLevel: 0.1,
-      tileSources: cvcState?.source,
+      tileSources: source,
       loadTilesWithAjax: true,
       // crossOriginPolicy: 'false',
       showSequenceControl: true,
@@ -165,19 +189,19 @@ export const CanvasViewerContent = ({
       tileRetryMax: 5,
       tileRetryDelay: 2000,
     }),
-    [cvcState?.source],
+    [source],
   );
 
   return (
     <OpenSeadragonAnnotator
       autoSave={true}
       drawingMode='drag'
-      drawingEnabled={cvcState?.mode === CanvasViewerContentMode.DRAW}
+      drawingEnabled={mode === CanvasViewerMode.DRAW}
       multiSelect={true}
       style={style}
     >
       <div
-        className={`relative h-full w-full ${cvcState?.mode === CanvasViewerContentMode.DRAW ? 'cursor-pen-tool' : 'cursor-default'}`}
+        className={`relative h-full w-full ${mode === CanvasViewerMode.DRAW ? 'cursor-pen-tool' : 'cursor-default'}`}
       >
         <OpenSeadragonViewer
           aria-label='canvas viewer'

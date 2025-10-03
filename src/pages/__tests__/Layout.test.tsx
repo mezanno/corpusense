@@ -55,6 +55,7 @@ describe('Layout', () => {
             name: 'Collection 1',
             tags: [],
             contentSize: 0,
+            offline: false,
           },
         ],
       },

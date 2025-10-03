@@ -9,7 +9,6 @@ const Toolbar = ({
   handleDeleteAllAnnotations,
   handleRecomputeRegions,
   handleExportText,
-  handleExportResult,
   // getActions,
   scope,
 }: {
@@ -30,11 +29,7 @@ const Toolbar = ({
         handleRecomputeRegions={handleRecomputeRegions}
         scope={scope}
       />
-      <ExportMenu
-        handleExportText={handleExportText}
-        handleExportResult={handleExportResult}
-        scope={scope}
-      />
+      <ExportMenu handleExportText={handleExportText} scope={scope} />
     </div>
   );
 };
