@@ -1,3 +1,4 @@
+import ContactForm from '@/components/forms/ContactForm';
 import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
 import ImportCollectionForm from '@/components/forms/ImportCollectionForm';
 import ImportModelForm from '@/components/forms/ImportModelForm';
@@ -104,6 +105,17 @@ const useDialog = () => {
     });
   };
 
+  const openContactUsDialog = () => {
+    openFormDialog({
+      title: t('title_contact'),
+      confirmLabel: t('btn_send'),
+      renderForm: (formRef) => (
+        <ContactForm formRef={formRef} setCanSubmit={setCanSubmit} closeDialog={closeDialog} />
+      ),
+      closeOnAction: false,
+    });
+  };
+
   const openImportModelDialog = () => {
     openFormDialog({
       title: t('btn_import_model'),
@@ -137,6 +149,7 @@ const useDialog = () => {
     openImportModelDialog,
     openCreateModelDialog,
     openModelPreviewDialog,
+    openContactUsDialog,
   };
 };
 

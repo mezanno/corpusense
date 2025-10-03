@@ -1,4 +1,3 @@
-import ContactDrawer from '@/components/drawers/ContactDrawer';
 import HistoryDrawer from '@/components/drawers/HistoryDrawer';
 import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
@@ -16,7 +15,7 @@ import LayoutSideBar from './LayoutSidebar';
 const Layout = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const { openOpenManifestDialog } = useDialog();
+  const { openOpenManifestDialog, openContactUsDialog } = useDialog();
   const lastInfo = useAppSelector(selectLastInfoEvent);
   const lastError = useAppSelector(selectLastErrorEvent);
   const [selectedWorkerId, setSelectedWorkerId] = useState<string>('');
@@ -66,7 +65,14 @@ const Layout = () => {
                 {t('btn_open_manifest')}
               </button>
               <HistoryDrawer />
-              <ContactDrawer />
+              <button
+                className='soft-button'
+                aria-label={t('btn_open_contact')}
+                onClick={openContactUsDialog}
+              >
+                <FolderOpen size={16} />
+                {t('btn_open_contact')}
+              </button>
             </div>
           </header>
           <main className='flex-1 pt-2'>
