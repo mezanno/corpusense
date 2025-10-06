@@ -123,7 +123,10 @@ const useDialog = () => {
     openFormDialog({
       title: t('btn_import_model'),
       confirmLabel: t('btn_import_model'),
-      renderForm: (formRef) => <ImportModelForm formRef={formRef} setCanSubmit={setCanSubmit} />,
+      renderForm: (formRef) => (
+        <ImportModelForm formRef={formRef} setCanSubmit={setCanSubmit} closeDialog={closeDialog} />
+      ),
+      closeOnAction: false,
     });
   };
 

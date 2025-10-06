@@ -1,9 +1,10 @@
-import { useAppDispatch } from '@/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { importModelRequest } from '@/state/reducers/models';
+import { selectModels } from '@/state/selectors/models';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -19,14 +20,25 @@ const schema = z.object({
     ),
 });
 
-const ImportModelForm = ({ formRef, setCanSubmit }: FormProps) => {
+const ImportModelForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
+
+  //models and isSubmitted are used to close the dialog when the model is successfully imported
+  const models = useAppSelector(selectModels);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     mode: 'onChange',
   });
+
+  // Close the dialog when the model is successfully imported (i.e., models list is updated)
+  useEffect(() => {
+    if (isSubmitted && closeDialog) {
+      closeDialog();
+    }
+  }, [models]);
 
   useEffect(() => {
     setCanSubmit(form.formState.isDirty && form.formState.isValid);
@@ -37,15 +49,11 @@ const ImportModelForm = ({ formRef, setCanSubmit }: FormProps) => {
     reader.onload = (e) => {
       const content = e.target?.result;
       if (typeof content === 'string') {
-        try {
-          const jsonContent = JSON.parse(content) as object;
-          appDispatch(importModelRequest(jsonContent));
-          console.log(jsonContent);
-        } catch (err) {
-          console.error('Error parsing JSON:', err);
-        }
+        const jsonContent = JSON.parse(content) as object;
+        appDispatch(importModelRequest(jsonContent));
       }
     };
+    setIsSubmitted(true);
     reader.readAsText(values.file);
   }
 
