@@ -78,7 +78,7 @@ const useDialog = () => {
 
   const openSelectFormatDialog = (worker: Worker) => {
     openFormDialog({
-      title: t('title_export_worker_result'),
+      title: t('title_export_worker_result', { name: worker.name }),
       confirmLabel: t('btn_export'),
       renderForm: (formRef) => (
         <ExportFormatSelectionForm worker={worker} formRef={formRef} setCanSubmit={setCanSubmit} />
