@@ -48,7 +48,6 @@ const ExportFormatSelectionForm = ({
 
   const form = useForm<Record<string, boolean | undefined>>({
     resolver: zodResolver(schema),
-    defaultValues: formats.reduce((acc, f) => ({ ...acc, [f]: false }), {}),
     mode: 'onChange',
   });
 
