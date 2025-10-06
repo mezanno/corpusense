@@ -76,7 +76,7 @@ const ModelsManagerPage = () => {
       </div>
       <ResizablePanelGroup direction='horizontal' className='flex-1 space-x-2'>
         <ResizablePanel order={1} id='metadata-panel' className='flex flex-col' minSize={50}>
-          <div className='panel mb-1 max-h-1/3 w-full'>
+          <div className='panel mb-1 max-h-1/3 overflow-auto border'>
             <Table>
               <TableHeader>
                 <TableRow>

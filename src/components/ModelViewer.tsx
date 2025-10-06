@@ -6,17 +6,19 @@ import { selectModelById } from '@/state/selectors/models';
 import { CircleArrowDown, CircleArrowUp, CirclePlus, CircleX, Eye, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import AutoSizer from 'react-virtualized-auto-sizer';
 import { analogue } from 'simpler-color';
 import { v4 as uuid } from 'uuid';
 import { useAlertDialogContext } from './reducers/useAlertDialogContext';
 import { ColorPicker } from './textviewer/ColorPicker';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { ScrollArea } from './ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Textarea } from './ui/textarea';
+
 const baseColor = '#a4d6f6';
 
 const ModelViewer = ({ modelId }: { modelId: string }) => {
@@ -110,7 +112,7 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
   };
 
   return (
-    <div className='panel flex w-full flex-col items-center justify-center'>
+    <div className='flex h-full w-full flex-col items-center'>
       <div className='flex items-center space-x-2'>
         <h3 className='text-lg'>
           {t('title_active_model')}
@@ -135,134 +137,131 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
           <Eye />
         </button>
       </div>
-      <div className='m-2 flex w-full items-center justify-center'>
-        <Label htmlFor='description'>{t('form_label_model_description')}</Label>
+
+      <div className='mt-2 flex space-x-2'>
         <Textarea
           id='description'
-          className='ml-2 max-w-3/4 min-w-1/2'
+          className='ml-2 w-1/3'
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          placeholder={t('form_label_model_description')}
         />
-      </div>
-      <div className='m-2 flex w-full items-center justify-center'>
-        <Label htmlFor='prompt'>{t('form_label_model_prompt')}</Label>
-        <Textarea
-          id='prompt'
-          className='ml-2 max-w-3/4 min-w-1/2'
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-        />
+        <div className='flex w-2/3 flex-col justify-center space-y-2'>
+          <Label htmlFor='prompt'>{t('form_label_model_prompt')}</Label>
+          <Textarea id='prompt' value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+        </div>
       </div>
       {fields.length > 0 ? (
-        <Accordion asChild type='single' collapsible className='w-full' defaultValue='datafields'>
-          <AccordionItem value='datafields'>
-            <AccordionTrigger>{t('btn_datafields')}</AccordionTrigger>
-            <AccordionContent>
-              <Table className='w-full'>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('table_col_title_name')}</TableHead>
-                    <TableHead>{t('table_col_title_type')}</TableHead>
-                    <TableHead>{t('table_col_title_isArray')}</TableHead>
-                    <TableHead>{t('table_col_title_description')}</TableHead>
-                    <TableHead>{t('table_col_title_ia')}</TableHead>
-                    <TableHead>{t('table_col_title_color')}</TableHead>
-                    <TableHead>{t('table_col_title_actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {fields.map((field, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        <Input
-                          value={field.name}
-                          placeholder={t('form_label_datafield_name')}
-                          onChange={(e) => updateFields(index, { name: e.target.value })}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          key={field.type}
-                          value={field.type}
-                          onValueChange={(value) => updateFields(index, { type: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={'Type de données'} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {options.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Checkbox
-                          checked={field.isArray ?? false}
-                          onCheckedChange={(checked) =>
-                            updateFields(index, { isArray: Boolean(checked) })
-                          }
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Textarea
-                          value={field.description}
-                          placeholder={t('form_label_datafield_description')}
-                          onChange={(e) => updateFields(index, { description: e.target.value })}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Checkbox
-                          checked={field.generated ?? false}
-                          onCheckedChange={(checked) =>
-                            updateFields(index, { generated: Boolean(checked) })
-                          }
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <ColorPicker
-                          value={field.color}
-                          onChange={(v) => updateFields(index, { color: v })}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className='flex space-x-1'>
-                          {index > 0 && (
-                            <button
-                              className='cursor-pointer'
-                              title={t('btn_moveup_datafield')}
-                              onClick={() => handleSwapFields(index, 'up')}
-                            >
-                              <CircleArrowUp />
-                            </button>
-                          )}
-                          {index < fields.length - 1 && (
-                            <button
-                              className='cursor-pointer'
-                              title={t('btn_movedown_datafield')}
-                              onClick={() => handleSwapFields(index, 'down')}
-                            >
-                              <CircleArrowDown />
-                            </button>
-                          )}
-                          <button
-                            title={t('btn_delete_datafield')}
-                            className='cursor-pointer'
-                            onClick={() => handleDeleteField(index)}
-                          >
-                            <CircleX />
-                          </button>
-                        </div>
-                      </TableCell>
+        <div className='mt-2 h-full w-full border'>
+          <AutoSizer>
+            {({ height, width }) => (
+              <ScrollArea style={{ height, width }}>
+                <Table className='border'>
+                  <TableHeader className='bg-white/30'>
+                    <TableRow>
+                      <TableHead>{t('table_col_title_name')}</TableHead>
+                      <TableHead>{t('table_col_title_type')}</TableHead>
+                      <TableHead>{t('table_col_title_isArray')}</TableHead>
+                      <TableHead>{t('table_col_title_description')}</TableHead>
+                      <TableHead>{t('table_col_title_ia')}</TableHead>
+                      <TableHead>{t('table_col_title_color')}</TableHead>
+                      <TableHead>{t('table_col_title_actions')}</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+                  </TableHeader>
+                  <TableBody>
+                    {fields.map((field, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <Input
+                            value={field.name}
+                            placeholder={t('form_label_datafield_name')}
+                            onChange={(e) => updateFields(index, { name: e.target.value })}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            key={field.type}
+                            value={field.type}
+                            onValueChange={(value) => updateFields(index, { type: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder={'Type de données'} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {options.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Checkbox
+                            checked={field.isArray ?? false}
+                            onCheckedChange={(checked) =>
+                              updateFields(index, { isArray: Boolean(checked) })
+                            }
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Textarea
+                            value={field.description}
+                            placeholder={t('form_label_datafield_description')}
+                            onChange={(e) => updateFields(index, { description: e.target.value })}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Checkbox
+                            checked={field.generated ?? false}
+                            onCheckedChange={(checked) =>
+                              updateFields(index, { generated: Boolean(checked) })
+                            }
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <ColorPicker
+                            value={field.color}
+                            onChange={(v) => updateFields(index, { color: v })}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className='flex space-x-1'>
+                            {index > 0 && (
+                              <button
+                                className='cursor-pointer'
+                                title={t('btn_moveup_datafield')}
+                                onClick={() => handleSwapFields(index, 'up')}
+                              >
+                                <CircleArrowUp />
+                              </button>
+                            )}
+                            {index < fields.length - 1 && (
+                              <button
+                                className='cursor-pointer'
+                                title={t('btn_movedown_datafield')}
+                                onClick={() => handleSwapFields(index, 'down')}
+                              >
+                                <CircleArrowDown />
+                              </button>
+                            )}
+                            <button
+                              title={t('btn_delete_datafield')}
+                              className='cursor-pointer'
+                              onClick={() => handleDeleteField(index)}
+                            >
+                              <CircleX />
+                            </button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            )}
+          </AutoSizer>
+        </div>
       ) : (
         <div>{t('info_empty_model')}</div>
       )}
