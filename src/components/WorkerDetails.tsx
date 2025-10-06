@@ -48,18 +48,17 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
   };
 
   return (
-    <div className='flex h-screen flex-col p-4'>
-      <div>
+    <div className='flex h-screen w-full flex-col p-4'>
+      <div className='w-full'>
         <h2 className='text-lg font-bold'>{t('title_worker_details')}</h2>
-        <ul className='my-2 border-b pb-2'>
+        <ul className='my-2 w-full border-b pb-2'>
           <li>
             {t('list_title_worker_name')} : {worker.name}
           </li>
           <li className='my-2 border-b pb-2'>
-            {t('list_title_worker_createdAt')}
-            {new Date(worker.createdAt).toLocaleString()}
+            {t('list_title_worker_createdAt')} {new Date(worker.createdAt).toLocaleString()}
           </li>
-          <li className='my-2 border-b pb-2'>
+          <li className='my-2 w-full border-b pb-2'>
             {t('list_title_worker_scope')} :
             <ScopeLabel scope={worker.scope} />
           </li>

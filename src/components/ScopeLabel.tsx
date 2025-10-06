@@ -7,8 +7,12 @@ const ScopeLabel = ({ scope }: { scope: Scope }) => {
   return (
     <div className='flex flex-col'>
       <div>Collection {collection?.name}</div>
-      {isCanvasScope(scope) && <div>Canvas {scope.canvasId}</div>}
-      {isAnnotationScope(scope) && <div>Canvas {scope.annotationId}</div>}
+      {isCanvasScope(scope) && (
+        <div className='break-all' title={scope.canvasId}>
+          Canvas {scope.canvasId}
+        </div>
+      )}
+      {isAnnotationScope(scope) && <div>Annotation {scope.annotationId}</div>}
     </div>
   );
 };
