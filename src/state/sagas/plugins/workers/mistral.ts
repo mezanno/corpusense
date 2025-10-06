@@ -173,7 +173,22 @@ export async function exportResult(results: Result[], formats: string[]) {
   }
 
   if (formats.includes('xlsx')) {
-    const worksheet = XLSX.utils.json_to_sheet(allTheData);
+    const flattenedData: Record<string, unknown>[] = [];
+    allTheData.forEach((item) => {
+      if (item !== undefined && typeof item === 'object') {
+        const flattenedItem: Record<string, unknown> = { ...item };
+        Object.keys(flattenedItem).forEach((key) => {
+          if (Array.isArray(flattenedItem[key])) {
+            flattenedItem[key] = (flattenedItem[key] as unknown[]).join('; ');
+          } else if (typeof flattenedItem[key] === 'object' && flattenedItem[key] !== null) {
+            flattenedItem[key] = JSON.stringify(flattenedItem[key]);
+          }
+        });
+        flattenedData.push(flattenedItem);
+      }
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(flattenedData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Mistral Data');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
