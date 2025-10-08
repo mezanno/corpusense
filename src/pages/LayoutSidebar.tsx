@@ -221,7 +221,6 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
   const collections = useAppSelector(selectCollections);
   const { openLoginDialog } = useDialog();
   const { experimentalFeaturesActivated } = useExperimental();
-  console.log(experimentalFeaturesActivated);
 
   const handleLogout = () => {
     appDispatch(logoutRequest());
