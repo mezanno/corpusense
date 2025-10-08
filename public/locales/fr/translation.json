@@ -54,6 +54,7 @@
   "btn_import": "Importer",
   "btn_toggle_mode_annotate": "Mode annotation",
   "btn_toggle_mode_view": "Mode vue",
+  "btn_toggle_canvas_view": "Afficher un canvas",
   "btn_detect_layout": "Détection Mise En Page",
   "btn_more_actions": " Plus d'actions",
   "btn_OCR_analyze": "Analyse OCR",
