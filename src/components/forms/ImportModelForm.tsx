@@ -30,6 +30,7 @@ const ImportModelForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
+    defaultValues: { file: undefined },
     mode: 'onChange',
   });
 
@@ -41,7 +42,7 @@ const ImportModelForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
   }, [models]);
 
   useEffect(() => {
-    setCanSubmit(form.formState.isDirty && form.formState.isValid);
+    setCanSubmit(form.formState.isDirty);
   }, [form.formState]);
 
   function onSubmit(values: z.infer<typeof schema>) {
