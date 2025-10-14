@@ -1,5 +1,6 @@
 import ContactForm from '@/components/forms/ContactForm';
 import DuplicateLayoutForm from '@/components/forms/DuplicateLayoutForm';
+import ExportCollectionForm from '@/components/forms/ExportCollectionForm';
 import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
 import ImportCollectionForm from '@/components/forms/ImportCollectionForm';
 import ImportModelForm from '@/components/forms/ImportModelForm';
@@ -167,6 +168,20 @@ const useDialog = () => {
     });
   };
 
+  const openExportCollectionDialog = (collectionIds: string[]) => {
+    openFormDialog({
+      title: t('btn_export_collection'),
+      confirmLabel: t('btn_export'),
+      renderForm: (formRef) => (
+        <ExportCollectionForm
+          formRef={formRef}
+          collectionIds={collectionIds}
+          setCanSubmit={setCanSubmit}
+        />
+      ),
+    });
+  };
+
   const openModelPreviewDialog = (model: DataModel) => {
     openDialog({
       title: t('btn_model_preview'),
@@ -187,6 +202,7 @@ const useDialog = () => {
     openContactUsDialog,
     openDuplicateLayoutDialog,
     openRemoveAnnotationsDialog,
+    openExportCollectionDialog,
   };
 };
 

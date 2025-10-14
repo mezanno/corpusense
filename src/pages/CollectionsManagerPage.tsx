@@ -16,7 +16,6 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { removeCollectionRequest } from '@/state/reducers/collections';
-import { exportCollectionsRequest } from '@/state/reducers/export';
 import { selectCollections } from '@/state/selectors/collections';
 import { selectTagsByIds } from '@/state/selectors/tags';
 import { DownloadIcon, FilePlus, Import, Trash2 } from 'lucide-react';
@@ -134,9 +133,9 @@ const CollectionTableRow = ({
 
 const CollectionsManagerPage = () => {
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
   const collections: CollectionDetails[] = useAppSelector(selectCollections);
-  const { openImportCollectionDialog, openNewCollectionDialog } = useDialog();
+  const { openImportCollectionDialog, openNewCollectionDialog, openExportCollectionDialog } =
+    useDialog();
 
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
 
@@ -151,7 +150,7 @@ const CollectionsManagerPage = () => {
   };
 
   const handleExport = () => {
-    dispatch(exportCollectionsRequest(selectedCollections));
+    openExportCollectionDialog(selectedCollections);
   };
 
   return (
