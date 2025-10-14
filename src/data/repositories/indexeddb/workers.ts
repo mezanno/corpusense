@@ -38,6 +38,10 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     return newWorker;
   }
 
+  async addAll(workers: Worker[]): Promise<void> {
+    await db.workers.bulkAdd(workers);
+  }
+
   // async update(worker: Worker): Promise<void> {
   //   await db.workers.put(worker);
   // }

@@ -14,6 +14,10 @@ export class IndexedDBResultRepository implements ResultRepository {
     return { ...newResult, id };
   }
 
+  async addAll(results: Result[]): Promise<void> {
+    await db.results.bulkAdd(results);
+  }
+
   // async patch(id: number, changes: Partial<Result>): Promise<void> {
   //   await db.results.update(id, changes);
   // }

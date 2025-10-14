@@ -110,6 +110,7 @@ export interface ResultRepository {
   getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result>;
 
   add(result: ResultCreateDTO): Promise<Result>;
+  addAll(results: Result[]): Promise<void>;
 
   // patch(id: number, changes: Partial<Result>): Promise<void>;
 }
@@ -120,6 +121,7 @@ export interface WorkerRepository {
   getByNameAndScope(workerName: string, scope: Scope): Promise<Worker | undefined>;
 
   add(worker: Worker): Promise<Worker>;
+  addAll(workers: Worker[]): Promise<void>;
 
   // update(worker: Worker): Promise<void>;
   patch(id: string, changes: Partial<Worker>): Promise<void>;
