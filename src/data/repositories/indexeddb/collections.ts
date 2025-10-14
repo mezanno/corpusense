@@ -101,6 +101,11 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     );
   }
 
+  async exists(id: string): Promise<boolean> {
+    const count = await db.collections.where('id').equals(id).count();
+    return count > 0;
+  }
+
   async create(collection: Collection): Promise<void> {
     const { content, ...collectionDetails } = collection;
     await db.transaction('rw', db.collections, db.collectionContents, async () => {

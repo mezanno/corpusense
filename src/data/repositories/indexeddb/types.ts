@@ -37,6 +37,7 @@ export interface CollectionRepository {
   getCanvasByScope(scope: CanvasScope | AnnotationScope): Promise<Canvas>;
   getOfflineCollections(): Promise<CollectionDetails[]>;
   getOfflineCanvases(): Promise<Canvas[]>;
+  exists(id: string): Promise<boolean>;
 
   create(collection: Collection): Promise<void>;
   addContentToCollection(collection: Collection): Promise<void>;
@@ -115,6 +116,7 @@ export interface ResultRepository {
 
 export interface WorkerRepository {
   getAll(): Promise<Worker[]>;
+  getByScope(scope: Scope, subScope: boolean): Promise<Worker[]>;
   getByNameAndScope(workerName: string, scope: Scope): Promise<Worker | undefined>;
 
   add(worker: Worker): Promise<Worker>;
