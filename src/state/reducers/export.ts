@@ -19,7 +19,6 @@ export const exportSlice = createSlice({
   name: 'export',
   initialState,
   reducers: {
-    exportCollectionsRequest: (_state, _action: PayloadAction<string[]>) => {},
     exportTextOfCollectionRequest: (_state, _action: PayloadAction<string>) => {}, //paylad = collectionId
     exportTextOfCanvasRequest: (
       _state,
@@ -30,7 +29,6 @@ export const exportSlice = createSlice({
 });
 
 export const {
-  exportCollectionsRequest,
   exportTextOfCollectionRequest,
   exportTextOfCanvasRequest,
   exportTextOfAnnotationRequest,

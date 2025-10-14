@@ -1,19 +1,27 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
 import { Collection, CollectionDetails, ExportedCollection } from '@/data/models/Collection';
+import { DataModel } from '@/data/models/DataModel';
+import { Result } from '@/data/models/Result';
+import { Worker } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
   getManifestRepository,
+  getModelRepository,
+  getResultRepository,
   getTagRepository,
+  getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { generateFirstAnnotation, importAnnotationFromJson } from '@/data/utils/annotations';
 import { getImage } from '@/data/utils/canvas';
 import { generateCollectionContent } from '@/data/utils/collections';
+import { generateManifestFromCollection, ManifestExport } from '@/data/utils/export';
 import i18n from '@/i18n';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
-import JSZip from 'jszip';
+import FileSaver from 'file-saver';
+import { default as JSZip, default as JSZIP } from 'jszip';
 import { uniq } from 'lodash';
 import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/effects';
 import { v4 as uuid } from 'uuid';
@@ -23,6 +31,8 @@ import {
   createCollectionRequest,
   createCollectionSuccess,
   createCollectionWithSelectionRequest,
+  ExportCollectionOptions,
+  exportCollectionsRequest,
   importCollectionRequest,
   importCollectionsRequest,
   loadCollectionRequest,
@@ -455,6 +465,110 @@ function* handleToggleCollectionOffline(
   }
 }
 
+/**
+ * Export one or more collections to a zip file
+ * @param action The ids of the collections to export
+ */
+function* handleExportMultipleCollectionsRequest(
+  action: PayloadAction<{ collectionIds: string[]; options: ExportCollectionOptions }>,
+): Generator<
+  CallEffect,
+  void,
+  boolean | ManifestExport | Blob | Collection | Annotation[] | DataModel | Worker[] | Result[]
+> {
+  const { collectionIds, options } = action.payload;
+  const zip = new JSZIP();
+  for (let i = 0; i < collectionIds.length; i++) {
+    const id = collectionIds[i];
+
+    const collectionRepository = getCollectionRepository();
+
+    const exists = (yield call([collectionRepository, collectionRepository.exists], id)) as boolean;
+    if (!exists) {
+      console.warn(`Collection with id ${id} does not exist, skipping export`);
+      continue;
+    }
+
+    const collection = (yield call(
+      [collectionRepository, collectionRepository.getById],
+      id,
+    )) as Collection;
+    const exportedCollection = { collection };
+
+    if (options.annotations === true) {
+      const annotationRepository = getAnnotationRepository();
+      const annotations = (yield call([annotationRepository, annotationRepository.getByScope], {
+        collectionId: id,
+      })) as Annotation[];
+      Object.assign(exportedCollection, { annotations });
+    }
+
+    if (options.model === true && collection.modelId !== undefined) {
+      try {
+        const modelRepository = getModelRepository();
+        const model = (yield call(
+          [modelRepository, modelRepository.getById],
+          collection.modelId,
+        )) as DataModel;
+        Object.assign(exportedCollection, { model });
+      } catch (error) {
+        console.error('Error fetching model:', getErrorMessage(error));
+      }
+    }
+
+    if (options.workers === true) {
+      try {
+        const workerRepository = getWorkerRepository();
+        const workers = (yield call(
+          [workerRepository, workerRepository.getByScope],
+          { collectionId: id },
+          true,
+        )) as Worker[];
+
+        if (workers.length > 0) {
+          const allTheResults: Result[] = [];
+          const resultRespository = getResultRepository();
+          for (let j = 0; j < workers.length; j++) {
+            const worker = workers[j];
+            const workerResults = (yield call(
+              [resultRespository, resultRespository.getAllByWorkerId],
+              worker.id,
+            )) as Result[];
+            allTheResults.push(...workerResults);
+          }
+          Object.assign(exportedCollection, { workers });
+          Object.assign(exportedCollection, { results: allTheResults });
+        }
+      } catch (error) {
+        console.error('Error fetching model:', getErrorMessage(error));
+      }
+    }
+
+    if (options.manifest === true) {
+      try {
+        const { name, manifest } = (yield call(
+          generateManifestFromCollection,
+          id,
+        )) as ManifestExport;
+        console.log(name, ' --> ', manifest);
+        zip.file(name + '_manifest.json', JSON.stringify(manifest, null, 2));
+      } catch (error) {
+        console.error('Error generating manifest:', getErrorMessage(error));
+        continue;
+      }
+    }
+
+    zip.file(collection.name + '.json', JSON.stringify(exportedCollection, null, 2));
+  }
+  const zipContent = (yield call(() => zip.generateAsync({ type: 'blob' }))) as Blob;
+  yield call(FileSaver.saveAs, zipContent, 'exported_collections.zip');
+
+  //TODO : il faudrait ajouter un message de succès (avec potentiellement certaines erreurs) ou un message d'erreur
+  //exportSuccess
+  //exportSuccessWithErrors
+  //exportError
+}
+
 export default function* collectionsSaga() {
   yield takeEvery(createCollectionRequest, handleCreateCollection);
   yield takeEvery(removeCollectionRequest, handleRemoveCollection);
@@ -466,6 +580,7 @@ export default function* collectionsSaga() {
   yield takeEvery(importCollectionsRequest, handleImportCollections);
   yield takeEvery(loadCollectionRequest, handleLoadCollection);
   yield takeEvery(toggleCollectionOfflineRequest, handleToggleCollectionOffline);
+  yield takeEvery(exportCollectionsRequest, handleExportMultipleCollectionsRequest);
 }
 
 export {

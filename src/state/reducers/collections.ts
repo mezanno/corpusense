@@ -20,6 +20,13 @@ interface CollectionsState {
   >;
 }
 
+export interface ExportCollectionOptions {
+  annotations?: boolean;
+  model?: boolean;
+  workers?: boolean;
+  manifest?: boolean;
+}
+
 const initialState: CollectionsState = {
   values: [],
   openedCollections: [],
@@ -126,6 +133,10 @@ export const collectionsSlice = createSlice({
       const collectionId: string = action.payload;
       state.openedCollections = state.openedCollections.filter((id) => id !== collectionId);
     },
+    exportCollectionsRequest: (
+      _state,
+      _action: PayloadAction<{ collectionIds: string[]; options: ExportCollectionOptions }>,
+    ) => {},
     importCollectionRequest: (_state, _action: PayloadAction<object>) => {},
     importCollectionsRequest: (_state, _action: PayloadAction<ArrayBuffer>) => {},
     updateOcrStatus: (state, action: PayloadAction<Annotation[]>) => {
@@ -168,6 +179,7 @@ export const {
   removeElementFromCollectionRequest,
   removeElementFromCollectionSuccess,
   removeFromOpenedCollections,
+  exportCollectionsRequest,
   importCollectionRequest,
   importCollectionsRequest,
   updateOcrStatus,

@@ -1,8 +1,4 @@
-import reducer, {
-  exportCollectionsRequest,
-  exportTextOfCanvasRequest,
-  exportTextOfCollectionRequest,
-} from '../export';
+import reducer, { exportTextOfCanvasRequest, exportTextOfCollectionRequest } from '../export';
 
 describe('export reducer', () => {
   const initialState = {
@@ -19,14 +15,6 @@ describe('export reducer', () => {
     // const state = reducer(initialState, action);
     // expect(state.lastExportError).toBe(errorMessage);
     // expect(state.lastExportStatus).toBe('ERROR');
-  });
-
-  it('should handle exportMultipleCollectionsRequest', () => {
-    const action = exportCollectionsRequest(['collection1', 'collection2']);
-    //@ts-expect-error initialState incompatible
-    const state = reducer(initialState, action);
-
-    expect(state).toEqual(initialState);
   });
 
   it('should handle exportTextOfCollectionRequest', () => {
