@@ -11,6 +11,14 @@ export const selectCollectionById = createSelector(
   (values, collectionId) => values.find((elt) => elt.id === collectionId),
 );
 
+export const selectCollectionsByIds = createSelector(
+  [
+    (state: RootState) => state.collections?.values ?? [],
+    (_: RootState, collectionIds: string[]) => collectionIds,
+  ],
+  (values, collectionIds) => values.filter((elt) => collectionIds.includes(elt.id)),
+);
+
 export const selectCollectionNameExists = createSelector(
   [(state: RootState) => state.collections?.values ?? [], (_: RootState, name: string) => name],
   (values, name) =>
