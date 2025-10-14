@@ -1,5 +1,5 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
-import { Collection, CollectionDetails, ExportedCollection } from '@/data/models/Collection';
+import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
 import { Result } from '@/data/models/Result';
 import { Worker } from '@/data/models/Worker';
@@ -9,10 +9,9 @@ import {
   getManifestRepository,
   getModelRepository,
   getResultRepository,
-  getTagRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { generateFirstAnnotation, importAnnotationFromJson } from '@/data/utils/annotations';
+import { generateFirstAnnotation } from '@/data/utils/annotations';
 import { getImage } from '@/data/utils/canvas';
 import { generateCollectionContent } from '@/data/utils/collections';
 import { generateManifestFromCollection, ManifestExport } from '@/data/utils/export';
@@ -33,6 +32,7 @@ import {
   createCollectionWithSelectionRequest,
   ExportCollectionOptions,
   exportCollectionsRequest,
+  ImportCollectionPayload,
   importCollectionRequest,
   importCollectionsRequest,
   loadCollectionRequest,
@@ -47,7 +47,7 @@ import {
   updateCollectionSuccess,
 } from '../reducers/collections';
 import { pushError, pushInfo } from '../reducers/events';
-import { removeWorkersSuccess } from '../reducers/workers';
+import { addResultsSuccess, addWorkersSuccess, removeWorkersSuccess } from '../reducers/workers';
 import { fetchManifestFromURL } from './manifests';
 
 function* fetchAllCollections(): Generator<
@@ -258,14 +258,14 @@ function* handleImportCollections(
 ): Generator<Effect, void, JSZip | string> {
   const zip = new JSZip();
   const zipContent = (yield call(() => zip.loadAsync(action.payload))) as JSZip;
-  for (const fileName in zipContent.files) {
-    const file = zipContent.files[fileName];
+  for (const filename in zipContent.files) {
+    const file = zipContent.files[filename];
     if (!file.dir) {
       const fileContent = (yield call(() => file.async('string'))) as string;
       try {
         const json = JSON.parse(fileContent) as object;
         yield call(handleImportCollection, {
-          payload: json,
+          payload: { filename, json },
           type: importCollectionRequest.type,
         });
       } catch (e) {
@@ -276,73 +276,72 @@ function* handleImportCollections(
 }
 
 function* handleImportCollection(
-  _action: PayloadAction<object>,
-): Generator<Effect, void, Collection> {
-  const json = _action.payload;
-  if ('type' in json && json.type !== 'Manifest') {
-    yield put(pushError(i18n.t('error_import_not_a_manifest')));
-    return;
-  }
-  const manifest = json as ExportedCollection;
-
-  const items = manifest.items ?? [];
-  if (items.length === 0) {
-    yield put(pushError(i18n.t('info_empty_manifest')));
+  _action: PayloadAction<ImportCollectionPayload>,
+): Generator<Effect, void, void> {
+  const { filename, json } = _action.payload;
+  if (!('collection' in json)) {
+    yield put(pushError(i18n.t('error_import_not_a_collection', { file: filename })));
     return;
   }
 
-  //save the manifest in indexedDB
-  const manifestRepository = getManifestRepository();
-  yield call([manifestRepository, manifestRepository.add], manifest);
+  const { collection, annotations, model, workers, results } = json as {
+    collection: Collection;
+    annotations?: Annotation[];
+    model?: DataModel;
+    workers?: Worker[];
+    results?: Result[];
+  };
+  const collectionRepository = getCollectionRepository();
+  try {
+    yield call([collectionRepository, collectionRepository.create], collection);
+  } catch (e) {
+    if (typeof e === 'object' && e !== null && 'name' in e && e.name === 'ConstraintError') {
+      yield put(pushError(i18n.t('error_import_collection_already_exists', { id: collection.id })));
+    } else {
+      yield put(
+        pushError(i18n.t('error_import_collection', { file: filename, error: getErrorMessage(e) })),
+      );
+    }
+    return;
+  }
 
-  const collectionName = manifest.label?.none?.[0] ?? 'Imported collection'; //TODO change default name
-  const collectionId = uuid(); //TODO change default id
+  if (annotations !== undefined && annotations.length > 0) {
+    const annotationRepository = getAnnotationRepository();
+    yield call([annotationRepository, annotationRepository.addAll], annotations);
+  }
 
-  console.log(`Importing ${collectionName} (${collectionId})`);
-
-  //add the tags
-  const tags = manifest.tags ?? [];
-  const tagRepository = getTagRepository();
-  yield call([tagRepository, tagRepository.addAll], tags);
-
-  //add the canvas
-  for (let i = 0; i < items.length; i++) {
-    const canvas = items[i];
-    //import annotations
-    const annotationPages = canvas.annotations;
-    if (annotationPages !== undefined) {
-      for (let j = 0; j < annotationPages.length; j++) {
-        const annotationPage = annotationPages[j];
-        if (annotationPage.id.endsWith('.json')) {
-          continue; //TODO: handle json files
-        } else {
-          yield call(importAnnotationFromJson, annotationPage, collectionId);
-        }
-      }
+  if (model !== undefined) {
+    try {
+      const modelRepository = getModelRepository();
+      yield call([modelRepository, modelRepository.add], model);
+    } catch (error) {
+      console.error('Error importing model:', getErrorMessage(error));
     }
   }
 
-  const result: Collection = yield* handleCreateCollectionWithSelection({
-    payload: {
-      selection: items,
-      name: collectionName,
-      id: collectionId,
-      manifestId: manifest.id,
-    },
-    type: 'handleCreateCollectionWithSelection',
-  });
-  const newCollection = result as unknown as Collection;
-  if (newCollection.id === undefined) {
-    yield put(pushError(i18n.t('error_collection_not_found')));
-    return;
+  if (workers !== undefined && workers.length > 0) {
+    try {
+      const workerRepository = getWorkerRepository();
+      yield call([workerRepository, workerRepository.addAll], workers);
+      yield put(addWorkersSuccess(workers));
+    } catch (error) {
+      console.error('Error importing workers:', getErrorMessage(error));
+    }
   }
-  const collectionRepository = getCollectionRepository();
-  yield call(
-    [collectionRepository, collectionRepository.updateTags],
-    newCollection.id,
-    tags.map((tag) => tag.id),
-  );
-  yield put(updateCollectionSuccess({ ...newCollection, tags: tags.map((tag) => tag.id) }));
+
+  if (results !== undefined && results.length > 0) {
+    try {
+      const resultRepository = getResultRepository();
+      yield call([resultRepository, resultRepository.addAll], results);
+      yield put(addResultsSuccess(results));
+    } catch (error) {
+      console.error('Error importing results:', getErrorMessage(error));
+    }
+  }
+  //TODO: add the tags
+  // yield put(updateCollectionSuccess({ ...newCollection, tags: tags.map((tag) => tag.id) }));
+  yield put(createCollectionSuccess(collection));
+  yield put(pushInfo(i18n.t('toast_collection_imported', { file: filename })));
 }
 
 function* handleLoadCollection(

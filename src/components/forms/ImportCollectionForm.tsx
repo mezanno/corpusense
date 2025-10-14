@@ -48,8 +48,8 @@ const ImportCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
       const content = e.target?.result;
       if (typeof content === 'string') {
         try {
-          const jsonContent = JSON.parse(content) as object;
-          dispatch(importCollectionRequest(jsonContent));
+          const json = JSON.parse(content) as object;
+          dispatch(importCollectionRequest({ json, filename: values.file.name }));
         } catch (error) {
           console.error('Error parsing JSON:', error);
         }

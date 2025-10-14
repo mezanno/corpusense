@@ -27,6 +27,11 @@ export interface ExportCollectionOptions {
   manifest?: boolean;
 }
 
+export interface ImportCollectionPayload {
+  json: object;
+  filename: string;
+}
+
 const initialState: CollectionsState = {
   values: [],
   openedCollections: [],
@@ -137,7 +142,7 @@ export const collectionsSlice = createSlice({
       _state,
       _action: PayloadAction<{ collectionIds: string[]; options: ExportCollectionOptions }>,
     ) => {},
-    importCollectionRequest: (_state, _action: PayloadAction<object>) => {},
+    importCollectionRequest: (_state, _action: PayloadAction<ImportCollectionPayload>) => {},
     importCollectionsRequest: (_state, _action: PayloadAction<ArrayBuffer>) => {},
     updateOcrStatus: (state, action: PayloadAction<Annotation[]>) => {
       action.payload.forEach((annotation) => {
