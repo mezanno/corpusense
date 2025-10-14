@@ -60,6 +60,9 @@ export const workerSlice = createSlice({
         state.workers.push(action.payload);
       }
     },
+    addWorkersSuccess: (state, action: PayloadAction<Worker[]>) => {
+      state.workers = [...state.workers, ...action.payload];
+    },
     addResult: (state, action: PayloadAction<Result>) => {
       const result = action.payload;
       // Check if the result already exists
@@ -82,6 +85,9 @@ export const workerSlice = createSlice({
         // If it does not exist, add the new result
         state.results.push(result);
       }
+    },
+    addResultsSuccess: (state, action: PayloadAction<Result[]>) => {
+      state.results = [...state.results, ...action.payload];
     },
     setWorkers: (state, action: PayloadAction<Worker[]>) => {
       state.workers = action.payload;
@@ -128,6 +134,8 @@ export const {
   stopWorkerProcessRequest,
   updateWorker,
   addResult,
+  addResultsSuccess,
+  addWorkersSuccess,
   setWorkers,
   setResults,
   setPlugins,
