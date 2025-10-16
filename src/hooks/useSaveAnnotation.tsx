@@ -16,7 +16,7 @@ const useAddAnnotation = () => {
       annotation,
       canvasId,
       collectionId,
-      type: ElementType.REGION,
+      type: ElementType.TEXT_REGION,
       value: '',
     });
     dispatch(saveAnnotationRequest(newAnnotation));

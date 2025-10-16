@@ -71,7 +71,7 @@ export async function suryaRun(
         collectionId: task.scope.collectionId,
       });
       const annotationRegions = annotations.filter(
-        (a) => getAnnotationType(a) === ElementType.REGION,
+        (a) => getAnnotationType(a) === ElementType.TEXT_REGION,
       );
       if (annotationRegions.length > 0) {
         regions = annotationRegions

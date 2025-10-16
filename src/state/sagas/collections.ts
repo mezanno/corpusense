@@ -387,7 +387,7 @@ function* handleLoadCollection(
       const annotations = (yield call(
         [annotationRepository, annotationRepository.getByScopeAndTypes],
         { collectionId: action.payload, canvasId: canvas.id },
-        [ElementType.LINE],
+        [ElementType.TEXT_LINE],
       )) as Annotation[];
       canvasHasOcrAnnotations[canvas.id] = annotations.length > 0;
     }

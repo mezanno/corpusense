@@ -40,7 +40,7 @@ const generateRegionAnnotationForCanvas = (canvas: Canvas, collectionId: string)
     minY: 0,
     maxX: image.width,
     maxY: image.height,
-    type: ElementType.REGION,
+    type: ElementType.TEXT_REGION,
     value: '',
   });
 };

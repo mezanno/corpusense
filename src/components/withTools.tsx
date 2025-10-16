@@ -33,7 +33,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     );
 
     const regionAnnotations = useSelector((state: RootState) =>
-      selectAnnotationsByType(state, ElementType.REGION),
+      selectAnnotationsByType(state, ElementType.TEXT_REGION),
     );
 
     if (canvas === undefined) {

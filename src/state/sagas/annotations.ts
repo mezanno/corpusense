@@ -141,7 +141,7 @@ function* handleRemoveAnnotationsInside(
   action: PayloadAction<Annotation>,
 ): Generator<Effect, void, Annotation[]> {
   const annotation = action.payload;
-  if (getAnnotationType(annotation) !== ElementType.REGION) {
+  if (getAnnotationType(annotation) !== ElementType.TEXT_REGION) {
     yield put(pushError(t('error_annotation_is_not_region')));
     return;
   }
@@ -244,7 +244,7 @@ function* duplicateAnnotationsToPages({
     const annotations = yield call(
       [annotationRepository, annotationRepository.getByScopeAndTypes],
       scope,
-      [ElementType.REGION],
+      [ElementType.TEXT_REGION],
     );
 
     if (annotations.length > 0) {
@@ -256,7 +256,7 @@ function* duplicateAnnotationsToPages({
           const regions = yield call(
             [annotationRepository, annotationRepository.getByScopeAndTypes],
             { canvasId: id, collectionId: scope.collectionId },
-            [ElementType.REGION],
+            [ElementType.TEXT_REGION],
           );
           const annotationIds = regions.map((r) => r.id);
           removedAnnotations = [...removedAnnotations, ...annotationIds];
@@ -301,7 +301,7 @@ function* handleRecomputeRegions(
     const regions = yield call(
       [annotationRepository, annotationRepository.getByScopeAndTypes],
       { canvasId: canvas.id, collectionId },
-      [ElementType.REGION],
+      [ElementType.TEXT_REGION],
     );
     const annotationIds = regions.map((r) => r.id);
     removedAnnotations = [...removedAnnotations, ...annotationIds];
@@ -310,7 +310,7 @@ function* handleRecomputeRegions(
     const lines = (yield call(
       [annotationRepository, annotationRepository.getByScopeAndTypes],
       { canvasId: canvas.id, collectionId },
-      [ElementType.LINE],
+      [ElementType.TEXT_LINE],
     )) as Annotation[];
     if (lines.length > 0) {
       //compute the coordinates of the new region annotation
@@ -327,7 +327,7 @@ function* handleRecomputeRegions(
           canvasId: canvas.id,
           collectionId,
           // order: 1,
-          type: ElementType.REGION,
+          type: ElementType.TEXT_REGION,
           value: '',
           minX,
           minY,
@@ -342,7 +342,7 @@ function* handleRecomputeRegions(
         canvasId: canvas.id,
         collectionId,
         order: 1,
-        type: ElementType.REGION,
+        type: ElementType.TEXT_REGION,
         value: '',
         minX: 0,
         minY: 0,

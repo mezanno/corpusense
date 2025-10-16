@@ -64,7 +64,7 @@ describe('Annotation', () => {
         minY: 292.96875,
         maxX: 585.9375,
         maxY: 878.90625,
-        type: ElementType.ENTRY,
+        type: ElementType.TEXT_REGION,
         value: 'title_level_1',
       });
       expect(newAnnotation).toEqual(annotation);
@@ -80,7 +80,7 @@ describe('Annotation', () => {
         minY: 292.96875,
         maxX: 585.9375,
         maxY: 878.90625,
-        type: ElementType.ENTRY,
+        type: ElementType.TEXT_REGION,
         value: 'title_level_1',
       });
       expect(newAnnotation).toEqual(annotationCreateFromDTOWithId);

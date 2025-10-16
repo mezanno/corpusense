@@ -20,7 +20,7 @@ const TextViewer = ({ collectionId, canvas }: { collectionId: string; canvas: Ca
 
   useEffect(() => {
     const getText = async (c: Canvas) => {
-      const lines = await getAnnotationsByType(ElementType.LINE, c.id, collectionId);
+      const lines = await getAnnotationsByType(ElementType.TEXT_LINE, c.id, collectionId);
       setText(lines);
     };
 

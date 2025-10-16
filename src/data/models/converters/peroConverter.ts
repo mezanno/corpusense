@@ -17,7 +17,7 @@ export function convertPeroLineToAnnotation(
     minY: Math.min(...line.polygon.map((point) => point[1])),
     maxX: Math.max(...line.polygon.map((point) => point[0])),
     maxY: Math.max(...line.polygon.map((point) => point[1])),
-    type: ElementType.LINE,
+    type: ElementType.TEXT_LINE,
     value: line.transcription,
   });
 }

@@ -18,13 +18,9 @@ export enum W3CMotivationEnum {
 }
 
 export enum ElementType {
-  TAG = 'TAG',
-  ENTRY = 'ENTRY',
-  LINE = 'LINE',
-  COLUMN = 'COLUMN',
-  PAGE = 'PAGE',
-  SECTION = 'SECTION',
-  REGION = 'REGION',
+  UNKNOWN = 'UNKNOWN',
+  TEXT_LINE = 'TEXT_LINE',
+  TEXT_REGION = 'TEXT_REGION',
 }
 
 export interface Annotation extends ImageAnnotation {
@@ -89,8 +85,8 @@ export function isAnnotationArray(value: unknown): value is Annotation[] {
 }
 
 export function convertToElementTypeEnum(str: string | undefined): ElementType {
-  if (str === undefined) return ElementType.TAG;
-  return ElementType[str as keyof typeof ElementType] ?? ElementType.TAG;
+  if (str === undefined) return ElementType.UNKNOWN;
+  return ElementType[str as keyof typeof ElementType] ?? ElementType.UNKNOWN;
 }
 
 export function getBodies(annotation: Annotation) {
@@ -106,7 +102,7 @@ export function getAnnotationText(annotation: Annotation) {
 
 export function getAnnotationType(annotation: Annotation | AnnotationDTO) {
   const type = getValueForMotivation(annotation, W3CMotivationEnum.Classifying);
-  return type === undefined ? ElementType.TAG : convertToElementTypeEnum(type);
+  return type === undefined ? ElementType.UNKNOWN : convertToElementTypeEnum(type);
 }
 
 function getAnnotationValue(annotation: Annotation) {

@@ -28,12 +28,9 @@ import withTools from './withTools';
 //rouge : #e76f51
 
 const colors = {
-  [ElementType.TAG.toString()]: '#ffffff',
-  [ElementType.ENTRY.toString()]: '#264653',
-  [ElementType.COLUMN.toString()]: '#0000ff',
-  [ElementType.LINE.toString()]: '#2a9d8f',
-  [ElementType.PAGE.toString()]: '#e9c46a',
-  [ElementType.REGION.toString()]: '#e76f51',
+  [ElementType.TEXT_LINE.toString()]: '#2a9d8f',
+  [ElementType.TEXT_REGION.toString()]: '#e76f51',
+  [ElementType.UNKNOWN.toString()]: '#e9c46a',
 };
 
 export const CanvasViewerContent = ({ collectionId }: { collectionId?: string }) => {
@@ -162,7 +159,7 @@ export const CanvasViewerContent = ({ collectionId }: { collectionId?: string })
   }, [showAnnotations]);
 
   const style = (annotation: Annotation, state?: AnnotationState) => {
-    const value = annotation.bodies[0]?.value ?? ElementType.TAG;
+    const value = annotation.bodies[0]?.value ?? ElementType.UNKNOWN;
     return {
       stroke: colors[value] || '#000000',
       strokeWidth: 2,

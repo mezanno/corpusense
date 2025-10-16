@@ -149,7 +149,7 @@ export const collectionsSlice = createSlice({
         if (
           annotation.collectionId === state.currentCollection?.id &&
           state.loadedCanvases?.[annotation.canvasId] !== undefined &&
-          getAnnotationType(annotation) === ElementType.LINE
+          getAnnotationType(annotation) === ElementType.TEXT_LINE
         ) {
           state.loadedCanvases[annotation.canvasId] = {
             ...state.loadedCanvases[annotation.canvasId],

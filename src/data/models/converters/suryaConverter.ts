@@ -28,7 +28,7 @@ function convertSuryaOcrLineToAnnotation(
     minY: line.bbox[1],
     maxX: line.bbox[2],
     maxY: line.bbox[3],
-    type: ElementType.SECTION,
+    type: ElementType.TEXT_LINE,
     value: line.text,
   });
 }
@@ -62,7 +62,7 @@ function convertSuryaLayoutBboxToAnnotation(
     minY: bbox.bbox[1],
     maxX: bbox.bbox[2],
     maxY: bbox.bbox[3],
-    type: ElementType.LINE,
+    type: ElementType.TEXT_LINE,
     value: bbox.label + ' - ' + bbox.position,
   });
 }
@@ -98,7 +98,7 @@ function convertSuryaTableColToAnnotation(
     minY: col.bbox[1],
     maxX: col.bbox[2],
     maxY: col.bbox[3],
-    type: ElementType.REGION,
+    type: ElementType.TEXT_REGION,
     value: col.col_id.toString(),
   });
 }

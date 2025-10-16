@@ -105,7 +105,7 @@ const generateAnnotationPage = async (canvasId: string, collectionId: string) =>
 const generateTextForAnnotation = async (annotation: Annotation) => {
   const type = getAnnotationType(annotation);
 
-  if (type === ElementType.REGION) {
+  if (type === ElementType.TEXT_REGION) {
     const canvasId = annotation.canvasId;
     const collectionId = annotation.collectionId;
     if (canvasId !== undefined && collectionId !== undefined) {
