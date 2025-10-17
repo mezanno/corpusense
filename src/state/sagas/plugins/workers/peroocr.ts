@@ -1,6 +1,7 @@
 import { ElementType, getAnnotationType } from '@/data/models/Annotation';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
+import { Result } from '@/data/models/Result';
 import { isAnnotationScope, toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
@@ -11,11 +12,13 @@ import { getImage } from '@/data/utils/canvas';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
+import FileSaver from 'file-saver';
 
 export const pluginName = 'peroocr';
 export const pluginDisplayName = 'Pero OCR';
 export const pluginDescription = 'Reconnaissance de texte';
 export const pluginCategory = 'OCR';
+export const pluginExportFormats = ['txt'];
 
 export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
@@ -108,6 +111,18 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       status: WorkerStatus.ERROR,
       statusMessage: getErrorMessage(error),
     };
+  }
+}
+
+export function exportResult(results: Result[], formats: string[]) {
+  if (results.length === 0) {
+    console.warn('No results to export from Mistral plugin');
+    return;
+  }
+
+  if (formats.includes('txt')) {
+    const text = results.map((r) => r.value).join('\n\n');
+    FileSaver.saveAs(new Blob([text], { type: 'text/plain;charset=utf-8' }), 'exported_text.txt');
   }
 }
 
