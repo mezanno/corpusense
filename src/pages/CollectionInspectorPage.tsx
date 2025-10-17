@@ -16,12 +16,12 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fetchAnnotationsRequest } from '@/state/reducers/annotations';
 import { loadCollectionRequest } from '@/state/reducers/collections';
 import { loadEntitiesRequest } from '@/state/reducers/namedEntities';
-import { selectCurrentCollection } from '@/state/selectors/collections';
+import { selectCurrentCollection, selectLoadedCanvasById } from '@/state/selectors/collections';
 import { Canvas } from '@iiif/presentation-3';
 import 'gridstack/dist/gridstack.min.css';
 import { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeGrid as Grid } from 'react-window';
 
@@ -34,7 +34,7 @@ interface GridCellProps {
     width: number;
     height: number;
     colCount: number;
-    canvasToDisplay: Canvas | undefined;
+    canvasToDisplay: Canvas | null;
     setCanvasToDisplay: (canvas: Canvas) => void;
   };
 }
@@ -72,20 +72,26 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
   );
 };
 
-const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) => {
+const CollectionInspectorContent = ({
+  collectionId,
+  canvas,
+}: {
+  collectionId: string;
+  canvas: Canvas | null;
+}) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const currentCollection = useAppSelector(selectCurrentCollection);
-  const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | undefined>(undefined);
+  const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(canvas);
   const [activeTab, setActiveTab] = useState('document');
   const [colCount, setColCount] = useState(6);
 
   useEffect(() => {
-    setCanvasToDisplay(undefined);
-  }, [collectionId]);
+    setCanvasToDisplay(canvas);
+  }, [collectionId, canvas]);
 
   useEffect(() => {
-    if (canvasToDisplay !== undefined) {
+    if (canvasToDisplay !== null) {
       appDispatch(fetchAnnotationsRequest({ canvasId: canvasToDisplay.id, collectionId }));
       appDispatch(loadEntitiesRequest({ canvasId: canvasToDisplay.id, collectionId }));
     }
@@ -173,7 +179,7 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
         </ResizablePanel>
         <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
         <ResizablePanel className='ml-1 flex-1 overflow-hidden' minSize={30}>
-          {canvasToDisplay === undefined ? (
+          {canvasToDisplay === null ? (
             <div className='panel flex h-full w-full items-center justify-center text-2xl text-red-500'>
               {t('info_no_canvas_selected')}
             </div>
@@ -206,9 +212,17 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
 
 const CollectionInspectorPage = () => {
   const { t } = useTranslation();
+  const [canvasId, setCanvasId] = useState<string | null>(null);
   const { collectionId } = useParams();
+  const [searchParams] = useSearchParams();
+  const canvas = useAppSelector((state) =>
+    canvasId !== null ? selectLoadedCanvasById(state, canvasId) : null,
+  );
+  console.log('searchParams: ', searchParams);
+
   const dispatch = useAppDispatch();
   console.log('CollectionInspectorPage collectionId: ', collectionId);
+  console.log('CollectionInspectorPage - Canvas ', canvas);
 
   useEffect(() => {
     console.log('CollectionInspectorPage collectionId - useEffect: ', collectionId);
@@ -217,10 +231,17 @@ const CollectionInspectorPage = () => {
     }
   }, [collectionId]);
 
+  useEffect(() => {
+    console.log('searchParams: ', searchParams.get('canvas'));
+    if (searchParams.get('canvas') !== null) {
+      setCanvasId(searchParams.get('canvas'));
+    }
+  }, [searchParams]);
+
   return collectionId === undefined ? (
     <div className='flex justify-center'>{t('error_id_collection_invalid')}</div>
   ) : (
-    <CollectionInspectorContent collectionId={collectionId} />
+    <CollectionInspectorContent collectionId={collectionId} canvas={canvas} />
   );
 };
 
