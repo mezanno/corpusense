@@ -1,22 +1,17 @@
 import { Scope } from '@/data/models/Scope';
-import { Worker } from '@/data/models/Worker';
 import DangerousMenu from './menu/DangerousMenu';
-import ExportMenu from './menu/ExportMenu';
 import WorkersMenu from './menu/WorkersMenu';
 
 const Toolbar = ({
   title,
   handleDeleteAllAnnotations,
   handleRecomputeRegions,
-  handleExportText,
   // getActions,
   scope,
 }: {
   title?: string;
   handleDeleteAllAnnotations?: () => void;
   handleRecomputeRegions?: () => void;
-  handleExportText?: () => void;
-  handleExportResult?: (worker: Worker) => void;
   // getActions?: (pluginName: string) => (() => void) | undefined;
   scope: Scope;
 }) => {
@@ -29,7 +24,6 @@ const Toolbar = ({
         handleRecomputeRegions={handleRecomputeRegions}
         scope={scope}
       />
-      <ExportMenu handleExportText={handleExportText} scope={scope} />
     </div>
   );
 };

@@ -1,9 +1,7 @@
-import { Worker } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import { recomputeRegionsRequest } from '@/state/reducers/annotations';
 import { toggleCollectionOfflineRequest } from '@/state/reducers/collections';
-import { exportTextOfCollectionRequest } from '@/state/reducers/export';
 import { selectIsCollectionOffline } from '@/state/selectors/collections';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { Pin } from 'lucide-react';
@@ -19,7 +17,7 @@ const CollectionToolbar = memo(function CollectionToolbar({
 }) {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const { openSelectFormatDialog, openRemoveAnnotationsDialog } = useDialog();
+  const { openRemoveAnnotationsDialog } = useDialog();
   const isWorkerRunning = useAppSelector((state) =>
     selectIsWorkerOrTaskRunning(state, { collectionId }),
   );
@@ -44,18 +42,10 @@ const CollectionToolbar = memo(function CollectionToolbar({
     appDispatch(recomputeRegionsRequest(collectionId));
   };
 
-  const handleExportText = () => {
-    appDispatch(exportTextOfCollectionRequest(collectionId));
-  };
-
   //TODO! voir comment transmettre des params dynamiques
   // const handleExtractData = () => {
   //   setAnalysisDialogOpen(true);
   // };
-
-  const handleExportResult = (worker: Worker) => {
-    openSelectFormatDialog(worker);
-  };
 
   const handleToggleOffline = () => {
     appDispatch(toggleCollectionOfflineRequest(collectionId));
@@ -83,9 +73,7 @@ const CollectionToolbar = memo(function CollectionToolbar({
       <Toolbar
         title={t('title_collection_actions')}
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
-        handleExportText={handleExportText}
         handleRecomputeRegions={handleRecomputeRegions}
-        handleExportResult={handleExportResult}
         scope={{ collectionId }}
       />
       <div>

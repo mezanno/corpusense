@@ -1,12 +1,10 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
-import { Worker } from '@/data/models/Worker';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import {
   removeAnnotationsByIdsRequest,
   removeAnnotationsByScopeRequest,
 } from '@/state/reducers/annotations';
-import { exportTextOfCanvasRequest } from '@/state/reducers/export';
 import { selectAnnotationsByType } from '@/state/selectors/annotations';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { RootState } from '@/state/store';
@@ -26,7 +24,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const appDispatch = useAppDispatch();
     const { t } = useTranslation();
     const { setMode, toggleAnnotations, showAnnotations, canvas, mode } = useCanvasViewerContext(); //the reducer/state of the canvas viewer
-    const { openSelectFormatDialog, openDuplicateLayoutDialog } = useDialog();
+    const { openDuplicateLayoutDialog } = useDialog();
     const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
     const isWorkerRunning = useAppSelector((state) =>
       selectIsWorkerOrTaskRunning(state, { collectionId: props.collectionId }),
@@ -39,21 +37,6 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     if (canvas === undefined) {
       return null;
     }
-
-    const handleExportText = () => {
-      if (props.collectionId !== undefined) {
-        appDispatch(
-          exportTextOfCanvasRequest({
-            canvasId: canvas.id,
-            collectionId: props.collectionId,
-          }),
-        );
-      }
-    };
-
-    const handleExportResult = (worker: Worker) => {
-      openSelectFormatDialog(worker);
-    };
 
     const handleDeleteAllAnnotations = () => {
       if (props.collectionId !== undefined) {
@@ -104,9 +87,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
         ) : (
           <div className='m-1 flex h-auto w-full gap-2 space-x-2'>
             <Toolbar
-              handleExportText={handleExportText}
               handleDeleteAllAnnotations={handleDeleteAllAnnotations}
-              handleExportResult={handleExportResult}
               scope={{
                 canvasId: canvas?.id ?? '',
                 collectionId: props.collectionId ?? '',

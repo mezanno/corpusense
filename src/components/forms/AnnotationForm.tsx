@@ -8,7 +8,6 @@ import {
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
 import { removeAnnotationsInsideRequest } from '@/state/reducers/annotations';
-import { exportTextOfAnnotationRequest } from '@/state/reducers/export';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -62,10 +61,6 @@ const AnnotationForm = ({
     form.setValue('value', value);
   }, [annotation]);
 
-  const handleExportText = () => {
-    appDispatch(exportTextOfAnnotationRequest(annotation));
-  };
-
   const handleRemoveAllAnnotationsInside = () => {
     appDispatch(removeAnnotationsInsideRequest(annotation));
   };
@@ -85,7 +80,6 @@ const AnnotationForm = ({
       ) : (
         <div className='flex items-center justify-end space-x-2'>
           <Toolbar
-            handleExportText={handleExportText}
             handleDeleteAllAnnotations={handleRemoveAllAnnotationsInside}
             scope={{
               annotationId: annotation.id,
