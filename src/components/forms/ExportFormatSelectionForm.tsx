@@ -48,6 +48,14 @@ const ExportFormatSelectionForm = ({
 
   const form = useForm<Record<string, boolean | undefined>>({
     resolver: zodResolver(schema),
+    //if only one format is available, select it by default, otherwise, none is selected
+    defaultValues: formats.reduce(
+      (acc, f) => {
+        acc[f] = formats.length === 1 ? true : false;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    ),
     mode: 'onChange',
   });
 
