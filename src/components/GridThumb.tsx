@@ -25,7 +25,7 @@ const GridThumb = ({
   collectionId: string;
   thumbWidth: number;
   thumbHeight: number;
-  canvasToDisplay: Canvas | undefined;
+  canvasToDisplay: Canvas | null;
   setCanvasToDisplay: (canvas: Canvas) => void;
 }) => {
   const dispatch = useAppDispatch();
@@ -42,12 +42,12 @@ const GridThumb = ({
   };
 
   //! mieux gérer le cas où canvas est undefined
-  if (canvas === undefined) {
+  if (canvas === null) {
     return <div aria-errormessage='Error while loading canvas'>Error while loading canvas</div>;
   }
 
   const handleOnClick = () => {
-    if (canvas !== undefined) {
+    if (canvas !== null) {
       setCanvasToDisplay(canvas);
     }
   };

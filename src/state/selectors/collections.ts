@@ -37,7 +37,7 @@ export const selectOpenedCollections = createSelector(
 );
 
 export const selectLoadedCanvasById = (state: RootState, canvasId: string) =>
-  state.collections?.loadedCanvases?.[canvasId]?.content;
+  state.collections?.loadedCanvases?.[canvasId]?.content ?? null;
 
 export const selectModelIdOfCollection = createSelector(
   [
