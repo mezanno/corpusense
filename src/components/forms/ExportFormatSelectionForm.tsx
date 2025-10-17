@@ -24,6 +24,8 @@ type ExportFormatSelectionFormProps = FormProps & {
   worker: Worker;
 };
 
+type FormData = Record<string, boolean | undefined>;
+
 const ExportFormatSelectionForm = ({
   worker,
   formRef,
@@ -46,22 +48,22 @@ const ExportFormatSelectionForm = ({
     message: t('error_no_export_format_selected'),
   });
 
+  const defaultValues: FormData = formats.reduce((acc, f) => {
+    acc[f] = formats.length === 1;
+    return acc;
+  }, {} as FormData);
+
   const form = useForm<Record<string, boolean | undefined>>({
-    resolver: zodResolver(schema),
     //if only one format is available, select it by default, otherwise, none is selected
-    defaultValues: formats.reduce(
-      (acc, f) => {
-        acc[f] = formats.length === 1 ? true : false;
-        return acc;
-      },
-      {} as Record<string, boolean>,
-    ),
+    defaultValues,
+    resolver: zodResolver(schema),
     mode: 'onChange',
   });
 
+  const { isDirty, isValid } = form.formState;
   useEffect(() => {
-    setCanSubmit(form.formState.isDirty && form.formState.isValid);
-  }, [form.formState]);
+    setCanSubmit(formats.length === 1 ? true : isDirty && isValid);
+  }, [formats.length, isDirty, isValid]);
 
   const onSubmit = (values: z.infer<typeof schema>) => {
     const selectedFormats = Object.entries(values)
