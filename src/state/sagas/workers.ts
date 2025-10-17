@@ -1,4 +1,4 @@
-import { isAnnotationArray } from '@/data/models/Annotation';
+import { getAnnotationText, isAnnotationArray } from '@/data/models/Annotation';
 import { Collection } from '@/data/models/Collection';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { isAnnotationScope, isCanvasScope, isCollectionScope, toString } from '@/data/models/Scope';
@@ -216,14 +216,21 @@ function* startWorker(
             {
               console.log(`Task for scope ${toString(task.scope)} completed successfully`);
               //save the result in the database
+              let value: unknown = undefined;
+              if (taskResult.content !== undefined) {
+                //if the content is an array of annotations, we concatenate the text values
+                if (isAnnotationArray(taskResult.content)) {
+                  value = taskResult.content.map((a) => getAnnotationText(a)).join('\n');
+                } else if (typeof taskResult.content === 'string') {
+                  //else, if it's a string, we save it directly
+                  value = taskResult.content;
+                }
+              }
               const result: ResultCreateDTO = {
                 scope: task.scope,
                 workerName: currentWorker.name,
                 workerId: currentWorker.id,
-                value:
-                  taskResult.content !== undefined && typeof taskResult.content === 'string'
-                    ? taskResult.content
-                    : undefined,
+                value,
                 taskId: task.id,
                 params: worker.params,
               };
