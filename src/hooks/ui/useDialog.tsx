@@ -12,7 +12,7 @@ import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { DataModel } from '@/data/models/DataModel';
-import { CanvasScope } from '@/data/models/Scope';
+import { CanvasScope, Scope } from '@/data/models/Scope';
 import { Worker } from '@/data/models/Worker';
 import { ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -139,16 +139,12 @@ const useDialog = () => {
     });
   };
 
-  const openRemoveAnnotationsDialog = (collectionId: string) => {
+  const openRemoveAnnotationsDialog = (scope: Scope) => {
     openFormDialog({
       title: t('title_remove_annotations'),
       confirmLabel: t('btn_delete'),
       renderForm: (formRef) => (
-        <RemoveAnnotationsForm
-          formRef={formRef}
-          collectionId={collectionId}
-          setCanSubmit={setCanSubmit}
-        />
+        <RemoveAnnotationsForm formRef={formRef} scope={scope} setCanSubmit={setCanSubmit} />
       ),
     });
   };

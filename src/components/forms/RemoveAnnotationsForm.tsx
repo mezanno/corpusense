@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { ElementType } from '@/data/models/Annotation';
+import { Scope } from '@/data/models/Scope';
 import { useAppDispatch } from '@/hooks/hooks';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { removeAnnotationsByScopeRequest } from '@/state/reducers/annotations';
@@ -11,7 +12,7 @@ import { Checkbox } from '../ui/checkbox';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from '../ui/form';
 
 type RemoveAnnotationsFormProps = FormProps & {
-  collectionId: string;
+  scope: Scope;
 };
 
 const existingTypes = Object.values(ElementType).map((type) => ({
@@ -29,7 +30,7 @@ const checkbox = existingTypes.reduce(
 
 const schema = z.object(checkbox);
 
-const RemoveAnnotationsForm = ({ collectionId, formRef }: RemoveAnnotationsFormProps) => {
+const RemoveAnnotationsForm = ({ scope, formRef }: RemoveAnnotationsFormProps) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
 
@@ -45,7 +46,7 @@ const RemoveAnnotationsForm = ({ collectionId, formRef }: RemoveAnnotationsFormP
         .filter(([_, selected]) => selected ?? false)
         .map(([type, _]) => type as ElementType);
 
-      appDispatch(removeAnnotationsByScopeRequest({ scope: { collectionId }, types }));
+      appDispatch(removeAnnotationsByScopeRequest({ scope, types }));
     }
   };
 

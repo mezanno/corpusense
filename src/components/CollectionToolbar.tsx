@@ -35,7 +35,7 @@ const CollectionToolbar = memo(function CollectionToolbar({
   }
 
   const handleDeleteAllAnnotations = () => {
-    openRemoveAnnotationsDialog(collectionId);
+    openRemoveAnnotationsDialog({ collectionId });
   };
 
   const handleRecomputeRegions = () => {
