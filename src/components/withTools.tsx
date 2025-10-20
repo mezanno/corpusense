@@ -1,10 +1,7 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
-import {
-  removeAnnotationsByIdsRequest,
-  removeAnnotationsByScopeRequest,
-} from '@/state/reducers/annotations';
+import { removeAnnotationsByIdsRequest } from '@/state/reducers/annotations';
 import { selectAnnotationsByType } from '@/state/selectors/annotations';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { RootState } from '@/state/store';
@@ -24,7 +21,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     const appDispatch = useAppDispatch();
     const { t } = useTranslation();
     const { setMode, toggleAnnotations, showAnnotations, canvas, mode } = useCanvasViewerContext(); //the reducer/state of the canvas viewer
-    const { openDuplicateLayoutDialog } = useDialog();
+    const { openDuplicateLayoutDialog, openRemoveAnnotationsDialog } = useDialog();
     const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
     const isWorkerRunning = useAppSelector((state) =>
       selectIsWorkerOrTaskRunning(state, { collectionId: props.collectionId }),
@@ -39,16 +36,7 @@ export const withTools = <T extends object>(WrappedComponent: React.ComponentTyp
     }
 
     const handleDeleteAllAnnotations = () => {
-      if (props.collectionId !== undefined) {
-        appDispatch(
-          removeAnnotationsByScopeRequest({
-            scope: {
-              canvasId: canvas.id,
-              collectionId: props.collectionId,
-            },
-          }),
-        );
-      }
+      openRemoveAnnotationsDialog({ canvasId: canvas.id, collectionId: props.collectionId });
     };
 
     const handleDuplicateLayout = () => {
