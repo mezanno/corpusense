@@ -22,6 +22,7 @@ import { t } from 'i18next';
 import { isEqual, maxBy, minBy } from 'lodash';
 import { call, Effect, put, select, takeEvery } from 'redux-saga/effects';
 import {
+  addAnnotationsSuccess,
   DuplicateDistribution,
   DuplicateLimit,
   DuplicateRegionsPayload,
@@ -306,6 +307,7 @@ function* handleRecomputeRegions(
     const annotationIds = regions.map((r) => r.id);
     removedAnnotations = [...removedAnnotations, ...annotationIds];
     yield call([annotationRepository, annotationRepository.deleteByIds], annotationIds);
+    yield put(removeAnnotationsSuccess(annotationIds));
 
     const lines = (yield call(
       [annotationRepository, annotationRepository.getByScopeAndTypes],
@@ -353,8 +355,11 @@ function* handleRecomputeRegions(
     }
   }
   if (newRegionsAnnotations.length > 0) {
-    yield call([annotationRepository, annotationRepository.addAll], newRegionsAnnotations);
-    //TODO : update store yield put(update...)
+    const newAnnotations = (yield call(
+      [annotationRepository, annotationRepository.addAll],
+      newRegionsAnnotations,
+    )) as Annotation[];
+    yield put(addAnnotationsSuccess(newAnnotations));
   }
 }
 
