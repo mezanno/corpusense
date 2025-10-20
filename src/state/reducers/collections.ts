@@ -161,6 +161,19 @@ export const collectionsSlice = createSlice({
         }
       });
     },
+    setOcrStatus: (state, action: PayloadAction<Record<string, boolean>>) => {
+      for (const canvasId in action.payload) {
+        if (state.loadedCanvases?.[canvasId] !== undefined) {
+          state.loadedCanvases[canvasId] = {
+            ...state.loadedCanvases[canvasId],
+            infos: {
+              ...state.loadedCanvases[canvasId].infos,
+              hasOcrAnnotations: action.payload[canvasId],
+            },
+          };
+        }
+      }
+    },
     toggleCollectionOfflineRequest: (
       _state,
       _action: PayloadAction<string>, // collectionId
@@ -188,6 +201,7 @@ export const {
   importCollectionRequest,
   importCollectionsRequest,
   updateOcrStatus,
+  setOcrStatus,
   toggleCollectionOfflineRequest,
 } = collectionsSlice.actions;
 export default collectionsSlice.reducer;
