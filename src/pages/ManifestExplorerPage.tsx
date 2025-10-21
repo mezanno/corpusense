@@ -25,6 +25,12 @@ const ManifestExplorerPage = () => {
   const [metadataVisible, setMetadataVisible] = useState(true);
 
   useEffect(() => {
+    if (isLoading) {
+      setCanvasToDisplay(undefined);
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
     const id = searchParams.get('manifestId');
     if (id != null) {
       appDispatch(fecthManifestRequest(id));
