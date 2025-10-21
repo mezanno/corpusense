@@ -35,7 +35,7 @@ interface GridCellProps {
     height: number;
     colCount: number;
     canvasToDisplay: Canvas | null;
-    setCanvasToDisplay: (canvas: Canvas) => void;
+    setCanvasToDisplay: (canvas: Canvas | null) => void;
   };
 }
 

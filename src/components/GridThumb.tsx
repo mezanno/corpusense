@@ -27,7 +27,7 @@ const GridThumb = ({
   thumbWidth: number;
   thumbHeight: number;
   canvasToDisplay: Canvas | null;
-  setCanvasToDisplay: (canvas: Canvas) => void;
+  setCanvasToDisplay: (canvas: Canvas | null) => void;
 }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
@@ -43,6 +43,9 @@ const GridThumb = ({
   const handleDelete = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.stopPropagation();
     dispatch(removeElementFromCollectionRequest({ collectionId: collectionId, canvasId }));
+    if (canvasToDisplay?.id === canvasId) {
+      setCanvasToDisplay(null);
+    }
   };
 
   //! mieux gérer le cas où canvas est undefined
