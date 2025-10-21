@@ -131,8 +131,12 @@ export const collectionsSlice = createSlice({
       _state,
       _action: PayloadAction<{ collectionId: string; canvasId: string }>,
     ) => {},
-    removeElementFromCollectionSuccess: (state, _action: PayloadAction<Collection>) => {
-      state.currentCollection = _action.payload;
+    removeElementFromCollectionSuccess: (state, action: PayloadAction<Collection>) => {
+      state.currentCollection = action.payload;
+      const { content, ...collectionDetails } = action.payload;
+      state.values = state.values.map((details) =>
+        details.id === collectionDetails.id ? collectionDetails : details,
+      );
     },
     removeFromOpenedCollections: (state, action: PayloadAction<string>) => {
       const collectionId: string = action.payload;
