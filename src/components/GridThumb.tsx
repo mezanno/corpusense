@@ -6,6 +6,7 @@ import {
   selectCanvasHasOcrAnnotations,
   selectLoadedCanvasById,
 } from '@/state/selectors/collections';
+import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import 'gridstack/dist/gridstack.min.css';
@@ -31,6 +32,9 @@ const GridThumb = ({
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const canvas = useAppSelector((state) => selectLoadedCanvasById(state, canvasId));
+  const isWorkerRunning = useAppSelector((state) =>
+    selectIsWorkerOrTaskRunning(state, { collectionId, canvasId }),
+  );
   const idDisplayed = canvasToDisplay?.id === canvas?.id;
   const hasLineAnnotations = useAppSelector((state) =>
     selectCanvasHasOcrAnnotations(state, canvasId),
@@ -74,13 +78,15 @@ const GridThumb = ({
             <SpellCheck2 size={16} color='red' />
           )}
         </div>
-        <button
-          className='cursor-pointer opacity-0 group-hover:opacity-100 hover:scale-110'
-          title={t('btn_delete_collection')}
-          onClick={(e) => handleDelete(e)}
-        >
-          <CircleX className='text-red-400 hover:text-red-800' />
-        </button>
+        {!isWorkerRunning && (
+          <button
+            className='cursor-pointer opacity-0 group-hover:opacity-100 hover:scale-110'
+            title={t('btn_delete_collection')}
+            onClick={(e) => handleDelete(e)}
+          >
+            <CircleX className='text-red-400 hover:text-red-800' />
+          </button>
+        )}
       </div>
       <div className='w-fit flex-1'>
         <AutoSizer disableWidth>
