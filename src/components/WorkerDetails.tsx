@@ -69,7 +69,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
         <div className='flex gap-2'>
           {displayRestartButton && (
             <button
-              className='soft-button border-yellow-500 text-yellow-500'
+              className='soft-button border-yellow-700 text-yellow-700'
               onClick={handleRecoverWorker}
             >
               {t('btn_recover')}
@@ -112,7 +112,6 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
               {t(`worker_status_${task.status}`)}
               {task.statusMessage !== undefined && (
                 <span>
-                  {' '}
                   - <em>{task.statusMessage}</em>
                 </span>
               )}

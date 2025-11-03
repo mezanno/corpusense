@@ -5,7 +5,7 @@ import { GridLoader } from 'react-spinners';
 const getWorkerStatusIcon = (status: WorkerStatus): JSX.Element => {
   switch (status) {
     case WorkerStatus.WAITING:
-      return <CalendarClock color='#e5a50a' />;
+      return <CalendarClock color='#A66119' />;
     case WorkerStatus.INPROGRESS:
     case WorkerStatus.INPROGRESS_WITH_ERRORS:
       return <GridLoader color='#1c71d8' size={4} />;
@@ -21,7 +21,7 @@ const getWorkerStatusIcon = (status: WorkerStatus): JSX.Element => {
 const getTaskStatusColor = (status: WorkerStatus): string => {
   switch (status) {
     case WorkerStatus.WAITING:
-      return 'text-yellow-500';
+      return 'text-yellow-700';
     case WorkerStatus.INPROGRESS:
       return 'text-blue-500';
     case WorkerStatus.INPROGRESS_WITH_ERRORS:
