@@ -73,4 +73,17 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     });
     return [];
   }
+
+  async deleteResultById(workerId: string, taskId: number): Promise<void> {
+    await db.transaction('rw', db.workers, db.results, async () => {
+      await db.results.where({ workerId, taskId }).delete();
+      const worker = await db.workers.get(workerId);
+      if (worker) {
+        const updatedQueue = worker.queue.map((task) =>
+          task.id !== taskId ? task : { ...task, status: WorkerStatus.WAITING },
+        );
+        await db.workers.update(workerId, { queue: updatedQueue });
+      }
+    });
+  }
 }

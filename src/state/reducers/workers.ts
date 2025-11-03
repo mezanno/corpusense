@@ -2,6 +2,7 @@ import { Result } from '@/data/models/Result';
 import { isSameScope, Scope } from '@/data/models/Scope';
 import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { remove } from 'lodash';
 export interface WorkerState {
   workers: Worker[];
   results: Result[];
@@ -123,6 +124,24 @@ export const workerSlice = createSlice({
       state.workers = state.workers.filter((worker) => action.payload.includes(worker.id));
       state.results = state.results.filter((result) => action.payload.includes(result.workerId));
     },
+    removeResultRequest: (_state, _action: PayloadAction<{ workerId: string; taskId: number }>) => {
+      // action.payload is { workerId, taskId }
+    },
+    removeResultSuccess: (state, action: PayloadAction<{ workerId: string; taskId: number }>) => {
+      const { workerId, taskId } = action.payload;
+      remove(state.results, (result) => result.workerId === workerId && result.id === taskId);
+      state.workers = state.workers.map((worker) => {
+        if (worker.id === workerId) {
+          return {
+            ...worker,
+            queue: worker.queue.map((task) =>
+              task.id !== taskId ? task : { ...task, status: WorkerStatus.WAITING },
+            ),
+          };
+        }
+        return worker;
+      });
+    },
     exportWorkerResultRequest: (_state, _action: PayloadAction<ExportWorkerPayload>) => {}, // action.payload is a workerId
     recoverWorkerRequest: (_state, _action: PayloadAction<Worker>) => {}, // action.payload is a workerId
   },
@@ -142,6 +161,8 @@ export const {
   removeWorkerRequest,
   removeWorkerSuccess,
   removeWorkersSuccess,
+  removeResultRequest,
+  removeResultSuccess,
   exportWorkerResultRequest,
   recoverWorkerRequest,
 } = workerSlice.actions;

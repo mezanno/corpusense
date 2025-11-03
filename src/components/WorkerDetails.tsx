@@ -4,10 +4,13 @@ import useDialog from '@/hooks/ui/useDialog';
 import {
   // exportWorkerResultRequest,
   recoverWorkerRequest,
+  removeResultRequest,
   stopWorkerProcessRequest,
 } from '@/state/reducers/workers';
 import { selectHasExport, selectHasResult, selectWorkerById } from '@/state/selectors/workers';
+import { CircleX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAlertDialogContext } from './reducers/useAlertDialogContext';
 import ScopeLabel from './ScopeLabel';
 import { getTaskStatusColor, getWorkerStatusIcon } from './workerUtils';
 
@@ -19,6 +22,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
     worker ? selectHasExport(state, worker?.name) && selectHasResult(state, workerId) : false,
   );
   const { openSelectFormatDialog } = useDialog();
+  const { openDialog } = useAlertDialogContext();
 
   if (worker === undefined) {
     return (
@@ -45,6 +49,17 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
 
   const handleExportResult = () => {
     openSelectFormatDialog(worker);
+  };
+
+  const handleRemoveResult = (taskId: number) => {
+    openDialog({
+      title: t('title_are_you_sure'),
+      description: t('description_delete_worker'),
+      onConfirm: {
+        message: t('btn_yes'),
+        action: () => appDispatch(removeResultRequest({ workerId, taskId })),
+      },
+    });
   };
 
   return (
@@ -114,6 +129,13 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
                 <span>
                   - <em>{task.statusMessage}</em>
                 </span>
+              )}
+              {task.status !== WorkerStatus.WAITING && (
+                <CircleX
+                  size={20}
+                  className='hover:scale-110'
+                  onClick={() => handleRemoveResult(task.id)}
+                />
               )}
             </li>
           ))}

@@ -128,4 +128,5 @@ export interface WorkerRepository {
 
   deleteById(workerId: string): Promise<void>;
   deleteByScope(scope: Scope): Promise<string[]>;
+  deleteResultById(workerId: string, taskId: number): Promise<void>;
 }
