@@ -151,21 +151,22 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
           <Textarea id='prompt' value={prompt} onChange={(e) => setPrompt(e.target.value)} />
         </div>
       </div>
-      {fields.length > 0 ? (
-        <div className='mt-2 h-full w-full border'>
+
+      <div className='mt-2 flex h-full w-full'>
+        {fields.length > 0 ? (
           <AutoSizer>
             {({ height, width }) => (
               <ScrollArea style={{ height, width }}>
                 <Table className='border'>
                   <TableHeader className='bg-white/30'>
                     <TableRow>
-                      <TableHead>{t('table_col_title_name')}</TableHead>
-                      <TableHead>{t('table_col_title_type')}</TableHead>
-                      <TableHead>{t('table_col_title_isArray')}</TableHead>
-                      <TableHead>{t('table_col_title_ia')}</TableHead>
-                      <TableHead>{t('table_col_title_description')}</TableHead>
-                      <TableHead>{t('table_col_title_color')}</TableHead>
-                      <TableHead>{t('table_col_title_actions')}</TableHead>
+                      <TableHead className='w-2/12'>{t('table_col_title_name')}</TableHead>
+                      <TableHead className='w-1/12'>{t('table_col_title_type')}</TableHead>
+                      <TableHead className='w-1/12'>{t('table_col_title_isArray')}</TableHead>
+                      <TableHead className='w-1/12'>{t('table_col_title_ia')}</TableHead>
+                      <TableHead className='w-5/12'>{t('table_col_title_description')}</TableHead>
+                      <TableHead className='w-1/12'>{t('table_col_title_color')}</TableHead>
+                      <TableHead className='w-1/12'>{t('table_col_title_actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -261,10 +262,10 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
               </ScrollArea>
             )}
           </AutoSizer>
-        </div>
-      ) : (
-        <div>{t('info_empty_model')}</div>
-      )}
+        ) : (
+          <div>{t('info_empty_model')}</div>
+        )}
+      </div>
     </div>
   );
 };

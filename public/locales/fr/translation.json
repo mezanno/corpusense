@@ -232,7 +232,7 @@
   "info_start_layout": "Lancement de la détection de la mise en page pour {{canvas}}",
   "info_start_ocr": "Lancement de l'OCR pour {{canvas}}",
   "info_finish_analysis": "Analyse terminée pour {{canvas}}",
-  "info_empty_model": "Le modèle de données est vide",
+  "info_empty_model": "Ce modèle de données ne contient aucun champ.",
   "info_preview_model": "Aperçu du modèle de données actif",
   "info_duplicate_menu": "Appliquer les regions de la page actuelle à d'autres pages",
   "info_recover_worker": "Reprendre un traitement non terminé",
