@@ -75,7 +75,7 @@ const Layout = () => {
               </button>
             </div>
           </header>
-          <main className='flex-1 pt-2'>
+          <main className='min-h-0 flex-1 pt-2'>
             <Outlet />
           </main>
         </div>

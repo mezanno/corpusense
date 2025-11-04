@@ -63,9 +63,11 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
   };
 
   return (
-    <div className='flex h-screen w-full flex-col p-4'>
+    <div className='flex h-full w-full flex-col p-2'>
+      {/* Partie haute : infos worker + boutons */}
       <div className='w-full'>
         <h2 className='text-lg font-bold'>{t('title_worker_details')}</h2>
+
         <ul className='my-2 w-full border-b pb-2'>
           <li>
             {t('list_title_worker_name')} : {worker.name}
@@ -74,13 +76,13 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
             {t('list_title_worker_createdAt')} {new Date(worker.createdAt).toLocaleString()}
           </li>
           <li className='my-2 w-full border-b pb-2'>
-            {t('list_title_worker_scope')} :
-            <ScopeLabel scope={worker.scope} />
+            {t('list_title_worker_scope')} : <ScopeLabel scope={worker.scope} />
           </li>
           <li>
             {t('list_title_worker_status')} : {t(`worker_status_${worker.status}`)}
           </li>
         </ul>
+
         <div className='flex gap-2'>
           {displayRestartButton && (
             <button
@@ -105,13 +107,15 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
           )}
         </div>
       </div>
-      <div className='flex-1 overflow-y-auto'>
-        <h3 className='text-md mt-4 font-semibold'>
+
+      {/* Partie basse : liste scrollable */}
+      <div className='mt-3 min-h-0 flex-1 overflow-y-auto rounded-md p-2'>
+        <h3 className='text-md mt-2 font-semibold'>
           {t('title_worker_queue')}{' '}
           <span>({t('info_worker_queue_size', { size: worker.queue.length })})</span>
         </h3>
 
-        <ul>
+        <ul className='p-1'>
           {worker.queue.map((task) => (
             <li
               key={task.id}
@@ -122,9 +126,8 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
               >
                 {getWorkerStatusIcon(task.status)}
               </span>
-              <strong>{t('table_col_title_taskID')}</strong>
-              {task.id} -<strong>{t('table_col_title_status')}</strong>
-              {t(`worker_status_${task.status}`)}
+              <strong>{t('table_col_title_taskID')}</strong> {task.id} -{' '}
+              <strong>{t('table_col_title_status')}</strong> {t(`worker_status_${task.status}`)}
               {task.statusMessage !== undefined && (
                 <span>
                   - <em>{task.statusMessage}</em>
@@ -133,7 +136,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
               {task.status !== WorkerStatus.WAITING && (
                 <CircleX
                   size={20}
-                  className='hover:scale-110'
+                  className='cursor-pointer hover:scale-110'
                   onClick={() => handleRemoveResult(task.id)}
                 />
               )}
