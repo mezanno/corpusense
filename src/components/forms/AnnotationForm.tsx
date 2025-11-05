@@ -71,7 +71,10 @@ const AnnotationForm = ({
   };
 
   return (
-    <section className='panel m-1 w-full flex-col' aria-label='annotation form'>
+    <section
+      className='panel h-full w-full flex-col shadow-[-8px_0_10px_-8px_rgba(0,0,0,0.3)]'
+      aria-label='annotation form'
+    >
       <div className='w-full text-right text-sm font-light'>{annotation.id}</div>
       {isWorkerRunning ? (
         <div>
@@ -105,7 +108,7 @@ const AnnotationForm = ({
         <form
           // eslint-disable-next-line @typescript-eslint/no-misused-promises
           onSubmit={form.handleSubmit(onSubmit)}
-          className='mx-auto w-full flex-col space-y-2'
+          className='m-2 mx-auto w-full flex-col space-y-2'
         >
           <div className='flex flex-col gap-2'>
             <FormField
