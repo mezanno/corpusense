@@ -9,7 +9,6 @@ TODO : revoir le flou artistique autour du fait de relancer l'ocr sur un canvas 
 FIX : revoir les actions possibles lorsqu'une tâche est en cours d'execution
 TODO: utiliser le json viewer pour afficher les entitées nommées dans les annotations
 TODO : ajouter des exemples lors de la recherche de données structurées
-TODO : revoir gestion en mémoire des workers (la queue peut prendre bcp de place)
 
 TODO : workers :
 

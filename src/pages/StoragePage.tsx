@@ -3,8 +3,9 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/utils/config';
 import { generateManifest } from '@/utils/manifest';
 import { Manifest } from '@iiif/presentation-3';
-import { Archive } from 'lucide-react';
+import { Archive, Trash } from 'lucide-react';
 // import imageBlobReduce from 'image-blob-reduce';
+import { getImage } from '@/data/utils/canvas';
 import { useAppSelector } from '@/hooks/hooks';
 import { useUserManifests } from '@/hooks/useUserManifests';
 import { selectAuthStatus } from '@/state/selectors/auth';
@@ -175,24 +176,64 @@ const StoragePage = () => {
     setUploading(false);
   };
 
+  const handleDelete = (url: string) => {
+    async function deleteManifest() {
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.error('Erreur lors de la récupération du manifeste :', response.statusText);
+        return;
+      }
+      try {
+        const manifest: Manifest = (await response.json()) as Manifest;
+        const canvasList = manifest.items;
+        const filenames: string[] = [];
+        for (const canvas of canvasList) {
+          const imageService = getImage(canvas).service?.[0];
+          if (imageService && 'id' in imageService) {
+            const imageName = imageService.id?.toString().split('/').pop();
+            if (imageName !== undefined) {
+              filenames.push(imageName);
+            }
+          }
+        }
+        if (filenames.length > 0) {
+          const { data, error: removeError } = await supabase.storage
+            .from('corpusense')
+            .remove(filenames);
+          if (removeError) {
+            console.warn(removeError);
+          }
+          console.log('Fichiers supprimés :', data);
+        }
+      } catch (err) {
+        console.error('Erreur lors de la conversion en manifeste :', err);
+      }
+    }
+
+    void deleteManifest();
+  };
+
   return (
     <div className='panel h-full w-full flex-col space-y-2'>
       <h1 className='flex items-center text-2xl font-bold'>
         <Archive className='mr-2' /> {t('page_title_storage')}
       </h1>
       <h2 className='text-lg'>Documents existants</h2>
-      <div className='text-sm text-blue-600'>
+      <div>
         {loading ? (
           <p>Chargement...</p>
         ) : error ? (
           <p>Erreur lors du chargement.</p>
         ) : existingManifests.length > 0 ? (
           existingManifests.map((url, index) => (
-            <div key={index} className='mb-2'>
-              <a href={`${hrefPath}${url}`}>
+            <div key={index} className='mb-2 flex items-center space-x-2'>
+              <a href={`${hrefPath}${url}`} className='text-blue-600 underline'>
                 {hrefPath}
                 {url}
               </a>
+              <div className='soft-button bg-red-400 text-white' onClick={() => handleDelete(url)}>
+                <Trash size={16} />
+              </div>
             </div>
           ))
         ) : (

@@ -34,6 +34,11 @@ function isNumberArray(value: unknown): value is number[] {
   return Array.isArray(value) && value.every((v) => typeof v === 'number');
 }
 
+/**
+ * Load entities of a given scope. If no result or no model is found,
+ * @param action
+ * @returns
+ */
 function* handleLoadEntities(
   action: PayloadAction<CanvasScope>,
 ): Generator<Effect, void, Result | Annotation[] | Collection | DataModel> {
@@ -41,13 +46,14 @@ function* handleLoadEntities(
   const result = (yield call(
     [resultRepository, resultRepository.getByScopeAndWorkerName],
     action.payload,
-    'mistral',
+    'mistral', //TODO! paramétrer le worker
   )) as Result;
   const { value, scope } = result;
 
   let model = undefined;
   const collectionRepository = getCollectionRepository();
   try {
+    //get the collection, its content and the model
     const collection = (yield call(
       [collectionRepository, collectionRepository.getById],
       scope.collectionId,
@@ -64,12 +70,14 @@ function* handleLoadEntities(
     return;
   }
 
+  //get all the annotations of the canvas
   const annotationRepository = getAnnotationRepository();
   const annotations = (yield call(
     [annotationRepository, annotationRepository.getByScope],
     scope,
   )) as Annotation[];
 
+  //parse the result value and for each value, create a named entity if possible
   const dataParsed = JSON.parse(value as string) as unknown;
   const dataParsedArray = (Array.isArray(dataParsed) ? dataParsed : [dataParsed]) as unknown[];
   const namedEntities: NamedEntity[] = [];

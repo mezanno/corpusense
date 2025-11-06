@@ -20,6 +20,7 @@ import { selectWorkersByStatus } from '@/state/selectors/workers';
 import {
   Archive,
   Bolt,
+  BookOpen,
   ChevronDown,
   Container,
   CornerDownRight,
@@ -298,11 +299,19 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
       </SidebarContent>
 
       <SidebarFooter>
-        <div className='flex justify-between'>
-          Corpusense v{import.meta.env.VITE_APP_VERSION}
-          <Link to={CorpusenseRoutes.CONFIGURATION} title={t('page_title_configuration')}>
-            <Bolt />
-          </Link>
+        <div>
+          <SidebarMenuButton>
+            <Link to={CorpusenseRoutes.DOCUMENTATION} className='flex space-x-2'>
+              <BookOpen />
+              <span>{t('page_title_documentation')}</span>
+            </Link>
+          </SidebarMenuButton>
+          <div className='flex justify-between'>
+            Corpusense v{import.meta.env.VITE_APP_VERSION}
+            <Link to={CorpusenseRoutes.CONFIGURATION} title={t('page_title_configuration')}>
+              <Bolt />
+            </Link>
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>
