@@ -1,6 +1,5 @@
-import { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 type DocIndex = { slug: string; title: string }[];
 
@@ -23,19 +22,24 @@ export default function DocsSidebar() {
   }, []);
 
   return (
-    <nav className='w-[200px] border-r p-4'>
+    <aside className='sticky top-0 h-screen w-64 overflow-y-auto border-r bg-white p-4'>
+      <h2 className='mb-4 font-bold text-gray-800'>Documentation</h2>
       <ul className='space-y-2'>
         {pages.map((p) => (
           <li key={p.slug}>
-            <Link
-              to={`/${CorpusenseRoutes.DOCUMENTATION}/${p.slug}`}
-              className='text-blue-600 hover:underline'
+            <NavLink
+              to={`/doc/${p.slug}`}
+              className={({ isActive }) =>
+                `block rounded px-2 py-1 hover:bg-gray-100 ${
+                  isActive ? 'bg-gray-200 font-semibold' : ''
+                }`
+              }
             >
               {p.title}
-            </Link>
+            </NavLink>
           </li>
         ))}
       </ul>
-    </nav>
+    </aside>
   );
 }
