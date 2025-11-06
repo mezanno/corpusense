@@ -3,7 +3,7 @@ import * as dbFactory from '@/data/repositories/indexeddb/dbFactory';
 import { TagRepository } from '@/data/repositories/indexeddb/types';
 import { runSaga } from 'redux-saga';
 import { vi } from 'vitest';
-import { createNewTagRequest, createNewTagSuccess, setTags } from '../../reducers/tags';
+import { createTagRequest, createTagSuccess, setTags } from '../../reducers/tags';
 import { fetchAllTags, handleCreateNewTag } from '../tags';
 
 const mockTags: Tag[] = [
@@ -13,8 +13,8 @@ const mockTags: Tag[] = [
 const mockGetAllTags = vi.fn().mockResolvedValue(mockTags);
 const mockCreateTag = vi.fn().mockResolvedValue(1);
 const mockRepository: Partial<TagRepository> = {
-  getAllTags: mockGetAllTags,
-  createTag: mockCreateTag,
+  getAll: mockGetAllTags,
+  add: mockCreateTag,
 };
 
 describe('tags saga', () => {
@@ -40,7 +40,7 @@ describe('tags saga', () => {
     const dispatch = vi.fn();
     vi.spyOn(dbFactory, 'getTagRepository').mockReturnValue(mockRepository as TagRepository);
 
-    const action = { type: createNewTagRequest.type, payload: newTag };
+    const action = { type: createTagRequest.type, payload: newTag };
 
     await runSaga(
       {
@@ -51,6 +51,6 @@ describe('tags saga', () => {
     ).toPromise();
 
     expect(mockCreateTag).toHaveBeenCalledWith(newTag);
-    expect(dispatch).toHaveBeenCalledWith(createNewTagSuccess(newTag));
+    expect(dispatch).toHaveBeenCalledWith(createTagSuccess(newTag));
   });
 });

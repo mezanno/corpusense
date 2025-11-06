@@ -1,4 +1,4 @@
-import { Annotation, convertToElementTypeEnum, createAnnotation } from '../Annotation';
+import { AnnotationDTO, convertToElementTypeEnum, createAnnotation } from '../Annotation';
 
 export interface EdwinBox {
   id: number;
@@ -27,7 +27,6 @@ function convertEdwinToAnnotation(
   return createAnnotation({
     canvasId,
     collectionId,
-    order: 0,
     minX: edwinBox.box[0] * multiple,
     minY: edwinBox.box[1] * multiple,
     maxX: edwinBox.box[0] * multiple + edwinBox.box[2] * multiple,
@@ -42,7 +41,7 @@ export function convertEdwinResult(
   canvasId: string,
   collecionId: string,
   originalWidth: number,
-): Annotation[] {
+): AnnotationDTO[] {
   return boxes
     .map((b) => convertEdwinToAnnotation(b, canvasId, collecionId, originalWidth))
     .filter(Boolean);

@@ -1,4 +1,3 @@
-import annotationCreatedFromAnother from '@/__tests__/annotationCreatedFromAnother.json';
 import annotationCreateFromDTOWithId from '@/__tests__/annotationCreateFromDTOWithId.json';
 import annotationFromEdwin from '@/__tests__/annotationFromEdwin.json';
 import annotationWitoutTypeAndText from '@/__tests__/annotationWithoutTypeAndValue.json';
@@ -6,7 +5,6 @@ import { vi } from 'vitest';
 import {
   Annotation,
   createAnnotation,
-  createAnnotationFromExistingAnnotation,
   ElementType,
   getAnnotationText,
   getAnnotationType,
@@ -61,12 +59,12 @@ describe('Annotation', () => {
       const newAnnotation = createAnnotation({
         canvasId: 'https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15',
         collectionId: 'collectionId',
-        order: 0,
+        order: 1,
         minX: 146.484375,
         minY: 292.96875,
         maxX: 585.9375,
         maxY: 878.90625,
-        type: ElementType.ENTRY,
+        type: ElementType.TEXT_REGION,
         value: 'title_level_1',
       });
       expect(newAnnotation).toEqual(annotation);
@@ -76,28 +74,27 @@ describe('Annotation', () => {
       const newAnnotation = createAnnotation({
         canvasId: 'https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15',
         collectionId: 'collectionId',
+        order: 1,
         id: 'anotherId',
-        order: 0,
         minX: 146.484375,
         minY: 292.96875,
         maxX: 585.9375,
         maxY: 878.90625,
-        type: ElementType.ENTRY,
+        type: ElementType.TEXT_REGION,
         value: 'title_level_1',
       });
       expect(newAnnotation).toEqual(annotationCreateFromDTOWithId);
     });
   });
 
-  describe('createAnnotationFromExistingAnnotation', () => {
-    it('should create a new annotation from an existing annotation', () => {
-      const newAnnotation = createAnnotationFromExistingAnnotation({
-        annotation,
-        order: 1,
-        type: ElementType.REGION,
-        value: 'new value',
-      });
-      expect(newAnnotation).toEqual(annotationCreatedFromAnother);
-    });
-  });
+  // describe('createAnnotationFromExistingAnnotation', () => {
+  //   it('should create a new annotation from an existing annotation', () => {
+  //     const newAnnotation = createAnnotationFromExistingAnnotation({
+  //       annotation,
+  //       type: ElementType.REGION,
+  //       value: 'new value',
+  //     });
+  //     expect(newAnnotation).toEqual(annotationCreatedFromAnother);
+  //   });
+  // });
 });

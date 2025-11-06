@@ -1,127 +1,131 @@
-import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
+import { ElementType, getAnnotationType } from '@/data/models/Annotation';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
-import { isCanvasScope, toString } from '@/data/models/Scope';
+import { Result } from '@/data/models/Result';
+import { isAnnotationScope, toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
-  getCanvasRepository,
+  getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
-import { fetchAnnotationsSuccess } from '@/state/reducers/annotations';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
-import { Canvas } from '@iiif/presentation-3';
-import { PredictReturn } from 'node_modules/@gradio/client/dist/types';
-import { call, Effect, put } from 'redux-saga/effects';
+import FileSaver from 'file-saver';
 
 export const pluginName = 'peroocr';
+export const pluginDisplayName = 'Pero OCR';
+export const pluginDescription = 'Reconnaissance de texte';
+export const pluginCategory = 'OCR';
+export const pluginExportFormats = ['txt'];
 
-/*
- * Type guard to check if params contains a model.
- * This is used to ensure that the params passed to the Mistral plugin saga
- * contains a DataModel object.
- */
-function hasRegion(params: PluginParams): params is PluginParams & {
-  region: {
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-  };
-} {
-  return 'region' in params;
-}
-
-export default function* peroSaga(
-  task: Task,
-  params: PluginParams,
-): Generator<Effect, WorkerResponse, Canvas | Annotation[] | Client | PredictReturn> {
+export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
-
   const annotationRepository = getAnnotationRepository();
-
-  if (isCanvasScope(task.scope)) {
-    const canvasRepository = getCanvasRepository();
-    try {
-      const canvas = (yield call(
-        [canvasRepository, canvasRepository.getCanvasById],
-        task.scope.canvasId,
-      )) as Canvas;
-      const image = getImage(canvas);
-      let regions = JSON.stringify([]);
-      if (hasRegion(params)) {
-        regions = JSON.stringify(params.region);
-      } else {
-        const annotations = (yield call(
-          [annotationRepository, annotationRepository.getAnnotationsForCanvas],
-          canvas.id,
-          task.scope.collectionId,
-        )) as Annotation[];
-        const annotationRegions = annotations.filter(
-          (a) => getAnnotationType(a) === ElementType.REGION,
-        );
-        if (annotationRegions.length > 0) {
-          regions = JSON.stringify(
-            annotationRegions
-              .sort((a1, a2) => (a1.order ?? 0) - (a2.order ?? 0))
-              .map((annotation) => {
-                return {
-                  xtl: annotation.target.selector.geometry.bounds.minX,
-                  ytl: annotation.target.selector.geometry.bounds.minY,
-                  xbr: annotation.target.selector.geometry.bounds.maxX,
-                  ybr: annotation.target.selector.geometry.bounds.maxY,
-                };
-              }),
-          );
-        }
-      }
-
-      const client = (yield call(() => Client.connect('https://api.mezanno.xyz/ocr/'))) as Client;
-      const gradioResult = (yield call(() =>
-        client.predict('/transcribe', { image_url: image.id, regions }),
-      )) as PredictReturn;
-
-      console.log(gradioResult.data);
-      try {
-        const peroResult = peroResultSchema.parse(gradioResult.data);
-        const annotations = convertPeroTranscriptionsToAnnotations(
-          peroResult,
-          canvas.id,
-          task.scope.collectionId,
-        );
-        yield put(fetchAnnotationsSuccess(annotations));
-        yield call([annotationRepository, annotationRepository.saveAllAnnotations], annotations);
-        return {
-          status: WorkerStatus.COMPLETED,
-        };
-      } catch (error) {
-        try {
-          const peroError = peroResultError.parse(gradioResult.data);
-          console.error('peroError: ', peroError[0].result.error);
-          return {
-            status: WorkerStatus.ERROR,
-            statusMessage: peroError[0].result.error,
-          };
-        } catch (err) {
-          console.error('Error parsing peroResult:', err);
-          return {
-            status: WorkerStatus.ERROR,
-            statusMessage: getErrorMessage(err),
-          };
-        }
-      }
-    } catch (error) {
-      console.error(getErrorMessage(error));
+  try {
+    const collectionRepository = getCollectionRepository();
+    const canvas = await collectionRepository.getCanvasByScope(task.scope);
+    const image = getImage(canvas);
+    if (image.id === undefined) {
       return {
         status: WorkerStatus.ERROR,
-        statusMessage: getErrorMessage(error),
+        statusMessage: 'Image ID is undefined',
       };
     }
+    let regions = JSON.stringify([]);
+    if (isAnnotationScope(task.scope)) {
+      const annotation = await annotationRepository.getById(task.scope.annotationId);
+      regions = JSON.stringify([
+        {
+          xtl: annotation.target.selector.geometry.bounds.minX,
+          ytl: annotation.target.selector.geometry.bounds.minY,
+          xbr: annotation.target.selector.geometry.bounds.maxX,
+          ybr: annotation.target.selector.geometry.bounds.maxY,
+        },
+      ]);
+    } else {
+      const annotations = await annotationRepository.getByScope({
+        canvasId: canvas.id,
+        collectionId: task.scope.collectionId,
+      });
+      const annotationRegions = annotations.filter(
+        (a) => getAnnotationType(a) === ElementType.TEXT_REGION,
+      );
+      if (annotationRegions.length > 0) {
+        regions = JSON.stringify(
+          annotationRegions
+            .sort((a1, a2) => (a1.order ?? 0) - (a2.order ?? 0))
+            .map((annotation) => {
+              return {
+                xtl: annotation.target.selector.geometry.bounds.minX,
+                ytl: annotation.target.selector.geometry.bounds.minY,
+                xbr: annotation.target.selector.geometry.bounds.maxX,
+                ybr: annotation.target.selector.geometry.bounds.maxY,
+              };
+            }),
+        );
+      }
+    }
+
+    const client = await Client.connect('https://api.mezanno.xyz/ocr/');
+    /* We change the image to size to match the maximum size. We do this to avoir lower sizes used in image ids.
+     */
+    const gradioResult = await client.predict('/transcribe', {
+      image_url: setIiifSize(image.id, image.width ?? 0, image.height ?? 0),
+      regions,
+    });
+    console.log(gradioResult.data);
+    try {
+      const peroResult = peroResultSchema.parse(gradioResult.data);
+      const annotations = convertPeroTranscriptionsToAnnotations(
+        peroResult,
+        task.scope.canvasId,
+        task.scope.collectionId,
+      );
+      const newAnnotations = await annotationRepository.addAll(annotations);
+      return {
+        status: WorkerStatus.COMPLETED,
+        content: newAnnotations,
+      };
+    } catch (error) {
+      try {
+        const peroError = peroResultError.parse(gradioResult.data);
+        console.error('peroError: ', peroError[0].result.error);
+        return {
+          status: WorkerStatus.ERROR,
+          statusMessage: peroError[0].result.error,
+        };
+      } catch (err) {
+        console.error('Error parsing peroResult:', err);
+        return {
+          status: WorkerStatus.ERROR,
+          statusMessage: getErrorMessage(err),
+        };
+      }
+    }
+  } catch (error) {
+    console.log('Error in peroocr worker: ', error);
+
+    return {
+      status: WorkerStatus.ERROR,
+      statusMessage: getErrorMessage(error),
+    };
+  }
+}
+
+export function exportResult(results: Result[], formats: string[]) {
+  if (results.length === 0) {
+    console.warn('No results to export from Mistral plugin');
+    return;
   }
 
-  return {
-    status: WorkerStatus.COMPLETED,
-  };
+  if (formats.includes('txt')) {
+    const text = results.map((r) => r.value).join('\n\n');
+    FileSaver.saveAs(new Blob([text], { type: 'text/plain;charset=utf-8' }), 'exported_text.txt');
+  }
 }
+
+export const setIiifSize = (url: string, width: number, height: number) => {
+  return url.replace(/\/full\/[^/]+\/0\//, `/full/${width},${height}/0/`);
+};

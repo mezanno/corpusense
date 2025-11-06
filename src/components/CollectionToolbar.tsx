@@ -1,108 +1,104 @@
-import { DataModel } from '@/data/models/DataModel';
-import { Worker } from '@/data/models/Worker';
-import { useAppDispatch } from '@/hooks/hooks';
-import {
-  recomputeRegionsRequest,
-  removeAllCollectionAnnotationsRequest,
-} from '@/state/reducers/annotations';
-import { exportTextOfCollectionRequest } from '@/state/reducers/export';
-import {
-  exportWorkerResultRequest,
-  recoverWorkerRequest,
-  startWorkerProcess,
-} from '@/state/reducers/workers';
-import { useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useDialog from '@/hooks/ui/useDialog';
+import { recomputeRegionsRequest } from '@/state/reducers/annotations';
+import { toggleCollectionOfflineRequest } from '@/state/reducers/collections';
+import { selectIsCollectionOffline } from '@/state/selectors/collections';
+import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
+import { Pin } from 'lucide-react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import SelectModelForm from './textviewer/SelectModelForm';
 import Toolbar from './ToolBar';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
+import { Toggle } from './ui/toggle';
 
-const CollectionToolbar = ({ collectionId }: { collectionId: string }) => {
+const CollectionToolbar = memo(function CollectionToolbar({
+  collectionId,
+}: {
+  collectionId: string;
+}) {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const { openRemoveAnnotationsDialog } = useDialog();
+  const isWorkerRunning = useAppSelector((state) =>
+    selectIsWorkerOrTaskRunning(state, { collectionId }),
+  );
+  const isCollectionOffline = useAppSelector((state) =>
+    selectIsCollectionOffline(state, collectionId),
+  );
+  // const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
 
-  const handleOcr = () => {
-    // appDispatch(fetchBatchOcrRequest(collectionId));
-    appDispatch(
-      startWorkerProcess({
-        workerName: 'peroocr',
-        params: {},
-        scope: { collectionId },
-      }),
+  if (isWorkerRunning) {
+    return (
+      <div className='panel'>
+        <strong>{t('info_worker_running')}</strong>
+      </div>
     );
-  };
-
-  // const handleLayout = () => {
-  //   appDispatch(fetchBatchLayoutRequest(collectionId));
-  // };
+  }
 
   const handleDeleteAllAnnotations = () => {
-    appDispatch(removeAllCollectionAnnotationsRequest(collectionId));
+    openRemoveAnnotationsDialog({ collectionId });
   };
 
   const handleRecomputeRegions = () => {
     appDispatch(recomputeRegionsRequest(collectionId));
   };
 
-  const handleExportText = () => {
-    appDispatch(exportTextOfCollectionRequest(collectionId));
+  //TODO! voir comment transmettre des params dynamiques
+  // const handleExtractData = () => {
+  //   setAnalysisDialogOpen(true);
+  // };
+
+  const handleToggleOffline = () => {
+    appDispatch(toggleCollectionOfflineRequest(collectionId));
   };
 
-  const handleExtractData = () => {
-    setDialogOpen(true);
-  };
+  // const closeAnalysisDialog = (model: DataModel) => {
+  //   setAnalysisDialogOpen(false);
 
-  const handleExportResult = (worker: Worker) => {
-    appDispatch(exportWorkerResultRequest({ worker }));
-  };
-
-  const handleRecoverWorker = (worker: Worker) => {
-    appDispatch(recoverWorkerRequest(worker));
-  };
-
-  const close = (model: DataModel) => {
-    setDialogOpen(false);
-
-    if (collectionId !== undefined) {
-      appDispatch(
-        startWorkerProcess({
-          workerName: 'mistral',
-          params: {
-            model,
-            workerName: 'mistral',
-          },
-          scope: { collectionId },
-        }),
-      );
-    }
-  };
+  //   if (collectionId !== undefined) {
+  //     appDispatch(
+  //       startWorkerProcess({
+  //         workerName: 'mistral',
+  //         params: {
+  //           model,
+  //           workerName: 'mistral',
+  //         },
+  //         scope: { collectionId },
+  //       }),
+  //     );
+  //   }
+  // };
 
   return (
-    <div className='panel'>
+    <div className='panel justify-between'>
       <Toolbar
         title={t('title_collection_actions')}
-        // handleLayout={handleLayout}
-        handleOcr={handleOcr}
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
-        handleExportText={handleExportText}
-        handleExtractData={handleExtractData}
         handleRecomputeRegions={handleRecomputeRegions}
-        handleExportResult={handleExportResult}
-        handleRecoverWorker={handleRecoverWorker}
         scope={{ collectionId }}
       />
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <div>
+        <Toggle
+          className='soft-button'
+          size={null}
+          pressed={isCollectionOffline}
+          onClick={handleToggleOffline}
+          disabled={isWorkerRunning}
+          title={isCollectionOffline ? t('button_set_offline') : t('button_set_online')}
+        >
+          <Pin size={24} />
+        </Toggle>
+      </div>
+      {/* <Dialog open={analysisDialogOpen} onOpenChange={setAnalysisDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('title_generate_data')}</DialogTitle>
             <DialogDescription>{t('description_select_model')}</DialogDescription>
           </DialogHeader>
-          <SelectModelForm close={close} />
+          <SelectModelForm close={closeAnalysisDialog} collectionId={collectionId} />
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
-};
+});
 
 export default CollectionToolbar;

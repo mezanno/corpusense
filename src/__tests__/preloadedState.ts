@@ -1,4 +1,3 @@
-import { Annotation } from '@/data/models/Annotation';
 import { authInitialState } from '@/state/reducers/auth';
 import { eventsInitialState } from '@/state/reducers/events';
 import { manifestInitialState } from '@/state/reducers/manifests';
@@ -8,20 +7,9 @@ import { RootState } from '@/state/store';
 
 const defaultPreloadedState: RootState = {
   manifests: manifestInitialState,
-  canvases: {
-    values: {},
-  },
   collections: {
     values: [],
     openedCollections: [],
-  },
-  selection: {
-    canvases: [],
-    indexStart: -1,
-    indexEnd: -1,
-  },
-  storedItems: {
-    items: [],
   },
   tags: {
     values: [],
@@ -35,8 +23,6 @@ const defaultPreloadedState: RootState = {
   annotations: {
     values: [],
     isLoading: false,
-    deleted: {} as Annotation,
-    updated: {} as Annotation,
   },
   workers: workerInitialState,
   models: modelsInitialState,

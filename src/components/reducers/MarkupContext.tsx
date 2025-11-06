@@ -1,8 +1,8 @@
 import { Annotation, getAnnotationText } from '@/data/models/Annotation';
-import { DataField } from '@/data/models/DataModel';
+import { DataField, DataModel } from '@/data/models/DataModel';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { useAppSelector } from '@/hooks/hooks';
-import { getEntities } from '@/state/selectors/namedEntity';
+import { selectEntities } from '@/state/selectors/namedEntity';
 import { IRect } from 'konva/lib/types';
 import { createContext, useContext, useEffect, useReducer } from 'react';
 
@@ -11,6 +11,7 @@ export const MARKUP_ACTIONS = {
   SET_SELECTED: 'SET_SELECTED',
   SET_FIELD_TO_SELECTED: 'SET_FIELD_TO_SELECTED',
   SET_TEXT: 'SET_TEXT',
+  SET_MODEL: 'SET_MODEL',
 } as const;
 
 export type MarkupAction =
@@ -20,7 +21,8 @@ export type MarkupAction =
   | {
       type: typeof MARKUP_ACTIONS.SET_TEXT;
       payload: { annotations: Annotation[]; entities: NamedEntity[] };
-    };
+    }
+  | { type: typeof MARKUP_ACTIONS.SET_MODEL; payload: DataModel | undefined };
 
 export type WordRect = {
   line: number;
@@ -39,59 +41,57 @@ type MarkupState = {
     width: number;
     height: number;
   };
+  model: DataModel | undefined;
 };
 
 const computeRects = (index: number, rect: IRect, wordRects: WordRect[]) => {
+  const updatedRects = [...wordRects];
   // Update the rect of the current word
   if (index > 0) {
-    if (wordRects[index].line === wordRects[index - 1].line) {
-      wordRects[index].rect = {
+    if (updatedRects[index].line === updatedRects[index - 1].line) {
+      updatedRects[index].rect = {
         ...rect,
-        x: wordRects[index - 1].rect.x + wordRects[index - 1].rect.width,
-        y: wordRects[index - 1].rect.y,
+        x: updatedRects[index - 1].rect.x + updatedRects[index - 1].rect.width,
+        y: updatedRects[index - 1].rect.y,
       };
     } else {
-      wordRects[index].rect = {
+      updatedRects[index].rect = {
         ...rect,
         x: 2,
-        y: wordRects[index - 1].rect.y + wordRects[index - 1].rect.height + 3, //+3 = margin between lines
+        y: updatedRects[index - 1].rect.y + updatedRects[index - 1].rect.height + 3, //+3 = margin between lines
       };
     }
   } else {
-    wordRects[index].rect = rect;
+    updatedRects[index].rect = rect;
   }
   // Update the rects of the words after the current one
-  if (index + 1 < wordRects.length) {
-    for (let i = index + 1; i < wordRects.length; i++) {
-      if (wordRects[i - 1].line === wordRects[i].line) {
-        wordRects[i].rect = {
-          ...wordRects[i].rect,
-          x: wordRects[i - 1].rect.x + wordRects[i - 1].rect.width,
-          y: wordRects[i - 1].rect.y,
+  if (index + 1 < updatedRects.length) {
+    for (let i = index + 1; i < updatedRects.length; i++) {
+      if (updatedRects[i - 1].line === updatedRects[i].line) {
+        updatedRects[i].rect = {
+          ...updatedRects[i].rect,
+          x: updatedRects[i - 1].rect.x + updatedRects[i - 1].rect.width,
+          y: updatedRects[i - 1].rect.y,
         };
       } else {
-        wordRects[i].rect = {
-          ...wordRects[i].rect,
+        updatedRects[i].rect = {
+          ...updatedRects[i].rect,
           x: 0,
-          y: wordRects[i - 1].rect.y + wordRects[i - 1].rect.height,
+          y: updatedRects[i - 1].rect.y + updatedRects[i - 1].rect.height,
         };
       }
     }
   }
 
-  return wordRects;
+  return updatedRects;
 };
 
-// console.log('Word Rect:', wordRect);
-
-const initState = (annotations: Annotation[], entities: NamedEntity[]) => {
+const buildWordRects = (annotations: Annotation[], entities: NamedEntity[]) => {
   let rects: WordRect[] = [];
   for (let indexLine = 0; indexLine < annotations.length; indexLine++) {
     const annotationId = annotations[indexLine].id;
     const line = getAnnotationText(annotations[indexLine]);
     const words = line.split(' ');
-    // const dataFieldId =
-    // console.log('Entity for word:', dataFieldId);
     const lineRects = words.map((word, index) => ({
       line: indexLine,
       rect: { x: 0, y: 0, width: 0, height: 0 },
@@ -104,21 +104,41 @@ const initState = (annotations: Annotation[], entities: NamedEntity[]) => {
     }));
     rects = rects.concat(lineRects);
   }
+  return rects;
+};
+
+const initState = (
+  annotations: Annotation[],
+  entities: NamedEntity[],
+  model?: DataModel,
+): MarkupState => {
   return {
     text: annotations,
-    wordRects: rects,
+    wordRects: buildWordRects(annotations, entities),
     selected: [],
     stage: {
       width: 2000,
       height: 2000,
     },
+    model: model,
   };
 };
 
 const reducer = (state: MarkupState, action: MarkupAction) => {
   switch (action.type) {
+    case MARKUP_ACTIONS.SET_MODEL: {
+      return {
+        ...state,
+        model: action.payload,
+      };
+    }
     case MARKUP_ACTIONS.SET_TEXT: {
-      return initState(action.payload.annotations, action.payload.entities);
+      const { annotations, entities } = action.payload;
+      return {
+        ...state,
+        text: annotations,
+        wordRects: buildWordRects(annotations, entities),
+      };
     }
     case MARKUP_ACTIONS.SET_RECT: {
       const { index, rect } = action.payload;
@@ -176,15 +196,22 @@ const MarkupContext = createContext<MarkupContextType | undefined>(undefined);
 export const MarkupProvider = ({
   children,
   text,
+  model,
 }: {
   children: React.ReactNode;
   text: Annotation[];
+  model?: DataModel;
 }) => {
-  const entities = useAppSelector(getEntities);
-  const [state, dispatch] = useReducer(reducer, initState(text, entities));
+  const entities = useAppSelector(selectEntities);
+  const [state, dispatch] = useReducer(reducer, initState(text, entities, model));
+
   useEffect(() => {
     dispatch({ type: MARKUP_ACTIONS.SET_TEXT, payload: { annotations: text, entities } });
-  }, [text]);
+  }, [text, entities]);
+
+  useEffect(() => {
+    dispatch({ type: MARKUP_ACTIONS.SET_MODEL, payload: model });
+  }, [model?.id]);
 
   return <MarkupContext.Provider value={{ state, dispatch }}>{children}</MarkupContext.Provider>;
 };

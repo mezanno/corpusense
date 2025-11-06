@@ -1,6 +1,7 @@
-import { Event, EventType } from '@/data/models/Event';
 import { History } from '@/data/models/History';
 import { ItemMetadataAttribute } from '@/data/models/Metadata';
+import { StoredManifestDetails } from '@/data/models/StoredManifest';
+import { extractManifestDetails } from '@/data/utils/manifest';
 import { Manifest } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -11,28 +12,28 @@ export interface ManifestState {
     metadata: ItemMetadataAttribute[];
   } | null;
   isLoaded: boolean;
-  history: History[];
-  manifestOpenEvent: Event | undefined; // Optional event to track when the manifest is opened
+  historyDetails: StoredManifestDetails[];
+  error: string | null;
 }
 
 export const manifestInitialState: ManifestState = {
   isLoading: false,
   loadedData: null,
-  history: [],
+  historyDetails: [],
   isLoaded: false,
-  manifestOpenEvent: undefined, // Initialize the manifestOpenEvent to false
+  error: null,
 };
 
-const loadingState: Omit<ManifestState, 'history'> = {
+const loadingState: Omit<ManifestState, 'historyDetails'> = {
   isLoading: true,
   loadedData: null,
   isLoaded: false,
-  manifestOpenEvent: undefined, // Reset the manifestOpenEvent when loading
+  error: null,
 };
 
 const applyLoadingState = (state: ManifestState): ManifestState => ({
+  ...state,
   ...loadingState,
-  history: state.history,
 });
 
 export interface SaveMetadataPayload {
@@ -47,10 +48,7 @@ export const manifestsSlice = createSlice({
     fecthManifestRequest: (state, _action: PayloadAction<string>) => applyLoadingState(state),
     fetchManifestError: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
-      state.manifestOpenEvent = {
-        message: action.payload || 'Error loading manifest',
-        type: EventType.ERROR,
-      }; // Set the manifestOpenEvent to an error when loading fails
+      state.error = action.payload || 'Error loading manifest';
     },
     fetchManifestSuccess: (
       state,
@@ -59,27 +57,28 @@ export const manifestsSlice = createSlice({
       state.isLoading = false;
       state.isLoaded = true;
       state.loadedData = action.payload;
-      state.manifestOpenEvent = { message: 'OK', type: EventType.INFO }; // Set the manifestOpenEvent when a manifest is successfully loaded
+
+      const details = extractManifestDetails(action.payload.content);
+      state.historyDetails = state.historyDetails.filter(
+        (item) => item.id !== action.payload.content.id,
+      );
+      state.historyDetails.unshift({ id: action.payload.content.id, ...details });
     },
-    updateHistorySuccess: (state, action: PayloadAction<History>) => {
-      //add the manifest id to the history and remove the duplicates
-      state.history = state.history.filter((item) => item.url !== action.payload.url);
-      state.history.unshift(action.payload);
-    },
-    setHistory: (state, action: PayloadAction<History[]>) => {
-      state.history = action.payload;
+    setHistory: (
+      state,
+      action: PayloadAction<{ history: History[]; manifestDetails: StoredManifestDetails[] }>,
+    ) => {
+      state.historyDetails = action.payload.manifestDetails;
     },
     removeFromHistoryRequest: (_state, _action: PayloadAction<string>) => {},
     removeFromHistorySuccess: (state, action: PayloadAction<string>) => {
-      state.history = state.history.filter((item) => item.url !== action.payload);
+      //action.payload is the manifest id to remove
+      state.historyDetails = state.historyDetails.filter((item) => item.id !== action.payload);
     },
     saveMetadataRequest: (_state, _action: PayloadAction<SaveMetadataPayload>) => {},
     saveMetadataSuccess: (state, action: PayloadAction<SaveMetadataPayload>) => {
       if (state.loadedData === null) return;
       state.loadedData.metadata = action.payload.metadata;
-    },
-    resetManifestOpenEvent: (state) => {
-      state.manifestOpenEvent = undefined; // Reset the manifestOpenEvent
     },
   },
 });
@@ -91,9 +90,7 @@ export const {
   setHistory,
   removeFromHistoryRequest,
   removeFromHistorySuccess,
-  updateHistorySuccess,
   saveMetadataRequest,
   saveMetadataSuccess,
-  resetManifestOpenEvent,
 } = manifestsSlice.actions;
 export default manifestsSlice.reducer;

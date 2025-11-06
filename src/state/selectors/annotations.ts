@@ -3,36 +3,23 @@ import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
 const selectAnnotations = (state: RootState) => state.annotations.values ?? [];
-const selectCanvasId = (_: RootState, canvasId: string) => canvasId;
-const selectCollectionId = (_: RootState, _canvasId: string, collectionId: string) => collectionId;
-const selectAnnotationType = (
-  _: RootState,
-  _canvasId: string,
-  _collectionId: string,
-  annotationType: ElementType,
-) => annotationType;
 
-const getAnnotations = createSelector(
-  [selectAnnotations, selectCanvasId, selectCollectionId],
-  (annotations, canvasId, collectionId): Annotation[] => {
+const selectAnnotationsByType = createSelector(
+  [selectAnnotations, (_: RootState, annotationType: ElementType) => annotationType],
+  (annotations, annotationType): Annotation[] => {
     return annotations
-      .filter((a) => a.canvasId === canvasId && a.collectionId === collectionId)
+      .filter((a) => getAnnotationType(a) === annotationType)
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   },
 );
 
-const getAnnotationsByType = createSelector(
-  [selectAnnotations, selectCanvasId, selectCollectionId, selectAnnotationType],
-  (annotations, canvasId, collectionId, annotationType): Annotation[] => {
-    return annotations
-      .filter(
-        (a) =>
-          a.canvasId === canvasId &&
-          a.collectionId === collectionId &&
-          getAnnotationType(a) === annotationType,
-      )
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  },
-);
+const selectCurrentScope = (state: RootState) => state.annotations.currentScope;
 
-export { getAnnotations, getAnnotationsByType };
+const selectLastOrderByType = createSelector([selectAnnotationsByType], (annotations): number => {
+  if (annotations.length === 0) {
+    return 1;
+  }
+  return annotations[annotations.length - 1].order ?? 1;
+});
+
+export { selectAnnotations, selectAnnotationsByType, selectCurrentScope, selectLastOrderByType };

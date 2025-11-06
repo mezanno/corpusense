@@ -1,13 +1,13 @@
 import { Annotation } from '@/data/models/Annotation';
 import { useAppSelector } from '@/hooks/hooks';
-import { getEntitiesByAnnotationId } from '@/state/selectors/namedEntity';
+import { selectEntitiesByAnnotationId } from '@/state/selectors/namedEntity';
 import { useTranslation } from 'react-i18next';
 import EntityViewer from './EntityViewer';
 
 const Entities = ({ annotation }: { annotation: Annotation }) => {
   const { t } = useTranslation();
   const entities = useAppSelector((state) =>
-    annotation !== null ? getEntitiesByAnnotationId(state, annotation.id) : [],
+    annotation !== null ? selectEntitiesByAnnotationId(state, annotation.id) : [],
   );
 
   if (entities.length === 0) {

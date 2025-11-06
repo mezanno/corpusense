@@ -1,8 +1,7 @@
 import CanvasViewer from '@/components/CanvasViewer';
-import CollectionMetadataForm from '@/components/CollectionMetadataForm';
 import CollectionToolbar from '@/components/CollectionToolbar';
+import CollectionMetadataForm from '@/components/forms/CollectionMetadataForm';
 import GridThumb from '@/components/GridThumb';
-import ModelButtons from '@/components/textviewer/ModelButtons';
 import TextViewer from '@/components/textviewer/TextViewer';
 import {
   Accordion,
@@ -12,79 +11,115 @@ import {
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collection } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { reset } from '@/state/reducers/canvas';
-import { addCollectionToHistoryRequest } from '@/state/reducers/collections';
-import { GridStack } from 'gridstack';
+import { fetchAnnotationsRequest } from '@/state/reducers/annotations';
+import { loadCollectionRequest } from '@/state/reducers/collections';
+import { loadEntitiesRequest } from '@/state/reducers/namedEntities';
+import { selectCurrentCollection, selectLoadedCanvasById } from '@/state/selectors/collections';
+import { Canvas } from '@iiif/presentation-3';
 import 'gridstack/dist/gridstack.min.css';
-import { createRef, useEffect, useRef, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { FixedSizeGrid as Grid } from 'react-window';
 
-const CANVASVIEWER_NAME = 'collection-inspector';
+interface GridCellProps {
+  columnIndex: number;
+  rowIndex: number;
+  style: React.CSSProperties;
+  data: {
+    collection: Collection;
+    width: number;
+    height: number;
+    colCount: number;
+    canvasToDisplay: Canvas | null;
+    setCanvasToDisplay: (canvas: Canvas | null) => void;
+  };
+}
 
-const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) => {
-  const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
-  const activeCollection = useAppSelector((state) =>
-    state.collections.values.find((elt) => elt.id === collectionId),
-  );
-
-  const gridRef = useRef(null);
-  const refs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
-  const [activeTab, setActiveTab] = useState('document');
-
-  if (activeCollection?.content) {
-    if (Object.keys(refs.current).length !== activeCollection.content.length) {
-      activeCollection.content.forEach(({ canvasId }) => {
-        if (!(canvasId in refs.current)) {
-          refs.current[canvasId] = createRef();
-        }
-      });
-    }
+const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => {
+  const index = rowIndex * data.colCount + columnIndex;
+  //we return an empty div if the index is out of bounds
+  //this is to avoid the error "index out of bounds" when using react-window
+  if (index >= data.collection.content.length) {
+    return <div style={style} />;
   }
 
-  useEffect(() => {
-    appDispatch(reset('collection-inspector')); // Reset the canvas state when the component mounts
-  }, []);
+  return (
+    <div
+      className={`${
+        columnIndex % 2
+          ? rowIndex % 2 === 0
+            ? 'GridItemOdd'
+            : 'GridItemEven'
+          : rowIndex % 2
+            ? 'GridItemOdd'
+            : 'GridItemEven'
+      }`}
+      style={style}
+    >
+      <GridThumb
+        canvasId={data.collection.content[index].canvasId}
+        collectionId={data.collection.id ?? ''}
+        thumbWidth={data.width}
+        thumbHeight={data.height}
+        setCanvasToDisplay={data.setCanvasToDisplay}
+        canvasToDisplay={data.canvasToDisplay}
+      />
+    </div>
+  );
+};
+
+const CollectionInspectorContent = ({
+  collectionId,
+  canvas,
+}: {
+  collectionId: string;
+  canvas: Canvas | null;
+}) => {
+  const { t } = useTranslation();
+  const appDispatch = useAppDispatch();
+  const currentCollection = useAppSelector(selectCurrentCollection);
+  const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(canvas);
+  const [activeTab, setActiveTab] = useState('document');
+  const [colCount, setColCount] = useState(6);
 
   useEffect(() => {
-    if (activeCollection?.content && gridRef.current !== null) {
-      const grid = GridStack.init(
-        { float: false, disableResize: true, disableDrag: true },
-        gridRef.current,
-      );
-      grid.on('change', (_event, _items) => {
-        grid.compact();
-      });
+    setCanvasToDisplay(canvas);
+  }, [collectionId, canvas]);
 
-      grid.batchUpdate(); //afin d'éviter les rendus tant qu'on n'a pas terminé les makeWidgets
-      grid.removeAll();
-      activeCollection.content.forEach(({ canvasId }, index) => {
-        const item = refs.current[canvasId].current;
-        const x = index % 12;
-        const y = Math.floor(index / 12);
-        if (item !== null) {
-          item.setAttribute('data-gs-x', x.toString());
-          item.setAttribute('data-gs-y', y.toString());
-          item.setAttribute('data-gs-width', '1');
-          item.setAttribute('data-gs-height', '1');
-          grid.makeWidget(item);
-        }
-      });
-      grid.batchUpdate(false); //on termine les makeWidgets
+  useEffect(() => {
+    if (canvasToDisplay !== null) {
+      appDispatch(fetchAnnotationsRequest({ canvasId: canvasToDisplay.id, collectionId }));
+      appDispatch(loadEntitiesRequest({ canvasId: canvasToDisplay.id, collectionId }));
     }
-  }, [activeCollection]);
+  }, [canvasToDisplay]);
+
+  const handleOnResize = (size: { height: number; width: number }) => {
+    if (size.width < 200) {
+      setColCount(3);
+    } else if (size.width < 800) {
+      setColCount(4);
+    } else if (size.width < 1000) {
+      setColCount(5);
+    } else if (size.width < 1200) {
+      setColCount(6);
+    } else {
+      setColCount(7);
+    }
+  };
 
   return (
     <section className='h-full max-h-full w-full max-w-full'>
       <ResizablePanelGroup direction='horizontal'>
-        <ResizablePanel className='mr-1 flex' minSize={30}>
-          {activeCollection ? (
+        <ResizablePanel className='mr-1 flex min-h-0 min-w-0' minSize={30}>
+          {currentCollection ? (
             <div className='flex h-full max-h-full w-full max-w-full flex-col gap-2'>
               <Accordion
                 asChild
-                className='panel'
+                className='panel flex-col'
                 type='single'
                 collapsible
                 defaultValue='metadata' //this open the metadata by default
@@ -93,28 +128,47 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
                   <AccordionTrigger className='mx-2'>
                     <h2 className='flex gap-2 text-lg'>
                       {t('title_metadata_collection')}
-                      <span className='font-bold italic'>{activeCollection.name}</span>
-                      <span className='font-thin'>({activeCollection.id})</span>
+                      <span className='font-bold italic'>{currentCollection.name}</span>
+                      <span className='font-thin'>({currentCollection.id})</span>
                     </h2>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <CollectionMetadataForm collection={activeCollection} />
+                    <CollectionMetadataForm collection={currentCollection} />
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-              <CollectionToolbar collectionId={collectionId} />
+              {currentCollection.content.length > 0 && (
+                <CollectionToolbar collectionId={collectionId} />
+              )}
               <div className='panel h-full w-full overflow-hidden'>
-                <div className='flex h-full w-fit flex-wrap content-start items-start gap-2 overflow-y-auto'>
-                  {activeCollection.content.map((item) => (
-                    <div key={item.canvasId} ref={refs.current[item.canvasId]} className='flex p-1'>
-                      <GridThumb
-                        canvasId={item.canvasId}
-                        collectionId={activeCollection.id as string}
-                        canvasViewerName={CANVASVIEWER_NAME}
-                      />
-                    </div>
-                  ))}
-                </div>
+                {currentCollection.content.length > 0 ? (
+                  <AutoSizer role='list' onResize={handleOnResize}>
+                    {({ height, width }) => (
+                      <Grid
+                        columnCount={colCount}
+                        columnWidth={width / colCount}
+                        height={height}
+                        rowCount={Math.ceil(currentCollection.content.length / colCount)}
+                        rowHeight={175}
+                        width={width}
+                        itemData={{
+                          collection: currentCollection,
+                          width: width / colCount - 20,
+                          height: 165,
+                          setCanvasToDisplay,
+                          canvasToDisplay,
+                          colCount: colCount,
+                        }}
+                      >
+                        {GridCell}
+                      </Grid>
+                    )}
+                  </AutoSizer>
+                ) : (
+                  <div className='flex h-full w-full items-center justify-center text-muted-foreground'>
+                    {t('info_empty_collection')}
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -123,28 +177,33 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
             </div>
           )}
         </ResizablePanel>
-        <ResizableHandle withHandle />
+        <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
         <ResizablePanel className='ml-1 flex-1 overflow-hidden' minSize={30}>
-          <Tabs
-            defaultValue='document'
-            className='panel h-full w-full'
-            value={activeTab}
-            onValueChange={setActiveTab}
-          >
-            <div className='flex w-full justify-between'>
-              <TabsList>
-                <TabsTrigger value='document'>Vue document</TabsTrigger>
-                <TabsTrigger value='text'>Vue texte</TabsTrigger>
-              </TabsList>
-              {activeTab === 'text' && <ModelButtons />}
+          {canvasToDisplay === null ? (
+            <div className='panel flex h-full w-full items-center justify-center text-2xl text-red-500'>
+              {t('info_no_canvas_selected')}
             </div>
-            <TabsContent value='document'>
-              <CanvasViewer name={CANVASVIEWER_NAME} colllectionId={collectionId} />
-            </TabsContent>
-            <TabsContent value='text'>
-              <TextViewer name={CANVASVIEWER_NAME} collectionId={collectionId} />
-            </TabsContent>
-          </Tabs>
+          ) : (
+            <Tabs
+              defaultValue='document'
+              className='panel h-full w-full'
+              value={activeTab}
+              onValueChange={setActiveTab}
+            >
+              <div className='flex w-full justify-between'>
+                <TabsList>
+                  <TabsTrigger value='document'>Vue document</TabsTrigger>
+                  <TabsTrigger value='text'>Vue texte</TabsTrigger>
+                </TabsList>
+              </div>
+              <TabsContent value='document'>
+                <CanvasViewer colllectionId={collectionId} canvas={canvasToDisplay} />
+              </TabsContent>
+              <TabsContent value='text'>
+                <TextViewer collectionId={collectionId} canvas={canvasToDisplay} />
+              </TabsContent>
+            </Tabs>
+          )}
         </ResizablePanel>
       </ResizablePanelGroup>
     </section>
@@ -153,19 +212,36 @@ const CollectionInspectorContent = ({ collectionId }: { collectionId: string }) 
 
 const CollectionInspectorPage = () => {
   const { t } = useTranslation();
+  const [canvasId, setCanvasId] = useState<string | null>(null);
   const { collectionId } = useParams();
+  const [searchParams] = useSearchParams();
+  const canvas = useAppSelector((state) =>
+    canvasId !== null ? selectLoadedCanvasById(state, canvasId) : null,
+  );
+  console.log('searchParams: ', searchParams);
+
   const dispatch = useAppDispatch();
+  console.log('CollectionInspectorPage collectionId: ', collectionId);
+  console.log('CollectionInspectorPage - Canvas ', canvas);
 
   useEffect(() => {
+    console.log('CollectionInspectorPage collectionId - useEffect: ', collectionId);
     if (collectionId !== undefined) {
-      dispatch(addCollectionToHistoryRequest(collectionId));
+      dispatch(loadCollectionRequest(collectionId));
     }
   }, [collectionId]);
+
+  useEffect(() => {
+    console.log('searchParams: ', searchParams.get('canvas'));
+    if (searchParams.get('canvas') !== null) {
+      setCanvasId(searchParams.get('canvas'));
+    }
+  }, [searchParams]);
 
   return collectionId === undefined ? (
     <div className='flex justify-center'>{t('error_id_collection_invalid')}</div>
   ) : (
-    <CollectionInspectorContent collectionId={collectionId} />
+    <CollectionInspectorContent collectionId={collectionId} canvas={canvas} />
   );
 };
 

@@ -1,19 +1,15 @@
-import { SelectedCanvas } from '../models/SelectedCanvas';
-
 function generateCollectionContent(
   position: number,
-  selection: SelectedCanvas[],
-  collectionId: string,
+  canvasIds: string[],
   manifestId: string,
   existingCanvasIds: string[] = [],
 ) {
-  return selection
-    .map((elt) =>
-      existingCanvasIds.includes(elt.canvas.id)
+  return canvasIds
+    .map((id) =>
+      existingCanvasIds.includes(id)
         ? null
         : {
-            canvasId: elt.canvas.id,
-            collectionId,
+            canvasId: id,
             position: ++position,
             manifestId,
           },

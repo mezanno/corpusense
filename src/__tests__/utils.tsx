@@ -1,4 +1,5 @@
-import { rootReducer, RootState } from '@/state/store';
+import { rootReducer } from '@/state';
+import { RootState } from '@/state/store';
 import { configureStore } from '@reduxjs/toolkit';
 import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
@@ -28,6 +29,6 @@ export function createMockStore(preloadedState: Partial<RootState> = {}) {
     reducer: rootReducer,
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({ thunk: false }).concat(sagaMiddleware),
-    preloadedState,
+    preloadedState: preloadedState as unknown as RootState,
   });
 }

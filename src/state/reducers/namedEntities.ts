@@ -1,6 +1,7 @@
 import { WordRect } from '@/components/reducers/MarkupContext';
 import { DataField } from '@/data/models/DataModel';
 import { NamedEntity } from '@/data/models/NamedEntity';
+import { CanvasScope } from '@/data/models/Scope';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface AddEntityPayload {
@@ -18,7 +19,7 @@ export const entitySlice = createSlice({
       newState.push(action.payload);
       return newState;
     },
-    loadEntitiesRequest: (_state, _action: PayloadAction<string>) => {},
+    loadEntitiesRequest: (_state, _action: PayloadAction<CanvasScope>) => {},
     loadEntitiesSuccess: (_state, action: PayloadAction<NamedEntity[]>) => {
       return action.payload;
     },

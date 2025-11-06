@@ -1,8 +1,6 @@
-import { SelectedCanvas } from '@/data/models/SelectedCanvas';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { setCanvasFromComponent } from '@/state/reducers/canvas';
-import { setSelection } from '@/state/reducers/selection';
-import { getCanvases, getManifestURL } from '@/state/selectors/manifests';
+import { useAppSelector } from '@/hooks/hooks';
+import { useCanvasSelection } from '@/hooks/useCanvasSelection';
+import { selectCanvases, selectManifestURL } from '@/state/selectors/manifests';
 import { Canvas } from '@iiif/presentation-3';
 import { FC, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,12 +16,16 @@ interface GridCellProps {
   data: {
     canvases: Canvas[];
     manifestId: string;
-    handleCardClick: (target: EventTarget, canvas: Canvas) => void;
+    width: number;
+    height: number;
+    colCount: number;
+    canvasToDisplay: Canvas | undefined;
+    setCanvasToDisplay: (canvas: Canvas) => void;
   };
 }
 
 const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => {
-  const index = rowIndex * 4 + columnIndex;
+  const index = rowIndex * data.colCount + columnIndex;
   //we return an empty div if the index is out of bounds
   //this is to avoid the error "index out of bounds" when using react-window
   if (index >= data.canvases.length) {
@@ -47,68 +49,49 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
     >
       <CanvasCard
         canvas={canvas}
-        onClick={data.handleCardClick}
         index={index}
         manifestId={data.manifestId}
+        thumbWidth={data.width}
+        thumbHeight={data.height}
+        setCanvasToDisplay={data.setCanvasToDisplay}
+        canvasToDisplay={data.canvasToDisplay}
       />
     </div>
   );
 };
 
-const CanvasGallery = ({ canvasViewerName }: { canvasViewerName: string }) => {
-  const dispatch = useAppDispatch();
-  const canvases = useAppSelector(getCanvases);
-  const manifestId = useAppSelector(getManifestURL);
-  const containerRef = useRef(null);
-  const [_focused, setFocused] = useState<EventTarget | null>(null);
+const CanvasGallery = ({
+  canvasToDisplay,
+  setCanvasToDisplay,
+}: {
+  canvasToDisplay: Canvas | undefined;
+  setCanvasToDisplay: (canvas: Canvas) => void;
+}) => {
   const { t } = useTranslation();
+  const canvases = useAppSelector(selectCanvases);
+  const manifestId = useAppSelector(selectManifestURL);
+  const { setSelection, getSelectionCount } = useCanvasSelection();
 
-  const handleCardClick = (target: EventTarget, canvas: Canvas) => {
-    setFocused((prev) => {
-      if (prev !== null) {
-        (prev as HTMLElement).classList.remove('border-red-500');
-        (prev as HTMLElement).classList.remove('border-2');
-      }
-      (target as HTMLElement).classList.add('border-red-500');
-      (target as HTMLElement).classList.add('border-2');
-      return target;
-    });
+  const [colCount, setColCount] = useState(5);
 
-    //TODO! Vérifications à faire
-    if (canvas != null) {
-      dispatch(
-        setCanvasFromComponent({
-          componentId: canvasViewerName,
-          canvas,
-        }),
-      );
-    }
-  };
+  const containerRef = useRef(null);
 
   const handleSelect = (e: OnSelect) => {
-    const selection: SelectedCanvas[] = [];
-    let start = Number.MAX_VALUE;
-    let end = -1;
-    e.selected.forEach((el) => {
-      if (el?.dataset?.index !== undefined) {
-        selection.push({ index: +el.dataset.index, canvas: canvases[+el.dataset.index] });
-        if (+el.dataset.index < start) {
-          start = +el.dataset.index;
-        }
-        if (+el.dataset.index > end) {
-          end = +el.dataset.index;
-        }
-      }
-    });
-    dispatch(setSelection({ selection, start, end }));
+    setSelection(e.selected.map((el) => el.dataset.index).map(Number));
   };
+
+  const handleOnResize = (size: { height: number; width: number }) => {
+    setColCount(Math.max(2, Math.floor(size.width / 150)));
+  };
+
+  const selectionCount = getSelectionCount();
 
   return (
     <section className='h-full w-full items-center justify-center p-4' aria-label='canvas gallery'>
       {canvases.length == 0 ? (
         <div role='alert'>{t('info_empty_manifest')}</div>
       ) : (
-        <>
+        <div className='relative h-full w-full overflow-hidden'>
           <Selecto
             container={containerRef.current}
             selectableTargets={['.selectable-item']}
@@ -118,22 +101,37 @@ const CanvasGallery = ({ canvasViewerName }: { canvasViewerName: string }) => {
             hitRate={0}
             onSelect={handleSelect}
           />
-          <AutoSizer ref={containerRef} role='list'>
+          <AutoSizer ref={containerRef} role='list' onResize={handleOnResize}>
             {({ height, width }) => (
               <Grid
-                columnCount={4}
-                columnWidth={width / 4}
+                columnCount={colCount}
+                columnWidth={width / colCount}
                 height={height}
-                rowCount={Math.ceil(canvases.length / 4)}
-                rowHeight={150}
+                rowCount={Math.ceil(canvases.length / colCount)}
+                rowHeight={175}
                 width={width}
-                itemData={{ canvases, manifestId, handleCardClick }}
+                itemData={{
+                  canvases,
+                  manifestId,
+                  canvasToDisplay,
+                  setCanvasToDisplay,
+                  width: width / colCount - 20,
+                  height: 165,
+                  colCount: colCount,
+                }}
               >
                 {GridCell}
               </Grid>
             )}
           </AutoSizer>
-        </>
+          {selectionCount > 0 && (
+            <div className='absolute flex w-full justify-center'>
+              <div className='mt-2 rounded-xl border bg-white/85 px-2 font-bold italic'>
+                {t('info_selection_count', { count: selectionCount })}
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </section>
   );

@@ -3,13 +3,17 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/utils/config';
 import { generateManifest } from '@/utils/manifest';
 import { Manifest } from '@iiif/presentation-3';
-import { Archive } from 'lucide-react';
+import { Archive, Trash } from 'lucide-react';
 // import imageBlobReduce from 'image-blob-reduce';
+import { getImage } from '@/data/utils/canvas';
+import { useAppSelector } from '@/hooks/hooks';
 import { useUserManifests } from '@/hooks/useUserManifests';
+import { selectAuthStatus } from '@/state/selectors/auth';
 import * as pdfjsLib from 'pdfjs-dist';
 import { useState } from 'react';
 import Fireworks from 'react-canvas-confetti/dist/presets/fireworks';
 import { useTranslation } from 'react-i18next';
+import { SyncLoader } from 'react-spinners';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -105,8 +109,24 @@ async function uploadManifestToSupabase(folder: string, manifest: Manifest) {
 const StoragePage = () => {
   const { t } = useTranslation();
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [documentName, setDocumentName] = useState<string>('');
   const [manifestUrl, setManifestUrl] = useState<string | null>(null);
   const { existingManifests, loading, error } = useUserManifests();
+  const [uploading, setUploading] = useState(false);
+  const isConnected = useAppSelector(selectAuthStatus) === 'authenticated';
+
+  if (!isConnected) {
+    return (
+      <div className='panel h-full w-full flex-col space-y-2'>
+        <h1 className='flex items-center text-2xl font-bold'>
+          <Archive className='mr-2' /> {t('page_title_storage')}
+        </h1>
+        <p>{t('info_not_connected_description')}</p>
+      </div>
+    );
+  }
+
+  const hrefPath = `${window.location.origin}${import.meta.env.VITE_BASE_PATH ?? ''}/manifest?manifestId=`;
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -121,32 +141,76 @@ const StoragePage = () => {
       return;
     }
 
+    if (documentName.trim() === '') {
+      alert('Veuillez entrer un nom pour le document.');
+      return;
+    }
+
     const loadPdf = async () => {
       const images = await renderPdfToImages(pdfFile);
-      const filename_prefix = pdfFile.name.substring(0, pdfFile.name.length - 4); // Retirer l'extension .pdf
       for (let i = 0; i < images.length; i++) {
         const filename = `${i + 1}`;
-        void uploadImageToSupabase(filename_prefix, images[i].data, filename);
+        void uploadImageToSupabase(documentName, images[i].data, filename);
         images[i].fullImageUrl =
-          `${CANTALOUPE_URL}${filename_prefix}_${filename}.png/full/max/0/default.png`;
+          `${CANTALOUPE_URL}${documentName}_${filename}.png/full/max/0/default.png`;
         images[i].thumbImageUrl =
-          `${CANTALOUPE_URL}${filename_prefix}_${filename}.png/full/,120/0/default.png`;
+          `${CANTALOUPE_URL}${documentName}_${filename}.png/full/,120/0/default.png`;
       }
       const newManifest = generateManifest(
+        documentName.trim(),
         images.map((img) => ({
           id: img.fullImageUrl ?? '',
           thumb: img.thumbImageUrl ?? '',
           width: img.width,
           height: img.height,
         })),
-        filename_prefix, // Ajouter le préfixe de nom de fichier comme dossier),
+        documentName, // Ajouter le préfixe de nom de fichier comme dossier),
       );
-      void uploadManifestToSupabase(filename_prefix, newManifest);
+      void uploadManifestToSupabase(documentName, newManifest);
       console.log('Generated Manifest: ', newManifest);
 
       setManifestUrl(newManifest.id);
     };
+    setUploading(true);
     void loadPdf();
+    setUploading(false);
+  };
+
+  const handleDelete = (url: string) => {
+    async function deleteManifest() {
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.error('Erreur lors de la récupération du manifeste :', response.statusText);
+        return;
+      }
+      try {
+        const manifest: Manifest = (await response.json()) as Manifest;
+        const canvasList = manifest.items;
+        const filenames: string[] = [];
+        for (const canvas of canvasList) {
+          const imageService = getImage(canvas).service?.[0];
+          if (imageService && 'id' in imageService) {
+            const imageName = imageService.id?.toString().split('/').pop();
+            if (imageName !== undefined) {
+              filenames.push(imageName);
+            }
+          }
+        }
+        if (filenames.length > 0) {
+          const { data, error: removeError } = await supabase.storage
+            .from('corpusense')
+            .remove(filenames);
+          if (removeError) {
+            console.warn(removeError);
+          }
+          console.log('Fichiers supprimés :', data);
+        }
+      } catch (err) {
+        console.error('Erreur lors de la conversion en manifeste :', err);
+      }
+    }
+
+    void deleteManifest();
   };
 
   return (
@@ -155,30 +219,60 @@ const StoragePage = () => {
         <Archive className='mr-2' /> {t('page_title_storage')}
       </h1>
       <h2 className='text-lg'>Documents existants</h2>
-      <div className='text-sm text-blue-600'>
+      <div>
         {loading ? (
           <p>Chargement...</p>
         ) : error ? (
           <p>Erreur lors du chargement.</p>
         ) : existingManifests.length > 0 ? (
           existingManifests.map((url, index) => (
-            <div key={index} className='mb-2'>
-              <a href={url}>{url}</a>
+            <div key={index} className='mb-2 flex items-center space-x-2'>
+              <a href={`${hrefPath}${url}`} className='text-blue-600 underline'>
+                {hrefPath}
+                {url}
+              </a>
+              <div className='soft-button bg-red-400 text-white' onClick={() => handleDelete(url)}>
+                <Trash size={16} />
+              </div>
             </div>
           ))
         ) : (
           <p>Aucun document trouvé.</p>
         )}
       </div>
-      <h2 className='text-lg'>Ajouter un document</h2>
-      <Input type='file' accept='application/pdf' onChange={handleFileChange} />
-      <Button onClick={handleLoadPdf}>Upload</Button>
-      {manifestUrl !== null && (
-        <div className='mt-4'>
-          <h2> 🥳 T&apos;es un winner ! Ton document est en ligne : {manifestUrl}</h2>
-          <Fireworks autorun={{ speed: 2, duration: 4 }} />
-        </div>
-      )}
+      <div className='flex flex-col items-center border p-2'>
+        <h2 className='text-lg'>Ajouter un document</h2>
+        <form className='flex w-1/2 flex-col space-y-2'>
+          <Input
+            type='text'
+            required
+            placeholder={t('form_placeholder_document_name')}
+            value={documentName}
+            onChange={(e) => setDocumentName(e.target.value)}
+          />
+          <Input type='file' accept='application/pdf' onChange={handleFileChange} />
+          {!uploading ? (
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleLoadPdf();
+              }}
+              className='w-auto self-center'
+            >
+              Upload
+            </Button>
+          ) : (
+            <SyncLoader />
+          )}
+          {manifestUrl !== null && (
+            <div className='mt-4'>
+              <h2> 🥳 T&apos;es un winner ! Ton document est en ligne : {manifestUrl}</h2>
+              <Fireworks autorun={{ speed: 2, duration: 4 }} />
+            </div>
+          )}
+        </form>
+      </div>
     </div>
   );
 };

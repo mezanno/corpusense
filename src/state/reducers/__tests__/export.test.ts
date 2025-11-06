@@ -1,10 +1,4 @@
-import reducer, {
-  exportMultipleCollectionsRequest,
-  exportRequest,
-  exportSuccess,
-  exportTextOfCanvasRequest,
-  exportTextOfCollectionRequest,
-} from '../export';
+import reducer, { exportTextOfCanvasRequest, exportTextOfCollectionRequest } from '../export';
 
 describe('export reducer', () => {
   const initialState = {
@@ -14,25 +8,6 @@ describe('export reducer', () => {
     lastExportStatus: 'UNKNOWN',
   };
 
-  it('should handle exportRequest', () => {
-    const action = exportRequest('collection1');
-    //@ts-expect-error initialState incompatible
-    const state = reducer(initialState, action);
-
-    expect(state).toEqual(initialState);
-  });
-
-  it('should handle exportSuccess', () => {
-    const exportContent = { key: 'value' };
-    const action = exportSuccess(exportContent);
-    //@ts-expect-error initialState incompatible
-    const state = reducer(initialState, action);
-
-    expect(state.lastExportContent).toEqual(exportContent);
-    expect(state.lastExportDate).toBeInstanceOf(Date);
-    expect(state.lastExportStatus).toBe('OK');
-  });
-
   it('should handle exportError', () => {
     // const errorMessage = 'An error occurred';
     // const action = exportError(errorMessage);
@@ -40,14 +15,6 @@ describe('export reducer', () => {
     // const state = reducer(initialState, action);
     // expect(state.lastExportError).toBe(errorMessage);
     // expect(state.lastExportStatus).toBe('ERROR');
-  });
-
-  it('should handle exportMultipleCollectionsRequest', () => {
-    const action = exportMultipleCollectionsRequest(['collection1', 'collection2']);
-    //@ts-expect-error initialState incompatible
-    const state = reducer(initialState, action);
-
-    expect(state).toEqual(initialState);
   });
 
   it('should handle exportTextOfCollectionRequest', () => {

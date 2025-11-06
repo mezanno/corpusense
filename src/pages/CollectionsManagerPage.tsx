@@ -1,5 +1,4 @@
-import AlertDialogForm from '@/components/AlertDialogForm';
-import NewCollectionForm from '@/components/NewCollectionForm';
+import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,14 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import UploadFileForm from '@/components/UploadFileForm';
-import { Collection } from '@/data/models/Collection';
+import { CollectionDetails } from '@/data/models/Collection';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { removeCollectionRequest } from '@/state/reducers/collections';
-import { exportMultipleCollectionsRequest } from '@/state/reducers/export';
-import { getCollections } from '@/state/selectors/collections';
-import { getTagsByIds } from '@/state/selectors/tags';
+import { selectCollections } from '@/state/selectors/collections';
+import { selectTagsByIds } from '@/state/selectors/tags';
 import { DownloadIcon, FilePlus, Import, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,16 +26,18 @@ const CollectionTableRow = ({
   collection,
   addOrRemoveCollection,
 }: {
-  collection: Collection;
+  collection: CollectionDetails;
   addOrRemoveCollection: (collectionId: string, isAdd: boolean) => void;
 }) => {
   const { t } = useTranslation();
   const navigation = useAppNavigation();
   const dispatch = useAppDispatch();
+  const { openDialog } = useAlertDialogContext();
+
   const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
     (state) => state.export,
   );
-  const tags = useAppSelector((state) => getTagsByIds(state, collection.tags));
+  const tags = useAppSelector((state) => selectTagsByIds(state, collection.tags));
 
   const [downloadLink, setDownloadLink] = useState<string>('');
 
@@ -50,20 +50,19 @@ const CollectionTableRow = ({
   }, [lastExportContent]);
 
   const handleDelete = (id: string) => {
-    dispatch(removeCollectionRequest(id));
+    openDialog({
+      title: t('title_are_you_sure'),
+      description: t('description_delete_collection'),
+      onConfirm: {
+        message: t('btn_yes'),
+        action: () => dispatch(removeCollectionRequest(id)),
+      },
+    });
   };
 
   const handleOnClick = async (id: string) => {
     await navigation.goToCollectionInspector(id);
   };
-
-  // const handleExport = (event: React.MouseEvent<HTMLButtonElement | MouseEvent>, id: string) => {
-  //   console.log(event);
-  //   event.stopPropagation();
-  //   event.preventDefault();
-
-  //   dispatch(exportRequest(id));
-  // };
 
   const handleDownload = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.stopPropagation();
@@ -74,14 +73,14 @@ const CollectionTableRow = ({
   };
 
   return (
-    <TableRow onClick={() => void handleOnClick(collection.id as string)}>
+    <TableRow onClick={() => void handleOnClick(collection.id)}>
       <TableCell>
         <Checkbox
           aria-label={t('aria_label_selection_collection')}
           onClick={(e) => {
             e.stopPropagation();
             addOrRemoveCollection(
-              collection.id as string,
+              collection.id,
               (e.target as HTMLInputElement).dataset['state'] === 'unchecked',
             );
           }}
@@ -90,13 +89,13 @@ const CollectionTableRow = ({
       <TableCell>{collection.name}</TableCell>
       <TableCell>{collection.id}</TableCell>
       <TableCell>
-        {collection.content === undefined || collection.content.length === 0 ? (
+        {collection.contentSize === 0 ? (
           <Badge variant='secondary' className='text-sm'>
             {t('info_empty_collection')}
           </Badge>
         ) : (
           <Badge className='text-md font-bold'>
-            {t('info_number_of_items', { number: collection.content.length })}
+            {t('info_number_of_items', { number: collection.contentSize })}
           </Badge>
         )}
       </TableCell>
@@ -107,24 +106,17 @@ const CollectionTableRow = ({
       </TableCell>
       <TableCell className='space-x-2 align-middle'>
         <Button
+          className='cursor-pointer'
           variant='destructive'
           onClick={(event) => {
             event.stopPropagation();
-            handleDelete(collection.id as string);
+            handleDelete(collection.id);
           }}
           title={t('btn_delete')}
           aria-label={t('btn_delete')}
         >
           <Trash2 />
         </Button>
-        {/* <Button
-          onClick={(e) => handleExport(e, collection.id as string)}
-          aria-label={t('btn_create_export')}
-          title={t('btn_create_export')}
-        >
-          <PenLine aria-label={t('btn_create_export')} />
-        </Button> */}
-
         {lastExportStatus === 'OK' && (
           <Button
             className='rounded bg-cyan-400 px-4 py-2 text-slate-900 transition hover:bg-cyan-600 hover:text-white'
@@ -140,9 +132,10 @@ const CollectionTableRow = ({
 };
 
 const CollectionsManagerPage = () => {
-  const dispatch = useAppDispatch();
-  const collections: Collection[] = useAppSelector(getCollections);
   const { t } = useTranslation();
+  const collections: CollectionDetails[] = useAppSelector(selectCollections);
+  const { openImportCollectionDialog, openNewCollectionDialog, openExportCollectionDialog } =
+    useDialog();
 
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
 
@@ -157,36 +150,28 @@ const CollectionsManagerPage = () => {
   };
 
   const handleExport = () => {
-    dispatch(exportMultipleCollectionsRequest(selectedCollections));
+    openExportCollectionDialog(selectedCollections);
   };
 
   return (
-    <div className='flex h-full w-full flex-col items-center space-y-4 rounded-2xl border-1 bg-white'>
-      <section className='mt-2 ml-4 flex w-full space-x-2'>
-        <AlertDialogForm
+    <div className='panel flex-col items-center space-y-4'>
+      <section className='mt-2 ml-4 flex w-full justify-center space-x-2'>
+        <button
+          className='soft-button'
           title={t('btn_create_collection')}
-          description={t('description_create_collection')}
-          trigger={
-            <>
-              <FilePlus />
-              {t('btn_create_collection')}
-            </>
-          }
+          onClick={openNewCollectionDialog}
         >
-          {({ close }) => <NewCollectionForm close={close} />}
-        </AlertDialogForm>
-        <AlertDialogForm
+          <FilePlus />
+          {t('btn_create_collection')}
+        </button>
+        <button
+          className='soft-button'
           title={t('btn_import_collection')}
-          description={t('description_import_collection')}
-          trigger={
-            <>
-              <Import />
-              {t('btn_import_collection')}
-            </>
-          }
+          onClick={openImportCollectionDialog}
         >
-          {({ close }) => <UploadFileForm close={close} />}
-        </AlertDialogForm>
+          <Import />
+          {t('btn_import_collection')}
+        </button>
       </section>
 
       {collections.length > 0 ? (

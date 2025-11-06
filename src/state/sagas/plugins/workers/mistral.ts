@@ -1,34 +1,34 @@
-import { Collection } from '@/data/models/Collection';
-import { DataModel } from '@/data/models/DataModel';
 import { Result } from '@/data/models/Result';
 import { isAnnotationScope, isCanvasScope, Scope, toString } from '@/data/models/Scope';
+import { Tag } from '@/data/models/Tag';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
+import {
+  getCollectionRepository,
+  getModelRepository,
+} from '@/data/repositories/indexeddb/dbFactory';
 import { toGallicaUrl } from '@/data/utils/canvas';
-import { generateTextFromCanvas } from '@/data/utils/export';
+import { generateNumberedTextFromCanvas } from '@/data/utils/export';
 import { generateSchema } from '@/data/utils/model';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
+import { Mistral } from '@mistralai/mistralai';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
-import { call, Effect } from 'redux-saga/effects';
+import * as XLSX from 'xlsx';
 
 export const pluginName = 'mistral';
-
-function isValidJson(str: string): boolean {
-  try {
-    JSON.parse(str);
-    return true;
-  } catch {
-    return false;
-  }
-}
+export const pluginDisplayName = 'Extraction de données Mistral';
+export const pluginDescription =
+  "Extrait des données structurées à partir du texte. Nécessite que l'OCR soit fait ainsi qu'un modèle de données.";
+export const pluginCategory = 'LLM';
+export const pluginExportFormats = ['json', 'csv', 'xlsx'];
 
 //TODO: à déplacer dans un fichier utils
 async function getText(scope: Scope) {
   let text = '';
   if (isCanvasScope(scope)) {
-    text = await generateTextFromCanvas(scope.canvasId, scope.collectionId);
+    text = await generateNumberedTextFromCanvas(scope.canvasId, scope.collectionId);
   } else if (isAnnotationScope(scope)) {
     //TODO: implement text extraction from annotation
     text = '';
@@ -39,33 +39,33 @@ async function getText(scope: Scope) {
 }
 
 /*
- * Type guard to check if params contains a model.
- * This is used to ensure that the params passed to the Mistral plugin saga
- * contains a DataModel object.
- */
-function hasModel(params: PluginParams): params is PluginParams & { model: DataModel } {
-  return 'model' in params;
-}
-
-/*
- * Mistral entry point for the Mistral plugin saga (default export)
+ * Mistral entry point for the Mistral plugin (default export)
  * It fetches the text from the scope, sends it to the Mistral API,
  * and returns the response.
  */
-export default function* mistralSaga(
-  task: Task,
-  params: PluginParams,
-): Generator<Effect, WorkerResponse, string | Response> {
+export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
-
-  //TODO! à déplacer dans saga workers
-  if (!hasModel(params)) {
-    console.log('Invalid parameters for Mistral plugin saga:', params);
-    throw new Error('Invalid parameters for Mistral plugin saga');
+  let model = undefined;
+  const collectionRepository = getCollectionRepository();
+  try {
+    const collection = await collectionRepository.getById(task.scope.collectionId);
+    const modelId = collection.modelId;
+    if (modelId === undefined) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: i18n.t('error_model_undefined'),
+      };
+    }
+    const modelRepository = getModelRepository();
+    model = await modelRepository.getById(modelId);
+  } catch (error) {
+    return {
+      status: WorkerStatus.ERROR,
+      statusMessage: getErrorMessage(error),
+    };
   }
-  const { model } = params;
 
-  const text = (yield call(getText, task.scope)) as string;
+  const text = await getText(task.scope);
   //return an error if no text is found
   if (text === undefined || text.length === 0) {
     console.log('No text found for this canvas');
@@ -82,85 +82,56 @@ export default function* mistralSaga(
   const prompt = model.prompt.replace('{{schema}}', generateSchema(model));
   const mistralModel = localStorage.getItem('mistralModel') ?? 'mistral-medium-latest';
   console.log('prompt: ', prompt);
-  const body = {
-    model: mistralModel,
-    messages: [
-      {
-        role: 'system',
-        content: prompt,
-      },
-      {
-        role: 'user',
-        content: text,
-      },
-    ],
-    temperature: 0,
-    max_tokens: text.length * 2,
-    response_format: { type: 'json_object' },
-  };
 
   try {
-    const response = (yield call(() =>
-      fetch('https://api.mistral.ai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
+    const client = new Mistral({
+      apiKey,
+      retryConfig: {
+        strategy: 'backoff',
+        backoff: {
+          initialInterval: 500, // intervalle initial en millisecondes
+          maxInterval: 10000, // intervalle maximal en millisecondes entre tentatives
+          exponent: 1.5, // facteur exponentiel
+          maxElapsedTime: 60000, // durée max (en millisecondes) totale pour toutes les tentatives
         },
-        body: JSON.stringify(body),
-      }),
-    )) as Response;
-    const data = (yield call([response, 'json'])) as object;
-    console.log('Response from Mistral:', data);
+        retryConnectionErrors: true, // réessayer en cas d'erreurs de connexion
+      },
+    });
+    const response = await client.chat.complete({
+      model: mistralModel,
+      messages: [
+        {
+          role: 'system',
+          content: prompt,
+        },
+        {
+          role: 'user',
+          content: text,
+        },
+      ],
+      temperature: 0,
+      maxTokens: text.length * 2,
+      responseFormat: { type: 'json_object' },
+    });
 
-    //TODO! si data.object === 'error' alors on retourne une erreur
-    if (typeof data === 'object') {
-      if (
-        data !== null &&
-        'choices' in data &&
-        Array.isArray(data.choices) &&
-        data.choices.length > 0 &&
-        'message' in data.choices[0]
-      ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const message = data.choices[0].message as object;
-        if ('content' in message && typeof message.content === 'string') {
-          console.log('Response length : ', message.content.length);
-          if (isValidJson(message.content)) {
-            return { status: WorkerStatus.COMPLETED, content: message.content };
-          }
-        }
-      } else if (
-        'object' in data &&
-        data.object === 'error' &&
-        'code' in data &&
-        typeof data.code === 'string' &&
-        'message' in data &&
-        typeof data.message === 'string'
-      ) {
-        // Handle the case where data is an error object
-        console.error('Error from Mistral API:', data);
-        return {
-          status: WorkerStatus.ERROR,
-          statusMessage: `Mistral API error: ${data.code} - ${data.message}`,
-        };
-      }
-    }
+    console.log('Response from Mistral:', response);
+    return {
+      status: WorkerStatus.COMPLETED,
+      content: response.choices[0].message.content as string,
+    };
   } catch (error) {
     return {
       status: WorkerStatus.ERROR,
       statusMessage: getErrorMessage(error),
     };
   }
-
-  return { status: WorkerStatus.ERROR, statusMessage: 'Invalid response format from Mistral API' };
 }
 
 /*
  * Export function to export results from the Mistral plugin saga.
  * It takes an array of Result objects, extracts the data, and saves it as JSON and CSV files.
  */
-export function* exportResult(results: Result[]): Generator<Effect, void, Collection> {
+export async function exportResult(results: Result[], formats: string[]) {
   if (results.length === 0) {
     console.warn('No results to export from Mistral plugin');
     return;
@@ -168,22 +139,18 @@ export function* exportResult(results: Result[]): Generator<Effect, void, Collec
   const allTheData: unknown[] = [];
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
-    console.log(result);
-
-    // if (!isAnnotationScope(result.scope)) {
-    //   const collectionId = result.scope.collectionId;
-    //   const collectionRepository = getCollectionRepository();
-    //   try {
-    //     const collection = yield call(
-    //       [collectionRepository, collectionRepository.getCollectionById],
-    //       collectionId,
-    //     );
-    //     console.log(`Collection for result ${result.id}:`, collection);
-    //   } catch (error) {
-    //     console.error(`Error fetching collection for result ${result.id}:`, error);
-    //   }
-    // }
     const canvasId = isCanvasScope(result.scope) ? toGallicaUrl(result.scope.canvasId) : undefined;
+
+    const collectionRepository = getCollectionRepository();
+    const tags: Tag[] = await collectionRepository.getTagsByCollectionId(result.scope.collectionId);
+    const tagsAsColumns = tags.reduce(
+      (acc, t, index) => {
+        acc[`tag${index + 1}`] = t.label;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
     try {
       const dataParsed = JSON.parse(result.value as string) as unknown;
       const dataParsedArray = (Array.isArray(dataParsed) ? dataParsed : [dataParsed]) as unknown[];
@@ -192,6 +159,7 @@ export function* exportResult(results: Result[]): Generator<Effect, void, Collec
           return {
             ...(item as object),
             canvasId,
+            ...tagsAsColumns,
           };
         }
         return item;
@@ -204,16 +172,44 @@ export function* exportResult(results: Result[]): Generator<Effect, void, Collec
     }
   }
 
-  yield call(
-    FileSaver.saveAs,
-    new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
-    'exported_data.json',
-  );
+  if (formats.includes('xlsx')) {
+    const flattenedData: Record<string, unknown>[] = [];
+    allTheData.forEach((item) => {
+      if (item !== undefined && typeof item === 'object') {
+        const flattenedItem: Record<string, unknown> = { ...item };
+        Object.keys(flattenedItem).forEach((key) => {
+          if (Array.isArray(flattenedItem[key])) {
+            flattenedItem[key] = (flattenedItem[key] as unknown[]).join('; ');
+          } else if (typeof flattenedItem[key] === 'object' && flattenedItem[key] !== null) {
+            flattenedItem[key] = JSON.stringify(flattenedItem[key]);
+          }
+        });
+        flattenedData.push(flattenedItem);
+      }
+    });
 
-  const csv = json2csv(allTheData as object[]);
-  yield call(
-    FileSaver.saveAs,
-    new Blob([csv], { type: 'text/plain;charset=utf-8' }),
-    'exported_data.csv',
-  );
+    const worksheet = XLSX.utils.json_to_sheet(flattenedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Mistral Data');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    FileSaver.saveAs(
+      new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+      }),
+      'exported_data.xlsx',
+    );
+  }
+
+  if (formats.includes('json')) {
+    FileSaver.saveAs(
+      new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
+      'exported_data.json',
+    );
+  }
+
+  if (formats.includes('csv')) {
+    const csv = json2csv((allTheData as object[]).filter(Boolean));
+    FileSaver.saveAs(new Blob([csv], { type: 'text/plain;charset=utf-8' }), 'exported_data.csv');
+  }
 }

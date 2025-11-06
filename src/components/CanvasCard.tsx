@@ -1,6 +1,5 @@
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
-import { Label as LabelIif, Thumbnail } from '@samvera/clover-iiif/primitives';
-import { Card, CardContent, CardHeader } from './ui/card';
+import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -12,18 +11,18 @@ import {
   ContextMenuTrigger,
 } from './ui/context-menu';
 
-import { Collection } from '@/data/models/Collection';
+import { CollectionDetails } from '@/data/models/Collection';
 import { getImageForThumbnail } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useCanvasSelection } from '@/hooks/useCanvasSelection';
 import {
   addSelectionToCollectionRequest,
   createCollectionWithSelectionRequest,
 } from '@/state/reducers/collections';
-import { setSelectionEndRequest, setSelectionStartRequest } from '@/state/reducers/selection';
-import { getCollections } from '@/state/selectors/collections';
+import { selectCollections } from '@/state/selectors/collections';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getSelection, isSelected } from '../state/selectors/selection';
+import AutoSizer from 'react-virtualized-auto-sizer';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -40,22 +39,38 @@ interface CanvasCardProps {
   index: number;
   canvas: Canvas;
   manifestId: string;
-  onClick: (target: EventTarget, canvas: Canvas) => void;
+  thumbWidth: number;
+  thumbHeight: number;
+  canvasToDisplay: Canvas | undefined;
+  setCanvasToDisplay: (canvas: Canvas) => void;
 }
 
-const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => {
+const CanvasCard = ({
+  index,
+  canvas,
+  manifestId,
+  thumbWidth,
+  thumbHeight,
+  setCanvasToDisplay,
+  canvasToDisplay,
+}: CanvasCardProps) => {
   const { t } = useTranslation();
+  const appDispatch = useAppDispatch();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const selection = useAppSelector(getSelection);
-  const collections: Collection[] = useAppSelector(getCollections);
-  const selected: boolean = useAppSelector(isSelected(index, canvas.id));
+  const collections: CollectionDetails[] = useAppSelector(selectCollections);
+  const {
+    isSelected,
+    hasSelectedElements,
+    getSelectedCanvases,
+    setSelectionEnd,
+    setSelectionStart,
+    setSelection,
+  } = useCanvasSelection();
 
   const inputCollectionName = useRef(null);
   const thumbnail = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
     getImageForThumbnail(canvas, 200),
   ];
-
-  const dispatch = useAppDispatch();
 
   //! mieux gérer le cas où canvas est undefined
   if (canvas === undefined) {
@@ -63,22 +78,30 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
   }
 
   const handleSetSelectionStart = () => {
-    dispatch(setSelectionStartRequest(index));
+    setSelectionStart(index);
   };
 
   const handleSetSelectionEnd = () => {
-    dispatch(setSelectionEndRequest(index));
+    setSelectionEnd(index);
+  };
+
+  const handleResetSelection = () => {
+    setSelection([]);
   };
 
   const handleAddSelectionToCollection = (collectionId: string | undefined) => {
     if (collectionId === undefined) return;
-    dispatch(
-      addSelectionToCollectionRequest({ selection, collectionId: collectionId, manifestId }),
+    appDispatch(
+      addSelectionToCollectionRequest({
+        selection: getSelectedCanvases(),
+        collectionId: collectionId,
+        manifestId,
+      }),
     );
   };
 
-  const handleClick = (target: EventTarget) => {
-    onClick(target, canvas);
+  const handleOnClick = () => {
+    setCanvasToDisplay(canvas);
   };
 
   const handleCopyToClipboard = () => {
@@ -95,54 +118,70 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
     //TODO! : gérer le cas où input est null
     if (input === null) return;
     const collectionName = (input as HTMLInputElement).value;
-    dispatch(createCollectionWithSelectionRequest({ selection, name: collectionName, manifestId }));
+    appDispatch(
+      createCollectionWithSelectionRequest({
+        selection: getSelectedCanvases(),
+        name: collectionName,
+        manifestId,
+      }),
+    );
     setDialogOpen(false);
   };
+
+  const idDisplayed = canvasToDisplay?.id === canvas?.id;
+  const match = canvas.id.match(/f\d+/);
+  const canvasItemId = match ? match[0] : '';
 
   //TODO : il faut corriger le aria-label pour qu'il prenne une chaine de caractère
   return (
     <>
       {/* modal={false} : fix a bug with the Dialog+ContextMenu : https://github.com/radix-ui/primitives/issues/1836 */}
       <ContextMenu modal={false}>
-        <div className='flex h-full w-full justify-center'>
+        <div className='no-select flex h-full w-full justify-center' draggable={false}>
           <ContextMenuTrigger>
-            <Card
-              onClick={(e) => handleClick(e.target)}
-              className={`selectable-item h-fit w-fit ${selected ? 'bg-blue-300' : 'bg-white'}`}
+            <div
+              className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-400' : 'bg-saffron-900'} ${isSelected(index) ? 'ring-3 ring-saffron-300' : ''} selectable-item`}
+              style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
+              onClick={handleOnClick}
               data-index={index}
               data-canvas-id={canvas.id}
               role='listitem'
             >
-              <CardHeader>
-                <LabelIif className='text-center' label={canvas.label ? canvas.label : {}} />
-              </CardHeader>
-              <CardContent>
-                <Thumbnail
-                  thumbnail={thumbnail}
-                  style={{ width: 'auto', height: '100px', objectFit: 'contain' }}
-                  className='w-fit'
-                  aria-label={t('aria_label_thumbnail_canvas', {
-                    canvas: canvas.label ? canvas.label : '',
-                  })}
-                />
-              </CardContent>
-            </Card>
+              <div className='w-fit flex-1'>
+                <AutoSizer disableWidth>
+                  {({ height }) => (
+                    <Thumbnail
+                      thumbnail={thumbnail}
+                      style={{ width: 'auto', height: `${height}px`, objectFit: 'contain' }}
+                      aria-label='canvas thumbnail'
+                      draggable={false}
+                    />
+                  )}
+                </AutoSizer>
+              </div>
+              <div className='flex w-full justify-between p-1 text-xs font-bold text-dark-slate-gray-300'>
+                {canvas.label !== undefined && canvas.label !== null && (
+                  <span>{canvas.label.none}</span>
+                )}
+                <span className='italic'>{canvasItemId}</span>
+              </div>
+            </div>
           </ContextMenuTrigger>
         </div>
 
         <ContextMenuContent>
-          {selection.length > 0 && (
+          {hasSelectedElements() && (
             <>
               <ContextMenuItem onClick={() => setDialogOpen(true)}>
                 {t('menu_create_from_selection')}
               </ContextMenuItem>
-              <ContextMenuSub>
-                <ContextMenuSubTrigger>
-                  {t('menu_add_selection_to_collection')}
-                </ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                  {collections?.length > 0 &&
-                    collections.map((col) => (
+              {collections?.length > 0 && (
+                <ContextMenuSub>
+                  <ContextMenuSubTrigger>
+                    {t('menu_add_selection_to_collection')}
+                  </ContextMenuSubTrigger>
+                  <ContextMenuSubContent>
+                    {collections.map((col) => (
                       <ContextMenuItem
                         key={col.id}
                         onClick={() => handleAddSelectionToCollection(col.id)}
@@ -150,8 +189,9 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
                         {col.name}
                       </ContextMenuItem>
                     ))}
-                </ContextMenuSubContent>
-              </ContextMenuSub>
+                  </ContextMenuSubContent>
+                </ContextMenuSub>
+              )}
 
               <ContextMenuSeparator />
             </>
@@ -160,6 +200,10 @@ const CanvasCard = ({ index, canvas, manifestId, onClick }: CanvasCardProps) => 
             {t('menu_define_start')}
           </ContextMenuItem>
           <ContextMenuItem onClick={handleSetSelectionEnd}>{t('menu_define_end')}</ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={handleResetSelection}>
+            {t('menu_reset_selection')}
+          </ContextMenuItem>
           <ContextMenuSeparator />
           <ContextMenuItem onClick={handleCopyToClipboard}>
             {t('menu_copy_clipboard')}

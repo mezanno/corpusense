@@ -25,8 +25,6 @@ function serializeDates(obj: unknown): unknown {
  * @returns
  */
 export const dateConverterMiddleware: Middleware = () => (next) => (action: unknown) => {
-  // console.log('testMiddleware: action received: ', action);
-
   if (
     action !== null &&
     typeof action === 'object' &&
@@ -35,7 +33,6 @@ export const dateConverterMiddleware: Middleware = () => (next) => (action: unkn
     action.payload !== null
   ) {
     const newPayload = serializeDates(action.payload);
-    // console.log('testMiddleware: serialized payload: ', newPayload);
     return next({
       ...action,
       payload: newPayload,

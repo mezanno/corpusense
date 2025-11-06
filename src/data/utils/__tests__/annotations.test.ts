@@ -5,7 +5,6 @@ import canvasWithNoDimensions from '../../../__tests__/canvasWithNoDimensions.js
 import canvasWithoutImage from '../../../__tests__/canvasWithoutImage.json';
 import { generateFirstAnnotation, generateRegionAnnotationForCanvas } from '../annotations';
 
-import { SelectedCanvas } from '@/data/models/SelectedCanvas';
 import { vi } from 'vitest';
 
 vi.mock('uuid', () => {
@@ -41,19 +40,17 @@ describe('annotations utils', () => {
   describe('generateFirstAnnotation', () => {
     it('should generate no annotation', () => {
       const collectionId = 'collectionId';
-      const selection: SelectedCanvas[] = [];
-
-      const result = generateFirstAnnotation(selection, collectionId);
+      const result = generateFirstAnnotation([], collectionId);
 
       expect(result).toHaveLength(0);
     });
 
     it('3 canvases should generate only 1 annotation because of errors', () => {
       const collectionId = 'collectionId';
-      const selection: SelectedCanvas[] = [
-        { index: 0, canvas: canvasWithImage as Canvas },
-        { index: 1, canvas: canvasWithNoDimensions as Canvas },
-        { index: 2, canvas: canvasWithoutImage as Canvas },
+      const selection: Canvas[] = [
+        canvasWithImage as Canvas,
+        canvasWithNoDimensions as Canvas,
+        canvasWithoutImage as Canvas,
       ];
 
       const result = generateFirstAnnotation(selection, collectionId);
@@ -63,10 +60,7 @@ describe('annotations utils', () => {
 
     it('2 canvases should generate 2 annotations', () => {
       const collectionId = 'collectionId';
-      const selection: SelectedCanvas[] = [
-        { index: 0, canvas: canvasWithImage as Canvas },
-        { index: 1, canvas: canvasWithImage as Canvas },
-      ];
+      const selection: Canvas[] = [canvasWithImage as Canvas, canvasWithImage as Canvas];
 
       const result = generateFirstAnnotation(selection, collectionId);
 
@@ -77,9 +71,9 @@ describe('annotations utils', () => {
       const collectionId = 'collectionId';
       const canvasId = 'canvsaId';
       const existingCanvasIds = [canvasId];
-      const selection: SelectedCanvas[] = [
-        { index: 0, canvas: { ...canvasWithImage, id: canvasId } as Canvas },
-        { index: 1, canvas: canvasWithImage as Canvas },
+      const selection: Canvas[] = [
+        { ...canvasWithImage, id: canvasId } as Canvas,
+        canvasWithImage as Canvas,
       ];
 
       const result = generateFirstAnnotation(selection, collectionId, existingCanvasIds);

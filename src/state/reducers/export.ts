@@ -19,38 +19,18 @@ export const exportSlice = createSlice({
   name: 'export',
   initialState,
   reducers: {
-    exportRequest: (_state, _action: PayloadAction<string>) => {},
-    exportSuccess: (state, action: PayloadAction<object | string>) => {
-      state.lastExportContent = action.payload;
-      state.lastExportDate = new Date();
-      state.lastExportStatus = 'OK';
-    },
-    exportMultipleCollectionsRequest: (_state, _action: PayloadAction<string[]>) => {},
     exportTextOfCollectionRequest: (_state, _action: PayloadAction<string>) => {}, //paylad = collectionId
     exportTextOfCanvasRequest: (
       _state,
       _action: PayloadAction<{ canvasId: string; collectionId: string }>,
     ) => {},
     exportTextOfAnnotationRequest: (_state, _action: PayloadAction<Annotation>) => {},
-    // exportError: (state, action: PayloadAction<string>) => {
-    //   state.lastExportError = action.payload;
-    //   state.lastExportStatus = 'ERROR';
-    // },
-    // resetAlert: (state) => {
-    //   state.lastExportDate = null;
-    //   state.lastExportStatus = 'UNKNOWN';
-    // },
   },
 });
 
 export const {
-  exportRequest,
-  exportSuccess,
-  // exportError,
-  exportMultipleCollectionsRequest,
   exportTextOfCollectionRequest,
   exportTextOfCanvasRequest,
   exportTextOfAnnotationRequest,
-  // resetAlert,
 } = exportSlice.actions;
 export default exportSlice.reducer;

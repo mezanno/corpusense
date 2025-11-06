@@ -1,8 +1,7 @@
 import { AnnotationPage, Canvas } from '@iiif/presentation-3';
 import i18next from 'i18next';
-import { Annotation, createAnnotation, ElementType, getAnnotationType } from '../models/Annotation';
+import { Annotation, createAnnotation, ElementType } from '../models/Annotation';
 import { convertAnnotationPageToW3CAnnotations } from '../models/converters/iiif';
-import { SelectedCanvas } from '../models/SelectedCanvas';
 import { getAnnotationRepository } from '../repositories/indexeddb/dbFactory';
 import { getImage } from './canvas';
 
@@ -36,29 +35,29 @@ const generateRegionAnnotationForCanvas = (canvas: Canvas, collectionId: string)
   return createAnnotation({
     canvasId: canvas.id,
     collectionId: collectionId,
-    order: 0,
+    order: 1,
     minX: 0,
     minY: 0,
     maxX: image.width,
     maxY: image.height,
-    type: ElementType.REGION,
+    type: ElementType.TEXT_REGION,
     value: '',
   });
 };
 
 function generateFirstAnnotation(
-  selection: SelectedCanvas[],
+  canvases: Canvas[],
   collectionId: string,
   existingCanvasIds: string[] = [],
 ) {
   const annotations = [];
-  for (const elt of selection) {
+  for (const canvas of canvases) {
     //si l'élément est déjà dans la liste, on ne lui ajoute pas de nouvelle annotation
-    if (existingCanvasIds.includes(elt.canvas.id)) {
+    if (existingCanvasIds.includes(canvas.id)) {
       continue;
     }
     try {
-      annotations.push(generateRegionAnnotationForCanvas(elt.canvas, collectionId));
+      annotations.push(generateRegionAnnotationForCanvas(canvas, collectionId));
     } catch (e) {
       // console.error(e);
     }
@@ -66,13 +65,9 @@ function generateFirstAnnotation(
   return annotations.filter((elt) => elt !== null);
 }
 
+//TODO! ? ça fait redit avec la fonction dans AnnotationRepository
 async function getAnnotationsByType(type: ElementType, canvasId: string, collectionId: string) {
-  const annotations = await getAnnotationRepository().getAnnotationsForCanvas(
-    canvasId,
-    collectionId,
-  );
-
-  return annotations.filter((annotation) => getAnnotationType(annotation) === type);
+  return await getAnnotationRepository().getByScopeAndTypes({ canvasId, collectionId }, [type]);
 }
 
 function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {
@@ -81,7 +76,7 @@ function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {
   console.log(`importAnnotationFromJson out - ${collectionId}: `, annotationsW3C);
   // return await db.annotations.bulkPut(annotationsW3C);
   const annotationRepository = getAnnotationRepository();
-  return annotationRepository.saveAllAnnotations(annotationsW3C);
+  return annotationRepository.addAll(annotationsW3C);
 }
 
 export {

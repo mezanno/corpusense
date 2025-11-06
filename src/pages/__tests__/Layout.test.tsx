@@ -22,10 +22,6 @@ describe('Layout', () => {
       ...getPreloadedState(),
       manifests: {
         ...getPreloadedState().manifests,
-        history: [
-          { url: 'https://example.com/manifest1.json' },
-          { url: 'https://example.com/manifest2.json' },
-        ],
       },
     };
 
@@ -57,8 +53,9 @@ describe('Layout', () => {
           {
             id: 'id1',
             name: 'Collection 1',
-            content: [],
             tags: [],
+            contentSize: 0,
+            offline: false,
           },
         ],
       },

@@ -3,7 +3,7 @@ import { Manifest } from '@iiif/presentation-3';
 import i18n from 'i18next';
 
 export function isManifestUrl(str: string): boolean {
-  const regex = /^https?:\/\/[^/\s]+(?:\/.*)?\/manifest\.json$/i;
+  const regex = /^https?:\/\/[^/\s]+(?:\/\S*)?$/i;
   return regex.test(str);
 }
 
@@ -29,7 +29,11 @@ export type CanvasInfo = {
   height: number;
 };
 
-export const generateManifest = (canvasInfo: CanvasInfo[], folder: string): Manifest => {
+export const generateManifest = (
+  documentName: string,
+  canvasInfo: CanvasInfo[],
+  folder: string,
+): Manifest => {
   const url_supabase = `${import.meta.env.VITE_SUPABASE_STORAGE_URL}/${folder}/`;
 
   return {
@@ -37,7 +41,7 @@ export const generateManifest = (canvasInfo: CanvasInfo[], folder: string): Mani
     id: `${url_supabase}/manifest.json`,
     type: 'Manifest',
     label: {
-      fr: ['Simple Manifest - Book'],
+      fr: [documentName],
     },
     items: canvasInfo.map((canvas, index) => ({
       id: `${url_supabase}/canvas/p${index + 1}`,

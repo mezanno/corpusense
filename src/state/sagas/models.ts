@@ -32,7 +32,7 @@ function* handleCreateModel(
   const { name, description, fromModelId } = action.payload;
   let fields: DataField[] = [];
   let prompt =
-    "Voici une liste de données textuelles présentées correspondant à ce format :\n\n{{schema}}\n\nRetourne moi la liste données présentes dans ce texte sous forme d'une table JSON bien structurée. La réponse ne doit contenir que le JSON, sans explication ni commentaire.";
+    "Voici un texte contenant une liste d'entités réparties sur une ou plusieurs lignes. Il est possible que plusieurs entités possèdent le même nom. Ton objectif est de me fournir la liste des entités structurées au format JSON selon le schéma suivant : {{schema}}\nTrès important : Si une ligne se termine par un mot coupé par un tiret (-), considère qu'elle se poursuit obligatoirement à la ligne suivante, sans espace ni ponctuation supplémentaire. Retourne uniquement la liste d’objets JSON sans autre texte ou commentaire.";
   if (fromModelId !== undefined) {
     try {
       const modelRespository = getModelRepository();
@@ -66,7 +66,7 @@ function* handleSaveModel(action: PayloadAction<DataModel>) {
 
 function* handleRemoveModel(action: PayloadAction<string>) {
   const modelRespository = getModelRepository();
-  yield call([modelRespository, modelRespository.delete], action.payload);
+  yield call([modelRespository, modelRespository.deleteById], action.payload);
   yield put(removeModelSuccess(action.payload));
 }
 

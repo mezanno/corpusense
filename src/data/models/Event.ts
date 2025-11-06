@@ -5,6 +5,5 @@ export enum EventType {
 
 export interface Event {
   message: string;
-  // time: number;
   type: EventType;
 }

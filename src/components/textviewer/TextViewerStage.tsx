@@ -1,5 +1,3 @@
-import { useAppSelector } from '@/hooks/hooks';
-import { hasActiveModel } from '@/state/selectors/models';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { useEffect, useMemo, useState } from 'react';
 import { Layer, Stage } from 'react-konva';
@@ -11,7 +9,7 @@ const TextViewerStage = () => {
   const { state } = useMarkupContext();
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [showMenu, setShowMenu] = useState(false);
-  const hasModel = useAppSelector(hasActiveModel);
+  const model = state.model;
 
   // Create and cleanup context menu
   useEffect(() => {
@@ -28,11 +26,8 @@ const TextViewerStage = () => {
 
   const handleContextMenu = (e: KonvaEventObject<PointerEvent>) => {
     e.evt.preventDefault();
-    if (e.target === e.target.getStage()) {
-      return;
-    }
     const stage = e.target.getStage();
-    if (stage === null) {
+    if (model === undefined || stage === null || e.target === stage) {
       return;
     }
     const containerRect = stage.container().getBoundingClientRect();
@@ -58,12 +53,12 @@ const TextViewerStage = () => {
       <Stage
         width={state.stage.width}
         height={state.stage.height}
-        className={hasModel ? 'cursor-highlighter' : ''}
+        className={model !== undefined ? 'cursor-highlighter' : ''}
         onContextMenu={handleContextMenu}
       >
         <Layer>{labels}</Layer>
       </Stage>
-      {showMenu && (
+      {showMenu && model !== undefined && (
         <div style={{ position: 'fixed', top: menuPosition.y, left: menuPosition.x }}>
           <MarkupContextMenu />
         </div>

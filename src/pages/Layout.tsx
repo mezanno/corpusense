@@ -1,277 +1,37 @@
-import AlertDialogLogin from '@/components/auth/AlertDialogLogin';
-import ContactDrawer from '@/components/ContactDrawer';
-import HistoryDrawer from '@/components/HistoryDrawer';
-import ManifestExplorerDrawer from '@/components/ManifestExplorerDrawer';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import HistoryDrawer from '@/components/drawers/HistoryDrawer';
 import { Toaster } from '@/components/ui/sonner';
-import WorkerDrawer from '@/components/WorkerDrawer';
-import WorkerLabel from '@/components/WorkerLabel';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
-import { logoutRequest } from '@/state/reducers/auth';
-import { removeFromOpenedCollections } from '@/state/reducers/collections';
+import useDialog from '@/hooks/ui/useDialog';
 import { resetLastEvent } from '@/state/reducers/events';
-import { connectedUser } from '@/state/selectors/auth';
-import { getOpenedCollections } from '@/state/selectors/collections';
-import { getLastErrorEvent, getLastInfoEvent } from '@/state/selectors/events';
-import {
-  Archive,
-  Bolt,
-  ChevronDown,
-  Container,
-  CornerDownRight,
-  FolderSearch2,
-  List,
-  MoreHorizontal,
-  ScrollText,
-  User2,
-} from 'lucide-react';
+import { selectLastErrorEvent, selectLastInfoEvent } from '@/state/selectors/events';
+import { FolderOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { toast } from 'sonner';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarProvider,
-  SidebarTrigger,
-} from '../components/ui/sidebar';
-
-const WorkersSideBarGroup = ({
-  setSelectedWorkerId,
-}: {
-  setSelectedWorkerId: (id: string) => void;
-}) => {
-  const { t } = useTranslation();
-  const workers = useAppSelector(
-    (state) => state.workers.workers,
-    // getWorkersByStatus(state, [
-    //   WorkerStatus.INPROGRESS,
-    //   WorkerStatus.INPROGRESS_WITH_ERRORS,
-    //   WorkerStatus.UNFINISHED,
-    //   WorkerStatus.UNFINISHED_WITH_ERRORS,
-    // ]),
-  );
-  if (workers.length === 0) {
-    return null;
-  }
-
-  return (
-    <SidebarGroup>
-      <SidebarGroupLabel>{t('nav_workers')}</SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {workers.map((worker) => (
-            <SidebarMenuItem
-              key={worker.id}
-              className='cursor-pointer overflow-hidden'
-              onClick={() => setSelectedWorkerId(worker.id)}
-            >
-              <SidebarMenuButton asChild>
-                <WorkerLabel worker={worker} />
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
-  );
-};
-
-const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: string) => void }) => {
-  const { t } = useTranslation();
-  const user = useAppSelector(connectedUser);
-  const openedCollections = useAppSelector(getOpenedCollections);
-
-  const navigation = useAppNavigation();
-  const dispatch = useAppDispatch();
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleOnClose = async (collectionId: string) => {
-    await navigation.goToManifestExplorer();
-    dispatch(removeFromOpenedCollections(collectionId));
-  };
-
-  const handleLogout = () => {
-    dispatch(logoutRequest());
-  };
-
-  return (
-    <>
-      <Sidebar>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                {/* modal={false} : fix a bug with the Dialog+ContextMenu : https://github.com/radix-ui/primitives/issues/1836 */}
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton>
-                      <div className='flex items-center gap-2'>
-                        <User2 />
-                        {user ? user.email : t('info_not_connected')}
-                        <ChevronDown className='ml-auto' />
-                      </div>
-                    </SidebarMenuButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent side='right'>
-                    {user ? (
-                      <DropdownMenuItem onClick={() => handleLogout()}>
-                        Se déconnecter
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem onClick={() => setIsOpen(true)}>
-                        Se connecter
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-          <SidebarGroup>
-            <SidebarGroupLabel>{t('nav_application')}</SidebarGroupLabel>
-            <SidebarMenu>
-              {[
-                {
-                  title: t('page_title_manifexplorer'),
-                  url: CorpusenseRoutes.MANIFEST,
-                  icon: FolderSearch2,
-                },
-                {
-                  title: t('page_title_collection_manager'),
-                  url: CorpusenseRoutes.COLLECTIONS,
-                  icon: List,
-                },
-                {
-                  title: t('page_title_models_manager'),
-                  url: CorpusenseRoutes.MODELS,
-                  icon: Container,
-                },
-                {
-                  title: t('page_title_storage'),
-                  url: CorpusenseRoutes.STORAGE,
-                  icon: Archive,
-                },
-              ].map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
-          {openedCollections.length > 0 && (
-            <SidebarGroup id='collections'>
-              <SidebarMenu>
-                <Collapsible defaultOpen className='group'>
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton>
-                        <ScrollText />
-                        {t('nav_collections')}
-                        <ChevronDown className='transition-transform duration-200 group-data-[state=closed]:-rotate-90' />
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        {openedCollections.map(
-                          (col) =>
-                            col.id !== undefined && (
-                              <SidebarMenuSubItem key={col.id}>
-                                <SidebarMenuSubButton className='h-auto' asChild>
-                                  <div>
-                                    <CornerDownRight />
-                                    <Link
-                                      to={`/${CorpusenseRoutes.COLLECTIONS}/${col.id}`}
-                                      className='h-full w-full'
-                                      title={col.name}
-                                    >
-                                      {col.name}
-                                    </Link>
-                                  </div>
-                                </SidebarMenuSubButton>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <SidebarMenuAction title={t('btn_more_actions')}>
-                                      <MoreHorizontal />
-                                    </SidebarMenuAction>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent side='right' align='start'>
-                                    <DropdownMenuItem
-                                      onClick={() => void handleOnClose(col.id as string)}
-                                    >
-                                      {t('btn_close_collection')}
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </SidebarMenuSubItem>
-                            ),
-                        )}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-              </SidebarMenu>
-            </SidebarGroup>
-          )}
-          <WorkersSideBarGroup setSelectedWorkerId={setSelectedWorkerId} />
-        </SidebarContent>
-
-        <SidebarFooter>
-          <div className='flex justify-between'>
-            Corpusense v{import.meta.env.VITE_APP_VERSION}
-            <Link to={CorpusenseRoutes.CONFIGURATION} title={t('page_title_configuration')}>
-              <Bolt />
-            </Link>
-          </div>
-        </SidebarFooter>
-      </Sidebar>
-      <AlertDialogLogin isOpen={isOpen} setIsOpen={setIsOpen} />
-    </>
-  );
-};
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '../components/ui/sidebar';
+import LayoutSideBar from './LayoutSidebar';
 
 const Layout = () => {
-  const lastInfo = useAppSelector(getLastInfoEvent);
-  const lastError = useAppSelector(getLastErrorEvent);
-  const dispatch = useAppDispatch();
+  const { t } = useTranslation();
+  const appDispatch = useAppDispatch();
+  const { openOpenManifestDialog, openContactUsDialog } = useDialog();
+  const lastInfo = useAppSelector(selectLastInfoEvent);
+  const lastError = useAppSelector(selectLastErrorEvent);
   const [selectedWorkerId, setSelectedWorkerId] = useState<string>('');
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (lastInfo !== undefined) {
       toast.success(lastInfo.message);
-      dispatch(resetLastEvent());
+      appDispatch(resetLastEvent());
     }
   }, [lastInfo]);
 
   useEffect(() => {
     if (lastError !== undefined) {
       toast.error(lastError.message);
-      dispatch(resetLastEvent());
+      appDispatch(resetLastEvent());
     }
   }, [lastError]);
 
@@ -289,25 +49,36 @@ const Layout = () => {
   }, [isOpen]);
 
   return (
-    <SidebarProvider className='h-full w-full'>
+    <SidebarProvider>
       <LayoutSideBar setSelectedWorkerId={setSelectedWorkerId} />
-      <SidebarInset className='m-2'>
-        {/*TODO: Fix this width : pour une raison inconnue w-100 empêche la fenêtre de déborder*/}
-        <header className='flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
-          <div className='flex items-center space-x-2'>
-            <SidebarTrigger />
-            <ManifestExplorerDrawer />
-            <HistoryDrawer />
-            <WorkerDrawer
-              selectedWorkerId={selectedWorkerId}
-              setSelectedWorkerId={setSelectedWorkerId}
-              isOpen={isOpen}
-              setIsOpen={setIsOpen}
-            />
-            <ContactDrawer />
-          </div>
-        </header>
-        <Outlet />
+      <SidebarInset className='flex h-screen min-w-0 flex-col'>
+        <div className='flex h-full w-full flex-col p-2'>
+          <header className='flex shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
+            <div className='flex items-center space-x-2'>
+              <SidebarTrigger />
+              <button
+                className='soft-button'
+                aria-label={t('btn_open_manifest')}
+                onClick={openOpenManifestDialog}
+              >
+                <FolderOpen size={16} />
+                {t('btn_open_manifest')}
+              </button>
+              <HistoryDrawer />
+              <button
+                className='soft-button'
+                aria-label={t('btn_open_contact')}
+                onClick={openContactUsDialog}
+              >
+                <FolderOpen size={16} />
+                {t('btn_open_contact')}
+              </button>
+            </div>
+          </header>
+          <main className='min-h-0 flex-1 pt-2'>
+            <Outlet />
+          </main>
+        </div>
         <Toaster position='top-right' expand={true} richColors />
       </SidebarInset>
     </SidebarProvider>

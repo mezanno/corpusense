@@ -1,10 +1,35 @@
-import { Collection } from '@/data/models/Collection';
-import { SelectedCanvas } from '@/data/models/SelectedCanvas';
+import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
+import { Collection, CollectionDetails } from '@/data/models/Collection';
+import { Canvas } from '@iiif/presentation-3';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface CollectionsState {
-  values: Collection[];
+  values: CollectionDetails[]; // List of all collections to show in the collection list
   openedCollections: string[];
+  currentCollection?: Collection; //the collection currently being viewed in the collection inspector
+  loadedCanvases?: Record<
+    string, //canvasId
+    {
+      //the canvases loaded for the current collection
+      content: Canvas;
+      infos: {
+        hasOcrAnnotations?: boolean;
+        hasOfflineImage?: boolean;
+      };
+    }
+  >;
+}
+
+export interface ExportCollectionOptions {
+  annotations?: boolean;
+  model?: boolean;
+  workers?: boolean;
+  manifest?: boolean;
+}
+
+export interface ImportCollectionPayload {
+  json: object;
+  filename: string;
 }
 
 const initialState: CollectionsState = {
@@ -17,7 +42,7 @@ export const collectionsSlice = createSlice({
   initialState,
   reducers: {
     createCollectionRequest: (_state, _action: PayloadAction<string>) => {},
-    createCollectionSuccess: (state, action: PayloadAction<Collection>) => {
+    createCollectionSuccess: (state, action: PayloadAction<CollectionDetails>) => {
       state.values.push(action.payload);
       if (
         action.payload.id !== undefined &&
@@ -33,43 +58,66 @@ export const collectionsSlice = createSlice({
       state.openedCollections = state.openedCollections.filter((id) => id !== collectionId);
     },
     updateCollectionRequest: (_state, _action) => {},
-    updateCollectionSuccess: (state, action: PayloadAction<Collection>) => {
-      const collection: Collection | undefined = state.values.find(
+    updateCollectionSuccess: (state, action: PayloadAction<CollectionDetails>) => {
+      const collection: CollectionDetails | undefined = state.values.find(
         (elt) => elt.id === action.payload.id,
       );
       if (collection !== undefined) {
         collection.name = action.payload.name;
         collection.about = action.payload.about;
         collection.tags = action.payload.tags;
+        collection.modelId = action.payload.modelId;
+        collection.offline = action.payload.offline;
       }
     },
-    setCollections: (state, action: PayloadAction<Collection[]>) => {
+    loadCollectionRequest: (_state, _action: PayloadAction<string>) => {},
+    loadCollectionSuccess: (
+      state,
+      action: PayloadAction<{
+        collection: Collection;
+        canvases: Canvas[];
+        canvasHasOcrAnnotations: Record<string, boolean>;
+      }>,
+    ) => {
+      const { collection, canvases, canvasHasOcrAnnotations } = action.payload;
+      state.currentCollection = collection;
+      if (state.openedCollections.find((id) => id === collection.id) === undefined) {
+        state.openedCollections.push(collection.id);
+      }
+      state.loadedCanvases = canvases.reduce(
+        (acc, canvas) => {
+          acc[canvas.id] = {
+            content: canvas,
+            infos: {
+              hasOcrAnnotations: canvasHasOcrAnnotations[canvas.id],
+            },
+          };
+          return acc;
+        },
+        {} as Record<string, { content: Canvas; infos: { hasOcrAnnotations?: boolean } }>,
+      );
+    },
+    setCollections: (state, action: PayloadAction<CollectionDetails[]>) => {
       state.values = action.payload;
-    },
-    addCollectionToHistoryRequest: (state, action: PayloadAction<string>) => {
-      if (state.openedCollections.find((id) => id === action.payload) === undefined) {
-        state.openedCollections.push(action.payload);
-      }
     },
     addSelectionToCollectionRequest: (
       _state,
       _action: PayloadAction<{
-        selection: SelectedCanvas[];
+        selection: Canvas[];
         collectionId: string;
         manifestId: string;
       }>,
     ) => {},
     addSelectionToCollectionSuccess: (state, action: PayloadAction<Collection>) => {
-      const collection: Collection | undefined = state.values.find(
-        (elt) => elt.id === action.payload.id,
+      const { content, ...collectionDetails } = action.payload;
+      state.currentCollection = action.payload;
+      state.values = state.values.map((details) =>
+        details.id === collectionDetails.id ? collectionDetails : details,
       );
-      if (collection !== undefined) {
-        collection.content = action.payload.content;
-      }
     },
     createCollectionWithSelectionRequest: (
       _state,
-      _action: PayloadAction<{ selection: SelectedCanvas[]; name: string; manifestId: string }>,
+      _action: PayloadAction<{ selection: Canvas[]; name: string; manifestId: string }>,
     ) => {},
     fetchCanvasesOfCollectionRequest: (_state, _action: PayloadAction<string>) => {},
     fetchCanvasesOfCollectionSuccess: (state, action: PayloadAction<Collection>) => {
@@ -84,19 +132,56 @@ export const collectionsSlice = createSlice({
       _action: PayloadAction<{ collectionId: string; canvasId: string }>,
     ) => {},
     removeElementFromCollectionSuccess: (state, action: PayloadAction<Collection>) => {
-      const collection: Collection | undefined = state.values.find(
-        (elt) => elt.id === action.payload.id,
+      state.currentCollection = action.payload;
+      const { content, ...collectionDetails } = action.payload;
+      state.values = state.values.map((details) =>
+        details.id === collectionDetails.id ? collectionDetails : details,
       );
-      if (collection && collection.content !== undefined) {
-        collection.content = action.payload.content;
-      }
     },
     removeFromOpenedCollections: (state, action: PayloadAction<string>) => {
       const collectionId: string = action.payload;
       state.openedCollections = state.openedCollections.filter((id) => id !== collectionId);
     },
-    importOneCollectionRequest: (_state, _action: PayloadAction<object>) => {},
-    importMultipleCollectionsRequest: (_state, _action: PayloadAction<ArrayBuffer>) => {},
+    exportCollectionsRequest: (
+      _state,
+      _action: PayloadAction<{ collectionIds: string[]; options: ExportCollectionOptions }>,
+    ) => {},
+    importCollectionRequest: (_state, _action: PayloadAction<ImportCollectionPayload>) => {},
+    importCollectionsRequest: (_state, _action: PayloadAction<ArrayBuffer>) => {},
+    updateOcrStatus: (state, action: PayloadAction<Annotation[]>) => {
+      action.payload.forEach((annotation) => {
+        if (
+          annotation.collectionId === state.currentCollection?.id &&
+          state.loadedCanvases?.[annotation.canvasId] !== undefined &&
+          getAnnotationType(annotation) === ElementType.TEXT_LINE
+        ) {
+          state.loadedCanvases[annotation.canvasId] = {
+            ...state.loadedCanvases[annotation.canvasId],
+            infos: {
+              ...state.loadedCanvases[annotation.canvasId].infos,
+              hasOcrAnnotations: true,
+            },
+          };
+        }
+      });
+    },
+    setOcrStatus: (state, action: PayloadAction<Record<string, boolean>>) => {
+      for (const canvasId in action.payload) {
+        if (state.loadedCanvases?.[canvasId] !== undefined) {
+          state.loadedCanvases[canvasId] = {
+            ...state.loadedCanvases[canvasId],
+            infos: {
+              ...state.loadedCanvases[canvasId].infos,
+              hasOcrAnnotations: action.payload[canvasId],
+            },
+          };
+        }
+      }
+    },
+    toggleCollectionOfflineRequest: (
+      _state,
+      _action: PayloadAction<string>, // collectionId
+    ) => {},
   },
 });
 
@@ -107,15 +192,20 @@ export const {
   removeCollectionRequest,
   updateCollectionRequest,
   updateCollectionSuccess,
+  loadCollectionRequest,
+  loadCollectionSuccess,
   setCollections,
-  addCollectionToHistoryRequest,
   addSelectionToCollectionRequest,
   addSelectionToCollectionSuccess,
   createCollectionWithSelectionRequest,
   removeElementFromCollectionRequest,
   removeElementFromCollectionSuccess,
   removeFromOpenedCollections,
-  importOneCollectionRequest,
-  importMultipleCollectionsRequest,
+  exportCollectionsRequest,
+  importCollectionRequest,
+  importCollectionsRequest,
+  updateOcrStatus,
+  setOcrStatus,
+  toggleCollectionOfflineRequest,
 } = collectionsSlice.actions;
 export default collectionsSlice.reducer;
