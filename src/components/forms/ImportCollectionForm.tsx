@@ -40,7 +40,7 @@ const ImportCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
 
   useEffect(() => {
     setCanSubmit(form.formState.isDirty && form.formState.isValid);
-  }, [form.formState]);
+  }, [form.formState.isDirty, form.formState.isValid, setCanSubmit]);
 
   function onSubmit(values: z.infer<typeof schema>) {
     const reader = new FileReader();
