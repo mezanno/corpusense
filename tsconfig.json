@@ -6,6 +6,17 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"],
+    "jsxImportSource": "react",
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   }
 }

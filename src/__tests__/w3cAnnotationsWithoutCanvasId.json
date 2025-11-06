@@ -1,0 +1,78 @@
+[
+  {
+    "bodies": [
+      {
+        "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
+        "id": "799caa82-346a-475f-8689-2d6ba8ef3b65/class",
+        "purpose": "classifying",
+        "value": "LINE"
+      },
+      {
+        "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
+        "id": "799caa82-346a-475f-8689-2d6ba8ef3b65/tag",
+        "purpose": "tagging",
+        "value": "Hello World!"
+      }
+    ],
+    "canvasId": "canvasId",
+    "collectionId": "collectionId",
+    "id": "799caa82-346a-475f-8689-2d6ba8ef3b65",
+    "order": 0,
+    "target": {
+      "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
+      "selector": {
+        "geometry": {
+          "bounds": {
+            "maxX": 50,
+            "maxY": 40,
+            "minX": 10,
+            "minY": 20
+          },
+          "h": 20,
+          "w": 40,
+          "x": 10,
+          "y": 20
+        },
+        "type": "RECTANGLE"
+      }
+    }
+  },
+  {
+    "bodies": [
+      {
+        "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
+        "id": "799caa82-346a-475f-8689-2d6ba8ef3b65/class",
+        "purpose": "classifying",
+        "value": "LINE"
+      },
+      {
+        "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
+        "id": "799caa82-346a-475f-8689-2d6ba8ef3b65/tag",
+        "purpose": "tagging",
+        "value": "The answer is 42."
+      }
+    ],
+    "canvasId": "canvasId",
+    "collectionId": "collectionId",
+    "id": "799caa82-346a-475f-8689-2d6ba8ef3b65",
+    "order": 1,
+    "target": {
+      "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
+      "selector": {
+        "geometry": {
+          "bounds": {
+            "maxX": 100,
+            "maxY": 40,
+            "minX": 60,
+            "minY": 20
+          },
+          "h": 20,
+          "w": 40,
+          "x": 60,
+          "y": 20
+        },
+        "type": "RECTANGLE"
+      }
+    }
+  }
+]

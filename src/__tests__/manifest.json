@@ -1,0 +1,906 @@
+{
+  "@context": "http://iiif.io/api/presentation/3/context.json",
+  "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/manifest.json",
+  "type": "Manifest",
+  "metadata": [
+    {
+      "label": {
+        "none": ["Repository"]
+      },
+      "value": {
+        "none": ["DILA"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Digitised by"]
+      },
+      "value": {
+        "none": ["Bibliothèque nationale de France"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Source Images"]
+      },
+      "value": {
+        "none": ["https://gallica.bnf.fr/ark:/12148/bpt6k2012653g"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Metadata Source"]
+      },
+      "value": {
+        "none": [
+          "http://oai.bnf.fr/oai2/OAIHandler?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:bnf.fr:gallica/ark:/12148/bpt6k2012653g"
+        ]
+      }
+    },
+    {
+      "label": {
+        "none": ["Shelfmark"]
+      },
+      "value": {
+        "none": ["DILA, 2009-100524"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Title"]
+      },
+      "value": {
+        "none": ["Journal officiel de la République française. Lois et décrets"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Date"]
+      },
+      "value": {
+        "none": ["10 janvier 1884"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Date"]
+      },
+      "value": {
+        "none": ["1884/01/10 (A16,N9)."]
+      }
+    },
+    {
+      "label": {
+        "none": ["Date"]
+      },
+      "value": {
+        "none": ["Appartient à l’ensemble documentaire : MAEDIGen0"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Date"]
+      },
+      "value": {
+        "none": ["Appartient à l’ensemble documentaire : MAEDI008"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Date"]
+      },
+      "value": {
+        "none": ["Appartient à l’ensemble documentaire : MAEDI012"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Date"]
+      },
+      "value": {
+        "none": ["Appartient à l’ensemble documentaire : MAEDI006"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Date"]
+      },
+      "value": {
+        "none": ["Appartient à l’ensemble documentaire : MAEDI007"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Date"]
+      },
+      "value": {
+        "none": ["Appartient à l’ensemble documentaire : MAEDI015"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Language"]
+      },
+      "value": {
+        "none": ["français"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Format"]
+      },
+      "value": {
+        "none": ["Nombre total de vues :  640344"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Relation"]
+      },
+      "value": {
+        "none": ["Notice du catalogue : http://catalogue.bnf.fr/ark:/12148/cb34378481r"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Relation"]
+      },
+      "value": {
+        "none": ["http://gallica.bnf.fr/ark:/12148/cb34378481r/date"]
+      }
+    },
+    {
+      "label": {
+        "none": ["Type"]
+      },
+      "value": {
+        "none": [""]
+      }
+    },
+    {
+      "label": {
+        "none": ["Rights/License"]
+      },
+      "value": {
+        "none": ["https://gallica.bnf.fr/html/und/conditions-dutilisation-des-contenus-de-gallica"]
+      }
+    }
+  ],
+  "label": {
+    "none": ["DILA, 2009-100524"]
+  },
+  "requiredStatement": {
+    "label": {
+      "none": ["Attribution"]
+    },
+    "value": {
+      "none": ["Bibliothèque nationale de France"]
+    }
+  },
+  "summary": {
+    "none": ["Journal officiel de la République française. Lois et décrets"]
+  },
+  "thumbnail": [
+    {
+      "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g.thumbnail",
+      "type": "Image"
+    }
+  ],
+  "provider": [
+    {
+      "id": "http://example.org/provider",
+      "type": "Agent",
+      "homepage": [
+        {
+          "id": "http://example.org/undefined/35",
+          "type": "unknown"
+        }
+      ],
+      "logo": [
+        {
+          "id": "https://gallica.bnf.fr/mbImage/logos/logo-bnf.png",
+          "type": "Image"
+        }
+      ],
+      "label": {
+        "none": ["Unknown"]
+      }
+    }
+  ],
+  "seeAlso": [
+    {
+      "id": "http://example.org/undefined/36",
+      "type": "unknown"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f1",
+      "type": "Canvas",
+      "height": 5764,
+      "width": 4768,
+      "label": {
+        "none": ["NP"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f1.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f1/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/19",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f1",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f1/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5764,
+                "width": 4768,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f1",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f2",
+      "type": "Canvas",
+      "height": 5766,
+      "width": 4318,
+      "label": {
+        "none": ["130"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f2.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f2/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/20",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f2",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f2/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5766,
+                "width": 4318,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f2",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f3",
+      "type": "Canvas",
+      "height": 5762,
+      "width": 4336,
+      "label": {
+        "none": ["131"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f3.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f3/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/21",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f3",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f3/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5762,
+                "width": 4336,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f3",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f4",
+      "type": "Canvas",
+      "height": 5765,
+      "width": 4358,
+      "label": {
+        "none": ["132"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f4.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f4/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/22",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f4",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f4/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5765,
+                "width": 4358,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f4",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f5",
+      "type": "Canvas",
+      "height": 5766,
+      "width": 4366,
+      "label": {
+        "none": ["133"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f5.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f5/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/23",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f5",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f5/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5766,
+                "width": 4366,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f5",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f6",
+      "type": "Canvas",
+      "height": 5767,
+      "width": 4398,
+      "label": {
+        "none": ["134"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f6.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f6/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/24",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f6",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f6/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5767,
+                "width": 4398,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f6",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f7",
+      "type": "Canvas",
+      "height": 5769,
+      "width": 4424,
+      "label": {
+        "none": ["135"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f7.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f7/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/25",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f7",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f7/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5769,
+                "width": 4424,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f7",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f8",
+      "type": "Canvas",
+      "height": 5770,
+      "width": 4491,
+      "label": {
+        "none": ["136"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f8.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f8/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/26",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f8",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f8/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5770,
+                "width": 4491,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f8",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f9",
+      "type": "Canvas",
+      "height": 5770,
+      "width": 4399,
+      "label": {
+        "none": ["137"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f9.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f9/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/27",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f9",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f9/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5770,
+                "width": 4399,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f9",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f10",
+      "type": "Canvas",
+      "height": 5768,
+      "width": 4486,
+      "label": {
+        "none": ["138"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f10.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f10/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/28",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f10",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f10/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5768,
+                "width": 4486,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f10",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f11",
+      "type": "Canvas",
+      "height": 5771,
+      "width": 4380,
+      "label": {
+        "none": ["139"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f11.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f11/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/29",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f11",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f11/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5771,
+                "width": 4380,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f11",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f12",
+      "type": "Canvas",
+      "height": 5785,
+      "width": 4509,
+      "label": {
+        "none": ["140"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f12.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f12/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/30",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f12",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f12/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5785,
+                "width": 4509,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f12",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f13",
+      "type": "Canvas",
+      "height": 5767,
+      "width": 4430,
+      "label": {
+        "none": ["141"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f13.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f13/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/31",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f13",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f13/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5767,
+                "width": 4430,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f13",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f14",
+      "type": "Canvas",
+      "height": 5780,
+      "width": 4509,
+      "label": {
+        "none": ["142"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f14.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f14/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/32",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f14",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f14/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5780,
+                "width": 4509,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f14",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15",
+      "type": "Canvas",
+      "height": 5761,
+      "width": 4405,
+      "label": {
+        "none": ["143"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f15.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/33",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f15/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5761,
+                "width": 4405,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f15",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f16",
+      "type": "Canvas",
+      "height": 5781,
+      "width": 4469,
+      "label": {
+        "none": ["144"]
+      },
+      "thumbnail": [
+        {
+          "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f16.thumbnail",
+          "type": "Image"
+        }
+      ],
+      "items": [
+        {
+          "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f16/annotation-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "http://example.org/oa:Annotation/34",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f16",
+              "body": {
+                "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f16/full/full/0/native.jpg",
+                "type": "Image",
+                "height": 5781,
+                "width": 4469,
+                "format": "image/jpeg",
+                "service": [
+                  {
+                    "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f16",
+                    "@type": "ImageService1",
+                    "profile": "level2"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

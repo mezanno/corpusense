@@ -1,0 +1,16 @@
+{
+  "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15",
+  "type": "Canvas",
+  "height": 5761,
+  "width": 4405,
+  "label": {
+    "none": ["143"]
+  },
+  "thumbnail": [
+    {
+      "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f15.thumbnail",
+      "type": "Image"
+    }
+  ],
+  "items": []
+}

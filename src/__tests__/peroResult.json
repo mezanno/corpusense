@@ -1,0 +1,40 @@
+[
+  {
+    "result": {
+      "ocr_engine": {
+        "name": "PERO OCR",
+        "code_version": "https://github.com/DCGM/pero-ocr?rev=57c07b1d192859bc4ec71859769d4f624c50dbfc",
+        "model_version": "pero_eu_cz_print_newspapers_2022-09-26"
+      },
+      "transcriptions": [
+        {
+          "region": [0, 0, 3615, 5363],
+          "lines": [
+            {
+              "id": "1",
+              "polygon": [
+                [10, 20],
+                [50, 20],
+                [50, 40],
+                [10, 40]
+              ],
+              "transcription": "Hello World!",
+              "transcription_confidence": 0.99
+            },
+            {
+              "id": "2",
+              "polygon": [
+                [60, 20],
+                [100, 20],
+                [100, 40],
+                [60, 40]
+              ],
+              "transcription": "The answer is 42.",
+              "transcription_confidence": 0.95
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

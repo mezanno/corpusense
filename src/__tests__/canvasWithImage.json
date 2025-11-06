@@ -1,0 +1,43 @@
+{
+  "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15",
+  "type": "Canvas",
+  "height": 5761,
+  "width": 4405,
+  "label": {
+    "none": ["143"]
+  },
+  "thumbnail": [
+    {
+      "id": "https://gallica.bnf.fr/ark:/12148/bpt6k2012653g/f15.thumbnail",
+      "type": "Image"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15/annotation-page",
+      "type": "AnnotationPage",
+      "items": [
+        {
+          "id": "http://example.org/oa:Annotation/15",
+          "type": "Annotation",
+          "motivation": "painting",
+          "target": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15",
+          "body": {
+            "id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f15/full/full/0/native.jpg",
+            "type": "Image",
+            "height": 5761,
+            "width": 4405,
+            "format": "image/jpeg",
+            "service": [
+              {
+                "@id": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/f15",
+                "@type": "ImageService1",
+                "profile": "level2"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
