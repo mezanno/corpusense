@@ -31,6 +31,7 @@ const NewModelForm = ({ formRef, setCanSubmit }: FormProps) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
+      description: '',
     },
     mode: 'onChange',
   });
