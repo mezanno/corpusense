@@ -2,7 +2,6 @@
 
 ## Priority
 
-FIX : le bouton import ne s'active pas lors de l'import de collection lorsque l'appli est déployé hors localhost
 FIX : si on supprime les results à la main, il faut mettre à jour le statut des task d'un worker. --> voir avec dbSync
 TODO : gestion des tags en mémoire.
 TODO : revoir le flou artistique autour du fait de relancer l'ocr sur un canvas qui en possède déjà
