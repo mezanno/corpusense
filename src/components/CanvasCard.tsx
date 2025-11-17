@@ -15,12 +15,13 @@ import { CollectionDetails } from '@/data/models/Collection';
 import { getImageForThumbnail } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
+import useLocalManifest from '@/hooks/useLocalManifest';
 import {
   addSelectionToCollectionRequest,
   createCollectionWithSelectionRequest,
 } from '@/state/reducers/collections';
 import { selectCollections } from '@/state/selectors/collections';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { Button } from './ui/button';
@@ -66,16 +67,37 @@ const CanvasCard = ({
     setSelectionStart,
     setSelection,
   } = useCanvasSelection();
+  const { getHandle } = useLocalManifest();
+  const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
 
   const inputCollectionName = useRef(null);
-  const thumbnail = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
-    getImageForThumbnail(canvas, 200),
-  ];
 
-  //! mieux gérer le cas où canvas est undefined
-  if (canvas === undefined) {
-    return <div aria-errormessage='Error while loading canvas'>Error while loading canvas</div>;
-  }
+  useEffect(() => {
+    const fetchThumbnail = async () => {
+      const originalThumb = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
+        getImageForThumbnail(canvas, 200),
+      ];
+
+      const thumb = [...originalThumb];
+      const item = { ...thumb[0] };
+
+      if (item !== null && item.id?.startsWith('http') === false) {
+        const handle = getHandle(item.id);
+
+        if (handle) {
+          const file = await handle.getFile();
+          const url = URL.createObjectURL(file);
+
+          item.id = url; // sécurité : on modifie le clone, pas l'original
+        }
+      }
+
+      thumb[0] = item;
+      setThumbnail(thumb);
+    };
+
+    void fetchThumbnail();
+  }, [canvas, getHandle]);
 
   const handleSetSelectionStart = () => {
     setSelectionStart(index);
@@ -147,18 +169,20 @@ const CanvasCard = ({
               data-canvas-id={canvas.id}
               role='listitem'
             >
-              <div className='w-fit flex-1'>
-                <AutoSizer disableWidth>
-                  {({ height }) => (
-                    <Thumbnail
-                      thumbnail={thumbnail}
-                      style={{ width: 'auto', height: `${height}px`, objectFit: 'contain' }}
-                      aria-label='canvas thumbnail'
-                      draggable={false}
-                    />
-                  )}
-                </AutoSizer>
-              </div>
+              {thumbnail !== null && (
+                <div className='w-fit flex-1'>
+                  <AutoSizer disableWidth>
+                    {({ height }) => (
+                      <Thumbnail
+                        thumbnail={thumbnail}
+                        style={{ width: 'auto', height: `${height}px`, objectFit: 'contain' }}
+                        aria-label='canvas thumbnail'
+                        draggable={false}
+                      />
+                    )}
+                  </AutoSizer>
+                </div>
+              )}
               <div className='flex w-full justify-between p-1 text-xs font-bold text-dark-slate-gray-300'>
                 {canvas.label !== undefined && canvas.label !== null && (
                   <span>{canvas.label.none}</span>
