@@ -29,17 +29,24 @@ export type CanvasInfo = {
   height: number;
 };
 
-export const generateManifest = (
-  documentName: string,
-  canvasInfo: CanvasInfo[],
-  folder: string,
-  rootUrl?: string,
-): Manifest => {
+export const generateManifest = ({
+  documentName,
+  canvasInfo,
+  folder,
+  rootUrl,
+  manifestId,
+}: {
+  documentName: string;
+  canvasInfo: CanvasInfo[];
+  folder: string;
+  rootUrl?: string;
+  manifestId?: string;
+}): Manifest => {
   const url_from = `${rootUrl ?? import.meta.env.VITE_SUPABASE_STORAGE_URL}/${folder}/`;
 
   return {
     '@context': 'http://iiif.io/api/presentation/3/context.json',
-    id: `${url_from}/manifest.json`,
+    id: manifestId ?? `${url_from}/manifest.json`,
     type: 'Manifest',
     label: {
       fr: [documentName],

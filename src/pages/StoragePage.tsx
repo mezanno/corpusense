@@ -156,16 +156,16 @@ const StoragePage = () => {
         images[i].thumbImageUrl =
           `${CANTALOUPE_URL}${documentName}_${filename}.png/full/,120/0/default.png`;
       }
-      const newManifest = generateManifest(
-        documentName.trim(),
-        images.map((img) => ({
+      const newManifest = generateManifest({
+        documentName: documentName.trim(),
+        canvasInfo: images.map((img) => ({
           id: img.fullImageUrl ?? '',
           thumb: img.thumbImageUrl ?? '',
           width: img.width,
           height: img.height,
         })),
-        documentName, // Ajouter le préfixe de nom de fichier comme dossier),
-      );
+        folder: documentName, // Ajouter le préfixe de nom de fichier comme dossier),
+      });
       void uploadManifestToSupabase(documentName, newManifest);
       console.log('Generated Manifest: ', newManifest);
 
