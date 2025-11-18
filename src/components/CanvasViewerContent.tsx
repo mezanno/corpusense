@@ -1,5 +1,7 @@
 import { Annotation, ElementType, isAnnotation } from '@/data/models/Annotation';
+import { getImage } from '@/data/utils/canvas';
 import { useAppDispatch } from '@/hooks/hooks';
+import useLocalManifest from '@/hooks/useLocalManifest';
 import { useAddAnnotation } from '@/hooks/useSaveAnnotation';
 import { updateAnnotationRequest } from '@/state/reducers/annotations';
 import { selectAnnotations } from '@/state/selectors/annotations';
@@ -15,6 +17,7 @@ import {
   useAnnotator,
   useHover,
 } from '@annotorious/react';
+import { TileSource } from 'openseadragon';
 import { useEffect, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { CanvasViewerMode } from './reducers/CanvasViewerContext';
@@ -45,6 +48,7 @@ export const CanvasViewerContent = ({ collectionId }: { collectionId?: string })
     mode,
     hoveredElement,
     error,
+    forceSource,
   } = useCanvasViewerContext();
   console.log(`CanvasViewerContent - render ${canvas.id}, ${collectionId}`);
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
@@ -58,6 +62,8 @@ export const CanvasViewerContent = ({ collectionId }: { collectionId?: string })
   useEffect(() => {
     setHovered(hover?.id);
   }, [hover]);
+
+  const { getHandle } = useLocalManifest();
 
   const isNewCanvas = useRef(true); //to check if the canvas is new (to avoid syncing the annotations when the canvas is the same)
 
@@ -105,6 +111,28 @@ export const CanvasViewerContent = ({ collectionId }: { collectionId?: string })
     // });
     viewer.addHandler('open-failed', (event) => {
       console.log("Erreur lors du chargement d'une source'", event);
+      const image = getImage(canvas);
+      //if it's a local file
+      if (image.id?.startsWith('http') === false) {
+        console.log('addHandler - open-failed: ', image.id);
+        const handle = getHandle(image.id);
+
+        if (handle) {
+          void (async () => {
+            try {
+              const file = await handle.getFile();
+              const url = URL.createObjectURL(file);
+              console.log(url);
+              // TODO : remplacer la source dans OpenSeadragon avec cette URL
+              forceSource([{ type: 'image', url: url }] as unknown as TileSource[]);
+            } catch (e) {
+              console.error('Erreur lors de la lecture du fichier local :', e);
+            }
+          })();
+        }
+        return;
+      }
+
       //Check if the url exists in the cache and update the source
       if (error === undefined) {
         setSourceAsImage();
