@@ -35,12 +35,18 @@ const parseDirectoryForFiles = async (
   return filesMap;
 };
 
-const parseDirectoryForFile = async (
+export const parseDirectoryForFile = async (
   handle: FileSystemDirectoryHandle,
-  fileName: string,
+  filename: string,
 ): Promise<FileSystemFileHandle | undefined> => {
+  //TODO: gérer s'il s'agit du chemin complet ou juste du nom de fichier
+  const file = filename.split('/').pop();
+  if (file === undefined) {
+    throw new Error('Invalid file name');
+  }
+
   for await (const [, entry] of handle.entries()) {
-    if (entry.kind === 'file' && entry.name === fileName) {
+    if (entry.kind === 'file' && entry.name === file) {
       const fileHandle = entry;
       return fileHandle;
     }
@@ -97,24 +103,20 @@ const useFs = () => {
     return await getContent(fileHandle);
   };
 
-  const getFile = async (fileFullname: string): Promise<File> => {
-    const fileHandle = files.get(fileFullname);
+  const getFile = async (filename: string): Promise<File> => {
+    const fileHandle = files.get(filename);
 
     //if the file does not exists in the list, parse the directory again for this specific file
     if (fileHandle !== undefined) {
       return await fileHandle.getFile();
     }
 
-    const filename = fileFullname.split('/').pop();
-    if (filename === undefined) {
-      throw new Error('Invalid file name');
-    }
     const file = await parseDirectoryForFile(rootHandle!, filename);
 
     if (file === undefined) {
       throw new Error('File not found');
     }
-    setFiles(new Map([...files, [fileFullname, file]]));
+    setFiles(new Map([...files, [filename, file]]));
     console.log(files);
 
     return await file.getFile();
