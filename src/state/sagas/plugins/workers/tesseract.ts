@@ -7,7 +7,9 @@ import {
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
+import { parseDirectoryForFile } from '@/hooks/useFs';
 import { PluginParams } from '@/state/reducers/workers';
+import { useFSHandleStore } from '@/state/zustand/useFSHandleStore';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import Tesseract, { createWorker } from 'tesseract.js';
@@ -84,7 +86,20 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       }
     }
 
-    console.log(regions);
+    let imageToProcess: string | File = image.id;
+    //check if the image is a local file
+    if (!imageToProcess.toLocaleLowerCase().startsWith('http')) {
+      const rootHendle = useFSHandleStore.getState().rootHandle;
+      if (rootHendle === undefined) {
+        throw new Error('Root handle is undefined');
+      }
+      const file = await parseDirectoryForFile(rootHendle, image.id);
+      if (file === undefined) {
+        throw new Error(`${image.id} not found in local file system`);
+      }
+      imageToProcess = await file.getFile();
+    }
+    console.log('imageToProcess: ', imageToProcess);
 
     const tesseractWorker = await getTesseractWorker();
     const annotations = [];
@@ -95,8 +110,9 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
         const region = regions[r];
         console.log(`Processing region ${r + 1}/${regions.length}`);
         console.log(region);
+
         const { data } = await tesseractWorker.recognize(
-          image.id,
+          imageToProcess,
           { rectangle: region },
           {
             blocks: true,
