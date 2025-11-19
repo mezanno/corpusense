@@ -15,7 +15,7 @@ import { CollectionDetails } from '@/data/models/Collection';
 import { getImageForThumbnail } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
-import useLocalManifest from '@/hooks/useLocalManifest';
+import useFs from '@/hooks/useFs';
 import {
   addSelectionToCollectionRequest,
   createCollectionWithSelectionRequest,
@@ -67,10 +67,11 @@ const CanvasCard = ({
     setSelectionStart,
     setSelection,
   } = useCanvasSelection();
-  const { getHandle } = useLocalManifest();
   const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
 
   const inputCollectionName = useRef(null);
+
+  const { getFile } = useFs();
 
   useEffect(() => {
     const fetchThumbnail = async () => {
@@ -82,13 +83,12 @@ const CanvasCard = ({
       const item = { ...thumb[0] };
 
       if (item !== null && item.id?.startsWith('http') === false) {
-        const handle = getHandle(item.id);
-
-        if (handle) {
-          const file = await handle.getFile();
+        try {
+          const file = await getFile(item.id);
           const url = URL.createObjectURL(file);
-
           item.id = url; // sécurité : on modifie le clone, pas l'original
+        } catch (err) {
+          console.error('Failed to get file for thumbnail:', err);
         }
       }
 
@@ -97,7 +97,7 @@ const CanvasCard = ({
     };
 
     void fetchThumbnail();
-  }, [canvas, getHandle]);
+  }, [canvas]);
 
   const handleSetSelectionStart = () => {
     setSelectionStart(index);

@@ -1,12 +1,11 @@
 import { useAppDispatch } from '@/hooks/hooks';
-import { useFs } from '@/hooks/useFs';
-import useLocalManifest from '@/hooks/useLocalManifest';
+import useFs from '@/hooks/useFs';
 import usePdfWorker from '@/hooks/usePdfWorker';
 import { fecthManifestRequest } from '@/state/reducers/manifests';
 import { generateManifest } from '@/utils/manifest';
 import { ImageData } from '@/workers/pdfWorker';
 import { File, FileWarning, Folder, FolderX, Save } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PdfProgress from './pdfProgress/PdfProgress';
 import { pdfProgressStore } from './pdfProgress/progressStore';
@@ -28,13 +27,27 @@ const LocalManifestBrowser = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const { processPdf } = usePdfWorker();
-  const { setHandles } = useLocalManifest();
   const [imagesData, setImagesData] = useState<ImageData[]>([]);
 
-  const { onDirectorySelection, files, isBrowserSupported, writeFile, handles } = useFs({});
+  const { isBrowserSupported, onSelectDirectory, files, getFileContent, writeFile } = useFs();
+
+  const pdfFiles = useMemo(
+    () =>
+      new Map(
+        Array.from(files.entries()).filter(([path]) => path.toLocaleLowerCase().endsWith('.pdf')),
+      ),
+    [files],
+  );
+  const jsonFiles = useMemo(
+    () =>
+      new Map(
+        Array.from(files.entries()).filter(([path]) => path.toLocaleLowerCase().endsWith('.json')),
+      ),
+    [files],
+  );
 
   const handleGenerateManifest = async (path: string) => {
-    const fileContent = files.get(path);
+    const fileContent = await getFileContent(path);
     if (fileContent === undefined) return;
 
     const blob = base64ToBlob(fileContent);
@@ -53,25 +66,24 @@ const LocalManifestBrowser = () => {
       imagesData[i].fullImageUrl = url;
       imagesData[i].thumbImageUrl = url;
     }
-    const newManifest = generateManifest(
-      `${path}_manifest.json`,
-      imagesData.map((img) => ({
+    const newManifest = generateManifest({
+      documentName: `${path}_manifest.json`,
+      canvasInfo: imagesData.map((img) => ({
         id: img.fullImageUrl ?? '',
         thumb: img.thumbImageUrl ?? '',
         width: img.width,
         height: img.height,
       })),
-      path,
-      '',
-    );
+      folder: path,
+      rootUrl: '',
+      manifestId: `${path}_manifest.json`,
+    });
     await writeFile(`${path}_manifest.json`, JSON.stringify(newManifest, null, 2));
   };
 
-  const handleOpenManifest = (path: string) => {
-    const manifestText = files.get(path);
+  const handleOpenManifest = async (path: string) => {
+    const manifestText = await getFileContent(path);
     if (manifestText === undefined) return;
-
-    setHandles(handles);
     appDispatch(fecthManifestRequest(manifestText));
   };
 
@@ -86,12 +98,6 @@ const LocalManifestBrowser = () => {
     );
   }
 
-  const hasManifest = Array.from(files.keys()).some((path) =>
-    path.toLocaleLowerCase().endsWith('.json'),
-  );
-
-  const hasPdf = Array.from(files.keys()).some((path) => path.toLocaleLowerCase().endsWith('.pdf'));
-
   return (
     <div className='flex flex-col space-y-1'>
       <div className='flex items-center justify-between space-x-2'>
@@ -100,39 +106,22 @@ const LocalManifestBrowser = () => {
           <p className='text-sm font-light'>{t('description_local_manifest')}</p>
         </div>
         <div>
-          <button
-            className='soft-button'
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            onClick={onDirectorySelection}
-          >
+          <button className='soft-button' onClick={onSelectDirectory}>
             <Folder />
             {t('btn_select_folder')}
           </button>
         </div>
       </div>
-      {files.size > 0 ? (
-        hasManifest ? (
-          <>
-            <div>Manifest trouvé :</div>
-            {Array.from(files.keys())
-              .filter((path) => path.toLocaleLowerCase().endsWith('.json'))
-              .map((path) => (
-                <div
-                  key={path}
-                  className='flex cursor-pointer items-center gap-2'
-                  onClick={() => void handleOpenManifest(path)}
-                >
-                  <File />
-                  <span>{path}</span>
-                </div>
-              ))}
-          </>
-        ) : hasPdf ? (
-          <div>
-            <h4>{t('title_pdf_in_folder')}</h4>
-            {Array.from(files.keys())
-              .filter((path) => path.toLocaleLowerCase().endsWith('.pdf'))
-              .map((path) => (
+      {pdfFiles.size === 0 ? (
+        <div className='flex text-red-500'>
+          <FolderX /> {t('info_empty_folder')}
+        </div>
+      ) : (
+        <>
+          {pdfFiles.size > 0 && (
+            <div>
+              <h4>{t('title_pdf_in_folder')}</h4>
+              {Array.from(pdfFiles.keys()).map((path) => (
                 <div key={path} className='flex items-center gap-2'>
                   <File
                     onClick={() => void handleGenerateManifest(path)}
@@ -147,14 +136,26 @@ const LocalManifestBrowser = () => {
                   )}
                 </div>
               ))}
-          </div>
-        ) : (
-          <div>Aucun pdf ni manifest</div>
-        )
-      ) : (
-        <div className='flex text-red-500'>
-          <FolderX /> {t('info_empty_folder')}
-        </div>
+            </div>
+          )}
+          {jsonFiles.size > 0 && (
+            <div>
+              <div>Manifest trouvé :</div>
+              {Array.from(jsonFiles.keys())
+                .filter((path) => path.toLocaleLowerCase().endsWith('.json'))
+                .map((path) => (
+                  <div
+                    key={path}
+                    className='flex cursor-pointer items-center gap-2'
+                    onClick={() => void handleOpenManifest(path)}
+                  >
+                    <File />
+                    <span>{path}</span>
+                  </div>
+                ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

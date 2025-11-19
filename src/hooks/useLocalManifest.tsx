@@ -11,6 +11,8 @@ const localManifestContext = createContext<LocalManifestContextType | undefined>
 export const LocalManifestProvider = ({ children }: { children: React.ReactNode }) => {
   const [handles, setHandles] = useState<Map<string, FileSystemFileHandle>>(new Map());
 
+  console.log('LocalManifestProvider: handles ', handles);
+
   const getHandle = (path: string): FileSystemFileHandle | undefined => {
     return handles.get(path);
   };

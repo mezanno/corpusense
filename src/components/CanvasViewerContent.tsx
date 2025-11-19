@@ -1,7 +1,7 @@
 import { Annotation, ElementType, isAnnotation } from '@/data/models/Annotation';
 import { getImage } from '@/data/utils/canvas';
 import { useAppDispatch } from '@/hooks/hooks';
-import useLocalManifest from '@/hooks/useLocalManifest';
+import useFs from '@/hooks/useFs';
 import { useAddAnnotation } from '@/hooks/useSaveAnnotation';
 import { updateAnnotationRequest } from '@/state/reducers/annotations';
 import { selectAnnotations } from '@/state/selectors/annotations';
@@ -59,11 +59,11 @@ export const CanvasViewerContent = ({ collectionId }: { collectionId?: string })
 
   const hover = useHover();
 
+  const { getFile } = useFs();
+
   useEffect(() => {
     setHovered(hover?.id);
   }, [hover]);
-
-  const { getHandle } = useLocalManifest();
 
   const isNewCanvas = useRef(true); //to check if the canvas is new (to avoid syncing the annotations when the canvas is the same)
 
@@ -114,22 +114,19 @@ export const CanvasViewerContent = ({ collectionId }: { collectionId?: string })
       const image = getImage(canvas);
       //if it's a local file
       if (image.id?.startsWith('http') === false) {
-        console.log('addHandler - open-failed: ', image.id);
-        const handle = getHandle(image.id);
-
-        if (handle) {
-          void (async () => {
-            try {
-              const file = await handle.getFile();
+        void (async () => {
+          try {
+            if (image.id !== undefined) {
+              const file = await getFile(image.id);
               const url = URL.createObjectURL(file);
-              console.log(url);
               // TODO : remplacer la source dans OpenSeadragon avec cette URL
               forceSource([{ type: 'image', url: url }] as unknown as TileSource[]);
-            } catch (e) {
-              console.error('Erreur lors de la lecture du fichier local :', e);
             }
-          })();
-        }
+          } catch (e) {
+            console.error('Erreur lors de la lecture du fichier local :', e);
+          }
+        })();
+
         return;
       }
 
