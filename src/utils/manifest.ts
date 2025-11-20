@@ -33,16 +33,16 @@ export const generateManifest = ({
   documentName,
   canvasInfo,
   folder,
-  rootUrl,
   manifestId,
+  isFileSystem = false,
 }: {
   documentName: string;
   canvasInfo: CanvasInfo[];
   folder: string;
-  rootUrl?: string;
   manifestId?: string;
+  isFileSystem?: boolean;
 }): Manifest => {
-  const url_from = `${rootUrl ?? import.meta.env.VITE_SUPABASE_STORAGE_URL}/${folder}/`;
+  const url_from = isFileSystem ? '' : `${import.meta.env.VITE_SUPABASE_STORAGE_URL}/${folder}/`;
 
   return {
     '@context': 'http://iiif.io/api/presentation/3/context.json',
@@ -81,13 +81,15 @@ export const generateManifest = ({
                 format: 'image/png',
                 width: Math.floor(canvas.width),
                 height: Math.floor(canvas.height),
-                service: [
-                  {
-                    id: canvas.id.substring(0, canvas.id.length - 23), // Retirer l'extension .png
-                    type: 'ImageService3',
-                    profile: 'level1',
-                  },
-                ],
+                service: isFileSystem
+                  ? []
+                  : [
+                      {
+                        id: canvas.id.substring(0, canvas.id.length - 23), // Retirer l'extension .png
+                        type: 'ImageService3',
+                        profile: 'level1',
+                      },
+                    ],
               },
             },
           ],

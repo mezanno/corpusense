@@ -75,8 +75,8 @@ const LocalManifestBrowser = () => {
         height: img.height,
       })),
       folder: path,
-      rootUrl: '',
       manifestId: `${path}_manifest.json`,
+      isFileSystem: true,
     });
     await writeFile(`${path}_manifest.json`, JSON.stringify(newManifest, null, 2));
   };
