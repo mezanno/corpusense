@@ -101,12 +101,12 @@ function* handleFetchManifest(action: {
       // yield call(fetchManifest, { fetchFunction: () => JSON.parse(manifestInput) as object });
       try {
         const manifest = convertJsonToManifest(JSON.parse(manifestInput) as object);
-        // try {
-        //   const manifestRepository = getManifestRepository();
-        //   yield call([manifestRepository, manifestRepository.add], manifest);
-        // } catch (error) {
-        //   console.warn('Error saving manifest to indexedDB: ', error);
-        // }
+        try {
+          const manifestRepository = getManifestRepository();
+          yield call([manifestRepository, manifestRepository.add], manifest);
+        } catch (error) {
+          console.warn('Error saving manifest to indexedDB: ', error);
+        }
 
         yield put(
           fetchManifestSuccess({
