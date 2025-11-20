@@ -106,7 +106,11 @@ const LocalManifestBrowser = () => {
           <p className='text-sm font-light'>{t('description_local_manifest')}</p>
         </div>
         <div>
-          <button className='soft-button' onClick={onSelectDirectory}>
+          <button
+            className='soft-button'
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            onClick={onSelectDirectory}
+          >
             <Folder />
             {t('btn_select_folder')}
           </button>
