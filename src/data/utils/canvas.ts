@@ -38,9 +38,10 @@ const getSource = async (canvas: Canvas): Promise<TileSource[]> => {
     }
   } else {
     if (image?.id !== undefined && !image.id.startsWith('http')) {
-      console.log(image.id);
       const url = await getObjectUrl(image.id);
       source = [{ type: 'image', url: url }] as unknown as TileSource[];
+    } else {
+      source = [{ type: 'image', url: image.id }] as unknown as TileSource[];
     }
   }
 
