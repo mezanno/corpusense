@@ -1,5 +1,5 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
-import { getImage } from '@/data/utils/canvas';
+import { getSource } from '@/data/utils/canvas';
 import {
   AnnotationState,
   DrawingStyleExpression,
@@ -7,9 +7,9 @@ import {
   OpenSeadragonViewer,
   useHover,
 } from '@annotorious/react';
-import { Canvas, ImageService } from '@iiif/presentation-3';
-import { TileSource } from 'openseadragon';
-import { useMemo } from 'react';
+import { Canvas } from '@iiif/presentation-3';
+import OpenSeadragon from 'openseadragon';
+import { useEffect, useState } from 'react';
 import { CanvasViewerMode } from '../reducers/CanvasViewerContext';
 
 const colors = {
@@ -20,42 +20,30 @@ const colors = {
 
 const CanvasViewerOSDContent = ({ canvas, mode }: { canvas: Canvas; mode: CanvasViewerMode }) => {
   const hover = useHover();
+  const [options, setOptions] = useState<OpenSeadragon.Options | null>(null);
 
   console.log('CanvasViewerOSDContent render - canvas id: ', canvas.id);
 
-  //TODO : on a des renders qui se produisent quand on déplace une annotation (??)
-  const options = useMemo(() => {
-    const image = getImage(canvas);
-    console.log('image: ', image);
-
-    let source: TileSource[] = [];
-    if (image?.service?.length != null) {
-      const service = image.service[0] as ImageService;
-      if (service !== undefined) {
-        const id = service['@id'] ?? service.id;
-        if (id !== undefined) {
-          source = [`${id}/info.json`] as unknown as TileSource[];
-        }
-      }
-    }
-    console.log('source: ', source);
-
-    return {
-      prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
-      defaultZoomLevel: 0.5,
-      minZoomLevel: 0.1,
-      tileSources: source,
-      loadTilesWithAjax: true,
-      // crossOriginPolicy: 'false',
-      showSequenceControl: true,
-      showHomeControl: true,
-      showFullPageControl: true,
-      gestureSettingsMouse: {
-        clickToZoom: false,
-      },
-      tileRetryMax: 5,
-      tileRetryDelay: 2000,
+  useEffect(() => {
+    const loadSource = async () => {
+      const source = await getSource(canvas);
+      setOptions({
+        prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
+        defaultZoomLevel: 0.5,
+        minZoomLevel: 0.1,
+        tileSources: source,
+        loadTilesWithAjax: true,
+        // crossOriginPolicy: 'false',
+        showSequenceControl: true,
+        showHomeControl: true,
+        showFullPageControl: true,
+        gestureSettingsMouse: {
+          clickToZoom: false,
+        },
+      });
     };
+
+    void loadSource();
   }, [canvas]);
 
   const style = (annotation: Annotation, state?: AnnotationState) => {
@@ -79,11 +67,13 @@ const CanvasViewerOSDContent = ({ canvas, mode }: { canvas: Canvas; mode: Canvas
       <div
         className={`h-full w-full ${mode === CanvasViewerMode.DRAW ? 'cursor-pen-tool' : 'cursor-default'}`}
       >
-        <OpenSeadragonViewer
-          aria-label='canvas viewer'
-          className='h-full w-full'
-          options={options}
-        />
+        {options != null && (
+          <OpenSeadragonViewer
+            aria-label='canvas viewer'
+            className='h-full w-full'
+            options={options}
+          />
+        )}
       </div>
     </OpenSeadragonAnnotator>
   );
