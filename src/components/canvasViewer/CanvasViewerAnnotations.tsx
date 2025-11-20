@@ -33,6 +33,13 @@ const CanvasViewerAnnotations = ({
   const isNewCanvas = useRef(true); //to check if the canvas is new (to avoid syncing the annotations when the canvas is the same)
 
   useEffect(() => {
+    if (anno !== null) {
+      anno.clearAnnotations();
+      isNewCanvas.current = true;
+    }
+  }, [canvas]);
+
+  useEffect(() => {
     if (isNewCanvas.current === false) {
       //sync the annotations in the store with the annotations in annotorious
       annotationsInStore.forEach((annotation) => {
@@ -97,7 +104,7 @@ const CanvasViewerAnnotations = ({
     anno.on('createAnnotation', onCreate);
     anno.on('updateAnnotation', onUpdate);
 
-    if (isNewCanvas.current && collectionId !== undefined && annotationsInStore !== undefined) {
+    if (isNewCanvas.current && annotationsInStore !== undefined) {
       //initializing Annototious with the annotations in the store
       anno.setAnnotations(annotationsInStore);
       isNewCanvas.current = false;
