@@ -53,6 +53,25 @@ export const parseDirectoryForFile = async (
   }
 };
 
+export const getObjectUrl = async (filename: string): Promise<string> => {
+  const filenameShort = filename.includes('/') ? filename.split('/').pop() : filename;
+
+  const { rootHandle } = useFSHandleStore.getState();
+  if (rootHandle === undefined) {
+    throw new Error('No directory selected');
+  }
+
+  for await (const [, entry] of rootHandle.entries()) {
+    if (entry.kind === 'file' && entry.name === filenameShort) {
+      const fileHandle = entry;
+      const fileData = await fileHandle.getFile();
+      return URL.createObjectURL(fileData);
+    }
+  }
+
+  throw new Error('File not found');
+};
+
 const getContent = async (handle: FileSystemFileHandle): Promise<string> => {
   const file = await handle.getFile();
   return file.type === 'application/pdf' ? await fileToBase64(file) : await file.text();
