@@ -16,7 +16,7 @@ import { useAppSelector } from '@/hooks/hooks';
 import { selectCollections } from '@/state/selectors/collections';
 import { Canvas } from '@iiif/presentation-3';
 import { useEffect, useState } from 'react';
-import CanvasViewer from './CanvasViewer';
+import CanvasViewer from './canvasViewer/CanvasViewer';
 
 const QuickCanvasViewer = () => {
   const collections = useAppSelector(selectCollections);
