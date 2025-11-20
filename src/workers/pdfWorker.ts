@@ -59,7 +59,7 @@ self.onmessage = async (e) => {
   let currentPage = 0;
   for (const page of pdf.pages()) {
     const image = await page.render({
-      scale: 3,
+      scale: 1,
       render: renderFunction,
     });
     images.push({
