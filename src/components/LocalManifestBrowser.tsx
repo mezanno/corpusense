@@ -29,21 +29,32 @@ const LocalManifestBrowser = () => {
   const { processPdf } = usePdfWorker();
   const [imagesData, setImagesData] = useState<ImageData[]>([]);
 
-  const { isBrowserSupported, onSelectDirectory, files, getFileContent, writeFile } = useFs();
+  const {
+    isBrowserSupported,
+    onSelectDirectory,
+    getFileContent,
+    writeFile,
+    cachedFileHandles,
+    currentDirectoryHandle,
+  } = useFs();
 
   const pdfFiles = useMemo(
     () =>
       new Map(
-        Array.from(files.entries()).filter(([path]) => path.toLocaleLowerCase().endsWith('.pdf')),
+        Array.from(cachedFileHandles.entries()).filter(([path]) =>
+          path.toLocaleLowerCase().endsWith('.pdf'),
+        ),
       ),
-    [files],
+    [cachedFileHandles],
   );
   const jsonFiles = useMemo(
     () =>
       new Map(
-        Array.from(files.entries()).filter(([path]) => path.toLocaleLowerCase().endsWith('.json')),
+        Array.from(cachedFileHandles.entries()).filter(([path]) =>
+          path.toLocaleLowerCase().endsWith('.json'),
+        ),
       ),
-    [files],
+    [cachedFileHandles],
   );
 
   const handleGenerateManifest = async (path: string) => {
@@ -69,7 +80,7 @@ const LocalManifestBrowser = () => {
     const newManifest = generateManifest({
       documentName: `${path}_manifest.json`,
       canvasInfo: imagesData.map((img) => ({
-        id: img.fullImageUrl ?? '',
+        id: `${currentDirectoryHandle?.name}/${img.fullImageUrl}`,
         thumb: img.thumbImageUrl ?? '',
         width: img.width,
         height: img.height,

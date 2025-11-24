@@ -15,6 +15,46 @@ async function fileToBase64(file: File): Promise<string> {
   });
 }
 
+export function getFolder(path: string): string {
+  const parts = path.split('/');
+
+  if (parts.length < 2) {
+    throw new Error(`Le fichier "${path}" n'est pas dans un dossier.`);
+  }
+
+  // Tous les éléments sauf le dernier (le fichier)
+  return parts.slice(0, -1).join('/');
+}
+
+export async function getFile(filename: string): Promise<File> {
+  const { cachedFileHandles, getDirectoryHandle, addFileHandleToCache } =
+    useFSHandleStore.getState();
+
+  const fileHandle = cachedFileHandles.get(filename);
+
+  if (fileHandle !== undefined) {
+    console.log('file found in cacbe');
+
+    return await fileHandle.getFile();
+  }
+
+  //if the file does not exists in the cache, parse the directory again for this specific file
+  const folder = getFolder(filename);
+  console.log('looking in folder ', folder);
+  const currentDirectoryHandle = getDirectoryHandle(folder);
+  if (currentDirectoryHandle === undefined) {
+    throw new Error('No directory selected');
+  }
+  const file = await parseDirectoryForFile(currentDirectoryHandle, filename);
+
+  if (file === undefined) {
+    throw new Error('File not found');
+  }
+  addFileHandleToCache(file);
+
+  return await file.getFile();
+}
+
 //parse a directory using the File System Access API
 const parseDirectoryForFiles = async (
   handle: FileSystemDirectoryHandle,
@@ -54,22 +94,9 @@ export const parseDirectoryForFile = async (
 };
 
 export const getObjectUrl = async (filename: string): Promise<string> => {
-  const filenameShort = filename.includes('/') ? filename.split('/').pop() : filename;
-
-  const { rootHandle } = useFSHandleStore.getState();
-  if (rootHandle === undefined) {
-    throw new Error('No directory selected');
-  }
-
-  for await (const [, entry] of rootHandle.entries()) {
-    if (entry.kind === 'file' && entry.name === filenameShort) {
-      const fileHandle = entry;
-      const fileData = await fileHandle.getFile();
-      return URL.createObjectURL(fileData);
-    }
-  }
-
-  throw new Error('File not found');
+  console.log('getObjectUrl called with filename: ', filename);
+  const file = await getFile(filename);
+  return URL.createObjectURL(file);
 };
 
 const getContent = async (handle: FileSystemFileHandle): Promise<string> => {
@@ -78,38 +105,63 @@ const getContent = async (handle: FileSystemFileHandle): Promise<string> => {
 };
 
 const useFs = () => {
-  const [files, setFiles] = useState<Map<string, FileSystemFileHandle>>(new Map());
-  const { setRootHandle, loadRootHandle, rootHandle } = useFSHandleStore();
+  // const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const {
+    addDirectoryHandle,
+    loadDirectoryHandles,
+    directoryHandles,
+    cachedFileHandles,
+    addFileHandlesToCache,
+    addFileHandleToCache,
+  } = useFSHandleStore();
+  const [currentDirectoryHandle, setCurrentDirectoryHandle] = useState<
+    FileSystemDirectoryHandle | undefined
+  >(undefined);
+
+  console.log('directoryHandles: ', directoryHandles);
+  console.log('cachedFileHandles: ', cachedFileHandles);
 
   useEffect(() => {
-    void loadRootHandle();
+    void loadDirectoryHandles();
+    // //start an interval to parse the directories every minute to update the file handles
+    // intervalRef.current = setInterval(async () => {
+    //   for (const handle of directoryHandles) {
+    //     const files = await parseDirectoryForFiles(handle, ['.pdf', '.json', '.png']);
+    //     addFileHandlesToCache(files);
+    //   }
+    // }, 60000);
+    // return () => {
+    //   if (intervalRef.current) {
+    //     clearInterval(intervalRef.current);
+    //   }
+    // };
   }, []);
 
-  useEffect(() => {
-    async function getPermission() {
-      if (rootHandle !== undefined) {
-        const permissions = await rootHandle.requestPermission({ mode: 'readwrite' });
-        if (permissions !== 'granted') {
-          console.warn('Permission to access the directory was denied.');
-          return;
-        }
-        void parseDirectory();
-      }
-    }
-    void getPermission();
-  }, [rootHandle]);
-
-  const parseDirectory = async () => {
-    if (rootHandle === undefined) return;
-    const filesInDirectory = await parseDirectoryForFiles(rootHandle, ['.pdf', '.json']);
-    setFiles(filesInDirectory);
-  };
+  // useEffect(() => {
+  //   const requestPermissions = async () => {
+  //     for (const handle of directoryHandles) {
+  //       if (handle !== undefined) {
+  //         const permissions = await handle.requestPermission({ mode: 'readwrite' });
+  //         if (permissions !== 'granted') {
+  //           console.warn('Permission to access the directory was denied.');
+  //           return;
+  //         }
+  //       }
+  //     }
+  //     void parseDirectories();
+  //   };
+  //   void requestPermissions();
+  // }, [directoryHandles]);
 
   const onSelectDirectory = async () => {
     if ('showDirectoryPicker' in window) {
       try {
         const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
-        await setRootHandle(handle);
+        await addDirectoryHandle(handle);
+        setCurrentDirectoryHandle(handle);
+
+        const filesInDirectory = await parseDirectoryForFiles(handle, ['.pdf', '.json', '.png']);
+        addFileHandlesToCache(filesInDirectory);
       } catch (error) {
         console.error('Error selecting directory:', error);
       }
@@ -117,45 +169,28 @@ const useFs = () => {
   };
 
   const getFileContent = async (fileName: string): Promise<string> => {
-    const fileHandle = files.get(fileName);
+    const fileHandle = cachedFileHandles.get(fileName);
     if (fileHandle === undefined) throw new Error('File not found');
     return await getContent(fileHandle);
   };
 
-  const getFile = async (filename: string): Promise<File> => {
-    const fileHandle = files.get(filename);
-
-    //if the file does not exists in the list, parse the directory again for this specific file
-    if (fileHandle !== undefined) {
-      return await fileHandle.getFile();
-    }
-
-    const file = await parseDirectoryForFile(rootHandle!, filename);
-
-    if (file === undefined) {
-      throw new Error('File not found');
-    }
-    setFiles(new Map([...files, [filename, file]]));
-    console.log(files);
-
-    return await file.getFile();
-  };
-
   const writeFile = async (fileName: string, content: ArrayBuffer | string) => {
-    if (rootHandle === undefined) throw new Error('No directory selected');
-    const fileHandle = await rootHandle.getFileHandle(fileName, { create: true });
+    if (currentDirectoryHandle === undefined) throw new Error('No directory selected');
+    const fileHandle = await currentDirectoryHandle.getFileHandle(fileName, { create: true });
     const writable = await fileHandle.createWritable();
     await writable.write(content);
     await writable.close();
+    addFileHandleToCache(fileHandle);
   };
 
   return {
     isBrowserSupported: window !== undefined && 'showDirectoryPicker' in window,
     onSelectDirectory,
-    files,
     getFile,
     getFileContent,
     writeFile,
+    cachedFileHandles,
+    currentDirectoryHandle,
   };
 };
 export default useFs;
