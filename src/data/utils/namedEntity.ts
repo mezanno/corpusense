@@ -9,7 +9,6 @@ const computeSelector = (
   annotations: Annotation[],
 ): NamedEntitySelector[] => {
   const neWords = words(namedEntityValue);
-  console.log(neWords);
 
   /*
   for each word in neWords, find the annotation and the index of the word in the annotation
