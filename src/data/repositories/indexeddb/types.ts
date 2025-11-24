@@ -2,6 +2,7 @@ import { Annotation, AnnotationDTO, ElementType } from '@/data/models/Annotation
 import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { CollectionElement } from '@/data/models/CollectionElement';
 import { DataModel } from '@/data/models/DataModel';
+import { FSHandle } from '@/data/models/FSHandle';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
 import { NamedEntity } from '@/data/models/NamedEntity';
@@ -129,4 +130,9 @@ export interface WorkerRepository {
   deleteById(workerId: string): Promise<void>;
   deleteByScope(scope: Scope): Promise<string[]>;
   deleteResultById(workerId: string, taskId: number): Promise<void>;
+}
+
+export interface FSHandleRepository {
+  getAll(): Promise<FSHandle[]>;
+  put(handle: FSHandle): Promise<void>;
 }

@@ -64,8 +64,6 @@ function* fetchManifestFromURL(url: string): Generator<Effect, Manifest, Manifes
 function* handleFetchManifest(action: {
   payload: string;
 }): Generator<Effect, void, Manifest | History> {
-  console.log('handleFetchManifest ', action.payload);
-
   try {
     const manifestInput = action.payload;
 
@@ -101,11 +99,29 @@ function* handleFetchManifest(action: {
       }
     } else {
       // yield call(fetchManifest, { fetchFunction: () => JSON.parse(manifestInput) as object });
-      yield put(
-        fetchManifestError(
-          i18n.t('error_loading_manifest', { error: i18n.t('error_invalid_manifest_input') }),
-        ),
-      );
+      try {
+        const manifest = convertJsonToManifest(JSON.parse(manifestInput) as object);
+        try {
+          const manifestRepository = getManifestRepository();
+          yield call([manifestRepository, manifestRepository.add], manifest);
+        } catch (error) {
+          console.warn('Error saving manifest to indexedDB: ', error);
+        }
+
+        yield put(
+          fetchManifestSuccess({
+            content: manifest,
+            metadata: [],
+          }),
+        );
+        yield put(pushInfo(i18n.t('info_manifest_loaded')));
+      } catch (error) {
+        yield put(
+          fetchManifestError(
+            i18n.t('error_loading_manifest', { error: i18n.t('error_invalid_manifest_input') }),
+          ),
+        );
+      }
     }
   } catch (error) {
     const msg = i18n.t('error_loading_manifest', { error: getErrorMessage(error) });

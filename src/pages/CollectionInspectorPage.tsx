@@ -1,4 +1,4 @@
-import CanvasViewer from '@/components/CanvasViewer';
+import CanvasViewer from '@/components/canvasViewer/CanvasViewer';
 import CollectionToolbar from '@/components/CollectionToolbar';
 import CollectionMetadataForm from '@/components/forms/CollectionMetadataForm';
 import GridThumb from '@/components/GridThumb';
@@ -197,7 +197,7 @@ const CollectionInspectorContent = ({
                 </TabsList>
               </div>
               <TabsContent value='document'>
-                <CanvasViewer colllectionId={collectionId} canvas={canvasToDisplay} />
+                <CanvasViewer collectionId={collectionId} canvas={canvasToDisplay} />
               </TabsContent>
               <TabsContent value='text'>
                 <TextViewer collectionId={collectionId} canvas={canvasToDisplay} />

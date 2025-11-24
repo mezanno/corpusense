@@ -2,7 +2,6 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AlertDialogProvider } from './components/reducers/AlertDialogContext';
 import { CorpusenseRoutes } from './hooks/useAppNavigation';
 import { ExperimentalProvider } from './hooks/useExperimental';
-import useServiceWorker from './hooks/useServiceWorker';
 import { initI18n } from './i18n';
 import CollectionInspectorPage from './pages/CollectionInspectorPage';
 import CollectionsManagerPage from './pages/CollectionsManagerPage';
@@ -30,10 +29,11 @@ initI18n()
   });
 
 function App() {
-  useServiceWorker();
+  // useServiceWorker();// Hook to manage service worker updates (cached files updates)
 
   return (
     <BrowserRouter basename={basePath}>
+      {/* <LocalManifestProvider> */}
       <ExperimentalProvider>
         <AlertDialogProvider>
           <Routes>
@@ -62,6 +62,7 @@ function App() {
           </Routes>
         </AlertDialogProvider>
       </ExperimentalProvider>
+      {/* </LocalManifestProvider> */}
     </BrowserRouter>
   );
 }

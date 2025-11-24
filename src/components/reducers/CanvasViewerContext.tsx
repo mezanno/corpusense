@@ -70,6 +70,7 @@ export const ACTIONS = {
   SET_HOVERED: 'SET_HOVERED',
   SET_CANVAS: 'SET_CANVAS',
   SET_SOURCE_AS_IMAGE: 'SET_SOURCE_AS_IMAGE',
+  FORCE_SOURCE: 'FORCE_SOURCE',
 } as const;
 
 export type CanvasViewerAction =
@@ -77,7 +78,8 @@ export type CanvasViewerAction =
   | { type: typeof ACTIONS.TOGGLE_ANNOTATIONS }
   | { type: typeof ACTIONS.SET_HOVERED; payload: string | null }
   | { type: typeof ACTIONS.SET_CANVAS; payload: Canvas }
-  | { type: typeof ACTIONS.SET_SOURCE_AS_IMAGE };
+  | { type: typeof ACTIONS.SET_SOURCE_AS_IMAGE }
+  | { type: typeof ACTIONS.FORCE_SOURCE; payload: TileSource[] };
 
 function CanvasViewerReducer(state: CanvasViewerState, action: CanvasViewerAction) {
   switch (action.type) {
@@ -100,6 +102,12 @@ function CanvasViewerReducer(state: CanvasViewerState, action: CanvasViewerActio
         ...state,
         error: 'Tiles failed',
         source: [{ type: 'image', url: state.image.id }] as unknown as TileSource[],
+      };
+    }
+    case ACTIONS.FORCE_SOURCE: {
+      return {
+        ...state,
+        source: action.payload,
       };
     }
     case ACTIONS.TOGGLE_ANNOTATIONS: {
@@ -125,6 +133,7 @@ type CanvasViewerContextType = CanvasViewerState & {
   toggleAnnotations: () => void;
   setHovered: (id: string | null) => void;
   setSourceAsImage: () => void;
+  forceSource: (source: TileSource[]) => void;
 };
 
 export const CanvasViewerContext = createContext<CanvasViewerContextType | undefined>(undefined);
@@ -161,9 +170,13 @@ export const CanvasViewerProvider = ({
     () => dispatch({ type: ACTIONS.SET_SOURCE_AS_IMAGE }),
     [dispatch],
   );
+  const forceSource = useCallback(
+    (source: TileSource[]) => dispatch({ type: ACTIONS.FORCE_SOURCE, payload: source }),
+    [dispatch],
+  );
   return (
     <CanvasViewerContext.Provider
-      value={{ ...state, setMode, setHovered, toggleAnnotations, setSourceAsImage }}
+      value={{ ...state, setMode, setHovered, toggleAnnotations, setSourceAsImage, forceSource }}
     >
       {children}
     </CanvasViewerContext.Provider>

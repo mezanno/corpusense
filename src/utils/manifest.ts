@@ -29,22 +29,30 @@ export type CanvasInfo = {
   height: number;
 };
 
-export const generateManifest = (
-  documentName: string,
-  canvasInfo: CanvasInfo[],
-  folder: string,
-): Manifest => {
-  const url_supabase = `${import.meta.env.VITE_SUPABASE_STORAGE_URL}/${folder}/`;
+export const generateManifest = ({
+  documentName,
+  canvasInfo,
+  folder,
+  manifestId,
+  isFileSystem = false,
+}: {
+  documentName: string;
+  canvasInfo: CanvasInfo[];
+  folder: string;
+  manifestId?: string;
+  isFileSystem?: boolean;
+}): Manifest => {
+  const url_from = isFileSystem ? '' : `${import.meta.env.VITE_SUPABASE_STORAGE_URL}/${folder}/`;
 
   return {
     '@context': 'http://iiif.io/api/presentation/3/context.json',
-    id: `${url_supabase}/manifest.json`,
+    id: manifestId ?? `${url_from}/manifest.json`,
     type: 'Manifest',
     label: {
       fr: [documentName],
     },
     items: canvasInfo.map((canvas, index) => ({
-      id: `${url_supabase}/canvas/p${index + 1}`,
+      id: `${url_from}/canvas/p${index + 1}`,
       type: 'Canvas',
       label: {
         fr: [`Page ${index + 1}`],
@@ -60,11 +68,11 @@ export const generateManifest = (
       ],
       items: [
         {
-          id: `${url_supabase}/page/p${index + 1}/1`,
+          id: `${url_from}/page/p${index + 1}/1`,
           type: 'AnnotationPage',
           items: [
             {
-              id: `${url_supabase}/annotation/p${index + 1}/1-image`,
+              id: `${url_from}/annotation/p${index + 1}/1-image`,
               type: 'Annotation',
               motivation: 'painting',
               body: {
@@ -73,13 +81,15 @@ export const generateManifest = (
                 format: 'image/png',
                 width: Math.floor(canvas.width),
                 height: Math.floor(canvas.height),
-                service: [
-                  {
-                    id: canvas.id.substring(0, canvas.id.length - 23), // Retirer l'extension .png
-                    type: 'ImageService3',
-                    profile: 'level1',
-                  },
-                ],
+                service: isFileSystem
+                  ? []
+                  : [
+                      {
+                        id: canvas.id.substring(0, canvas.id.length - 23), // Retirer l'extension .png
+                        type: 'ImageService3',
+                        profile: 'level1',
+                      },
+                    ],
               },
             },
           ],
