@@ -15,7 +15,7 @@ import { CollectionDetails } from '@/data/models/Collection';
 import { getImageForThumbnail } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
-import useFs from '@/hooks/useFs';
+import { getObjectUrl } from '@/hooks/useFs';
 import {
   addSelectionToCollectionRequest,
   createCollectionWithSelectionRequest,
@@ -71,8 +71,6 @@ const CanvasCard = ({
 
   const inputCollectionName = useRef(null);
 
-  const { getFile } = useFs();
-
   useEffect(() => {
     const fetchThumbnail = async () => {
       const originalThumb = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
@@ -84,9 +82,7 @@ const CanvasCard = ({
 
       if (item !== null && item.id?.startsWith('http') === false) {
         try {
-          const file = await getFile(item.id);
-          const url = URL.createObjectURL(file);
-          item.id = url; // sécurité : on modifie le clone, pas l'original
+          item.id = await getObjectUrl(item.id);
         } catch (err) {
           console.error('Failed to get file for thumbnail:', err);
         }

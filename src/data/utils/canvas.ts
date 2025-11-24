@@ -1,5 +1,7 @@
-import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
+import { getObjectUrl } from '@/hooks/useFs';
+import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentation-3';
 import i18next from 'i18next';
+import { TileSource } from 'openseadragon';
 
 const getImage = (canvas: Canvas): IIIFExternalWebResource => {
   const image = canvas.items?.[0]?.items?.[0].body as IIIFExternalWebResource;
@@ -22,6 +24,30 @@ const getImageForThumbnail = (canvas: Canvas, maxWidth: number = 150): IIIFExter
   return image;
 };
 
+const getSource = async (canvas: Canvas): Promise<TileSource[]> => {
+  const image = getImage(canvas);
+
+  let source: TileSource[] = [];
+  if (image?.service?.length != null && image.service.length > 0) {
+    const service = image.service[0] as ImageService;
+    if (service !== undefined) {
+      const id = service['@id'] ?? service.id;
+      if (id !== undefined) {
+        source = [`${id}/info.json`] as unknown as TileSource[];
+      }
+    }
+  } else {
+    if (image?.id !== undefined && !image.id.startsWith('http')) {
+      const url = await getObjectUrl(image.id);
+      source = [{ type: 'image', url: url }] as unknown as TileSource[];
+    } else {
+      source = [{ type: 'image', url: image.id }] as unknown as TileSource[];
+    }
+  }
+
+  return source;
+};
+
 const toGallicaUrl = (iiifUrl: string) => {
   return iiifUrl.replace(
     /https:\/\/openapi\.bnf\.fr\/iiif\/presentation\/v3\/(ark:\/12148\/[^/]+\/[^/]+)\/canvas/,
@@ -29,4 +55,4 @@ const toGallicaUrl = (iiifUrl: string) => {
   );
 };
 
-export { getImage, getImageForThumbnail, toGallicaUrl };
+export { getImage, getImageForThumbnail, getSource, toGallicaUrl };

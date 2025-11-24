@@ -133,6 +133,6 @@ export interface WorkerRepository {
 }
 
 export interface FSHandleRepository {
-  getById(id: string): Promise<FSHandle>;
+  getAll(): Promise<FSHandle[]>;
   put(handle: FSHandle): Promise<void>;
 }

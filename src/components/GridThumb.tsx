@@ -1,7 +1,7 @@
 import WorkerStatusIcon from '@/components/WorkerStatusIcon';
 import { getImageForThumbnail } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import useFs from '@/hooks/useFs';
+import { getObjectUrl } from '@/hooks/useFs';
 import { removeElementFromCollectionRequest } from '@/state/reducers/collections';
 import {
   selectCanvasHasOcrAnnotations,
@@ -42,7 +42,6 @@ const GridThumb = ({
     selectCanvasHasOcrAnnotations(state, canvasId),
   );
   const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
-  const { getFile } = useFs();
 
   //TODO! 2 fois le même code que dans CanvasCard, à factoriser
   useEffect(() => {
@@ -56,9 +55,7 @@ const GridThumb = ({
 
       if (item !== null && item.id?.startsWith('http') === false) {
         try {
-          const file = await getFile(item.id);
-          const url = URL.createObjectURL(file);
-          item.id = url; // sécurité : on modifie le clone, pas l'original
+          item.id = await getObjectUrl(item.id);
         } catch (err) {
           console.error('Failed to get file for thumbnail:', err);
         }
