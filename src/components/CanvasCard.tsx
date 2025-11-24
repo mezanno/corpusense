@@ -15,13 +15,12 @@ import { CollectionDetails } from '@/data/models/Collection';
 import { getImageForThumbnail } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
-import { getObjectUrl } from '@/hooks/useFs';
 import {
   addSelectionToCollectionRequest,
   createCollectionWithSelectionRequest,
 } from '@/state/reducers/collections';
 import { selectCollections } from '@/state/selectors/collections';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { Button } from './ui/button';
@@ -67,33 +66,16 @@ const CanvasCard = ({
     setSelectionStart,
     setSelection,
   } = useCanvasSelection();
-  const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
 
   const inputCollectionName = useRef(null);
+  const thumbnail = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
+    getImageForThumbnail(canvas, 200),
+  ];
 
-  useEffect(() => {
-    const fetchThumbnail = async () => {
-      const originalThumb = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
-        getImageForThumbnail(canvas, 200),
-      ];
-
-      const thumb = [...originalThumb];
-      const item = { ...thumb[0] };
-
-      if (item !== null && item.id?.startsWith('http') === false) {
-        try {
-          item.id = await getObjectUrl(item.id);
-        } catch (err) {
-          console.error('Failed to get file for thumbnail:', err);
-        }
-      }
-
-      thumb[0] = item;
-      setThumbnail(thumb);
-    };
-
-    void fetchThumbnail();
-  }, [canvas]);
+  //! mieux gérer le cas où canvas est undefined
+  if (canvas === undefined) {
+    return <div aria-errormessage='Error while loading canvas'>Error while loading canvas</div>;
+  }
 
   const handleSetSelectionStart = () => {
     setSelectionStart(index);
@@ -165,20 +147,18 @@ const CanvasCard = ({
               data-canvas-id={canvas.id}
               role='listitem'
             >
-              {thumbnail !== null && (
-                <div className='w-fit flex-1'>
-                  <AutoSizer disableWidth>
-                    {({ height }) => (
-                      <Thumbnail
-                        thumbnail={thumbnail}
-                        style={{ width: 'auto', height: `${height}px`, objectFit: 'contain' }}
-                        aria-label='canvas thumbnail'
-                        draggable={false}
-                      />
-                    )}
-                  </AutoSizer>
-                </div>
-              )}
+              <div className='w-fit flex-1'>
+                <AutoSizer disableWidth>
+                  {({ height }) => (
+                    <Thumbnail
+                      thumbnail={thumbnail}
+                      style={{ width: 'auto', height: `${height}px`, objectFit: 'contain' }}
+                      aria-label='canvas thumbnail'
+                      draggable={false}
+                    />
+                  )}
+                </AutoSizer>
+              </div>
               <div className='flex w-full justify-between p-1 text-xs font-bold text-dark-slate-gray-300'>
                 {canvas.label !== undefined && canvas.label !== null && (
                   <span>{canvas.label.none}</span>

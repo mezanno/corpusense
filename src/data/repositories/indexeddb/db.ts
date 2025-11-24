@@ -1,7 +1,6 @@
 import { Annotation } from '@/data/models/Annotation';
 import { CollectionContent, CollectionDetails } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
-import { FSHandle } from '@/data/models/FSHandle';
 import { History } from '@/data/models/History';
 import { ItemMetadata } from '@/data/models/Metadata';
 import { NamedEntity } from '@/data/models/NamedEntity';
@@ -25,7 +24,6 @@ const db = new Dexie('mezanno') as Dexie & {
   namedEntities: EntityTable<NamedEntity, 'id'>;
   results: EntityTable<Result, 'id'>;
   workers: EntityTable<Worker, 'id'>;
-  handles: EntityTable<FSHandle, 'id'>;
 };
 
 db.version(1).stores({
@@ -42,7 +40,6 @@ db.version(1).stores({
   namedEntities: '&id, *annotationIds, type.id',
   results: '++id, workerName, workerId, [scopeKey+workerName], taskId',
   workers: '&id, name, status, [scopeKey+name]',
-  handles: '&id',
 });
 
 export const clearDatabase = async () => {

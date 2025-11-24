@@ -7,10 +7,7 @@ import {
 } from '@/data/models/Annotation';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
-import {
-  removeAnnotationsByIdsRequest,
-  removeAnnotationsInsideRequest,
-} from '@/state/reducers/annotations';
+import { removeAnnotationsInsideRequest } from '@/state/reducers/annotations';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,7 +29,13 @@ const annotationFormSchema = z.object({
   value: z.string({ error: 'Type is required' }).optional(),
 });
 
-const AnnotationForm = ({ annotation }: { annotation: Annotation }) => {
+const AnnotationForm = ({
+  annotation,
+  handleDelete,
+}: {
+  annotation: Annotation;
+  handleDelete: () => void;
+}) => {
   const appDispatch = useAppDispatch();
   const modifyAnnotation = useModifyAnnotation();
   const { t } = useTranslation();
@@ -64,7 +67,7 @@ const AnnotationForm = ({ annotation }: { annotation: Annotation }) => {
 
   const handleDeleteButton: React.MouseEventHandler<HTMLButtonElement> = (event) => {
     event.preventDefault(); //pour éviter de soumettre le formulaire
-    appDispatch(removeAnnotationsByIdsRequest([annotation.id])); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
+    handleDelete();
   };
 
   return (

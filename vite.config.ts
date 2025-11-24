@@ -42,17 +42,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias,
     },
-    worker: {
-      format: 'es',
-    },
-    optimizeDeps: {
-      exclude: ['@hyzyla/pdfium'],
-    },
     build: {
-      target: 'es2022',
-      commonjsOptions: {
-        include: [/pdfium/, /node_modules/],
-      },
       rollupOptions: {
         output: {
           manualChunks: {

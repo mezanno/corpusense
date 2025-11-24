@@ -1,6 +1,5 @@
 import { IndexedDBAnnotationRepository } from './annotations';
 import { IndexedDBCollectionRepository } from './collections';
-import { IndexedDBFSHandleRepository } from './fsHandle';
 import { IndexedDBItemMetadataRepository } from './itemMetadata';
 import { IndexedDBManifestRepository } from './manifest';
 import { IndexedDBModelRepository } from './models';
@@ -42,8 +41,4 @@ export function getResultRepository() {
 
 export function getWorkerRepository() {
   return new IndexedDBWorkerRepository();
-}
-
-export function getFSHandleRepository() {
-  return new IndexedDBFSHandleRepository();
 }

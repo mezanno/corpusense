@@ -1,4 +1,4 @@
-import CanvasViewer from '@/components/canvasViewer/CanvasViewer';
+import CanvasViewer from '@/components/CanvasViewer';
 import Loading from '@/components/Loading';
 import NoManifestToShow from '@/components/NoManifestToShow';
 import NothingToShow from '@/components/NothingToShow';

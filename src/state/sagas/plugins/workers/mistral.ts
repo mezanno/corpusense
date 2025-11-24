@@ -133,7 +133,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
  */
 export async function exportResult(results: Result[], formats: string[]) {
   if (results.length === 0) {
-    console.warn(`No results to export from ${pluginDisplayName} plugin`);
+    console.warn('No results to export from Mistral plugin');
     return;
   }
   const allTheData: unknown[] = [];

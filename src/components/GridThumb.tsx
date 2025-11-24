@@ -1,7 +1,6 @@
 import WorkerStatusIcon from '@/components/WorkerStatusIcon';
 import { getImageForThumbnail } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { getObjectUrl } from '@/hooks/useFs';
 import { removeElementFromCollectionRequest } from '@/state/reducers/collections';
 import {
   selectCanvasHasOcrAnnotations,
@@ -12,7 +11,6 @@ import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import 'gridstack/dist/gridstack.min.css';
 import { CircleX, SpellCheck, SpellCheck2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
@@ -41,34 +39,6 @@ const GridThumb = ({
   const hasLineAnnotations = useAppSelector((state) =>
     selectCanvasHasOcrAnnotations(state, canvasId),
   );
-  const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
-
-  //TODO! 2 fois le même code que dans CanvasCard, à factoriser
-  useEffect(() => {
-    const fetchThumbnail = async () => {
-      const originalThumb = (canvas!.thumbnail as IIIFExternalWebResource[]) ?? [
-        getImageForThumbnail(canvas!, 200),
-      ];
-
-      const thumb = [...originalThumb];
-      const item = { ...thumb[0] };
-
-      if (item !== null && item.id?.startsWith('http') === false) {
-        try {
-          item.id = await getObjectUrl(item.id);
-        } catch (err) {
-          console.error('Failed to get file for thumbnail:', err);
-        }
-      }
-
-      thumb[0] = item;
-      setThumbnail(thumb);
-    };
-
-    if (canvas !== null) {
-      void fetchThumbnail();
-    }
-  }, [canvas]);
 
   const handleDelete = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.stopPropagation();
@@ -92,9 +62,9 @@ const GridThumb = ({
   const match = canvas.id.match(/f\d+/);
   const canvasItemId = match ? match[0] : '';
 
-  // const thumbnail = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
-  //   getImageForThumbnail(canvas, 300),
-  // ];
+  const thumbnail = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
+    getImageForThumbnail(canvas, 300),
+  ];
 
   return (
     <div
@@ -121,19 +91,17 @@ const GridThumb = ({
           </button>
         )}
       </div>
-      {thumbnail !== null && (
-        <div className='w-fit flex-1'>
-          <AutoSizer disableWidth>
-            {({ height }) => (
-              <Thumbnail
-                thumbnail={thumbnail}
-                style={{ width: 'auto', height: `${height}px`, objectFit: 'contain' }}
-                aria-label='canvas thumbnail'
-              />
-            )}
-          </AutoSizer>
-        </div>
-      )}
+      <div className='w-fit flex-1'>
+        <AutoSizer disableWidth>
+          {({ height }) => (
+            <Thumbnail
+              thumbnail={thumbnail}
+              style={{ width: 'auto', height: `${height}px`, objectFit: 'contain' }}
+              aria-label='canvas thumbnail'
+            />
+          )}
+        </AutoSizer>
+      </div>
       <div className='flex w-full justify-between p-1 text-xs'>
         {canvas.label !== undefined && canvas.label !== null && <span>{canvas.label.none}</span>}
         <span className='text-dark-slate-gray-300 italic'>{canvasItemId}</span>
