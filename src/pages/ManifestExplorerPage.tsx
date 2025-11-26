@@ -21,12 +21,12 @@ const ManifestExplorerPage = () => {
   const { isLoading, isLoaded, loadedData } = useAppSelector((state) => state.manifests);
 
   const [searchParams] = useSearchParams();
-  const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | undefined>(undefined);
+  const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(null);
   const [metadataVisible, setMetadataVisible] = useState(true);
 
   useEffect(() => {
     if (isLoading) {
-      setCanvasToDisplay(undefined);
+      setCanvasToDisplay(null);
     }
   }, [isLoading]);
 
@@ -35,7 +35,7 @@ const ManifestExplorerPage = () => {
     if (id != null) {
       appDispatch(fecthManifestRequest(id));
     }
-    setCanvasToDisplay(undefined);
+    setCanvasToDisplay(null);
   }, [searchParams]);
 
   if (isLoading) {
@@ -80,10 +80,10 @@ const ManifestExplorerPage = () => {
           </>
         )}
 
-        {loadedData?.content?.items !== undefined && loadedData?.content?.items.length > 0 && (
+        {manifest.items.length > 0 && (
           <>
             <ResizablePanel order={2} id='gallery-panel' className='panel' minSize={25}>
-              <CanvasSelectionProvider canvasesLoaded={loadedData.content.items}>
+              <CanvasSelectionProvider canvasesLoaded={manifest.items}>
                 <CanvasGallery
                   setCanvasToDisplay={setCanvasToDisplay}
                   canvasToDisplay={canvasToDisplay}
@@ -99,7 +99,7 @@ const ManifestExplorerPage = () => {
             className='flex h-full w-full items-center justify-center'
             aria-label='canvas viewer'
           >
-            {canvasToDisplay === undefined ? (
+            {canvasToDisplay === null ? (
               <NothingToShow />
             ) : (
               <CanvasViewer canvas={canvasToDisplay} />

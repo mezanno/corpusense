@@ -42,7 +42,7 @@ interface CanvasCardProps {
   manifestId: string;
   thumbWidth: number;
   thumbHeight: number;
-  canvasToDisplay: Canvas | undefined;
+  canvasToDisplay: Canvas | null;
   setCanvasToDisplay: (canvas: Canvas) => void;
 }
 
