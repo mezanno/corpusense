@@ -76,6 +76,7 @@ const CanvasGallery = ({
   const [currentCanvasIndex, setCurrentCanvasIndex] = useState(-1);
 
   const containerRef = useRef(null);
+  const gridRef = useRef<Grid>(null);
 
   useEffect(() => {
     setCurrentCanvasIndex(
@@ -96,6 +97,7 @@ const CanvasGallery = ({
     const index = parseInt(value, 10) - 1;
     if (!isNaN(index) && index >= 0 && index < canvases.length) {
       setCanvasToDisplay(canvases[index]);
+      gridRef.current?.scrollToItem({ rowIndex: Math.floor(index / colCount), align: 'center' });
     } else if (value === '') {
       setCanvasToDisplay(null);
     }
@@ -113,6 +115,8 @@ const CanvasGallery = ({
             <input
               className='w-20'
               type='number'
+              min={1}
+              max={canvases.length}
               value={currentCanvasIndex < 0 ? '' : currentCanvasIndex + 1}
               onChange={handleCanvasIndexChange}
             />
@@ -131,6 +135,7 @@ const CanvasGallery = ({
             <AutoSizer ref={containerRef} role='list' onResize={handleOnResize}>
               {({ height, width }) => (
                 <Grid
+                  ref={gridRef}
                   columnCount={colCount}
                   columnWidth={width / colCount}
                   height={height}
