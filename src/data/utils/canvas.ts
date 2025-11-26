@@ -3,6 +3,35 @@ import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentatio
 import i18next from 'i18next';
 import { TileSource } from 'openseadragon';
 
+const getLabel = (canvas: Canvas): string => {
+  const label = canvas.label;
+
+  if (!label) {
+    return i18next.t('no_label');
+  }
+
+  // 1. Si c'est une simple string → on renvoie directement
+  if (typeof label === 'string') {
+    return label;
+  }
+
+  // 2. Si label.none existe et contient au moins un élément → on prend celui-ci
+  if (Array.isArray(label.none) && label.none.length > 0) {
+    return label.none[0];
+  }
+
+  // 3. Sinon, on récupère la *première langue* disponible parmi les clés (ex: en, fr, de ...)
+  const [firstLang] = Object.keys(label);
+  const values = label[firstLang];
+
+  if (Array.isArray(values) && values.length > 0) {
+    return values[0];
+  }
+
+  // 4. Fallback
+  return i18next.t('no_label');
+};
+
 const getImage = (canvas: Canvas): IIIFExternalWebResource => {
   const image = canvas.items?.[0]?.items?.[0].body as IIIFExternalWebResource;
   if (image === undefined) {
@@ -55,4 +84,4 @@ const toGallicaUrl = (iiifUrl: string) => {
   );
 };
 
-export { getImage, getImageForThumbnail, getSource, toGallicaUrl };
+export { getImage, getImageForThumbnail, getLabel, getSource, toGallicaUrl };

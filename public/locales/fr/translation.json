@@ -315,5 +315,6 @@
   "category_other": "Autre",
   "category_ocr": "Extraction de texte (OCR)",
   "category_layout": "Mise en page",
-  "category_llm": "Extraction de données"
+  "category_llm": "Extraction de données",
+  "no_label": "-"
 }

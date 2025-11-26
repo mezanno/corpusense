@@ -1,5 +1,5 @@
 import WorkerStatusIcon from '@/components/WorkerStatusIcon';
-import { getImageForThumbnail } from '@/data/utils/canvas';
+import { getImageForThumbnail, getLabel } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { getObjectUrl } from '@/hooks/useFs';
 import { removeElementFromCollectionRequest } from '@/state/reducers/collections';
@@ -135,7 +135,7 @@ const GridThumb = ({
         </div>
       )}
       <div className='flex w-full justify-between p-1 text-xs'>
-        {canvas.label !== undefined && canvas.label !== null && <span>{canvas.label.none}</span>}
+        {canvas.label !== undefined && canvas.label !== null && <span>{getLabel(canvas)}</span>}
         <span className='text-dark-slate-gray-300 italic'>{canvasItemId}</span>
       </div>
       <WorkerStatusIcon scope={{ collectionId, canvasId }} />

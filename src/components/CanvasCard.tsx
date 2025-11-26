@@ -12,7 +12,7 @@ import {
 } from './ui/context-menu';
 
 import { CollectionDetails } from '@/data/models/Collection';
-import { getImageForThumbnail } from '@/data/utils/canvas';
+import { getImageForThumbnail, getLabel } from '@/data/utils/canvas';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
 import { getObjectUrl } from '@/hooks/useFs';
@@ -179,11 +179,11 @@ const CanvasCard = ({
                   </AutoSizer>
                 </div>
               )}
-              <div className='flex w-full justify-between p-1 text-xs font-bold text-dark-slate-gray-300'>
+              <div className='flex w-full justify-between p-1 text-xs'>
                 {canvas.label !== undefined && canvas.label !== null && (
-                  <span>{canvas.label.none}</span>
+                  <span>{getLabel(canvas)}</span>
                 )}
-                <span className='italic'>{canvasItemId}</span>
+                <span className='text-dark-slate-gray-300 italic'>{canvasItemId}</span>
               </div>
             </div>
           </ContextMenuTrigger>
