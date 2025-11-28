@@ -54,7 +54,7 @@ const CollectionTableRow = ({
       description: t('description_delete_collection'),
       onConfirm: {
         message: t('btn_yes'),
-        action: () => removeCollection(id),
+        action: () => void removeCollection(id),
       },
     });
   };

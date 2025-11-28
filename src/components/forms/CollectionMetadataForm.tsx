@@ -79,7 +79,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
 
   const { t } = useTranslation();
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values.tags);
 
     const updatedCollection = { ...collection };
@@ -89,7 +89,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
     if (values.tags !== undefined) {
       updatedCollection.tags = values.tags.map((tag) => tag.id);
     }
-    updateCollection(updatedCollection);
+    await updateCollection(updatedCollection);
   }
 
   const handleTagAdded = (newTags: FormTag[]) => {

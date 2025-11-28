@@ -72,10 +72,12 @@ const GridThumb = ({
 
   const handleDelete = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.stopPropagation();
-    removeElementFromCollection(collectionId, canvasId);
-    if (canvasToDisplay?.id === canvasId) {
-      setCanvasToDisplay(null);
-    }
+    void (async () => {
+      await removeElementFromCollection(collectionId, canvasId);
+      if (canvasToDisplay?.id === canvasId) {
+        setCanvasToDisplay(null);
+      }
+    })();
   };
 
   //! mieux gérer le cas où canvas est undefined
@@ -115,7 +117,7 @@ const GridThumb = ({
           <button
             className='cursor-pointer opacity-0 group-hover:opacity-100 hover:scale-110'
             title={t('btn_delete_collection')}
-            onClick={(e) => handleDelete(e)}
+            onClick={handleDelete}
           >
             <CircleX className='text-red-400 hover:text-red-800' />
           </button>

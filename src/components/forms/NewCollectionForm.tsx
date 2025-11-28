@@ -61,8 +61,8 @@ const NewCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
     }
   }, [canSubmit]);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    createCollection(values.name);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    await createCollection(values.name);
   }
 
   return (

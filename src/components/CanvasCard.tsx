@@ -101,13 +101,15 @@ const CanvasCard = ({
   };
 
   const handleAddSelectionToCollection = (collectionId: string | undefined) => {
-    if (collectionId === undefined) return;
+    void (async () => {
+      if (collectionId === undefined) return;
 
-    addSelectionToCollection({
-      selection: getSelectedCanvases(),
-      collectionId: collectionId,
-      manifestId,
-    });
+      await addSelectionToCollection({
+        selection: getSelectedCanvases(),
+        collectionId: collectionId,
+        manifestId,
+      });
+    })();
   };
 
   const handleOnClick = () => {
@@ -124,17 +126,19 @@ const CanvasCard = ({
   };
 
   const handleCreateCollection = () => {
-    const input: HTMLInputElement | null = inputCollectionName.current;
-    //TODO! : gérer le cas où input est null
-    if (input === null) return;
-    const collectionName = (input as HTMLInputElement).value;
+    void (async () => {
+      const input: HTMLInputElement | null = inputCollectionName.current;
+      //TODO! : gérer le cas où input est null
+      if (input === null) return;
+      const collectionName = (input as HTMLInputElement).value;
 
-    createCollectionWithSelection({
-      selection: getSelectedCanvases(),
-      name: collectionName,
-      manifestId,
-    });
-    setDialogOpen(false);
+      await createCollectionWithSelection({
+        selection: getSelectedCanvases(),
+        name: collectionName,
+        manifestId,
+      });
+      setDialogOpen(false);
+    })();
   };
 
   const idDisplayed = canvasToDisplay?.id === canvas?.id;
