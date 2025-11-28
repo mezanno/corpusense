@@ -11,16 +11,10 @@ import {
   ContextMenuTrigger,
 } from './ui/context-menu';
 
-import { CollectionDetails } from '@/data/models/Collection';
 import { getImageForThumbnail, getLabel } from '@/data/utils/canvas';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
 import { getObjectUrl } from '@/hooks/useFs';
-import {
-  addSelectionToCollectionRequest,
-  createCollectionWithSelectionRequest,
-} from '@/state/reducers/collections';
-import { selectCollections } from '@/state/selectors/collections';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
@@ -56,9 +50,8 @@ const CanvasCard = ({
   canvasToDisplay,
 }: CanvasCardProps) => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const collections: CollectionDetails[] = useAppSelector(selectCollections);
+  const { collections, createCollectionWithSelection, addSelectionToCollection } = useCollections();
   const {
     isSelected,
     hasSelectedElements,
@@ -109,13 +102,12 @@ const CanvasCard = ({
 
   const handleAddSelectionToCollection = (collectionId: string | undefined) => {
     if (collectionId === undefined) return;
-    appDispatch(
-      addSelectionToCollectionRequest({
-        selection: getSelectedCanvases(),
-        collectionId: collectionId,
-        manifestId,
-      }),
-    );
+
+    addSelectionToCollection({
+      selection: getSelectedCanvases(),
+      collectionId: collectionId,
+      manifestId,
+    });
   };
 
   const handleOnClick = () => {
@@ -136,13 +128,12 @@ const CanvasCard = ({
     //TODO! : gérer le cas où input est null
     if (input === null) return;
     const collectionName = (input as HTMLInputElement).value;
-    appDispatch(
-      createCollectionWithSelectionRequest({
-        selection: getSelectedCanvases(),
-        name: collectionName,
-        manifestId,
-      }),
-    );
+
+    createCollectionWithSelection({
+      selection: getSelectedCanvases(),
+      name: collectionName,
+      manifestId,
+    });
     setDialogOpen(false);
   };
 

@@ -12,11 +12,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { CollectionDetails } from '@/data/models/Collection';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useCollections } from '@/hooks/data/collections/useCollections';
+import { useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
-import { removeCollectionRequest } from '@/state/reducers/collections';
-import { selectCollections } from '@/state/selectors/collections';
 import { selectTagsByIds } from '@/state/selectors/tags';
 import { DownloadIcon, FilePlus, Import, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -31,8 +30,8 @@ const CollectionTableRow = ({
 }) => {
   const { t } = useTranslation();
   const navigation = useAppNavigation();
-  const dispatch = useAppDispatch();
   const { openDialog } = useAlertDialogContext();
+  const { removeCollection } = useCollections();
 
   const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
     (state) => state.export,
@@ -55,7 +54,7 @@ const CollectionTableRow = ({
       description: t('description_delete_collection'),
       onConfirm: {
         message: t('btn_yes'),
-        action: () => dispatch(removeCollectionRequest(id)),
+        action: () => removeCollection(id),
       },
     });
   };
@@ -133,7 +132,8 @@ const CollectionTableRow = ({
 
 const CollectionsManagerPage = () => {
   const { t } = useTranslation();
-  const collections: CollectionDetails[] = useAppSelector(selectCollections);
+  // const collections: CollectionDetails[] = useAppSelector(selectCollections);
+  const { collections } = useCollections();
   const { openImportCollectionDialog, openNewCollectionDialog, openExportCollectionDialog } =
     useDialog();
 

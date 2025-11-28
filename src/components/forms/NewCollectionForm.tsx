@@ -8,9 +8,9 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useCollections } from '@/hooks/data/collections/useCollections';
+import { useAppSelector } from '@/hooks/hooks';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { createCollectionRequest } from '@/state/reducers/collections';
 import { selectCollectionNameExists } from '@/state/selectors/collections';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
@@ -28,7 +28,7 @@ const formSchema = z.object({
 
 const NewCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
+  const { createCollection } = useCollections();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,7 +62,7 @@ const NewCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
   }, [canSubmit]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    dispatch(createCollectionRequest(values.name));
+    createCollection(values.name);
   }
 
   return (

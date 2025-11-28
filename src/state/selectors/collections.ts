@@ -1,16 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
-export const selectCollections = (state: RootState) => state?.collections?.values ?? [];
-
-export const selectCollectionById = createSelector(
-  [
-    (state: RootState) => state.collections?.values ?? [],
-    (_: RootState, collectionId: string) => collectionId,
-  ],
-  (values, collectionId) => values.find((elt) => elt.id === collectionId),
-);
-
 export const selectCollectionsByIds = createSelector(
   [
     (state: RootState) => state.collections?.values ?? [],

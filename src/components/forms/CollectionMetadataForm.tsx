@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
 import { Collection } from '@/data/models/Collection';
+import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { updateCollectionRequest } from '@/state/reducers/collections';
 import { createTagRequest } from '@/state/reducers/tags';
 import { selectModels } from '@/state/selectors/models';
 import { selectTags } from '@/state/selectors/tags';
@@ -44,6 +44,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
   const dispatch = useAppDispatch();
   const models = useAppSelector(selectModels);
   const storedTags = useAppSelector(selectTags);
+  const { updateCollection } = useCollections();
   //liste des tags existants dans l'application
   const autoCompleteTags = storedTags.map((tag) => ({
     id: tag.id,
@@ -88,7 +89,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
     if (values.tags !== undefined) {
       updatedCollection.tags = values.tags.map((tag) => tag.id);
     }
-    dispatch(updateCollectionRequest(updatedCollection));
+    updateCollection(updatedCollection);
   }
 
   const handleTagAdded = (newTags: FormTag[]) => {

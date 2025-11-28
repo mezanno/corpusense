@@ -1,7 +1,7 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
 import { getAnnotationsByType } from '@/data/utils/annotations';
+import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useAppSelector } from '@/hooks/hooks';
-import { selectCollectionById } from '@/state/selectors/collections';
 import { selectModelById } from '@/state/selectors/models';
 import { Canvas } from '@iiif/presentation-3';
 import { useEffect, useRef, useState } from 'react';
@@ -12,7 +12,8 @@ import TextViewerStage from './TextViewerStage';
 
 const TextViewer = ({ collectionId, canvas }: { collectionId: string; canvas: Canvas }) => {
   const { t } = useTranslation();
-  const collection = useAppSelector((state) => selectCollectionById(state, collectionId));
+  const { getCollectionById } = useCollections();
+  const collection = getCollectionById(collectionId);
   const containerRef = useRef(null);
   const [text, setText] = useState<Annotation[]>([]);
 

@@ -14,8 +14,8 @@ import {
 import { CollectionRepository } from './types';
 
 export class IndexedDBCollectionRepository implements CollectionRepository {
-  async getAllDetails(): Promise<CollectionDetails[]> {
-    return await db.collections.toArray();
+  getAllDetails(): () => Promise<CollectionDetails[]> {
+    return () => db.collections.toArray();
   }
 
   async getById(id: string): Promise<Collection> {

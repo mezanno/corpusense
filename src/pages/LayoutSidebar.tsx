@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import WorkerLabel from '@/components/WorkerLabel';
 import { WorkerStatus } from '@/data/models/Worker';
+import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
@@ -15,7 +16,7 @@ import useExperimental from '@/hooks/useExperimental';
 import { logoutRequest } from '@/state/reducers/auth';
 import { removeFromOpenedCollections } from '@/state/reducers/collections';
 import { selectConnectedUser } from '@/state/selectors/auth';
-import { selectCollections, selectOpenedCollections } from '@/state/selectors/collections';
+import { selectOpenedCollections } from '@/state/selectors/collections';
 import { selectWorkersByStatus } from '@/state/selectors/workers';
 import {
   Archive,
@@ -219,7 +220,7 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const user = useAppSelector(selectConnectedUser);
-  const collections = useAppSelector(selectCollections);
+  const { collections } = useCollections();
   const { openLoginDialog } = useDialog();
   const { experimentalFeaturesActivated } = useExperimental();
 

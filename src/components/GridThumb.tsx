@@ -1,8 +1,8 @@
 import WorkerStatusIcon from '@/components/WorkerStatusIcon';
 import { getImageForThumbnail, getLabel } from '@/data/utils/canvas';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useCollections } from '@/hooks/data/collections/useCollections';
+import { useAppSelector } from '@/hooks/hooks';
 import { getObjectUrl } from '@/hooks/useFs';
-import { removeElementFromCollectionRequest } from '@/state/reducers/collections';
 import {
   selectCanvasHasOcrAnnotations,
   selectLoadedCanvasById,
@@ -31,7 +31,6 @@ const GridThumb = ({
   canvasToDisplay: Canvas | null;
   setCanvasToDisplay: (canvas: Canvas | null) => void;
 }) => {
-  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const canvas = useAppSelector((state) => selectLoadedCanvasById(state, canvasId));
   const isWorkerRunning = useAppSelector((state) =>
@@ -41,6 +40,7 @@ const GridThumb = ({
   const hasLineAnnotations = useAppSelector((state) =>
     selectCanvasHasOcrAnnotations(state, canvasId),
   );
+  const { removeElementFromCollection } = useCollections();
   const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
 
   //TODO! 2 fois le même code que dans CanvasCard, à factoriser
@@ -72,7 +72,7 @@ const GridThumb = ({
 
   const handleDelete = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.stopPropagation();
-    dispatch(removeElementFromCollectionRequest({ collectionId: collectionId, canvasId }));
+    removeElementFromCollection(collectionId, canvasId);
     if (canvasToDisplay?.id === canvasId) {
       setCanvasToDisplay(null);
     }

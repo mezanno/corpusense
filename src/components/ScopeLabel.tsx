@@ -1,13 +1,14 @@
 import { isAnnotationScope, isCanvasScope, Scope } from '@/data/models/Scope';
-import { useAppSelector } from '@/hooks/hooks';
+import { useCollections } from '@/hooks/data/collections/useCollections';
 import { CorpusenseRoutes } from '@/hooks/useAppNavigation';
-import { selectCollectionById } from '@/state/selectors/collections';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 const ScopeLabel = ({ scope }: { scope: Scope }) => {
   const { t } = useTranslation();
-  const collection = useAppSelector((state) => selectCollectionById(state, scope.collectionId));
+  const { getCollectionById } = useCollections();
+
+  const collection = getCollectionById(scope.collectionId);
   return (
     <div className='flex flex-col'>
       <div>Collection {collection?.name}</div>

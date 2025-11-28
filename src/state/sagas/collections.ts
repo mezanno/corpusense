@@ -1,5 +1,5 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
-import { Collection, CollectionDetails } from '@/data/models/Collection';
+import { Collection } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
 import { Result } from '@/data/models/Result';
 import { Worker } from '@/data/models/Worker';
@@ -11,9 +11,7 @@ import {
   getResultRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { generateFirstAnnotation } from '@/data/utils/annotations';
 import { getImage } from '@/data/utils/canvas';
-import { generateCollectionContent } from '@/data/utils/collections';
 import { generateManifestFromCollection, ManifestExport } from '@/data/utils/export';
 import i18n from '@/i18n';
 import { getErrorMessage } from '@/utils/utils';
@@ -22,14 +20,8 @@ import { PayloadAction } from '@reduxjs/toolkit';
 import FileSaver from 'file-saver';
 import { default as JSZip, default as JSZIP } from 'jszip';
 import { uniq } from 'lodash';
-import { call, CallEffect, Effect, put, PutEffect, takeEvery } from 'redux-saga/effects';
-import { v4 as uuid } from 'uuid';
+import { call, CallEffect, Effect, put, takeEvery } from 'redux-saga/effects';
 import {
-  addSelectionToCollectionRequest,
-  addSelectionToCollectionSuccess,
-  createCollectionRequest,
-  createCollectionSuccess,
-  createCollectionWithSelectionRequest,
   ExportCollectionOptions,
   exportCollectionsRequest,
   ImportCollectionPayload,
@@ -37,221 +29,11 @@ import {
   importCollectionsRequest,
   loadCollectionRequest,
   loadCollectionSuccess,
-  removeCollectionRequest,
-  removeCollectionSuccess,
-  removeElementFromCollectionRequest,
-  removeElementFromCollectionSuccess,
-  setCollections,
   toggleCollectionOfflineRequest,
-  updateCollectionRequest,
-  updateCollectionSuccess,
 } from '../reducers/collections';
 import { pushError, pushInfo } from '../reducers/events';
-import { addResultsSuccess, addWorkersSuccess, removeWorkersSuccess } from '../reducers/workers';
+import { addResultsSuccess, addWorkersSuccess } from '../reducers/workers';
 import { fetchManifestFromURL } from './manifests';
-
-function* fetchAllCollections(): Generator<
-  CallEffect<CollectionDetails[]> | PutEffect,
-  void,
-  CollectionDetails[]
-> {
-  try {
-    const collectionRepository = getCollectionRepository();
-    const collections: CollectionDetails[] = yield call([
-      collectionRepository,
-      collectionRepository.getAllDetails,
-    ]);
-
-    yield put(setCollections(collections));
-  } catch (e) {
-    console.warn('Error loading collections from indexedDB', e);
-  }
-}
-
-function* handleCreateCollection(action: PayloadAction<string>) {
-  const name = action.payload;
-  const newCollection: Collection = {
-    id: uuid(),
-    name,
-    tags: [],
-    contentSize: 0,
-    content: [],
-    offline: false,
-  };
-
-  try {
-    const collectionRepository = getCollectionRepository();
-    yield call([collectionRepository, collectionRepository.create], newCollection);
-    yield put(createCollectionSuccess(newCollection));
-    yield put(pushInfo(i18n.t('toast_collection_created')));
-  } catch (e) {
-    yield put(pushError(getErrorMessage(e)));
-  }
-}
-
-function* handleUpdateCollection(action: PayloadAction<Collection>) {
-  const { id, name, tags, content, modelId, offline } = action.payload;
-  try {
-    if (id === undefined) {
-      // yield put(setError(i18next.t('error_collection_not_found')));
-      return;
-    }
-    const collectionRepository = getCollectionRepository();
-    yield call([collectionRepository, collectionRepository.update], id, {
-      name,
-      tags,
-      content,
-      modelId,
-      offline,
-    });
-
-    yield put(updateCollectionSuccess(action.payload));
-    yield put(pushInfo(i18n.t('toast_collection_saved')));
-  } catch (e) {
-    yield put(pushError(getErrorMessage(e)));
-  }
-}
-
-/**
-
- * @param action id of the collection to remove
- */
-function* handleRemoveCollection(
-  action: PayloadAction<string>,
-): Generator<Effect, void, Collection | { workersIds: string[]; collectionId: string }> {
-  const id = action.payload; //id of the collection to remove
-  try {
-    const collectionRepository = getCollectionRepository();
-    const collectionToRemove = (yield call(
-      [collectionRepository, collectionRepository.getById],
-      id,
-    )) as Collection;
-    const { workersIds, collectionId } = (yield call(
-      [collectionRepository, collectionRepository.delete],
-      collectionToRemove,
-    )) as { workersIds: string[]; collectionId: string };
-    yield put(removeCollectionSuccess(collectionId));
-    yield put(removeWorkersSuccess(workersIds)); //remove workers associated to the collection
-    //A priori, plus besoin de prévenir le store, si on supprime une collection, c'est que l'on est sur la page des collections
-    // yield put(removeAnnotationSuccess(collectionId));
-    yield put(pushInfo(i18n.t('toast_collection_deleted')));
-  } catch (e) {
-    yield put(pushError(getErrorMessage(e)));
-  }
-}
-
-/**
- * @remarks if some canvas are already in the collection, they will not be added again (but there is no error dispatched!)
- * @param action
- * @returns
- */
-function* handleAddSelectionToCollection(
-  action: PayloadAction<{ selection: Canvas[]; collectionId: string; manifestId: string }>,
-): Generator<Effect, void, Collection> {
-  const { selection, collectionId, manifestId } = action.payload;
-
-  try {
-    const collectionRepository = getCollectionRepository();
-    const collection = yield call(
-      [collectionRepository, collectionRepository.getById],
-      collectionId,
-    );
-    //we check the existing content of the collection and add only the new canvases
-    const existingContent = collection.content ?? [];
-    const existingCanvasIds = existingContent.map((elt) => elt.canvasId);
-    const newContent = generateCollectionContent(
-      existingContent.length - 1,
-      selection.map((canvas) => canvas.id),
-      manifestId,
-      existingCanvasIds,
-    );
-    const updatedCollection = {
-      ...collection,
-      contentSize: existingContent.length + newContent.length,
-      content: [...existingContent, ...newContent],
-    };
-    yield call(
-      [collectionRepository, collectionRepository.addContentToCollection],
-      updatedCollection,
-    );
-    //Add first annotations for the new canvases
-    const firstAnnotations = generateFirstAnnotation(selection, collectionId, existingCanvasIds);
-    const annotationRepository = getAnnotationRepository();
-    yield call([annotationRepository, annotationRepository.addAll], firstAnnotations);
-    yield put(addSelectionToCollectionSuccess(updatedCollection));
-    if (selection.length === 1) {
-      yield put(pushInfo(i18n.t('toast_one_element_added')));
-    } else if (selection.length > 1) {
-      yield put(pushInfo(i18n.t('toast_multiple_elements_added', { count: selection.length })));
-    }
-  } catch (e) {
-    yield put(pushError(getErrorMessage(e)));
-  }
-}
-
-export interface CreateCollectionWithSelectionPayload {
-  selection: Canvas[];
-  name: string;
-  id?: string;
-  manifestId: string;
-}
-
-function* handleCreateCollectionWithSelection(
-  action: PayloadAction<CreateCollectionWithSelectionPayload>,
-): Generator<Effect, Collection, Collection | undefined> {
-  const { id, name, selection, manifestId } = action.payload;
-  const collectionId = id ?? uuid();
-  const newCollection: CollectionDetails = {
-    id: collectionId,
-    name,
-    tags: [],
-    contentSize: selection.length,
-    offline: false,
-  };
-  const content = generateCollectionContent(
-    0,
-    selection.map((c) => c.id),
-    manifestId,
-  );
-
-  try {
-    const collectionRepository = getCollectionRepository();
-    yield call([collectionRepository, collectionRepository.create], {
-      ...newCollection,
-      content,
-    });
-    if (id === undefined) {
-      //if an id was provided, it means it is an import, so we don't need to create the first annotations
-      const firstAnnotations = generateFirstAnnotation(selection, collectionId);
-      const annotationRepository = getAnnotationRepository();
-      yield call([annotationRepository, annotationRepository.addAll], firstAnnotations);
-    }
-    yield put(createCollectionSuccess(newCollection));
-    yield put(pushInfo(i18n.t('toast_collection_created')));
-  } catch (e) {
-    yield put(pushError(getErrorMessage(e)));
-  }
-
-  return { ...newCollection, content };
-}
-
-function* handleRemoveElementFromCollection(
-  action: PayloadAction<{ collectionId: string; canvasId: string }>,
-): Generator<Effect, void, Collection> {
-  const { collectionId, canvasId } = action.payload;
-  try {
-    const collectionRepository = getCollectionRepository();
-    const updatedCollection = yield call(
-      [collectionRepository, collectionRepository.deleteElement],
-      collectionId,
-      canvasId,
-    );
-    yield put(removeElementFromCollectionSuccess(updatedCollection));
-    yield put(pushInfo(i18n.t('toast_element_removed')));
-  } catch (e) {
-    yield put(pushError(getErrorMessage(e)));
-  }
-}
 
 function* handleImportCollections(
   action: PayloadAction<ArrayBuffer>,
@@ -340,7 +122,7 @@ function* handleImportCollection(
   }
   //TODO: add the tags
   // yield put(updateCollectionSuccess({ ...newCollection, tags: tags.map((tag) => tag.id) }));
-  yield put(createCollectionSuccess(collection));
+  // yield put(createCollectionSuccess(collection));
   yield put(pushInfo(i18n.t('toast_collection_imported', { file: filename })));
 }
 
@@ -428,7 +210,7 @@ function* handleToggleCollectionOffline(
       collectionId,
       !collection.offline,
     );
-    yield put(updateCollectionSuccess({ ...collection, offline: !collection.offline }));
+    // yield put(updateCollectionSuccess({ ...collection, offline: !collection.offline }));
     if (!collection.offline) {
       //collection is now available offline
       yield put(pushInfo(i18n.t('toast_collection_offline')));
@@ -569,12 +351,6 @@ function* handleExportMultipleCollectionsRequest(
 }
 
 export default function* collectionsSaga() {
-  yield takeEvery(createCollectionRequest, handleCreateCollection);
-  yield takeEvery(removeCollectionRequest, handleRemoveCollection);
-  yield takeEvery(createCollectionWithSelectionRequest, handleCreateCollectionWithSelection);
-  yield takeEvery(addSelectionToCollectionRequest, handleAddSelectionToCollection);
-  yield takeEvery(removeElementFromCollectionRequest, handleRemoveElementFromCollection);
-  yield takeEvery(updateCollectionRequest, handleUpdateCollection);
   yield takeEvery(importCollectionRequest, handleImportCollection);
   yield takeEvery(importCollectionsRequest, handleImportCollections);
   yield takeEvery(loadCollectionRequest, handleLoadCollection);
@@ -582,15 +358,4 @@ export default function* collectionsSaga() {
   yield takeEvery(exportCollectionsRequest, handleExportMultipleCollectionsRequest);
 }
 
-export {
-  fetchAllCollections,
-  handleAddSelectionToCollection,
-  handleCreateCollection,
-  handleCreateCollectionWithSelection,
-  handleImportCollection,
-  handleImportCollections,
-  handleLoadCollection,
-  handleRemoveCollection,
-  handleRemoveElementFromCollection,
-  handleUpdateCollection,
-};
+export { handleImportCollection, handleImportCollections, handleLoadCollection };
