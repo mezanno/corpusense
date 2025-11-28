@@ -2,6 +2,7 @@ import { Collection, CollectionDetails } from '@/data/models/Collection';
 import {
   getAnnotationRepository,
   getCollectionRepository,
+  getCollectonLiveRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { generateFirstAnnotation } from '@/data/utils/annotations';
 import { generateCollectionContent } from '@/data/utils/collections';
@@ -24,10 +25,11 @@ export interface CreateCollectionWithSelectionPayload {
 
 export const useCollections = () => {
   const appDispatch = useAppDispatch();
+  const collectionLiveRepository = useMemo(() => getCollectonLiveRepository(), []);
   const collectionRepository = useMemo(() => getCollectionRepository(), []);
 
   const collections = useLiveQuery(
-    collectionRepository.getAllDetails(),
+    collectionLiveRepository.getAllDetails(),
     [],
     [] as CollectionDetails[],
   );

@@ -12,11 +12,12 @@ import {
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collection } from '@/data/models/Collection';
+import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fetchAnnotationsRequest } from '@/state/reducers/annotations';
 import { loadCollectionRequest } from '@/state/reducers/collections';
 import { loadEntitiesRequest } from '@/state/reducers/namedEntities';
-import { selectCurrentCollection, selectLoadedCanvasById } from '@/state/selectors/collections';
+import { selectLoadedCanvasById } from '@/state/selectors/collections';
 import { Canvas } from '@iiif/presentation-3';
 import 'gridstack/dist/gridstack.min.css';
 import { FC, useEffect, useState } from 'react';
@@ -81,7 +82,7 @@ const CollectionInspectorContent = ({
 }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const currentCollection = useAppSelector(selectCurrentCollection);
+  const { collection } = useCollectionContent(collectionId);
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(canvas);
   const [activeTab, setActiveTab] = useState('document');
   const [colCount, setColCount] = useState(6);
@@ -115,7 +116,7 @@ const CollectionInspectorContent = ({
     <section className='h-full max-h-full w-full max-w-full'>
       <ResizablePanelGroup direction='horizontal'>
         <ResizablePanel className='mr-1 flex min-h-0 min-w-0' minSize={30}>
-          {currentCollection ? (
+          {collection ? (
             <div className='flex h-full max-h-full w-full max-w-full flex-col gap-2'>
               <Accordion
                 asChild
@@ -128,31 +129,29 @@ const CollectionInspectorContent = ({
                   <AccordionTrigger className='mx-2'>
                     <h2 className='flex gap-2 text-lg'>
                       {t('title_metadata_collection')}
-                      <span className='font-bold italic'>{currentCollection.name}</span>
-                      <span className='font-thin'>({currentCollection.id})</span>
+                      <span className='font-bold italic'>{collection.name}</span>
+                      <span className='font-thin'>({collection.id})</span>
                     </h2>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <CollectionMetadataForm collection={currentCollection} />
+                    <CollectionMetadataForm collection={collection} />
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-              {currentCollection.content.length > 0 && (
-                <CollectionToolbar collectionId={collectionId} />
-              )}
+              {collection.content.length > 0 && <CollectionToolbar collectionId={collectionId} />}
               <div className='panel h-full w-full overflow-hidden'>
-                {currentCollection.content.length > 0 ? (
+                {collection.content.length > 0 ? (
                   <AutoSizer role='list' onResize={handleOnResize}>
                     {({ height, width }) => (
                       <Grid
                         columnCount={colCount}
                         columnWidth={width / colCount}
                         height={height}
-                        rowCount={Math.ceil(currentCollection.content.length / colCount)}
+                        rowCount={Math.ceil(collection.content.length / colCount)}
                         rowHeight={175}
                         width={width}
                         itemData={{
-                          collection: currentCollection,
+                          collection,
                           width: width / colCount - 20,
                           height: 165,
                           setCanvasToDisplay,

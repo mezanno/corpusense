@@ -31,7 +31,7 @@ export interface AnnotationRepository {
 }
 
 export interface CollectionRepository {
-  getAllDetails(): () => Promise<CollectionDetails[]>;
+  getAllDetails(): Promise<CollectionDetails[]>;
   getById(id: string): Promise<Collection>;
   getTagsByCollectionId(collectionId: string): Promise<Tag[]>;
   getCanvasesByCollectionId(collectionId: string): Promise<Canvas[]>;
