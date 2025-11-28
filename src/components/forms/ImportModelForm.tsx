@@ -1,7 +1,6 @@
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useModelIO } from '@/hooks/data/models/useModelIO';
+import { useModels } from '@/hooks/data/models/useModels';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { importModelRequest } from '@/state/reducers/models';
-import { selectModels } from '@/state/selectors/models';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
 import { useEffect, useState } from 'react';
@@ -22,10 +21,10 @@ const schema = z.object({
 
 const ImportModelForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
+  const { importModel } = useModelIO();
 
   //models and isSubmitted are used to close the dialog when the model is successfully imported
-  const models = useAppSelector(selectModels);
+  const { models } = useModels();
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const form = useForm<z.infer<typeof schema>>({
@@ -47,11 +46,11 @@ const ImportModelForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
 
   function onSubmit(values: z.infer<typeof schema>) {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const content = e.target?.result;
       if (typeof content === 'string') {
         const jsonContent = JSON.parse(content) as object;
-        appDispatch(importModelRequest(jsonContent));
+        await importModel(jsonContent);
       }
     };
     setIsSubmitted(true);

@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useModels } from '@/hooks/data/models/useModels';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { createModelRequest } from '@/state/reducers/models';
-import { selectModels } from '@/state/selectors/models';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
 import { useEffect } from 'react';
@@ -23,9 +21,8 @@ const formSchema = z.object({
 });
 
 const NewModelForm = ({ formRef, setCanSubmit }: FormProps) => {
-  const appDispatch = useAppDispatch();
   const { t } = useTranslation();
-  const models = useAppSelector(selectModels);
+  const { models, createModel } = useModels();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,14 +37,12 @@ const NewModelForm = ({ formRef, setCanSubmit }: FormProps) => {
     setCanSubmit(form.formState.isDirty && form.formState.isValid);
   }, [form.formState]);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    appDispatch(
-      createModelRequest({
-        name: values.name,
-        description: values.description,
-        fromModelId: values.fromModelId,
-      }),
-    );
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    await createModel({
+      name: values.name,
+      description: values.description,
+      fromModelId: values.fromModelId,
+    });
     close();
   }
 

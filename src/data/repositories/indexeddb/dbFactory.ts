@@ -3,6 +3,7 @@ import { IndexedDBCollectionRepository } from './collections';
 import { IndexedDBFSHandleRepository } from './fsHandle';
 import { IndexedDBItemMetadataRepository } from './itemMetadata';
 import { IndexedDBCollectionLiveRepository } from './liveQuery/collections.live';
+import { IndexedDBModelLiveRepository } from './liveQuery/models.live';
 import { IndexedDBManifestRepository } from './manifest';
 import { IndexedDBModelRepository } from './models';
 import { IndexedDBNamedEntityRepository } from './namedEntities';
@@ -35,6 +36,10 @@ export function getItemMetadataRepository() {
 
 export function getModelRepository() {
   return new IndexedDBModelRepository();
+}
+
+export function getModelLiveRepository() {
+  return new IndexedDBModelLiveRepository();
 }
 
 export function getNamedEntityRepository() {

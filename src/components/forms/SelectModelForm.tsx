@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { DataModel } from '@/data/models/DataModel';
+import { useModels } from '@/hooks/data/models/useModels';
 import { useAppSelector } from '@/hooks/hooks';
 import { selectModelIdOfCollection } from '@/state/selectors/collections';
-import { selectModels } from '@/state/selectors/models';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -23,7 +23,7 @@ const SelectModelForm = ({
   collectionId: string;
 }) => {
   const { t } = useTranslation();
-  const models = useAppSelector(selectModels);
+  const { models } = useModels();
   const modelIdOfCollection = useAppSelector((state) =>
     selectModelIdOfCollection(state, collectionId),
   );

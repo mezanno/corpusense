@@ -1,8 +1,6 @@
 import { DataField } from '@/data/models/DataModel';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useModels } from '@/hooks/data/models/useModels';
 import useDialog from '@/hooks/ui/useDialog';
-import { saveModelRequest } from '@/state/reducers/models';
-import { selectModelById } from '@/state/selectors/models';
 import { CircleArrowDown, CircleArrowUp, CirclePlus, CircleX, Eye, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -23,10 +21,10 @@ const baseColor = '#a4d6f6';
 
 const ModelViewer = ({ modelId }: { modelId: string }) => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
   const { openDialog } = useAlertDialogContext();
   const { openModelPreviewDialog } = useDialog();
-  const model = useAppSelector((state) => selectModelById(state, modelId));
+  const { getModelById, saveModel } = useModels();
+  const model = getModelById(modelId);
   const [fields, setFields] = useState(model?.fields ?? []);
   const [description, setDescription] = useState('');
   const [prompt, setPrompt] = useState('');
@@ -60,16 +58,18 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
   };
 
   const handleSave = () => {
-    const newFields = fields.filter((f) => f.name !== '' && f.type !== '');
-    setFields(newFields);
-    const updatedModel = {
-      ...model,
-      name: modelName.trim() || model.name,
-      fields: newFields,
-      description: description.trim(),
-      prompt: prompt.trim(),
-    };
-    appDispatch(saveModelRequest(updatedModel));
+    void (async () => {
+      const newFields = fields.filter((f) => f.name !== '' && f.type !== '');
+      setFields(newFields);
+      const updatedModel = {
+        ...model,
+        name: modelName.trim() || model.name,
+        fields: newFields,
+        description: description.trim(),
+        prompt: prompt.trim(),
+      };
+      await saveModel(updatedModel);
+    })();
   };
 
   const updateFields = (index: number, newValue: Partial<DataField>) => {

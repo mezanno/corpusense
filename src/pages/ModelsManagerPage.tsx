@@ -13,10 +13,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { generateSchema } from '@/data/utils/model';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useModelIO } from '@/hooks/data/models/useModelIO';
+import { useModels } from '@/hooks/data/models/useModels';
 import useDialog from '@/hooks/ui/useDialog';
-import { exportModelRequest, removeModelRequest } from '@/state/reducers/models';
-import { selectModels } from '@/state/selectors/models';
 import ReactJsonView from '@microlink/react-json-view';
 import { Download, EyeIcon, Grid2X2Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -24,8 +23,8 @@ import { useTranslation } from 'react-i18next';
 
 const ModelsManagerPage = () => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
-  const models = useAppSelector(selectModels);
+  const { models, removeModel } = useModels();
+  const { exportModel } = useModelIO();
   const { openDialog } = useAlertDialogContext();
   const { openImportModelDialog, openCreateModelDialog } = useDialog();
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
@@ -42,7 +41,9 @@ const ModelsManagerPage = () => {
       onConfirm: {
         message: t('btn_yes'),
         action: () => {
-          appDispatch(removeModelRequest(modelId));
+          void (async () => {
+            await removeModel(modelId);
+          })();
           if (selectedModelId === modelId) {
             setSelectedModelId(null);
           }
@@ -52,7 +53,9 @@ const ModelsManagerPage = () => {
   };
 
   const handleDownloadModel = (modelId: string) => {
-    appDispatch(exportModelRequest(modelId));
+    void (async () => {
+      await exportModel(modelId);
+    })();
   };
 
   return (

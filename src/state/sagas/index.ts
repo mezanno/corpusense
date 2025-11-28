@@ -4,7 +4,6 @@ import authSaga, { loadConnectedUser } from './auth';
 import collectionsSaga from './collections';
 import exportSaga from './export';
 import manifestsSaga, { loadHistorySaga } from './manifests';
-import modelsSaga, { fetchModels } from './models';
 import namedEntitiesSaga from './namedEntities';
 import tagsSaga, { fetchAllTags } from './tags';
 import workerSaga, { fetchWorkers, loadWorkerPluginsInfo } from './workers';
@@ -29,7 +28,6 @@ function getRootSaga() {
       exportSaga,
       annotationsSaga,
       workerSaga,
-      modelsSaga,
       namedEntitiesSaga,
       authSaga,
     ];
@@ -37,7 +35,6 @@ function getRootSaga() {
     yield all(coreSagas.map((saga) => spawn(launchSaga, saga)));
     yield fork(loadHistorySaga); //load history at startup
     yield fork(fetchAllTags); //load types list at startup
-    yield fork(fetchModels); //load models at startup
     yield fork(fetchWorkers); //load workers at startup
     yield fork(loadWorkerPluginsInfo);
     yield fork(loadConnectedUser); //load connected user at startup
