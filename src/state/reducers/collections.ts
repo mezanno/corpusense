@@ -20,18 +20,6 @@ interface CollectionsState {
   >;
 }
 
-export interface ExportCollectionOptions {
-  annotations?: boolean;
-  model?: boolean;
-  workers?: boolean;
-  manifest?: boolean;
-}
-
-export interface ImportCollectionPayload {
-  json: object;
-  filename: string;
-}
-
 const initialState: CollectionsState = {
   values: [],
   openedCollections: [],
@@ -80,12 +68,6 @@ export const collectionsSlice = createSlice({
       const collectionId: string = action.payload;
       state.openedCollections = state.openedCollections.filter((id) => id !== collectionId);
     },
-    exportCollectionsRequest: (
-      _state,
-      _action: PayloadAction<{ collectionIds: string[]; options: ExportCollectionOptions }>,
-    ) => {},
-    importCollectionRequest: (_state, _action: PayloadAction<ImportCollectionPayload>) => {},
-    importCollectionsRequest: (_state, _action: PayloadAction<ArrayBuffer>) => {},
     updateOcrStatus: (state, action: PayloadAction<Annotation[]>) => {
       action.payload.forEach((annotation) => {
         if (
@@ -127,9 +109,6 @@ export const {
   loadCollectionRequest,
   loadCollectionSuccess,
   removeFromOpenedCollections,
-  exportCollectionsRequest,
-  importCollectionRequest,
-  importCollectionsRequest,
   updateOcrStatus,
   setOcrStatus,
   toggleCollectionOfflineRequest,

@@ -1,7 +1,6 @@
 import { Input } from '@/components/ui/input';
-import { useAppDispatch } from '@/hooks/hooks';
+import { useCollectionIO } from '@/hooks/data/collections/useCollectionIO';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { importCollectionRequest, importCollectionsRequest } from '@/state/reducers/collections';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
 import { useEffect } from 'react';
@@ -21,7 +20,7 @@ const schema = z.object({
 
 const ImportCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
+  const { importCollection, importCollections } = useCollectionIO();
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -44,17 +43,17 @@ const ImportCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
 
   function onSubmit(values: z.infer<typeof schema>) {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const content = e.target?.result;
       if (typeof content === 'string') {
         try {
           const json = JSON.parse(content) as object;
-          dispatch(importCollectionRequest({ json, filename: values.file.name }));
+          await importCollection(values.file.name, json);
         } catch (error) {
           console.error('Error parsing JSON:', error);
         }
       } else if (content instanceof ArrayBuffer) {
-        dispatch(importCollectionsRequest(content));
+        await importCollections(content);
       } else {
         console.error('Unsupported file type');
       }
