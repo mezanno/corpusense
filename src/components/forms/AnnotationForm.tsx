@@ -5,12 +5,8 @@ import {
   getAnnotationType,
   getBodies,
 } from '@/data/models/Annotation';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
-import {
-  removeAnnotationsByIdsRequest,
-  removeAnnotationsInsideRequest,
-} from '@/state/reducers/annotations';
+import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
+import { useAppSelector } from '@/hooks/hooks';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,13 +28,19 @@ const annotationFormSchema = z.object({
   value: z.string({ error: 'Type is required' }).optional(),
 });
 
-const AnnotationForm = ({ annotation }: { annotation: Annotation }) => {
-  const appDispatch = useAppDispatch();
-  const modifyAnnotation = useModifyAnnotation();
+const AnnotationForm = ({
+  annotation,
+  lastOrder,
+}: {
+  annotation: Annotation;
+  lastOrder: number;
+}) => {
   const { t } = useTranslation();
   const isWorkerRunning = useAppSelector((state) =>
     selectIsWorkerOrTaskRunning(state, { collectionId: annotation.collectionId }),
   );
+  const { updateAnnotation, removeAnnotationsByIds, removeAnnotationsInside } =
+    useAnnotationActions();
 
   const form = useForm<z.infer<typeof annotationFormSchema>>({
     resolver: zodResolver(annotationFormSchema),
@@ -48,8 +50,8 @@ const AnnotationForm = ({ annotation }: { annotation: Annotation }) => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof annotationFormSchema>) {
-    modifyAnnotation(annotation, values.type, values.value ?? '');
+  async function onSubmit(values: z.infer<typeof annotationFormSchema>) {
+    await updateAnnotation(annotation, values.type, values.value ?? '');
   }
 
   useEffect(() => {
@@ -59,12 +61,16 @@ const AnnotationForm = ({ annotation }: { annotation: Annotation }) => {
   }, [annotation]);
 
   const handleRemoveAllAnnotationsInside = () => {
-    appDispatch(removeAnnotationsInsideRequest(annotation));
+    void (async () => {
+      await removeAnnotationsInside(annotation);
+    })();
   };
 
   const handleDeleteButton: React.MouseEventHandler<HTMLButtonElement> = (event) => {
     event.preventDefault(); //pour éviter de soumettre le formulaire
-    appDispatch(removeAnnotationsByIdsRequest([annotation.id])); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
+    void (async () => {
+      await removeAnnotationsByIds([annotation.id]); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
+    })();
   };
 
   return (
@@ -99,7 +105,7 @@ const AnnotationForm = ({ annotation }: { annotation: Annotation }) => {
       )}
       <div className='flex items-center space-x-2 text-sm'>
         {t('form_label_order')}
-        <AnnotationOrderPanel annotation={annotation} />
+        <AnnotationOrderPanel annotation={annotation} lastOrder={lastOrder} />
       </div>
       <Form {...form}>
         <form

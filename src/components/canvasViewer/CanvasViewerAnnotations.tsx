@@ -1,8 +1,6 @@
-import { Annotation, isAnnotation } from '@/data/models/Annotation';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { useAddAnnotation } from '@/hooks/useSaveAnnotation';
-import { updateAnnotationRequest } from '@/state/reducers/annotations';
-import { selectAnnotations } from '@/state/selectors/annotations';
+import { Annotation, getAnnotationType, isAnnotation } from '@/data/models/Annotation';
+import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
+import { useAnnotationsForCanvas } from '@/hooks/data/annotations/useAnnotationsForCanvas';
 import {
   AnnotoriousOpenSeadragonAnnotator,
   ImageAnnotation,
@@ -11,7 +9,7 @@ import {
   useSelection,
 } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import AnnotationForm from '../forms/AnnotationForm';
 
 const CanvasViewerAnnotations = ({
@@ -23,12 +21,12 @@ const CanvasViewerAnnotations = ({
   collectionId: string;
   showAnnotations: boolean;
 }) => {
-  const appDispatch = useAppDispatch();
   const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
   const annotationsInAnnotorious = useAnnotations();
-  const annotationsInStore = useAppSelector(selectAnnotations);
-  const addAnnotation = useAddAnnotation(); //logic to add an annotation to the store
+  const scope = useMemo(() => ({ canvasId: canvas.id, collectionId }), [canvas.id, collectionId]);
+  const { annotations: annotationsInStore, getLastOrderByType } = useAnnotationsForCanvas(scope);
+  const { saveAnnotation, updateAnnotation } = useAnnotationActions();
 
   const isNewCanvas = useRef(true); //to check if the canvas is new (to avoid syncing the annotations when the canvas is the same)
 
@@ -88,8 +86,9 @@ const CanvasViewerAnnotations = ({
     const onCreate = (annotation: ImageAnnotation) => {
       if (collectionId !== undefined) {
         console.log('Creating annotation ', annotation);
-
-        addAnnotation(annotation, canvas.id, collectionId);
+        void (async () => {
+          await saveAnnotation(annotation, canvas.id, collectionId);
+        })();
       } else {
         console.warn('No collectionId provided, annotation not saved');
       }
@@ -97,7 +96,9 @@ const CanvasViewerAnnotations = ({
     };
     const onUpdate = (annotation: ImageAnnotation) => {
       if (isAnnotation(annotation)) {
-        appDispatch(updateAnnotationRequest(annotation));
+        void (async () => {
+          await updateAnnotation(annotation);
+        })();
       }
     };
 
@@ -130,7 +131,10 @@ const CanvasViewerAnnotations = ({
 
   return (
     <div className='max-w-1/2 min-w-1/3'>
-      <AnnotationForm annotation={selected[0].annotation as Annotation} />
+      <AnnotationForm
+        annotation={selected[0].annotation as Annotation}
+        lastOrder={getLastOrderByType(getAnnotationType(selected[0].annotation as Annotation))}
+      />
     </div>
   );
 };

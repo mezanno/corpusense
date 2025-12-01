@@ -1,6 +1,6 @@
+import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
-import { recomputeRegionsRequest } from '@/state/reducers/annotations';
 import { toggleCollectionOfflineRequest } from '@/state/reducers/collections';
 import { selectIsCollectionOffline } from '@/state/selectors/collections';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
@@ -24,6 +24,8 @@ const CollectionToolbar = memo(function CollectionToolbar({
   const isCollectionOffline = useAppSelector((state) =>
     selectIsCollectionOffline(state, collectionId),
   );
+
+  const { recomputeRegions } = useAnnotationActions();
   // const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
 
   if (isWorkerRunning) {
@@ -39,7 +41,9 @@ const CollectionToolbar = memo(function CollectionToolbar({
   };
 
   const handleRecomputeRegions = () => {
-    appDispatch(recomputeRegionsRequest(collectionId));
+    void (async () => {
+      await recomputeRegions(collectionId);
+    })();
   };
 
   //TODO! voir comment transmettre des params dynamiques

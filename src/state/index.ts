@@ -1,5 +1,4 @@
 import { Action, combineReducers, Reducer } from '@reduxjs/toolkit';
-import annotationsReducer from './reducers/annotations';
 import authReducer from './reducers/auth';
 import collectionsReducer from './reducers/collections';
 import eventsReducer from './reducers/events';
@@ -14,7 +13,6 @@ export const appReducer = combineReducers({
   collections: collectionsReducer,
   tags: tagsReducer,
   export: exportReducer,
-  annotations: annotationsReducer,
   workers: workersReducer,
   entities: entityReducer,
   events: eventsReducer,

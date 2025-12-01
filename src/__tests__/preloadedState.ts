@@ -19,10 +19,6 @@ const defaultPreloadedState: RootState = {
     lastExportStatus: 'UNKNOWN',
     lastExportError: '',
   },
-  annotations: {
-    values: [],
-    isLoading: false,
-  },
   workers: workerInitialState,
   entities: [],
   events: eventsInitialState,

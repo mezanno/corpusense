@@ -1,16 +1,14 @@
 import { ElementType } from '@/data/models/Annotation';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
+import { useAnnotationsForCanvas } from '@/hooks/data/annotations/useAnnotationsForCanvas';
+import { useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
-import { removeAnnotationsByIdsRequest } from '@/state/reducers/annotations';
-import { selectAnnotationsByType } from '@/state/selectors/annotations';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
-import { RootState } from '@/state/store';
 import { useSelection } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
 import { Eye, EyeOff, Layout, NotebookPen } from 'lucide-react';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import Toolbar from '../ToolBar';
 import { Toggle } from '../ui/toggle';
 import { CanvasViewerMode } from './CanvasViewer';
@@ -30,17 +28,17 @@ export const CanvasViewerToolbar = ({
   showAnnotations: boolean;
   toggleAnnotations: () => void;
 }) => {
-  const appDispatch = useAppDispatch();
   const { t } = useTranslation();
   const { openDuplicateLayoutDialog, openRemoveAnnotationsDialog } = useDialog();
   const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
   const isWorkerRunning = useAppSelector((state) =>
     selectIsWorkerOrTaskRunning(state, { collectionId }),
   );
+  const scope = useMemo(() => ({ canvasId: canvas.id, collectionId }), [canvas.id, collectionId]);
+  const { getAnnotationsByTypes } = useAnnotationsForCanvas(scope);
+  const { removeAnnotationsByIds } = useAnnotationActions();
 
-  const regionAnnotations = useSelector((state: RootState) =>
-    selectAnnotationsByType(state, ElementType.TEXT_REGION),
-  );
+  const regionAnnotations = getAnnotationsByTypes([ElementType.TEXT_REGION]);
 
   const handleDeleteAllAnnotations = () => {
     openRemoveAnnotationsDialog({ canvasId: canvas.id, collectionId });
@@ -62,7 +60,9 @@ export const CanvasViewerToolbar = ({
 
     if (event.key === 'Delete' && selected?.length > 0) {
       const ids = selected.map((s) => s.annotation.id);
-      appDispatch(removeAnnotationsByIdsRequest(ids)); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
+      void (async () => {
+        await removeAnnotationsByIds(ids); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
+      })();
     }
   };
 

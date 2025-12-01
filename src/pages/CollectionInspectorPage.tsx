@@ -14,7 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collection } from '@/data/models/Collection';
 import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { fetchAnnotationsRequest } from '@/state/reducers/annotations';
 import { loadCollectionRequest } from '@/state/reducers/collections';
 import { loadEntitiesRequest } from '@/state/reducers/namedEntities';
 import { selectLoadedCanvasById } from '@/state/selectors/collections';
@@ -93,7 +92,6 @@ const CollectionInspectorContent = ({
 
   useEffect(() => {
     if (canvasToDisplay !== null) {
-      appDispatch(fetchAnnotationsRequest({ canvasId: canvasToDisplay.id, collectionId }));
       appDispatch(loadEntitiesRequest({ canvasId: canvasToDisplay.id, collectionId }));
     }
   }, [canvasToDisplay]);

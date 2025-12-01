@@ -1,5 +1,4 @@
 import { all, call, fork, spawn } from 'redux-saga/effects';
-import annotationsSaga from './annotations';
 import authSaga, { loadConnectedUser } from './auth';
 import collectionsSaga from './collections';
 import exportSaga from './export';
@@ -26,7 +25,6 @@ function getRootSaga() {
       collectionsSaga,
       tagsSaga,
       exportSaga,
-      annotationsSaga,
       workerSaga,
       namedEntitiesSaga,
       authSaga,

@@ -2,6 +2,7 @@ import { IndexedDBAnnotationRepository } from './annotations';
 import { IndexedDBCollectionRepository } from './collections';
 import { IndexedDBFSHandleRepository } from './fsHandle';
 import { IndexedDBItemMetadataRepository } from './itemMetadata';
+import { IndexedDBAnnotationLiveRepository } from './liveQuery/annotations.live';
 import { IndexedDBCollectionLiveRepository } from './liveQuery/collections.live';
 import { IndexedDBModelLiveRepository } from './liveQuery/models.live';
 import { IndexedDBManifestRepository } from './manifest';
@@ -13,6 +14,10 @@ import { IndexedDBWorkerRepository } from './workers';
 
 export function getAnnotationRepository() {
   return new IndexedDBAnnotationRepository();
+}
+
+export function getAnnotationLiveRepository() {
+  return new IndexedDBAnnotationLiveRepository();
 }
 
 export function getCollectionRepository() {
