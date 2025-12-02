@@ -6,12 +6,6 @@ import { RootState } from '@/state/store';
 
 const defaultPreloadedState: RootState = {
   manifests: manifestInitialState,
-  export: {
-    lastExportContent: null,
-    lastExportDate: null,
-    lastExportStatus: 'UNKNOWN',
-    lastExportError: '',
-  },
   workers: workerInitialState,
   events: eventsInitialState,
   auth: authInitialState,

@@ -14,11 +14,10 @@ import {
 import { CollectionDetails } from '@/data/models/Collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useTags } from '@/hooks/data/tags/useTags';
-import { useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { DownloadIcon, FilePlus, Import, Trash2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const CollectionTableRow = ({
@@ -33,21 +32,7 @@ const CollectionTableRow = ({
   const { openDialog } = useAlertDialogContext();
   const { removeCollection } = useCollections();
 
-  const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
-    (state) => state.export,
-  );
-
   const tags = useTags().getTagsByIds(collection.tags);
-
-  const [downloadLink, setDownloadLink] = useState<string>('');
-
-  useEffect(() => {
-    if (lastExportDate !== null) {
-      const blob = new Blob([lastExportContent as string], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      setDownloadLink(url);
-    }
-  }, [lastExportContent]);
 
   const handleDelete = (id: string) => {
     openDialog({
@@ -62,14 +47,6 @@ const CollectionTableRow = ({
 
   const handleOnClick = async (id: string) => {
     await navigation.goToCollectionInspector(id);
-  };
-
-  const handleDownload = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    event.stopPropagation();
-    const link = document.createElement('a');
-    link.href = downloadLink;
-    link.download = 'export.csv';
-    link.click();
   };
 
   return (
@@ -117,15 +94,6 @@ const CollectionTableRow = ({
         >
           <Trash2 />
         </Button>
-        {lastExportStatus === 'OK' && (
-          <Button
-            className='rounded bg-cyan-400 px-4 py-2 text-slate-900 transition hover:bg-cyan-600 hover:text-white'
-            onClick={(e) => handleDownload(e)}
-          >
-            <DownloadIcon />
-            {t('btn_download_export')}
-          </Button>
-        )}
       </TableCell>
     </TableRow>
   );
