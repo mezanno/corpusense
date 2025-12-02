@@ -1,20 +1,18 @@
 import WorkerStatusIcon from '@/components/WorkerStatusIcon';
 import { getImageForThumbnail, getLabel } from '@/data/utils/canvas';
+import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useAppSelector } from '@/hooks/hooks';
 import { getObjectUrl } from '@/hooks/useFs';
-import {
-  selectCanvasHasOcrAnnotations,
-  selectLoadedCanvasById,
-} from '@/state/selectors/collections';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import 'gridstack/dist/gridstack.min.css';
 import { CircleX, SpellCheck, SpellCheck2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import { useAnnotationContext } from './reducers/AnnotationContext';
 
 const GridThumb = ({
   canvasId,
@@ -32,14 +30,11 @@ const GridThumb = ({
   setCanvasToDisplay: (canvas: Canvas | null) => void;
 }) => {
   const { t } = useTranslation();
-  const canvas = useAppSelector((state) => selectLoadedCanvasById(state, canvasId));
-  const isWorkerRunning = useAppSelector((state) =>
-    selectIsWorkerOrTaskRunning(state, { collectionId, canvasId }),
-  );
+  const scope = useMemo(() => ({ collectionId, canvasId }), [collectionId, canvasId]);
+  const canvas = useCollectionContent(collectionId).getCanvasById(canvasId);
+  const isWorkerRunning = useAppSelector((state) => selectIsWorkerOrTaskRunning(state, scope));
   const idDisplayed = canvasToDisplay?.id === canvas?.id;
-  const hasLineAnnotations = useAppSelector((state) =>
-    selectCanvasHasOcrAnnotations(state, canvasId),
-  );
+  const hasLineAnnotations = useAnnotationContext().hasOcr();
   const { removeElementFromCollection } = useCollections();
   const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
 

@@ -1,7 +1,6 @@
 import { useCollectionIO } from '@/hooks/data/collections/useCollectionIO';
-import { useAppSelector } from '@/hooks/hooks';
+import { useCollections } from '@/hooks/data/collections/useCollections';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { selectCollectionsByIds } from '@/state/selectors/collections';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -24,9 +23,8 @@ const ExportCollectionForm = ({ collectionIds, formRef }: ExportCollectionFormPr
   const { t } = useTranslation();
   const { exportCollections } = useCollectionIO();
 
-  const selectedCollections = useAppSelector((state) =>
-    selectCollectionsByIds(state, collectionIds),
-  );
+  const { collections } = useCollections();
+  const selectedCollections = collections.filter((c) => collectionIds.includes(c.id));
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),

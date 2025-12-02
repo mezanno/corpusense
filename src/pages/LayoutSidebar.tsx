@@ -16,7 +16,6 @@ import useExperimental from '@/hooks/useExperimental';
 import { logoutRequest } from '@/state/reducers/auth';
 import { removeFromOpenedCollections } from '@/state/reducers/collections';
 import { selectConnectedUser } from '@/state/selectors/auth';
-import { selectOpenedCollections } from '@/state/selectors/collections';
 import { selectWorkersByStatus } from '@/state/selectors/workers';
 import {
   Archive,
@@ -99,7 +98,8 @@ const CollectionsSideBarGroup = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const navigation = useAppNavigation();
-  const openedCollections = useAppSelector(selectOpenedCollections);
+  //TODO: create a new context hook to get opened collections
+  const { collections: openedCollections } = useCollections();
 
   if (openedCollections.length === 0) {
     return null; // No collections opened, nothing to display

@@ -2,6 +2,10 @@ import CanvasViewer from '@/components/canvasViewer/CanvasViewer';
 import CollectionToolbar from '@/components/CollectionToolbar';
 import CollectionMetadataForm from '@/components/forms/CollectionMetadataForm';
 import GridThumb from '@/components/GridThumb';
+import {
+  AnnotationContextProvider,
+  useAnnotationContext,
+} from '@/components/reducers/AnnotationContext';
 import TextViewer from '@/components/textviewer/TextViewer';
 import {
   Accordion,
@@ -13,10 +17,8 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collection } from '@/data/models/Collection';
 import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useAppDispatch } from '@/hooks/hooks';
 import { loadCollectionRequest } from '@/state/reducers/collections';
-import { loadEntitiesRequest } from '@/state/reducers/namedEntities';
-import { selectLoadedCanvasById } from '@/state/selectors/collections';
 import { Canvas } from '@iiif/presentation-3';
 import 'gridstack/dist/gridstack.min.css';
 import { FC, useEffect, useState } from 'react';
@@ -74,14 +76,15 @@ const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => 
 
 const CollectionInspectorContent = ({
   collectionId,
-  canvas,
+  canvasId,
 }: {
   collectionId: string;
-  canvas: Canvas | null;
+  canvasId: string | null;
 }) => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
-  const { collection } = useCollectionContent(collectionId);
+  const { collection, getCanvasById } = useCollectionContent(collectionId);
+  const { setScope } = useAnnotationContext();
+  const canvas = canvasId !== null ? getCanvasById(canvasId) : null;
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(canvas);
   const [activeTab, setActiveTab] = useState('document');
   const [colCount, setColCount] = useState(6);
@@ -92,7 +95,8 @@ const CollectionInspectorContent = ({
 
   useEffect(() => {
     if (canvasToDisplay !== null) {
-      appDispatch(loadEntitiesRequest({ canvasId: canvasToDisplay.id, collectionId }));
+      // appDispatch(loadEntitiesRequest({ canvasId: canvasToDisplay.id, collectionId }));
+      setScope({ canvasId: canvasToDisplay.id, collectionId });
     }
   }, [canvasToDisplay]);
 
@@ -136,7 +140,7 @@ const CollectionInspectorContent = ({
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-              {collection.content.length > 0 && <CollectionToolbar collectionId={collectionId} />}
+              {collection.content.length > 0 && <CollectionToolbar collection={collection} />}
               <div className='panel h-full w-full overflow-hidden'>
                 {collection.content.length > 0 ? (
                   <AutoSizer role='list' onResize={handleOnResize}>
@@ -212,14 +216,11 @@ const CollectionInspectorPage = () => {
   const [canvasId, setCanvasId] = useState<string | null>(null);
   const { collectionId } = useParams();
   const [searchParams] = useSearchParams();
-  const canvas = useAppSelector((state) =>
-    canvasId !== null ? selectLoadedCanvasById(state, canvasId) : null,
-  );
   console.log('searchParams: ', searchParams);
 
   const dispatch = useAppDispatch();
   console.log('CollectionInspectorPage collectionId: ', collectionId);
-  console.log('CollectionInspectorPage - Canvas ', canvas);
+  console.log('CollectionInspectorPage - Canvas ', canvasId);
 
   useEffect(() => {
     console.log('CollectionInspectorPage collectionId - useEffect: ', collectionId);
@@ -238,7 +239,9 @@ const CollectionInspectorPage = () => {
   return collectionId === undefined ? (
     <div className='flex justify-center'>{t('error_id_collection_invalid')}</div>
   ) : (
-    <CollectionInspectorContent collectionId={collectionId} canvas={canvas} />
+    <AnnotationContextProvider>
+      <CollectionInspectorContent collectionId={collectionId} canvasId={canvasId} />
+    </AnnotationContextProvider>
   );
 };
 

@@ -1,14 +1,14 @@
 import { ElementType } from '@/data/models/Annotation';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
-import { useAnnotationsForCanvas } from '@/hooks/data/annotations/useAnnotationsForCanvas';
 import { useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { useSelection } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
 import { Eye, EyeOff, Layout, NotebookPen } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAnnotationContext } from '../reducers/AnnotationContext';
 import Toolbar from '../ToolBar';
 import { Toggle } from '../ui/toggle';
 import { CanvasViewerMode } from './CanvasViewer';
@@ -34,8 +34,7 @@ export const CanvasViewerToolbar = ({
   const isWorkerRunning = useAppSelector((state) =>
     selectIsWorkerOrTaskRunning(state, { collectionId }),
   );
-  const scope = useMemo(() => ({ canvasId: canvas.id, collectionId }), [canvas.id, collectionId]);
-  const { getAnnotationsByTypes } = useAnnotationsForCanvas(scope);
+  const { getAnnotationsByTypes } = useAnnotationContext();
   const { removeAnnotationsByIds } = useAnnotationActions();
 
   const regionAnnotations = getAnnotationsByTypes([ElementType.TEXT_REGION]);

@@ -1,8 +1,8 @@
+import { Collection } from '@/data/models/Collection';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import { toggleCollectionOfflineRequest } from '@/state/reducers/collections';
-import { selectIsCollectionOffline } from '@/state/selectors/collections';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { Pin } from 'lucide-react';
 import { memo } from 'react';
@@ -11,18 +11,15 @@ import Toolbar from './ToolBar';
 import { Toggle } from './ui/toggle';
 
 const CollectionToolbar = memo(function CollectionToolbar({
-  collectionId,
+  collection,
 }: {
-  collectionId: string;
+  collection: Collection;
 }) {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const { openRemoveAnnotationsDialog } = useDialog();
   const isWorkerRunning = useAppSelector((state) =>
-    selectIsWorkerOrTaskRunning(state, { collectionId }),
-  );
-  const isCollectionOffline = useAppSelector((state) =>
-    selectIsCollectionOffline(state, collectionId),
+    selectIsWorkerOrTaskRunning(state, { collectionId: collection.id }),
   );
 
   const { recomputeRegions } = useAnnotationActions();
@@ -37,12 +34,12 @@ const CollectionToolbar = memo(function CollectionToolbar({
   }
 
   const handleDeleteAllAnnotations = () => {
-    openRemoveAnnotationsDialog({ collectionId });
+    openRemoveAnnotationsDialog({ collectionId: collection.id });
   };
 
   const handleRecomputeRegions = () => {
     void (async () => {
-      await recomputeRegions(collectionId);
+      await recomputeRegions(collection.id);
     })();
   };
 
@@ -52,7 +49,7 @@ const CollectionToolbar = memo(function CollectionToolbar({
   // };
 
   const handleToggleOffline = () => {
-    appDispatch(toggleCollectionOfflineRequest(collectionId));
+    appDispatch(toggleCollectionOfflineRequest(collection.id));
   };
 
   // const closeAnalysisDialog = (model: DataModel) => {
@@ -78,16 +75,16 @@ const CollectionToolbar = memo(function CollectionToolbar({
         title={t('title_collection_actions')}
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleRecomputeRegions={handleRecomputeRegions}
-        scope={{ collectionId }}
+        scope={{ collectionId: collection.id }}
       />
       <div>
         <Toggle
           className='soft-button'
           size={null}
-          pressed={isCollectionOffline}
+          pressed={!collection.offline}
           onClick={handleToggleOffline}
           disabled={isWorkerRunning}
-          title={isCollectionOffline ? t('button_set_offline') : t('button_set_online')}
+          title={collection.offline ? t('button_set_online') : t('button_set_offline')}
         >
           <Pin size={24} />
         </Toggle>

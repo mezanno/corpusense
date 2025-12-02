@@ -39,6 +39,13 @@ export const useCollections = () => {
     [collections],
   );
 
+  const nameAlreadyExists = useCallback(
+    (name: string) => {
+      return collections.find((c) => c.name.toLowerCase() === name.toLowerCase()) !== undefined;
+    },
+    [collections],
+  );
+
   const createCollection = async (name: string) => {
     try {
       await collectionRepository.create({
@@ -181,6 +188,7 @@ export const useCollections = () => {
   return {
     collections,
     getCollectionById,
+    nameAlreadyExists,
     createCollection,
     createCollectionWithSelection,
     addSelectionToCollection,

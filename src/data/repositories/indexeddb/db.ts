@@ -38,6 +38,7 @@ db.version(1).stores({
   itemMetadata: '[id+attribute.label]',
   tags: '&id',
   models: '&id, name',
+  //TODO: il faudrait peut-être revoir le format et ne garder IIIF que pour l'export
   annotations: '&id, canvasId, collectionId, [canvasId+collectionId], order',
   namedEntities: '&id, *annotationIds, type.id',
   results: '++id, workerName, workerId, [scopeKey+workerName], taskId',

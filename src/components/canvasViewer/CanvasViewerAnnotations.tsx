@@ -1,6 +1,5 @@
 import { Annotation, getAnnotationType, isAnnotation } from '@/data/models/Annotation';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
-import { useAnnotationsForCanvas } from '@/hooks/data/annotations/useAnnotationsForCanvas';
 import {
   AnnotoriousOpenSeadragonAnnotator,
   ImageAnnotation,
@@ -9,8 +8,9 @@ import {
   useSelection,
 } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import AnnotationForm from '../forms/AnnotationForm';
+import { useAnnotationContext } from '../reducers/AnnotationContext';
 
 const CanvasViewerAnnotations = ({
   canvas,
@@ -24,8 +24,7 @@ const CanvasViewerAnnotations = ({
   const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
   const annotationsInAnnotorious = useAnnotations();
-  const scope = useMemo(() => ({ canvasId: canvas.id, collectionId }), [canvas.id, collectionId]);
-  const { annotations: annotationsInStore, getLastOrderByType } = useAnnotationsForCanvas(scope);
+  const { annotations: annotationsInStore, getLastOrderByType } = useAnnotationContext();
   const { saveAnnotation, updateAnnotation } = useAnnotationActions();
 
   const isNewCanvas = useRef(true); //to check if the canvas is new (to avoid syncing the annotations when the canvas is the same)

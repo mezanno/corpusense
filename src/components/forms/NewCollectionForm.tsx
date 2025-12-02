@@ -9,9 +9,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useCollections } from '@/hooks/data/collections/useCollections';
-import { useAppSelector } from '@/hooks/hooks';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { selectCollectionNameExists } from '@/state/selectors/collections';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
 import { useEffect } from 'react';
@@ -28,7 +26,7 @@ const formSchema = z.object({
 
 const NewCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
   const { t } = useTranslation();
-  const { createCollection } = useCollections();
+  const { createCollection, nameAlreadyExists } = useCollections();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,7 +37,7 @@ const NewCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
   });
 
   const name = form.watch('name'); //permet de redéclencher un render à chaque modif du champ name
-  const collectionNameExists = useAppSelector((state) => selectCollectionNameExists(state, name));
+  const collectionNameExists = nameAlreadyExists(name);
   const canSubmit = form.formState.isDirty && form.formState.isValid && !collectionNameExists;
 
   useEffect(() => {
