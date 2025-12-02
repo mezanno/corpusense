@@ -1,7 +1,6 @@
 import { importerPlugins } from '@/App';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
-import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import {
   getItemMetadataRepository,
   getManifestRepository,
@@ -16,12 +15,9 @@ import {
   fecthManifestRequest,
   fetchManifestError,
   fetchManifestSuccess,
-  removeFromHistoryRequest,
-  removeFromHistorySuccess,
   SaveMetadataPayload,
   saveMetadataRequest,
   saveMetadataSuccess,
-  setHistory,
 } from '../reducers/manifests';
 
 /**
@@ -163,42 +159,6 @@ function* fetchManifest({
 }
 
 /**
- * Side effect to remove a manifest from the history. It deletes the manifest from IndexedDB.
- * @param action The action containing the URL of the manifest to remove from history.
- */
-function* handleRemoveFromHistory(action: { payload: string }) {
-  const url = action.payload;
-  try {
-    const manifestRepository = getManifestRepository();
-    yield call([manifestRepository, manifestRepository.deleteFromHistory], url);
-    yield put(removeFromHistorySuccess(url));
-  } catch (error) {
-    console.warn('Error removing url from indexedDB history: ', error);
-  }
-}
-
-/**
- * Side effect to load the history from IndexedDB. It fetches all the history items
- * and dispatches an action to set the history in the state.
- */
-function* loadHistorySaga(): Generator<Effect, void, History[] | StoredManifestDetails[]> {
-  try {
-    const manifestRepository = getManifestRepository();
-    const history = (yield call([
-      manifestRepository,
-      manifestRepository.getHistoryEntries,
-    ])) as History[];
-    const manifestDetails = (yield call(
-      [manifestRepository, manifestRepository.getDetailsByManifestIds],
-      history.map((item) => item.url),
-    )) as StoredManifestDetails[];
-    yield put(setHistory({ history, manifestDetails }));
-  } catch (e) {
-    console.warn('Error loading history from indexedDB', e);
-  }
-}
-
-/**
  * Side effect to save metadata for a manifest. It takes the metadata attributes
  * and saves them to IndexedDB. It also dispatches an action to update the state.
  * @remarks The manifest ID is obtained from the state. If the manifest ID is null,
@@ -226,13 +186,6 @@ function* handleSaveMetadata({
 export default function* viewerSaga() {
   yield takeLatest(fecthManifestRequest, handleFetchManifest);
   yield takeEvery(saveMetadataRequest, handleSaveMetadata);
-  yield takeEvery(removeFromHistoryRequest, handleRemoveFromHistory);
 }
 
-export {
-  fetchManifestFromURL,
-  handleFetchManifest,
-  handleRemoveFromHistory,
-  handleSaveMetadata,
-  loadHistorySaga,
-};
+export { fetchManifestFromURL, handleFetchManifest, handleSaveMetadata };

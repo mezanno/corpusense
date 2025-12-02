@@ -82,5 +82,3 @@ function* handleLoadCollection(
 export default function* collectionsSaga() {
   yield takeEvery(loadCollectionRequest, handleLoadCollection);
 }
-
-export { handleLoadCollection };

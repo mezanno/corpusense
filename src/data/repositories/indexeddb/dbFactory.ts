@@ -4,6 +4,7 @@ import { IndexedDBFSHandleRepository } from './fsHandle';
 import { IndexedDBItemMetadataRepository } from './itemMetadata';
 import { IndexedDBAnnotationLiveRepository } from './liveQuery/annotations.live';
 import { IndexedDBCollectionLiveRepository } from './liveQuery/collections.live';
+import { IndexedDBManifestLiveRepository } from './liveQuery/manifests.live';
 import { IndexedDBModelLiveRepository } from './liveQuery/models.live';
 import { IndexedDBManifestRepository } from './manifest';
 import { IndexedDBModelRepository } from './models';
@@ -31,6 +32,11 @@ export function getCollectonLiveRepository() {
 export function getManifestRepository() {
   return new IndexedDBManifestRepository();
 }
+
+export function getManifestLiveRepository() {
+  return new IndexedDBManifestLiveRepository();
+}
+
 export function getTagRepository() {
   return new IndexedDBTagRepository();
 }

@@ -1,7 +1,9 @@
 import { Annotation } from '@/data/models/Annotation';
 import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
+import { History } from '@/data/models/History';
 import { Scope } from '@/data/models/Scope';
+import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Canvas } from '@iiif/presentation-3';
 
 export interface CollectionLiveRepository {
@@ -17,4 +19,9 @@ export interface ModelLiveRepository {
 
 export interface AnnotationLiveRepository {
   getByScope(scope: Scope): () => Promise<Annotation[]>;
+}
+
+export interface ManifestLiveRepository {
+  getHistoryEntries(): () => Promise<History[]>;
+  getDetailsByManifestIds(manifestIds: string[]): () => Promise<StoredManifestDetails[]>;
 }
