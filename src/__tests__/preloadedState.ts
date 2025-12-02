@@ -10,9 +10,6 @@ const defaultPreloadedState: RootState = {
     values: [],
     openedCollections: [],
   },
-  tags: {
-    values: [],
-  },
   export: {
     lastExportContent: null,
     lastExportDate: null,

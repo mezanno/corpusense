@@ -3,9 +3,7 @@
 import { Collection } from '@/data/models/Collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useModels } from '@/hooks/data/models/useModels';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { createTagRequest } from '@/state/reducers/tags';
-import { selectTags } from '@/state/selectors/tags';
+import { useTags } from '@/hooks/data/tags/useTags';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Tag as FormTag, TagInput } from 'emblor';
 import { useEffect, useState } from 'react';
@@ -41,9 +39,9 @@ const formSchema = z.object({
 });
 
 const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
-  const dispatch = useAppDispatch();
   const { models } = useModels();
-  const storedTags = useAppSelector(selectTags);
+  const { tags: storedTags, createNewTag } = useTags();
+
   const { updateCollection } = useCollections();
   //liste des tags existants dans l'application
   const autoCompleteTags = storedTags.map((tag) => ({
@@ -93,13 +91,10 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
   }
 
   const handleTagAdded = (newTags: FormTag[]) => {
-    console.log('handleTagAdded: ', newTags);
-
     //on récupère les tags qui ne sont pas déjà dans la collection (state tags)
     const diff = newTags.filter((tag) => !tags.some((elt) => elt.id === tag.id));
     if (diff.length > 0) {
-      console.log(diff[0]);
-      dispatch(createTagRequest({ id: diff[0].id, label: diff[0].text }));
+      void (async () => await createNewTag({ id: diff[0].id, label: diff[0].text }))();
     }
   };
 

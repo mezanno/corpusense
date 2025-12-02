@@ -6,6 +6,7 @@ import { IndexedDBAnnotationLiveRepository } from './liveQuery/annotations.live'
 import { IndexedDBCollectionLiveRepository } from './liveQuery/collections.live';
 import { IndexedDBManifestLiveRepository } from './liveQuery/manifests.live';
 import { IndexedDBModelLiveRepository } from './liveQuery/models.live';
+import { IndexedDBTagLiveRepository } from './liveQuery/tags.live';
 import { IndexedDBManifestRepository } from './manifest';
 import { IndexedDBModelRepository } from './models';
 import { IndexedDBNamedEntityRepository } from './namedEntities';
@@ -39,6 +40,10 @@ export function getManifestLiveRepository() {
 
 export function getTagRepository() {
   return new IndexedDBTagRepository();
+}
+
+export function getTagLiveRepository() {
+  return new IndexedDBTagLiveRepository();
 }
 
 export function getItemMetadataRepository() {

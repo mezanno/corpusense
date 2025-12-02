@@ -13,10 +13,10 @@ import {
 } from '@/components/ui/table';
 import { CollectionDetails } from '@/data/models/Collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
+import { useTags } from '@/hooks/data/tags/useTags';
 import { useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
-import { selectTagsByIds } from '@/state/selectors/tags';
 import { DownloadIcon, FilePlus, Import, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +36,8 @@ const CollectionTableRow = ({
   const { lastExportContent, lastExportDate, lastExportStatus } = useAppSelector(
     (state) => state.export,
   );
-  const tags = useAppSelector((state) => selectTagsByIds(state, collection.tags));
+
+  const tags = useTags().getTagsByIds(collection.tags);
 
   const [downloadLink, setDownloadLink] = useState<string>('');
 

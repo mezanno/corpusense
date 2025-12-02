@@ -4,6 +4,7 @@ import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
 import { Scope } from '@/data/models/Scope';
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
+import { Tag } from '@/data/models/Tag';
 import { Canvas } from '@iiif/presentation-3';
 
 export interface CollectionLiveRepository {
@@ -24,4 +25,8 @@ export interface AnnotationLiveRepository {
 export interface ManifestLiveRepository {
   getHistoryEntries(): () => Promise<History[]>;
   getDetailsByManifestIds(manifestIds: string[]): () => Promise<StoredManifestDetails[]>;
+}
+
+export interface TagLiveRepository {
+  getAll(): () => Promise<Tag[]>;
 }

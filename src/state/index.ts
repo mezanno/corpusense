@@ -5,13 +5,11 @@ import eventsReducer from './reducers/events';
 import exportReducer from './reducers/export';
 import manifestsReducer from './reducers/manifests';
 import entityReducer from './reducers/namedEntities';
-import tagsReducer from './reducers/tags';
 import workersReducer from './reducers/workers';
 
 export const appReducer = combineReducers({
   manifests: manifestsReducer,
   collections: collectionsReducer,
-  tags: tagsReducer,
   export: exportReducer,
   workers: workersReducer,
   entities: entityReducer,
