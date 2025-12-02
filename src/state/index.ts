@@ -1,5 +1,4 @@
 import { Action, combineReducers, Reducer } from '@reduxjs/toolkit';
-import authReducer from './reducers/auth';
 import eventsReducer from './reducers/events';
 import manifestsReducer from './reducers/manifests';
 import workersReducer from './reducers/workers';
@@ -8,7 +7,6 @@ export const appReducer = combineReducers({
   manifests: manifestsReducer,
   workers: workersReducer,
   events: eventsReducer,
-  auth: authReducer,
 });
 
 export type AppState = ReturnType<typeof appReducer>;

@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AlertDialogProvider } from './components/reducers/AlertDialogContext';
 import { CollectionProvider } from './components/reducers/CollectionContext';
+import { ConnectedUserProvider } from './components/reducers/ConnectedUserContext';
 import { CorpusenseRoutes } from './hooks/useAppNavigation';
 import { ExperimentalProvider } from './hooks/useExperimental';
 import { initI18n } from './i18n';
@@ -35,37 +36,42 @@ function App() {
   return (
     <BrowserRouter basename={basePath}>
       {/* <LocalManifestProvider> */}
-      <CollectionProvider>
-        <ExperimentalProvider>
-          <AlertDialogProvider>
-            <Routes>
-              <Route element={<Layout />}>
-                <Route index element={<Home />} />
-                <Route path={CorpusenseRoutes.MANIFEST} element={<ManifestExplorerPage />} />
-                <Route path={CorpusenseRoutes.COLLECTIONS} element={<CollectionsManagerPage />} />
-                <Route
-                  path={`${CorpusenseRoutes.COLLECTIONS}/:collectionId`}
-                  element={<CollectionInspectorPage />}
-                />
-                <Route path={CorpusenseRoutes.MODELS} element={<ModelsManagerPage />} />
-                <Route path={CorpusenseRoutes.CONFIGURATION} element={<ConfigurationPage />} />
-                <Route path={CorpusenseRoutes.STORAGE} element={<StoragePage />} />
-                <Route path={CorpusenseRoutes.WORKERS} element={<WorkersManagerPage />} />
-                <Route
-                  path={`${CorpusenseRoutes.WORKERS}/:workerId`}
-                  element={<WorkersManagerPage />}
-                />
-                <Route path={`${CorpusenseRoutes.DOCUMENTATION}`} element={<DocumentationPage />} />
-                <Route
-                  path={`${CorpusenseRoutes.DOCUMENTATION}/:page`}
-                  element={<DocumentationPage />}
-                />
-              </Route>
-            </Routes>
-          </AlertDialogProvider>
-        </ExperimentalProvider>
-      </CollectionProvider>
-      {/* </LocalManifestProvider> */}
+      <ConnectedUserProvider>
+        <CollectionProvider>
+          <ExperimentalProvider>
+            <AlertDialogProvider>
+              <Routes>
+                <Route element={<Layout />}>
+                  <Route index element={<Home />} />
+                  <Route path={CorpusenseRoutes.MANIFEST} element={<ManifestExplorerPage />} />
+                  <Route path={CorpusenseRoutes.COLLECTIONS} element={<CollectionsManagerPage />} />
+                  <Route
+                    path={`${CorpusenseRoutes.COLLECTIONS}/:collectionId`}
+                    element={<CollectionInspectorPage />}
+                  />
+                  <Route path={CorpusenseRoutes.MODELS} element={<ModelsManagerPage />} />
+                  <Route path={CorpusenseRoutes.CONFIGURATION} element={<ConfigurationPage />} />
+                  <Route path={CorpusenseRoutes.STORAGE} element={<StoragePage />} />
+                  <Route path={CorpusenseRoutes.WORKERS} element={<WorkersManagerPage />} />
+                  <Route
+                    path={`${CorpusenseRoutes.WORKERS}/:workerId`}
+                    element={<WorkersManagerPage />}
+                  />
+                  <Route
+                    path={`${CorpusenseRoutes.DOCUMENTATION}`}
+                    element={<DocumentationPage />}
+                  />
+                  <Route
+                    path={`${CorpusenseRoutes.DOCUMENTATION}/:page`}
+                    element={<DocumentationPage />}
+                  />
+                </Route>
+              </Routes>
+            </AlertDialogProvider>
+          </ExperimentalProvider>
+        </CollectionProvider>
+        {/* </LocalManifestProvider> */}
+      </ConnectedUserProvider>
     </BrowserRouter>
   );
 }

@@ -1,4 +1,3 @@
-import { authInitialState } from '@/state/reducers/auth';
 import { eventsInitialState } from '@/state/reducers/events';
 import { manifestInitialState } from '@/state/reducers/manifests';
 import { workerInitialState } from '@/state/reducers/workers';
@@ -8,7 +7,6 @@ const defaultPreloadedState: RootState = {
   manifests: manifestInitialState,
   workers: workerInitialState,
   events: eventsInitialState,
-  auth: authInitialState,
 };
 
 export const getPreloadedState = (partialState: Partial<RootState> = {}): RootState => {

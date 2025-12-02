@@ -1,4 +1,5 @@
 import { useCollectionContext } from '@/components/reducers/CollectionContext';
+import { useConnectedUserContext } from '@/components/reducers/ConnectedUserContext';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -10,12 +11,10 @@ import {
 import WorkerLabel from '@/components/WorkerLabel';
 import { WorkerStatus } from '@/data/models/Worker';
 import { useCollections } from '@/hooks/data/collections/useCollections';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import useExperimental from '@/hooks/useExperimental';
-import { logoutRequest } from '@/state/reducers/auth';
-import { selectConnectedUser } from '@/state/selectors/auth';
 import { selectWorkersByStatus } from '@/state/selectors/workers';
 import {
   Archive,
@@ -216,14 +215,15 @@ const SourcesSideBarGroup = () => {
 
 const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: string) => void }) => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
-  const user = useAppSelector(selectConnectedUser);
+  const { logout, user } = useConnectedUserContext();
   const { collections } = useCollections();
   const { openLoginDialog } = useDialog();
   const { experimentalFeaturesActivated } = useExperimental();
 
   const handleLogout = () => {
-    appDispatch(logoutRequest());
+    void (async () => {
+      await logout();
+    })();
   };
 
   return (
