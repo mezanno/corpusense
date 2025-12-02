@@ -1,4 +1,4 @@
-import { Annotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
+import { Annotation, getAnnotationType } from '@/data/models/Annotation';
 import { Scope } from '@/data/models/Scope';
 import { getAnnotationLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -10,7 +10,6 @@ type AnnotationContextValue = {
   annotations: Annotation[];
   getAnnotationsByTypes: (types: string[]) => Annotation[];
   getLastOrderByType: (type: string) => number;
-  hasOcr: () => boolean;
 };
 
 const AnnotationContext = createContext<AnnotationContextValue | undefined>(undefined);
@@ -39,17 +38,12 @@ export const AnnotationContextProvider = ({ children }: Props) => {
       return annotationsByType[annotationsByType.length - 1].order ?? 1;
     };
 
-    //TODO: hasOcr is related to a specific canvas, not to the whole collection scope
-    const hasOcr = () =>
-      annotations.some((annotation) => getAnnotationType(annotation) === ElementType.TEXT_LINE);
-
     return {
       scope,
       setScope,
       annotations,
       getAnnotationsByTypes,
       getLastOrderByType,
-      hasOcr,
     };
   }, [annotations]);
 

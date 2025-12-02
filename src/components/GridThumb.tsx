@@ -1,5 +1,6 @@
 import WorkerStatusIcon from '@/components/WorkerStatusIcon';
 import { getImageForThumbnail, getLabel } from '@/data/utils/canvas';
+import useOcrAnnotations from '@/hooks/data/annotations/useOcrAnnotations';
 import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useAppSelector } from '@/hooks/hooks';
@@ -12,7 +13,6 @@ import { CircleX, SpellCheck, SpellCheck2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { useAnnotationContext } from './reducers/AnnotationContext';
 
 const GridThumb = ({
   canvasId,
@@ -34,7 +34,7 @@ const GridThumb = ({
   const canvas = useCollectionContent(collectionId).getCanvasById(canvasId);
   const isWorkerRunning = useAppSelector((state) => selectIsWorkerOrTaskRunning(state, scope));
   const idDisplayed = canvasToDisplay?.id === canvas?.id;
-  const hasLineAnnotations = useAnnotationContext().hasOcr();
+  const hasOcrAnnotations = useOcrAnnotations(scope).hasOcrAnnotations;
   const { removeElementFromCollection } = useCollections();
   const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
 
@@ -102,7 +102,7 @@ const GridThumb = ({
     >
       <div className='flex w-full justify-between text-xs'>
         <div className='w-fit rounded-xl bg-white p-1 shadow'>
-          {hasLineAnnotations ? (
+          {hasOcrAnnotations ? (
             <SpellCheck size={16} color='green' />
           ) : (
             <SpellCheck2 size={16} color='red' />

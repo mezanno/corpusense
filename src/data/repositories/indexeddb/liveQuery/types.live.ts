@@ -3,7 +3,7 @@ import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
 import { NamedEntity } from '@/data/models/NamedEntity';
-import { Scope } from '@/data/models/Scope';
+import { CanvasScope, Scope } from '@/data/models/Scope';
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
 import { Canvas } from '@iiif/presentation-3';
@@ -21,6 +21,7 @@ export interface ModelLiveRepository {
 
 export interface AnnotationLiveRepository {
   getByScope(scope: Scope): () => Promise<Annotation[]>;
+  hasOcrAnnotations(scope: CanvasScope): () => Promise<boolean>;
 }
 
 export interface ManifestLiveRepository {
