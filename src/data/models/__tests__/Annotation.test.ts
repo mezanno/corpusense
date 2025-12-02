@@ -18,7 +18,7 @@ vi.mock('uuid', () => {
 });
 
 describe('Annotation', () => {
-  const annotation = annotationFromEdwin[0] as Annotation;
+  const annotation = { ...annotationFromEdwin[0], type: ElementType.TEXT_REGION } as Annotation;
   describe('getAnnotationType', () => {
     it('should get the correct annotation type', () => {
       const expectedType = 'ENTRY';

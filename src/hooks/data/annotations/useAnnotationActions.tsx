@@ -89,6 +89,7 @@ export const useAnnotationActions = () => {
     if (type !== undefined && value !== undefined) {
       annotationToSave = {
         ...annotationToSave,
+        type: type ?? annotationToSave.type,
         bodies: createBodies(type, value, annotationToSave.id),
       };
     }

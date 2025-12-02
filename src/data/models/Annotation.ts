@@ -27,6 +27,7 @@ export interface Annotation extends ImageAnnotation {
   canvasId: string;
   collectionId: string;
   order: number;
+  type: ElementType;
   partOf?: string;
   previous?: string;
   next?: string;
@@ -35,6 +36,7 @@ export interface Annotation extends ImageAnnotation {
 export interface AnnotationDTO extends ImageAnnotation {
   canvasId: string;
   collectionId: string;
+  type: ElementType;
 }
 
 export interface AnnotationCreateDTO {
@@ -76,6 +78,7 @@ export function isAnnotation(obj: unknown): obj is Annotation {
     typeof a.canvasId === 'string' &&
     typeof a.collectionId === 'string' &&
     typeof a.order === 'number';
+  // typeof a.type === 'string';
 
   return isImageAnnotation && hasRequiredFields;
 }
@@ -131,6 +134,7 @@ export function createAnnotation<T extends AnnotationCreateDTO | AnnotationWithI
     id: annotationId,
     canvasId,
     collectionId,
+    type,
     target: {
       annotation: annotationId,
       selector: {
@@ -186,6 +190,7 @@ export const createAnnotationFromAnnotorious = ({
     ...annotation,
     collectionId,
     canvasId,
+    type,
     bodies: createBodies(type, value, annotation.id),
   };
 };
