@@ -3,7 +3,6 @@ import authSaga, { loadConnectedUser } from './auth';
 import collectionsSaga from './collections';
 import exportSaga from './export';
 import manifestsSaga from './manifests';
-import namedEntitiesSaga from './namedEntities';
 import workerSaga, { fetchWorkers, loadWorkerPluginsInfo } from './workers';
 
 function* launchSaga(saga: () => Generator) {
@@ -19,14 +18,7 @@ function* launchSaga(saga: () => Generator) {
 
 function getRootSaga() {
   return function* rootSaga() {
-    const coreSagas = [
-      manifestsSaga,
-      collectionsSaga,
-      exportSaga,
-      workerSaga,
-      namedEntitiesSaga,
-      authSaga,
-    ];
+    const coreSagas = [manifestsSaga, collectionsSaga, exportSaga, workerSaga, authSaga];
 
     yield all(coreSagas.map((saga) => spawn(launchSaga, saga)));
     yield fork(fetchWorkers); //load workers at startup

@@ -1,13 +1,12 @@
 import { DataField } from '@/data/models/DataModel';
-import { useAppDispatch } from '@/hooks/hooks';
-import { addEntityRequest } from '@/state/reducers/namedEntities';
+import useNamedEntities from '@/hooks/data/namedEntities/useNamedEntities';
 import { useTranslation } from 'react-i18next';
 import { useMarkupContext } from '../reducers/MarkupContext';
 
 const MarkupContextMenu = () => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
   const { state, dispatch } = useMarkupContext();
+  const { addEntity } = useNamedEntities([]); // We just need the hook to have access to the addEntityRequest action
 
   const model = state.model;
 
@@ -49,7 +48,9 @@ const MarkupContextMenu = () => {
       const selectedWordRects = state.wordRects.filter((_, index) =>
         state.selected.includes(index),
       );
-      appDispatch(addEntityRequest({ rects: selectedWordRects, type: field }));
+      void (async () => {
+        await addEntity({ rects: selectedWordRects, type: field });
+      })();
     }
   };
 

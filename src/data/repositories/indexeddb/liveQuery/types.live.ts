@@ -2,6 +2,7 @@ import { Annotation } from '@/data/models/Annotation';
 import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
+import { NamedEntity } from '@/data/models/NamedEntity';
 import { Scope } from '@/data/models/Scope';
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
@@ -29,4 +30,8 @@ export interface ManifestLiveRepository {
 
 export interface TagLiveRepository {
   getAll(): () => Promise<Tag[]>;
+}
+
+export interface NamedEntityLiveRepository {
+  getByAnnotationIds(annotationIds: string[]): () => Promise<NamedEntity[]>;
 }

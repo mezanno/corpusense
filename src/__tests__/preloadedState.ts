@@ -17,7 +17,6 @@ const defaultPreloadedState: RootState = {
     lastExportError: '',
   },
   workers: workerInitialState,
-  entities: [],
   events: eventsInitialState,
   auth: authInitialState,
 };

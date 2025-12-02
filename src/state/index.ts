@@ -4,7 +4,6 @@ import collectionsReducer from './reducers/collections';
 import eventsReducer from './reducers/events';
 import exportReducer from './reducers/export';
 import manifestsReducer from './reducers/manifests';
-import entityReducer from './reducers/namedEntities';
 import workersReducer from './reducers/workers';
 
 export const appReducer = combineReducers({
@@ -12,7 +11,7 @@ export const appReducer = combineReducers({
   collections: collectionsReducer,
   export: exportReducer,
   workers: workersReducer,
-  entities: entityReducer,
+
   events: eventsReducer,
   auth: authReducer,
 });
