@@ -6,6 +6,7 @@ import {
   AnnotationContextProvider,
   useAnnotationContext,
 } from '@/components/reducers/AnnotationContext';
+import { useCollectionContext } from '@/components/reducers/CollectionContext';
 import TextViewer from '@/components/textviewer/TextViewer';
 import {
   Accordion,
@@ -17,8 +18,6 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collection } from '@/data/models/Collection';
 import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
-import { useAppDispatch } from '@/hooks/hooks';
-import { loadCollectionRequest } from '@/state/reducers/collections';
 import { Canvas } from '@iiif/presentation-3';
 import 'gridstack/dist/gridstack.min.css';
 import { FC, useEffect, useState } from 'react';
@@ -83,6 +82,7 @@ const CollectionInspectorContent = ({
 }) => {
   const { t } = useTranslation();
   const { collection, getCanvasById } = useCollectionContent(collectionId);
+  const { openCollection } = useCollectionContext();
   const { setScope } = useAnnotationContext();
   const canvas = canvasId !== null ? getCanvasById(canvasId) : null;
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(canvas);
@@ -90,12 +90,15 @@ const CollectionInspectorContent = ({
   const [colCount, setColCount] = useState(6);
 
   useEffect(() => {
+    openCollection(collectionId);
+  }, [collectionId]);
+
+  useEffect(() => {
     setCanvasToDisplay(canvas);
   }, [collectionId, canvas]);
 
   useEffect(() => {
     if (canvasToDisplay !== null) {
-      // appDispatch(loadEntitiesRequest({ canvasId: canvasToDisplay.id, collectionId }));
       setScope({ canvasId: canvasToDisplay.id, collectionId });
     }
   }, [canvasToDisplay]);
@@ -217,17 +220,8 @@ const CollectionInspectorPage = () => {
   const { collectionId } = useParams();
   const [searchParams] = useSearchParams();
   console.log('searchParams: ', searchParams);
-
-  const dispatch = useAppDispatch();
   console.log('CollectionInspectorPage collectionId: ', collectionId);
   console.log('CollectionInspectorPage - Canvas ', canvasId);
-
-  useEffect(() => {
-    console.log('CollectionInspectorPage collectionId - useEffect: ', collectionId);
-    if (collectionId !== undefined) {
-      dispatch(loadCollectionRequest(collectionId));
-    }
-  }, [collectionId]);
 
   useEffect(() => {
     console.log('searchParams: ', searchParams.get('canvas'));

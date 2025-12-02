@@ -1,8 +1,7 @@
 import { Collection } from '@/data/models/Collection';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
-import { toggleCollectionOfflineRequest } from '@/state/reducers/collections';
 import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { Pin } from 'lucide-react';
 import { memo } from 'react';
@@ -16,7 +15,6 @@ const CollectionToolbar = memo(function CollectionToolbar({
   collection: Collection;
 }) {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
   const { openRemoveAnnotationsDialog } = useDialog();
   const isWorkerRunning = useAppSelector((state) =>
     selectIsWorkerOrTaskRunning(state, { collectionId: collection.id }),
@@ -49,7 +47,7 @@ const CollectionToolbar = memo(function CollectionToolbar({
   // };
 
   const handleToggleOffline = () => {
-    appDispatch(toggleCollectionOfflineRequest(collection.id));
+    // appDispatch(toggleCollectionOfflineRequest(collection.id));
   };
 
   // const closeAnalysisDialog = (model: DataModel) => {

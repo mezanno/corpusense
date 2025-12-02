@@ -1,6 +1,5 @@
 import { Action, combineReducers, Reducer } from '@reduxjs/toolkit';
 import authReducer from './reducers/auth';
-import collectionsReducer from './reducers/collections';
 import eventsReducer from './reducers/events';
 import exportReducer from './reducers/export';
 import manifestsReducer from './reducers/manifests';
@@ -8,7 +7,6 @@ import workersReducer from './reducers/workers';
 
 export const appReducer = combineReducers({
   manifests: manifestsReducer,
-  collections: collectionsReducer,
   export: exportReducer,
   workers: workersReducer,
 

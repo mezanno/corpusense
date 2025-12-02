@@ -1,74 +1,55 @@
-import { Collection } from '@/data/models/Collection';
-import { Canvas } from '@iiif/presentation-3';
-import { createContext, useCallback, useContext, useReducer } from 'react';
+import { CollectionDetails } from '@/data/models/Collection';
+import { getCollectonLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
-export const ACTIONS = {
-  OPEN_COLLECTION: 'OPEN_COLLECTION',
-} as const;
-
-export type CollectionContextAction = {
-  type: typeof ACTIONS.OPEN_COLLECTION;
-  payload: { collectionId: string };
-};
-
-function CollectionContextReducer(
-  state: CollectionContextState,
-  action: CollectionContextAction,
-): CollectionContextState {
-  switch (action.type) {
-    case ACTIONS.OPEN_COLLECTION:
-      if (state.openedCollections.includes(action.payload.collectionId)) {
-        return state;
-      }
-      return {
-        ...state,
-        openedCollections: [...state.openedCollections, action.payload.collectionId],
-      };
-    default:
-      return state;
-  }
-}
-
-export interface CollectionContextState {
-  openedCollections: string[];
-  currentCollection?: Collection; //the collection currently being viewed in the collection inspector
-  loadedCanvases?: Record<
-    string, //canvasId
-    {
-      //the canvases loaded for the current collection
-      content: Canvas;
-      infos: {
-        hasOcrAnnotations?: boolean;
-        hasOfflineImage?: boolean;
-      };
-    }
-  >;
-}
-
-export const initialValues: CollectionContextState = {
-  openedCollections: [],
-};
-
-type CollectionContextType = CollectionContextState & {
+type CollectionContextValue = {
+  collectionId: string | null;
+  setCollectionId: (collectionId: string | null) => void;
+  openedCollections: CollectionDetails[];
   openCollection: (collectionId: string) => void;
+  removeFromOpenedCollections: (id: string) => void;
 };
 
-export const CollectionContext = createContext<CollectionContextType | undefined>(undefined);
+export const CollectionContext = createContext<CollectionContextValue | undefined>(undefined);
 
-export const CollectionProvider = ({ children }: { children: React.ReactNode }) => {
-  const [state, dispatch] = useReducer(CollectionContextReducer, initialValues);
+type Props = {
+  children: React.ReactNode;
+};
 
-  const openCollection = useCallback(
-    (collectionId: string) =>
-      dispatch({ type: ACTIONS.OPEN_COLLECTION, payload: { collectionId } }),
-    [dispatch],
+export const CollectionProvider = ({ children }: Props) => {
+  const [collectionId, setCollectionId] = useState<string | null>(null);
+  const [openedIds, setOpenedIds] = useState<string[]>([]);
+  const collectionLiveRepository = useMemo(() => getCollectonLiveRepository(), []);
+
+  const openedCollections = useLiveQuery(
+    collectionLiveRepository.getAllDetailsByIds(openedIds),
+    [openedIds],
+    [] as CollectionDetails[],
   );
 
-  return (
-    <CollectionContext.Provider value={{ ...state, openCollection }}>
-      {children}
-    </CollectionContext.Provider>
+  const openCollection = useCallback((id: string) => {
+    setOpenedIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    setCollectionId(id);
+  }, []);
+
+  const removeFromOpenedCollections = useCallback(
+    (id: string) => {
+      setOpenedIds((prev) => prev.filter((openedId) => openedId !== id));
+      if (collectionId === id) setCollectionId(null);
+    },
+    [collectionId],
   );
+
+  const value: CollectionContextValue = {
+    collectionId,
+    setCollectionId,
+    openedCollections,
+    openCollection,
+    removeFromOpenedCollections,
+  };
+
+  return <CollectionContext.Provider value={value}>{children}</CollectionContext.Provider>;
 };
 
 export const useCollectionContext = () => {

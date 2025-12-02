@@ -31,7 +31,6 @@ import {
   take,
   takeEvery,
 } from 'redux-saga/effects';
-import { updateOcrStatus } from '../reducers/collections';
 import { pushError, pushInfo } from '../reducers/events';
 import {
   addResult,
@@ -244,9 +243,6 @@ function* startWorker(
                 ...currentWorker,
                 queue: updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.COMPLETED, ''), //on ajoute un message vide pour supprimer un potentiel précédent message d'erreur
               };
-              if (taskResult.content !== undefined && isAnnotationArray(taskResult.content)) {
-                yield put(updateOcrStatus(taskResult.content));
-              }
               yield put(addResult(newResult));
             }
             break;

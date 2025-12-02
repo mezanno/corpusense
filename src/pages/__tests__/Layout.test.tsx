@@ -46,19 +46,6 @@ describe('Layout', () => {
     const baseState = getPreloadedState();
     const preloadedState: RootState = {
       ...baseState,
-      collections: {
-        ...baseState.collections,
-        openedCollections: ['id1'],
-        values: [
-          {
-            id: 'id1',
-            name: 'Collection 1',
-            tags: [],
-            contentSize: 0,
-            offline: false,
-          },
-        ],
-      },
     };
     const screen = renderWithProviders(<Layout />, { preloadedState });
 

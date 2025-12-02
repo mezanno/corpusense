@@ -10,6 +10,10 @@ export class IndexedDBCollectionLiveRepository implements CollectionLiveReposito
     return () => db.collections.toArray();
   }
 
+  getAllDetailsByIds(ids: string[]): () => Promise<CollectionDetails[]> {
+    return () => db.collections.where('id').anyOf(ids).toArray();
+  }
+
   getById(id: string): () => Promise<Collection> {
     return async () => {
       const details = await db.collections.get(id);

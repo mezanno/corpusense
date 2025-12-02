@@ -10,6 +10,7 @@ import { Canvas } from '@iiif/presentation-3';
 
 export interface CollectionLiveRepository {
   getAllDetails(): () => Promise<CollectionDetails[]>;
+  getAllDetailsByIds(ids: string[]): () => Promise<CollectionDetails[]>;
   getById(id: string): () => Promise<Collection>;
   getCanvasesByCollectionId(collectionId: string): () => Promise<Canvas[]>;
 }

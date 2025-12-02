@@ -35,19 +35,6 @@ describe('CollectionsManagerPage', () => {
   it('la page affiche un tableau de 2 collections', () => {
     const preloadedState: RootState = {
       ...getPreloadedState(),
-      collections: {
-        ...getPreloadedState().collections,
-        values: [
-          { id: '1', name: 'Collection 1', contentSize: 0, tags: [], offline: false },
-          {
-            id: '2',
-            name: 'Collection 2',
-            contentSize: 0,
-            tags: [],
-            offline: false,
-          },
-        ],
-      },
     };
     renderWithProviders(<CollectionsManagerPage />, { preloadedState });
 

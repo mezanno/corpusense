@@ -1,3 +1,4 @@
+import { useCollectionContext } from '@/components/reducers/CollectionContext';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -14,7 +15,6 @@ import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import useExperimental from '@/hooks/useExperimental';
 import { logoutRequest } from '@/state/reducers/auth';
-import { removeFromOpenedCollections } from '@/state/reducers/collections';
 import { selectConnectedUser } from '@/state/selectors/auth';
 import { selectWorkersByStatus } from '@/state/selectors/workers';
 import {
@@ -96,10 +96,8 @@ const WorkersSideBarGroup = ({
 
 const CollectionsSideBarGroup = () => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
   const navigation = useAppNavigation();
-  //TODO: create a new context hook to get opened collections
-  const { collections: openedCollections } = useCollections();
+  const { openedCollections, removeFromOpenedCollections } = useCollectionContext();
 
   if (openedCollections.length === 0) {
     return null; // No collections opened, nothing to display
@@ -107,7 +105,7 @@ const CollectionsSideBarGroup = () => {
 
   const handleOnClose = async (collectionId: string) => {
     await navigation.goToManifestExplorer();
-    appDispatch(removeFromOpenedCollections(collectionId));
+    removeFromOpenedCollections(collectionId);
   };
 
   return (
