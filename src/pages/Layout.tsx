@@ -5,7 +5,7 @@ import useDialog from '@/hooks/ui/useDialog';
 import { resetLastEvent } from '@/state/reducers/events';
 import { selectLastErrorEvent, selectLastInfoEvent } from '@/state/selectors/events';
 import { FolderOpen } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -18,8 +18,6 @@ const Layout = () => {
   const { openOpenManifestDialog, openContactUsDialog } = useDialog();
   const lastInfo = useAppSelector(selectLastInfoEvent);
   const lastError = useAppSelector(selectLastErrorEvent);
-  const [selectedWorkerId, setSelectedWorkerId] = useState<string>('');
-  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (lastInfo !== undefined) {
@@ -35,25 +33,12 @@ const Layout = () => {
     }
   }, [lastError]);
 
-  useEffect(() => {
-    if (selectedWorkerId !== '') {
-      setIsOpen(true);
-    }
-  }, [selectedWorkerId]);
-
-  // Reset selected worker when drawer closes (if not, the drawer will not reopen)
-  useEffect(() => {
-    if (!isOpen) {
-      setSelectedWorkerId('');
-    }
-  }, [isOpen]);
-
   return (
     <SidebarProvider>
-      <LayoutSideBar setSelectedWorkerId={setSelectedWorkerId} />
+      <LayoutSideBar />
       <SidebarInset className='flex h-screen min-w-0 flex-col'>
         <div className='flex h-full w-full flex-col p-2'>
-          <header className='flex shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
+          <header className='flex shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12'>
             <div className='flex items-center space-x-2'>
               <SidebarTrigger />
               <button

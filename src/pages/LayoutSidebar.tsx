@@ -50,11 +50,7 @@ import {
   SidebarMenuSubItem,
 } from '../components/ui/sidebar';
 
-const WorkersSideBarGroup = ({
-  setSelectedWorkerId,
-}: {
-  setSelectedWorkerId: (id: string) => void;
-}) => {
+const WorkersSideBarGroup = () => {
   const { t } = useTranslation();
   const workers = useAppSelector((state) =>
     selectWorkersByStatus(state, [WorkerStatus.INPROGRESS, WorkerStatus.INPROGRESS_WITH_ERRORS]),
@@ -71,11 +67,7 @@ const WorkersSideBarGroup = ({
       <SidebarGroupContent>
         <SidebarMenu>
           {workers.map((worker) => (
-            <SidebarMenuItem
-              key={worker.id}
-              className='cursor-pointer overflow-hidden'
-              onClick={() => setSelectedWorkerId(worker.id)}
-            >
+            <SidebarMenuItem key={worker.id} className='cursor-pointer overflow-hidden'>
               <SidebarMenuButton asChild>
                 <Link
                   to={`/${CorpusenseRoutes.WORKERS}/${worker.id}`}
@@ -213,7 +205,7 @@ const SourcesSideBarGroup = () => {
   );
 };
 
-const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: string) => void }) => {
+const LayoutSideBar = () => {
   const { t } = useTranslation();
   const { logout, user } = useConnectedUserContext();
   const { collections } = useCollections();
@@ -294,7 +286,7 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
-        <WorkersSideBarGroup setSelectedWorkerId={setSelectedWorkerId} />
+        <WorkersSideBarGroup />
       </SidebarContent>
 
       <SidebarFooter>
