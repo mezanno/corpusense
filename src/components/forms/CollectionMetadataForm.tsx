@@ -186,7 +186,6 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
                 <FormItem className='flex flex-col items-start'>
                   <FormLabel className='text-left'>{t('form_label_tags')}</FormLabel>
                   <FormControl id='test'>
-                    {/* @ts-expect-error TagInput */}
                     <TagInput
                       {...field}
                       placeholder={t('form_placeholder_tags')}

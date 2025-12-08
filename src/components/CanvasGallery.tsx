@@ -2,63 +2,12 @@ import { useAppSelector } from '@/hooks/hooks';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
 import { selectCanvases, selectManifestURL } from '@/state/selectors/manifests';
 import { Canvas } from '@iiif/presentation-3';
-import { FC, useEffect, useRef, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Selecto, { OnSelect } from 'react-selecto';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { FixedSizeGrid as Grid } from 'react-window';
 import CanvasCard from './CanvasCard';
-
-interface GridCellProps {
-  columnIndex: number;
-  rowIndex: number;
-  style: React.CSSProperties;
-  data: {
-    canvases: Canvas[];
-    manifestId: string;
-    width: number;
-    height: number;
-    colCount: number;
-    canvasToDisplay: Canvas | null;
-    setCanvasToDisplay: (canvas: Canvas | null) => void;
-  };
-}
-
-const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => {
-  const index = rowIndex * data.colCount + columnIndex;
-  //we return an empty div if the index is out of bounds
-  //this is to avoid the error "index out of bounds" when using react-window
-  if (index >= data.canvases.length) {
-    return <div style={style} />;
-  }
-
-  const canvas = data.canvases[index];
-
-  return (
-    <div
-      className={`${
-        columnIndex % 2
-          ? rowIndex % 2 === 0
-            ? 'GridItemOdd'
-            : 'GridItemEven'
-          : rowIndex % 2
-            ? 'GridItemOdd'
-            : 'GridItemEven'
-      }`}
-      style={style}
-    >
-      <CanvasCard
-        canvas={canvas}
-        index={index}
-        manifestId={data.manifestId}
-        thumbWidth={data.width}
-        thumbHeight={data.height}
-        setCanvasToDisplay={data.setCanvasToDisplay}
-        canvasToDisplay={data.canvasToDisplay}
-      />
-    </div>
-  );
-};
 
 const CanvasGallery = ({
   canvasToDisplay,
@@ -73,32 +22,56 @@ const CanvasGallery = ({
   const { setSelection, getSelectionCount } = useCanvasSelection();
 
   const [colCount, setColCount] = useState(5);
-  const [currentCanvasIndex, setCurrentCanvasIndex] = useState(-1);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const containerRef = useRef(null);
-  const gridRef = useRef<Grid>(null);
+  // calcule les lignes en fonction des colonnes
+  const rowCount = Math.ceil(canvases.length / colCount);
+
+  /** Virtualizer vertical (pour les lignes) */
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const rowVirtualizer = useVirtualizer({
+    gap: 10,
+    count: rowCount,
+    getScrollElement: () => containerRef.current,
+    estimateSize: () => 165 + 10, // hauteur de ligne
+    overscan: 2,
+  });
+
+  /** Virtualizer horizontal (pour les colonnes) */
+  const colVirtualizer = useVirtualizer({
+    gap: 10,
+    horizontal: true,
+    count: colCount,
+    getScrollElement: () => containerRef.current,
+    estimateSize: () => 100, // largeur (sera mise à jour dynamiquement)
+    overscan: 2,
+  });
+
+  const [currentCanvasIndex, setCurrentCanvasIndex] = useState(-1);
 
   useEffect(() => {
     setCurrentCanvasIndex(
-      canvasToDisplay === null ? -1 : canvases.findIndex((c) => c.id === canvasToDisplay.id),
+      canvasToDisplay ? canvases.findIndex((c) => c.id === canvasToDisplay.id) : -1,
     );
   }, [canvasToDisplay]);
+
+  /** Navigation manuelle vers un index donné */
+  const scrollToCanvas = (index: number) => {
+    const targetRow = Math.floor(index / colCount);
+    rowVirtualizer.scrollToIndex(targetRow, { align: 'center' });
+  };
 
   const handleSelect = (e: OnSelect) => {
     setSelection(e.selected.map((el) => el.dataset.index).map(Number));
   };
 
-  const handleOnResize = (size: { height: number; width: number }) => {
-    setColCount(Math.max(2, Math.floor(size.width / 150)));
-  };
-
   const handleCanvasIndexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const index = parseInt(value, 10) - 1;
+    const v = e.target.value;
+    const index = parseInt(v, 10) - 1;
     if (!isNaN(index) && index >= 0 && index < canvases.length) {
       setCanvasToDisplay(canvases[index]);
-      gridRef.current?.scrollToItem({ rowIndex: Math.floor(index / colCount), align: 'center' });
-    } else if (value === '') {
+      scrollToCanvas(index);
+    } else if (v === '') {
       setCanvasToDisplay(null);
     }
   };
@@ -106,7 +79,7 @@ const CanvasGallery = ({
   const selectionCount = getSelectionCount();
 
   return (
-    <section className='h-full w-full items-center justify-center p-4' aria-label='canvas gallery'>
+    <section className='center h-full w-full p-4' aria-label='canvas gallery'>
       {canvases.length == 0 ? (
         <div role='alert'>{t('info_empty_manifest')}</div>
       ) : (
@@ -132,29 +105,67 @@ const CanvasGallery = ({
               hitRate={0}
               onSelect={handleSelect}
             />
-            <AutoSizer ref={containerRef} role='list' onResize={handleOnResize}>
-              {({ height, width }) => (
-                <Grid
-                  ref={gridRef}
-                  columnCount={colCount}
-                  columnWidth={width / colCount}
-                  height={height}
-                  rowCount={Math.ceil(canvases.length / colCount)}
-                  rowHeight={175}
-                  width={width}
-                  itemData={{
-                    canvases,
-                    manifestId,
-                    canvasToDisplay,
-                    setCanvasToDisplay,
-                    width: width / colCount - 20,
-                    height: 165,
-                    colCount: colCount,
-                  }}
-                >
-                  {GridCell}
-                </Grid>
-              )}
+            <AutoSizer
+              onResize={(size) => {
+                setColCount(Math.max(2, Math.floor(size.width / 115)));
+              }}
+            >
+              {({ width, height }) => {
+                return (
+                  <div
+                    ref={containerRef}
+                    style={{
+                      width,
+                      height,
+                      overflow: 'auto',
+                      position: 'relative',
+                    }}
+                  >
+                    <div
+                      className='m-2'
+                      style={{
+                        height: `${rowVirtualizer.getTotalSize()}px`,
+                        width: `${colVirtualizer.getTotalSize()}px`,
+                        position: 'relative',
+                      }}
+                    >
+                      {rowVirtualizer.getVirtualItems().map((virtualRow) => (
+                        <Fragment key={virtualRow.key}>
+                          {colVirtualizer.getVirtualItems().map((virtualColumn) => {
+                            const index = virtualRow.index * colCount + virtualColumn.index;
+                            if (index >= canvases.length) return null;
+
+                            const canvas = canvases[index];
+                            return (
+                              <div
+                                key={`${virtualRow.key}-${virtualColumn.key}`}
+                                style={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  width: `${virtualColumn.size}px`,
+                                  height: `${virtualRow.size}px`,
+                                  transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`,
+                                }}
+                              >
+                                <CanvasCard
+                                  canvas={canvas}
+                                  index={index}
+                                  manifestId={manifestId}
+                                  thumbWidth={virtualColumn.size}
+                                  thumbHeight={virtualRow.size}
+                                  setCanvasToDisplay={setCanvasToDisplay}
+                                  canvasToDisplay={canvasToDisplay}
+                                />
+                              </div>
+                            );
+                          })}
+                        </Fragment>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }}
             </AutoSizer>
             {selectionCount > 0 && (
               <div className='absolute flex w-full justify-center'>
@@ -171,10 +182,3 @@ const CanvasGallery = ({
 };
 
 export default CanvasGallery;
-
-/*
-  openSeadragonConfig={{
-    loadTilesWithAjax: false,
-  }}
-  si true, charge les images avec XHR ce qui empêche de mettre en cache, il faut donc mettre false pour utiliser fetch
-*/

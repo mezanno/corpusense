@@ -1,8 +1,9 @@
 import { WorkerStatus } from '@/data/models/Worker';
 import { CalendarClock, CircleAlert, CircleCheck, OctagonPause } from 'lucide-react';
+import React from 'react';
 import { GridLoader } from 'react-spinners';
 
-const getWorkerStatusIcon = (status: WorkerStatus): JSX.Element => {
+const getWorkerStatusIcon = (status: WorkerStatus): React.JSX.Element => {
   switch (status) {
     case WorkerStatus.WAITING:
       return <CalendarClock color='#A66119' />;

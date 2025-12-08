@@ -16,62 +16,14 @@ import {
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Collection } from '@/data/models/Collection';
 import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
 import { Canvas } from '@iiif/presentation-3';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import 'gridstack/dist/gridstack.min.css';
-import { FC, useEffect, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { FixedSizeGrid as Grid } from 'react-window';
-
-interface GridCellProps {
-  columnIndex: number;
-  rowIndex: number;
-  style: React.CSSProperties;
-  data: {
-    collection: Collection;
-    width: number;
-    height: number;
-    colCount: number;
-    canvasToDisplay: Canvas | null;
-    setCanvasToDisplay: (canvas: Canvas | null) => void;
-  };
-}
-
-const GridCell: FC<GridCellProps> = ({ columnIndex, rowIndex, style, data }) => {
-  const index = rowIndex * data.colCount + columnIndex;
-  //we return an empty div if the index is out of bounds
-  //this is to avoid the error "index out of bounds" when using react-window
-  if (index >= data.collection.content.length) {
-    return <div style={style} />;
-  }
-
-  return (
-    <div
-      className={`${
-        columnIndex % 2
-          ? rowIndex % 2 === 0
-            ? 'GridItemOdd'
-            : 'GridItemEven'
-          : rowIndex % 2
-            ? 'GridItemOdd'
-            : 'GridItemEven'
-      }`}
-      style={style}
-    >
-      <GridThumb
-        canvasId={data.collection.content[index].canvasId}
-        collectionId={data.collection.id ?? ''}
-        thumbWidth={data.width}
-        thumbHeight={data.height}
-        setCanvasToDisplay={data.setCanvasToDisplay}
-        canvasToDisplay={data.canvasToDisplay}
-      />
-    </div>
-  );
-};
 
 const CollectionInspectorContent = ({
   collectionId,
@@ -87,7 +39,9 @@ const CollectionInspectorContent = ({
   const canvas = canvasId !== null ? getCanvasById(canvasId) : null;
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(canvas);
   const [activeTab, setActiveTab] = useState('document');
-  const [colCount, setColCount] = useState(6);
+
+  const [colCount, setColCount] = useState(5);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     openCollection(collectionId);
@@ -103,19 +57,28 @@ const CollectionInspectorContent = ({
     }
   }, [canvasToDisplay]);
 
-  const handleOnResize = (size: { height: number; width: number }) => {
-    if (size.width < 200) {
-      setColCount(3);
-    } else if (size.width < 800) {
-      setColCount(4);
-    } else if (size.width < 1000) {
-      setColCount(5);
-    } else if (size.width < 1200) {
-      setColCount(6);
-    } else {
-      setColCount(7);
-    }
-  };
+  // calcule les lignes en fonction des colonnes
+  const rowCount = Math.ceil(collection?.contentSize ?? 0 / colCount);
+
+  /** Virtualizer vertical (pour les lignes) */
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const rowVirtualizer = useVirtualizer({
+    gap: 10,
+    count: rowCount,
+    getScrollElement: () => containerRef.current,
+    estimateSize: () => 165 + 10, // hauteur de ligne
+    overscan: 2,
+  });
+
+  /** Virtualizer horizontal (pour les colonnes) */
+  const colVirtualizer = useVirtualizer({
+    gap: 10,
+    horizontal: true,
+    count: colCount,
+    getScrollElement: () => containerRef.current,
+    estimateSize: () => 100, // largeur (sera mise à jour dynamiquement)
+    overscan: 2,
+  });
 
   return (
     <section className='h-full max-h-full w-full max-w-full'>
@@ -145,28 +108,65 @@ const CollectionInspectorContent = ({
               </Accordion>
               {collection.content.length > 0 && <CollectionToolbar collection={collection} />}
               <div className='panel h-full w-full overflow-hidden'>
-                {collection.content.length > 0 ? (
-                  <AutoSizer role='list' onResize={handleOnResize}>
-                    {({ height, width }) => (
-                      <Grid
-                        columnCount={colCount}
-                        columnWidth={width / colCount}
-                        height={height}
-                        rowCount={Math.ceil(collection.content.length / colCount)}
-                        rowHeight={175}
-                        width={width}
-                        itemData={{
-                          collection,
-                          width: width / colCount - 20,
-                          height: 165,
-                          setCanvasToDisplay,
-                          canvasToDisplay,
-                          colCount: colCount,
-                        }}
-                      >
-                        {GridCell}
-                      </Grid>
-                    )}
+                {collection.contentSize > 0 ? (
+                  <AutoSizer
+                    onResize={(size) => {
+                      setColCount(Math.max(2, Math.floor(size.width / 115)));
+                    }}
+                  >
+                    {({ width, height }) => {
+                      return (
+                        <div
+                          ref={containerRef}
+                          style={{
+                            width,
+                            height,
+                            overflow: 'auto',
+                            position: 'relative',
+                          }}
+                        >
+                          <div
+                            className='m-2'
+                            style={{
+                              height: `${rowVirtualizer.getTotalSize()}px`,
+                              width: `${colVirtualizer.getTotalSize()}px`,
+                              position: 'relative',
+                            }}
+                          >
+                            {rowVirtualizer.getVirtualItems().map((virtualRow) => (
+                              <Fragment key={virtualRow.key}>
+                                {colVirtualizer.getVirtualItems().map((virtualColumn) => {
+                                  const index = virtualRow.index * colCount + virtualColumn.index;
+                                  if (index >= collection.contentSize) return null;
+                                  return (
+                                    <div
+                                      key={`${virtualRow.key}-${virtualColumn.key}`}
+                                      style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: `${virtualColumn.size}px`,
+                                        height: `${virtualRow.size}px`,
+                                        transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`,
+                                      }}
+                                    >
+                                      <GridThumb
+                                        canvasId={collection.content[index].canvasId}
+                                        collectionId={collection.id ?? ''}
+                                        thumbWidth={virtualColumn.size}
+                                        thumbHeight={virtualRow.size}
+                                        setCanvasToDisplay={setCanvasToDisplay}
+                                        canvasToDisplay={canvasToDisplay}
+                                      />
+                                    </div>
+                                  );
+                                })}
+                              </Fragment>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }}
                   </AutoSizer>
                 ) : (
                   <div className='flex h-full w-full items-center justify-center text-muted-foreground'>
@@ -216,18 +216,11 @@ const CollectionInspectorContent = ({
 
 const CollectionInspectorPage = () => {
   const { t } = useTranslation();
-  const [canvasId, setCanvasId] = useState<string | null>(null);
   const { collectionId } = useParams();
   const [searchParams] = useSearchParams();
-  console.log('searchParams: ', searchParams);
-  console.log('CollectionInspectorPage collectionId: ', collectionId);
-  console.log('CollectionInspectorPage - Canvas ', canvasId);
 
-  useEffect(() => {
-    console.log('searchParams: ', searchParams.get('canvas'));
-    if (searchParams.get('canvas') !== null) {
-      setCanvasId(searchParams.get('canvas'));
-    }
+  const canvasId = useMemo(() => {
+    return searchParams.get('canvas');
   }, [searchParams]);
 
   return collectionId === undefined ? (

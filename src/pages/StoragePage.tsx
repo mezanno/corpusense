@@ -46,7 +46,7 @@ async function renderPdfToImages(file: File): Promise<ImageData[]> {
     canvas.width = viewport.width;
     canvas.height = viewport.height;
 
-    await page.render({ canvasContext: context, viewport }).promise;
+    await page.render({ canvasContext: context, viewport, canvas }).promise;
 
     const imgDataUrl = canvas.toDataURL('image/png');
     images.push({ data: imgDataUrl, width: viewport.width, height: viewport.height });
