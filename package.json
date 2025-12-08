@@ -163,6 +163,7 @@
     "prettier-plugin-tailwindcss": "^0.7.2",
     "redux-saga-test-plan": "^4.0.6",
     "rollup-plugin-visualizer": "^6.0.5",
+    "shadcn": "^3.5.1",
     "tailwindcss": "^4.1.17",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
@@ -176,5 +177,9 @@
     "workbox-cli": "^7.4.0",
     "workbox-window": "^7.4.0",
     "zod": "^4.1.13"
+  },
+  "overrides": {
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
   }
 }
