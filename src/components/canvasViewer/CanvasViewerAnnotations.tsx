@@ -70,8 +70,6 @@ const CanvasViewerAnnotations = ({
 
   //initialize the Annotorious
   useEffect(() => {
-    console.log('CanvasViewerContent - useEffect anno ', anno);
-
     if (anno === null || anno === undefined) return;
 
     const viewer = anno.viewer;
@@ -116,7 +114,7 @@ const CanvasViewerAnnotations = ({
       // viewer.removeAllHandlers('tile-load-failed');
       viewer.removeAllHandlers('open-failed');
     };
-  }, [anno]);
+  }, [anno, annotationsInStore]);
 
   useEffect(() => {
     if (anno !== null) {

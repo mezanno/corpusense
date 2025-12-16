@@ -45,7 +45,7 @@ export const AnnotationContextProvider = ({ children }: Props) => {
       getAnnotationsByTypes,
       getLastOrderByType,
     };
-  }, [annotations]);
+  }, [scope, annotations]);
 
   return <AnnotationContext.Provider value={value}>{children}</AnnotationContext.Provider>;
 };
