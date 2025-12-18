@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const Welcome = () => {
   return (
-    <section className='flex h-full w-full flex-col items-center space-y-4'>
+    <section className='flex max-h-full w-full flex-col items-center space-y-4 overflow-auto'>
       <img src={`${import.meta.env.VITE_BASE_PATH}/images/logo.png`} className='w-1/2'></img>
       <div className='space-y-2'>
         <h1 className='font-bold'>Bienvenue sur Corpusense</h1>
