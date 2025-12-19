@@ -15,6 +15,21 @@ async function fileToBase64(file: File): Promise<string> {
   });
 }
 
+export async function imageToBase64(image: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result); // data:image/...;base64,...
+      } else {
+        reject(new Error('Conversion en base64 échouée'));
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(image);
+  });
+}
+
 export function getFolder(path: string): string {
   const parts = path.split('/');
 
