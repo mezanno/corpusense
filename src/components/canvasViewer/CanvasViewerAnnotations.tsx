@@ -11,15 +11,18 @@ import { Canvas } from '@iiif/presentation-3';
 import { useEffect, useRef } from 'react';
 import AnnotationForm from '../forms/AnnotationForm';
 import { useAnnotationContext } from '../reducers/AnnotationContext';
+import { CanvasViewerMode } from './CanvasViewer';
 
 const CanvasViewerAnnotations = ({
   canvas,
   collectionId,
   showAnnotations,
+  setMode,
 }: {
   canvas: Canvas;
   collectionId: string;
   showAnnotations: boolean;
+  setMode: (mode: CanvasViewerMode) => void;
 }) => {
   const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
@@ -89,7 +92,7 @@ const CanvasViewerAnnotations = ({
       } else {
         console.warn('No collectionId provided, annotation not saved');
       }
-      // setMode(CanvasViewerMode.MOVE);
+      setMode(CanvasViewerMode.MOVE);
     };
     const onUpdate = (annotation: ImageAnnotation) => {
       if (isAnnotation(annotation)) {

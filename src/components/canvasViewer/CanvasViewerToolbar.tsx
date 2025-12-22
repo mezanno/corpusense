@@ -65,7 +65,7 @@ export const CanvasViewerToolbar = ({
 
   return (
     <div className='flex w-full flex-col' onKeyDown={handleKeyDown}>
-      <h4 className='w-full border-b-1 text-center text-sm italic'>{canvas.id}</h4>
+      <h4 className='w-full border-b text-center text-sm italic'>{canvas.id}</h4>
       {isWorkerRunning ? (
         <div>
           <strong>{t('info_worker_running')}</strong>

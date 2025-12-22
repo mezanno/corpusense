@@ -47,6 +47,7 @@ const CanvasViewer = ({
               canvas={canvas}
               collectionId={collectionId}
               showAnnotations={showAnnotations}
+              setMode={setMode}
             />
           )}
         </div>

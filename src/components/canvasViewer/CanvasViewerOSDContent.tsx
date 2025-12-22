@@ -10,7 +10,7 @@ import {
 import { Canvas } from '@iiif/presentation-3';
 import OpenSeadragon from 'openseadragon';
 import { useEffect, useState } from 'react';
-import { CanvasViewerMode } from '../reducers/CanvasViewerContext';
+import { CanvasViewerMode } from './CanvasViewer';
 
 const colors = {
   [ElementType.TEXT_LINE.toString()]: '#2a9d8f',
