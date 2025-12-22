@@ -1,14 +1,13 @@
 import { ElementType } from '@/data/models/Annotation';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
-import { useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
-import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { useSelection } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
 import { Eye, EyeOff, Layout, NotebookPen } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAnnotationContext } from '../reducers/AnnotationContext';
+import { useWorkerContext } from '../reducers/WorkerContext';
 import Toolbar from '../ToolBar';
 import { Toggle } from '../ui/toggle';
 import { CanvasViewerMode } from './CanvasViewer';
@@ -31,9 +30,8 @@ export const CanvasViewerToolbar = ({
   const { t } = useTranslation();
   const { openDuplicateLayoutDialog, openRemoveAnnotationsDialog } = useDialog();
   const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
-  const isWorkerRunning = useAppSelector((state) =>
-    selectIsWorkerOrTaskRunning(state, { collectionId }),
-  );
+  const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({ collectionId });
+
   const { getAnnotationsByTypes } = useAnnotationContext();
   const { removeAnnotationsByIds } = useAnnotationActions();
 

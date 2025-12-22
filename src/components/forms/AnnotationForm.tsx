@@ -6,8 +6,6 @@ import {
   getBodies,
 } from '@/data/models/Annotation';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
-import { useAppSelector } from '@/hooks/hooks';
-import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, Trash2 } from 'lucide-react';
@@ -17,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import AnnotationOrderPanel from '../AnnotationOrderPanel';
 import Entities from '../Entities';
+import { useWorkerContext } from '../reducers/WorkerContext';
 import Toolbar from '../ToolBar';
 import { Button } from '../ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
@@ -36,9 +35,9 @@ const AnnotationForm = ({
   lastOrder: number;
 }) => {
   const { t } = useTranslation();
-  const isWorkerRunning = useAppSelector((state) =>
-    selectIsWorkerOrTaskRunning(state, { collectionId: annotation.collectionId }),
-  );
+  const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({
+    collectionId: annotation.collectionId,
+  });
   const { updateAnnotation, removeAnnotationsByIds, removeAnnotationsInside } =
     useAnnotationActions();
 

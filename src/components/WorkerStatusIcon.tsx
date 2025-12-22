@@ -1,12 +1,10 @@
 import { Scope } from '@/data/models/Scope';
 import { WorkerStatus } from '@/data/models/Worker';
-import { useAppSelector } from '@/hooks/hooks';
-import { selectStatus } from '@/state/selectors/workers';
 import { ClipLoader, GridLoader } from 'react-spinners';
+import { useWorkerContext } from './reducers/WorkerContext';
 
 const WorkerStatusIcon = ({ scope }: { scope: Scope }) => {
-  const status = useAppSelector((state) => selectStatus(state, scope));
-
+  const status = useWorkerContext().getStatus(scope);
   if (status === undefined) {
     return null;
   }

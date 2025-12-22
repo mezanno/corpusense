@@ -1,26 +1,21 @@
 import { WorkerStatus } from '@/data/models/Worker';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useWorkers from '@/hooks/data/workers/useWorkers';
+import { useAppDispatch } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
-import {
-  // exportWorkerResultRequest,
-  recoverWorkerRequest,
-  removeResultRequest,
-  stopWorkerProcessRequest,
-} from '@/state/reducers/workers';
-import { selectHasExport, selectHasResult, selectWorkerById } from '@/state/selectors/workers';
+import { recoverWorkerRequest, stopWorkerProcessRequest } from '@/state/reducers/workers';
 import { CircleX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAlertDialogContext } from './reducers/useAlertDialogContext';
+import { useWorkerContext } from './reducers/WorkerContext';
 import ScopeLabel from './ScopeLabel';
 import { getTaskStatusColor, getWorkerStatusIcon } from './workerUtils';
 
 const WorkerDetails = ({ workerId }: { workerId: string }) => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const worker = useAppSelector((state) => selectWorkerById(state, workerId));
-  const resultExists = useAppSelector((state) =>
-    worker ? selectHasExport(state, worker?.name) && selectHasResult(state, workerId) : false,
-  );
+  const worker = useWorkerContext().getWorkerById(workerId);
+  const resultExists = useWorkerContext().hasResult(workerId);
+  const { removeResult } = useWorkers();
   const { openSelectFormatDialog } = useDialog();
   const { openDialog } = useAlertDialogContext();
 
@@ -57,7 +52,7 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
       description: t('description_delete_worker'),
       onConfirm: {
         message: t('btn_yes'),
-        action: () => appDispatch(removeResultRequest({ workerId, taskId })),
+        action: () => void removeResult(workerId, taskId),
       },
     });
   };

@@ -16,7 +16,6 @@ import { generateManifestFromCollection } from '@/data/utils/export';
 import { useAppDispatch } from '@/hooks/hooks';
 import i18n from '@/i18n';
 import { pushError, pushInfo } from '@/state/reducers/events';
-import { addResultsSuccess, addWorkersSuccess } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import { default as JSZip } from 'jszip';
@@ -98,7 +97,6 @@ export const useCollectionIO = () => {
       try {
         const workerRepository = getWorkerRepository();
         await workerRepository.addAll(workers);
-        appDispatch(addWorkersSuccess(workers));
       } catch (error) {
         console.error('Error importing workers:', getErrorMessage(error));
       }
@@ -108,7 +106,6 @@ export const useCollectionIO = () => {
       try {
         const resultRepository = getResultRepository();
         await resultRepository.addAll(results);
-        appDispatch(addResultsSuccess(results));
       } catch (error) {
         console.error('Error importing results:', getErrorMessage(error));
       }

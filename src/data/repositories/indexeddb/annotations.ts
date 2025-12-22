@@ -45,6 +45,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     return annotations[annotations.length - 1].order + 1;
   }
 
+  //TODO! il faut ordonner les annotations par collection et canvas sinon l'ordre sera faux
   async addAll(annotations: AnnotationDTO[]) {
     /* set the order for each annotation. We get the last order for the scope and type, and increment it for each new annotation.
     To optimize it, we order annotations by type and then we loop on each type */

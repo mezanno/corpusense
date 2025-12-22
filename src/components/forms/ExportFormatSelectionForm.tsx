@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { Worker } from '@/data/models/Worker';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useWorkers from '@/hooks/data/workers/useWorkers';
+import { useAppSelector } from '@/hooks/hooks';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { exportWorkerResultRequest } from '@/state/reducers/workers';
 import { selectExportFormats } from '@/state/selectors/workers';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
@@ -32,7 +32,7 @@ const ExportFormatSelectionForm = ({
   setCanSubmit,
 }: ExportFormatSelectionFormProps) => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
+  const { exportWorkerResult } = useWorkers();
 
   const formats = useAppSelector((state) => selectExportFormats(state, worker.name));
 
@@ -65,11 +65,11 @@ const ExportFormatSelectionForm = ({
     setCanSubmit(formats.length === 1 ? true : isDirty && isValid);
   }, [formats.length, isDirty, isValid]);
 
-  const onSubmit = (values: z.infer<typeof schema>) => {
+  const onSubmit = async (values: z.infer<typeof schema>) => {
     const selectedFormats = Object.entries(values)
       .filter(([, v]) => v === true)
       .map(([k]) => k);
-    appDispatch(exportWorkerResultRequest({ worker, formats: selectedFormats }));
+    await exportWorkerResult(worker, selectedFormats);
   };
 
   return (

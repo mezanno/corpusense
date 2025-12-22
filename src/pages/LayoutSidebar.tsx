@@ -1,5 +1,6 @@
 import { useCollectionContext } from '@/components/reducers/CollectionContext';
 import { useConnectedUserContext } from '@/components/reducers/ConnectedUserContext';
+import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -11,11 +12,9 @@ import {
 import WorkerLabel from '@/components/WorkerLabel';
 import { WorkerStatus } from '@/data/models/Worker';
 import { useCollections } from '@/hooks/data/collections/useCollections';
-import { useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import useExperimental from '@/hooks/useExperimental';
-import { selectWorkersByStatus } from '@/state/selectors/workers';
 import {
   Archive,
   Bolt,
@@ -52,9 +51,10 @@ import {
 
 const WorkersSideBarGroup = () => {
   const { t } = useTranslation();
-  const workers = useAppSelector((state) =>
-    selectWorkersByStatus(state, [WorkerStatus.INPROGRESS, WorkerStatus.INPROGRESS_WITH_ERRORS]),
-  );
+  const workers = useWorkerContext().getWorkersByStatus([
+    WorkerStatus.INPROGRESS,
+    WorkerStatus.INPROGRESS_WITH_ERRORS,
+  ]);
 
   if (workers.length === 0) {
     return null; // No active workers, nothing to display
