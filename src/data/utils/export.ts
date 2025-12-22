@@ -148,6 +148,24 @@ const generateTextFromCanvas = async (canvasId: string, collectionId: string) =>
   return text;
 };
 
+export type TextWithAnnotationId = { text: string; annotationId: string }[];
+
+const generateTextWithAnnotationIdFromCanvas = async (canvasId: string, collectionId: string) => {
+  const annotations = await getAnnotationRepository().getByScope({
+    canvasId,
+    collectionId,
+  });
+  if (annotations === undefined || annotations.length === 0) {
+    console.log(`No annotations found in canvas ${canvasId}`);
+    return [];
+  }
+  const text: TextWithAnnotationId = [];
+  for (let i = 0; i < annotations.length; i++) {
+    text.push({ text: getAnnotationText(annotations[i]), annotationId: annotations[i].id });
+  }
+  return text;
+};
+
 const generateNumberedTextFromCanvas = async (canvasId: string, collectionId: string) => {
   const annotations = await getAnnotationRepository().getByScope({
     canvasId,
@@ -194,4 +212,5 @@ export {
   generateTextForAnnotation,
   generateTextForCollection,
   generateTextFromCanvas,
+  generateTextWithAnnotationIdFromCanvas,
 };
