@@ -24,6 +24,7 @@ const CanvasViewer = ({
   const [mode, setMode] = useState<CanvasViewerMode>(CanvasViewerMode.MOVE);
   const [showAnnotations, setShowAnnotations] = useState(true);
   const [showText, setShowText] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null); // ID of hovered annotation (in text view)
 
   const toggleAnnotations = () => {
     setShowAnnotations(!showAnnotations);
@@ -50,12 +51,20 @@ const CanvasViewer = ({
         )}
         <div className='flex h-full w-full'>
           {collectionId !== undefined && showText && (
-            <div className='w-1/2'>
-              <CanvasViewerText scope={{ collectionId, canvasId: canvas.id }} />
+            <div className='w-1/2 flex-1 overflow-y-auto'>
+              <CanvasViewerText
+                scope={{ collectionId, canvasId: canvas.id }}
+                setHovered={setHovered}
+              />
             </div>
           )}
           <div className='flex w-1/2 flex-1'>
-            <CanvasViewerOSDContent canvas={canvas} mode={mode} />
+            <CanvasViewerOSDContent
+              canvas={canvas}
+              mode={mode}
+              hovered={hovered}
+              setHovered={setHovered}
+            />
             {collectionId !== undefined && (
               <CanvasViewerAnnotations
                 canvas={canvas}

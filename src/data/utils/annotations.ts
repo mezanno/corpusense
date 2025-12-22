@@ -1,5 +1,7 @@
+import { ImageAnnotation } from '@annotorious/annotorious';
 import { AnnotationPage, Canvas } from '@iiif/presentation-3';
 import i18next from 'i18next';
+import { Rect } from 'openseadragon';
 import { Annotation, createAnnotation, ElementType } from '../models/Annotation';
 import { convertAnnotationPageToW3CAnnotations } from '../models/converters/iiif';
 import { getAnnotationRepository } from '../repositories/indexeddb/dbFactory';
@@ -79,10 +81,16 @@ function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {
   return annotationRepository.addAll(annotationsW3C);
 }
 
+const getRectFromBounds = (annotation: Annotation | ImageAnnotation) => {
+  const bounds = annotation.target.selector.geometry.bounds;
+  return new Rect(bounds.minX, bounds.minY, bounds.maxX - bounds.minX, bounds.maxY - bounds.minY);
+};
+
 export {
   contains,
   generateFirstAnnotation,
   generateRegionAnnotationForCanvas,
   getAnnotationsByType,
+  getRectFromBounds,
   importAnnotationFromJson,
 };
