@@ -322,7 +322,7 @@ function updateTaskStatus(
  * This function is called when the application starts to load the workers and their results into the Redux store.
  */
 //TODO! à conserver pour permettre la mise à jour des workers au démarrage de l'application
-function* fetchWorkers(): Generator<Effect, void, Worker[] | Result[]> {
+function* initWorkersStatus(): Generator<Effect, void, Worker[] | Result[]> {
   const workerRepository = getWorkerRepository();
   const workers = (yield call([workerRepository, workerRepository.getAll])) as Worker[];
 
@@ -367,4 +367,4 @@ export default function* workerSaga() {
   yield takeEvery(recoverWorkerRequest, handleRecoverWorker);
 }
 
-export { fetchWorkers, loadWorkerPluginsInfo };
+export { initWorkersStatus, loadWorkerPluginsInfo };
