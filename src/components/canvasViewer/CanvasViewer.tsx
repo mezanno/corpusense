@@ -4,6 +4,7 @@ import { Canvas } from '@iiif/presentation-3';
 import { useState } from 'react';
 import CanvasViewerAnnotations from './CanvasViewerAnnotations';
 import CanvasViewerOSDContent from './CanvasViewerOSDContent';
+import CanvasViewerText from './CanvasViewerText';
 import CanvasViewerToolbar from './CanvasViewerToolbar';
 
 export enum CanvasViewerMode {
@@ -22,9 +23,14 @@ const CanvasViewer = ({
 
   const [mode, setMode] = useState<CanvasViewerMode>(CanvasViewerMode.MOVE);
   const [showAnnotations, setShowAnnotations] = useState(true);
+  const [showText, setShowText] = useState(false);
 
   const toggleAnnotations = () => {
     setShowAnnotations(!showAnnotations);
+  };
+
+  const toggleText = () => {
+    setShowText(!showText);
   };
 
   return (
@@ -38,18 +44,27 @@ const CanvasViewer = ({
             setMode={setMode}
             showAnnotations={showAnnotations}
             toggleAnnotations={toggleAnnotations}
+            toggleText={toggleText}
+            showText={showText}
           />
         )}
-        <div className='flex w-full flex-1'>
-          <CanvasViewerOSDContent canvas={canvas} mode={mode} />
-          {collectionId !== undefined && (
-            <CanvasViewerAnnotations
-              canvas={canvas}
-              collectionId={collectionId}
-              showAnnotations={showAnnotations}
-              setMode={setMode}
-            />
+        <div className='flex h-full w-full'>
+          {collectionId !== undefined && showText && (
+            <div className='w-1/2'>
+              <CanvasViewerText scope={{ collectionId, canvasId: canvas.id }} />
+            </div>
           )}
+          <div className='flex w-1/2 flex-1'>
+            <CanvasViewerOSDContent canvas={canvas} mode={mode} />
+            {collectionId !== undefined && (
+              <CanvasViewerAnnotations
+                canvas={canvas}
+                collectionId={collectionId}
+                showAnnotations={showAnnotations}
+                setMode={setMode}
+              />
+            )}
+          </div>
         </div>
       </div>
     </Annotorious>
