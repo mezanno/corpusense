@@ -1,10 +1,7 @@
 import { ElementType } from '@/data/models/Annotation';
-import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import useDialog from '@/hooks/ui/useDialog';
-import { useSelection } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
-import { Eye, EyeOff, Layout, NotebookPen } from 'lucide-react';
-import React from 'react';
+import { Book, BookOpenText, Eye, EyeOff, Layout, NotebookPen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAnnotationContext } from '../reducers/AnnotationContext';
 import { useWorkerContext } from '../reducers/WorkerContext';
@@ -19,6 +16,8 @@ export const CanvasViewerToolbar = ({
   setMode,
   showAnnotations,
   toggleAnnotations,
+  toggleText,
+  showText,
 }: {
   collectionId: string;
   canvas: Canvas;
@@ -26,14 +25,14 @@ export const CanvasViewerToolbar = ({
   setMode: (mode: CanvasViewerMode) => void;
   showAnnotations: boolean;
   toggleAnnotations: () => void;
+  toggleText: () => void;
+  showText: boolean;
 }) => {
   const { t } = useTranslation();
   const { openDuplicateLayoutDialog, openRemoveAnnotationsDialog } = useDialog();
-  const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
   const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({ collectionId });
 
   const { getAnnotationsByTypes } = useAnnotationContext();
-  const { removeAnnotationsByIds } = useAnnotationActions();
 
   const regionAnnotations = getAnnotationsByTypes([ElementType.TEXT_REGION]);
 
@@ -52,19 +51,8 @@ export const CanvasViewerToolbar = ({
     setMode(mode === CanvasViewerMode.DRAW ? CanvasViewerMode.MOVE : CanvasViewerMode.DRAW);
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    console.log('handleKeyDown: ', selected);
-
-    if (event.key === 'Delete' && selected?.length > 0) {
-      const ids = selected.map((s) => s.annotation.id);
-      void (async () => {
-        await removeAnnotationsByIds(ids); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
-      })();
-    }
-  };
-
   return (
-    <div className='flex w-full flex-col' onKeyDown={handleKeyDown}>
+    <div className='flex w-full flex-col'>
       <h4 className='w-full border-b text-center text-sm italic'>{canvas.id}</h4>
       {isWorkerRunning ? (
         <div>
@@ -105,6 +93,9 @@ export const CanvasViewerToolbar = ({
             pressed={showAnnotations}
           >
             {showAnnotations ? <Eye size={24} /> : <EyeOff size={24} />}
+          </Toggle>
+          <Toggle className='soft-button' size={null} onClick={toggleText} pressed={showText}>
+            {showText ? <BookOpenText size={24} /> : <Book />}
           </Toggle>
         </div>
       )}
