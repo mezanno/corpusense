@@ -40,8 +40,6 @@ const CanvasViewerOSDContent = ({
   const [options, setOptions] = useState<OpenSeadragon.Options | null>(null);
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>();
 
-  console.log('CanvasViewerOSDContent render - canvas id: ', canvas.id);
-
   useEffect(() => {
     const loadSource = async () => {
       const source = await getSource(canvas);

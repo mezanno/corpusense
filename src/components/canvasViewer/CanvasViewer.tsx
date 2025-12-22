@@ -19,8 +19,6 @@ const CanvasViewer = ({
   canvas: Canvas;
   collectionId?: string;
 }) => {
-  console.log('CanvasViewer - render ', canvas);
-
   const [mode, setMode] = useState<CanvasViewerMode>(CanvasViewerMode.MOVE);
   const [showAnnotations, setShowAnnotations] = useState(true);
   const [showText, setShowText] = useState(false);
