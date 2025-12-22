@@ -8,7 +8,6 @@ import { generateFirstAnnotation } from '@/data/utils/annotations';
 import { generateCollectionContent } from '@/data/utils/collections';
 import i18n from '@/i18n';
 import { pushError, pushInfo } from '@/state/reducers/events';
-import { removeWorkersSuccess } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -173,12 +172,7 @@ export const useCollections = () => {
   const removeCollection = async (id: string) => {
     try {
       const collectionToRemove = await collectionRepository.getById(id);
-
-      const { workersIds } = await collectionRepository.delete(collectionToRemove);
-      //TODO: to remove --> useLiveQuery pour les workers
-      appDispatch(removeWorkersSuccess(workersIds)); //remove workers associated to the collection
-      //A priori, plus besoin de prévenir le store, si on supprime une collection, c'est que l'on est sur la page des collections
-      // yield put(removeAnnotationSuccess(collectionId));
+      await collectionRepository.delete(collectionToRemove);
       appDispatch(pushInfo(i18n.t('toast_collection_deleted')));
     } catch (e) {
       appDispatch(pushError(getErrorMessage(e)));

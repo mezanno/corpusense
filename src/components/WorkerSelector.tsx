@@ -1,7 +1,6 @@
 import { WorkerStatus } from '@/data/models/Worker';
-import { useAppSelector } from '@/hooks/hooks';
-import { selectWorkersByStatus } from '@/state/selectors/workers';
 import { useTranslation } from 'react-i18next';
+import { useWorkerContext } from './reducers/WorkerContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import WorkerLabel from './WorkerLabel';
 
@@ -13,15 +12,13 @@ const WorkerSelector = ({
   setSelectedWorkerId: (id: string) => void;
 }) => {
   const { t } = useTranslation();
-  const workers = useAppSelector((state) =>
-    selectWorkersByStatus(state, [
-      WorkerStatus.INPROGRESS,
-      WorkerStatus.INPROGRESS_WITH_ERRORS,
-      WorkerStatus.UNFINISHED,
-      WorkerStatus.UNFINISHED_WITH_ERRORS,
-      WorkerStatus.COMPLETED_WITH_ERRORS,
-    ]),
-  );
+  const workers = useWorkerContext().getWorkersByStatus([
+    WorkerStatus.INPROGRESS,
+    WorkerStatus.INPROGRESS_WITH_ERRORS,
+    WorkerStatus.UNFINISHED,
+    WorkerStatus.UNFINISHED_WITH_ERRORS,
+    WorkerStatus.COMPLETED_WITH_ERRORS,
+  ]);
 
   if (workers.length === 0) {
     return <div>{t('info_no_worker_running')}</div>;

@@ -3,9 +3,7 @@ import { getImageForThumbnail, getLabel } from '@/data/utils/canvas';
 import useOcrAnnotations from '@/hooks/data/annotations/useOcrAnnotations';
 import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
 import { useCollections } from '@/hooks/data/collections/useCollections';
-import { useAppSelector } from '@/hooks/hooks';
 import { getObjectUrl } from '@/hooks/useFs';
-import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import 'gridstack/dist/gridstack.min.css';
@@ -13,6 +11,7 @@ import { CircleX, SpellCheck, SpellCheck2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import { useWorkerContext } from './reducers/WorkerContext';
 
 const GridThumb = ({
   canvasId,
@@ -32,7 +31,7 @@ const GridThumb = ({
   const { t } = useTranslation();
   const scope = useMemo(() => ({ collectionId, canvasId }), [collectionId, canvasId]);
   const canvas = useCollectionContent(collectionId).getCanvasById(canvasId);
-  const isWorkerRunning = useAppSelector((state) => selectIsWorkerOrTaskRunning(state, scope));
+  const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning(scope);
   const idDisplayed = canvasToDisplay?.id === canvas?.id;
   const hasOcrAnnotations = useOcrAnnotations(scope).hasOcrAnnotations;
   const { removeElementFromCollection } = useCollections();

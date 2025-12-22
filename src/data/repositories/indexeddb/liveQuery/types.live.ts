@@ -3,9 +3,11 @@ import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
 import { NamedEntity } from '@/data/models/NamedEntity';
+import { Result } from '@/data/models/Result';
 import { CanvasScope, Scope } from '@/data/models/Scope';
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
+import { Worker } from '@/data/models/Worker';
 import { Canvas } from '@iiif/presentation-3';
 
 export interface CollectionLiveRepository {
@@ -36,4 +38,13 @@ export interface TagLiveRepository {
 
 export interface NamedEntityLiveRepository {
   getByAnnotationIds(annotationIds: string[]): () => Promise<NamedEntity[]>;
+}
+
+export interface WorkerLiveRepository {
+  getById(id: string): () => Promise<Worker>;
+  getAll(): () => Promise<Worker[]>;
+}
+
+export interface ResultLiveRepository {
+  getAll(): () => Promise<Result[]>;
 }

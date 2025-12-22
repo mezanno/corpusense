@@ -1,4 +1,5 @@
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
+import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import ScopeLabel from '@/components/ScopeLabel';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,9 +14,7 @@ import WorkerDataTable from '@/components/WorkerDataTable';
 import WorkerDetails from '@/components/WorkerDetails';
 import { getWorkerStatusIcon } from '@/components/workerUtils';
 import { Worker, WorkerStatus } from '@/data/models/Worker';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { removeWorkerRequest } from '@/state/reducers/workers';
-import { selectWorkersByStatus } from '@/state/selectors/workers';
+import useWorkers from '@/hooks/data/workers/useWorkers';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal, Trash } from 'lucide-react';
 import { useState } from 'react';
@@ -29,7 +28,6 @@ type Filter = {
 
 const WorkersManagerPage = () => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
   const { workerId } = useParams();
   const [filters, setFilters] = useState<Filter[]>(
     Object.values(WorkerStatus).map((status) => ({
@@ -37,12 +35,10 @@ const WorkersManagerPage = () => {
       selected: true,
     })),
   );
-  const workers = useAppSelector((state) =>
-    selectWorkersByStatus(
-      state,
-      filters.filter((f) => f.selected).map((f) => f.status),
-    ),
+  const workers = useWorkerContext().getWorkersByStatus(
+    filters.filter((f) => f.selected).map((f) => f.status),
   );
+  const { removeWorker } = useWorkers();
   const { openDialog } = useAlertDialogContext();
 
   const initialSelectedWorkerId =
@@ -55,7 +51,7 @@ const WorkersManagerPage = () => {
       description: t('description_delete_worker'),
       onConfirm: {
         message: t('btn_yes'),
-        action: () => appDispatch(removeWorkerRequest(id)),
+        action: () => void removeWorker(id),
       },
     });
   };

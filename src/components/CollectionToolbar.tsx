@@ -1,11 +1,10 @@
 import { Collection } from '@/data/models/Collection';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
-import { useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
-import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { Pin } from 'lucide-react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useWorkerContext } from './reducers/WorkerContext';
 import Toolbar from './ToolBar';
 import { Toggle } from './ui/toggle';
 
@@ -16,9 +15,7 @@ const CollectionToolbar = memo(function CollectionToolbar({
 }) {
   const { t } = useTranslation();
   const { openRemoveAnnotationsDialog } = useDialog();
-  const isWorkerRunning = useAppSelector((state) =>
-    selectIsWorkerOrTaskRunning(state, { collectionId: collection.id }),
-  );
+  const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({ collectionId: collection.id });
 
   const { recomputeRegions } = useAnnotationActions();
   // const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);

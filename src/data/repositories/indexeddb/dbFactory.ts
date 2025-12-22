@@ -7,7 +7,9 @@ import { IndexedDBCollectionLiveRepository } from './liveQuery/collections.live'
 import { IndexedDBManifestLiveRepository } from './liveQuery/manifests.live';
 import { IndexedDBModelLiveRepository } from './liveQuery/models.live';
 import { IndexedDBNamedEntityLiveRepository } from './liveQuery/namedEntity.live';
+import { IndexedDBResultLiveRepository } from './liveQuery/results.live';
 import { IndexedDBTagLiveRepository } from './liveQuery/tags.live';
+import { IndexedDBWorkerLiveRepository } from './liveQuery/workers.live';
 import { IndexedDBManifestRepository } from './manifest';
 import { IndexedDBModelRepository } from './models';
 import { IndexedDBNamedEntityRepository } from './namedEntities';
@@ -71,8 +73,16 @@ export function getResultRepository() {
   return new IndexedDBResultRepository();
 }
 
+export function getResultLiveRepository() {
+  return new IndexedDBResultLiveRepository();
+}
+
 export function getWorkerRepository() {
   return new IndexedDBWorkerRepository();
+}
+
+export function getWorkerLiveRepository() {
+  return new IndexedDBWorkerLiveRepository();
 }
 
 export function getFSHandleRepository() {
