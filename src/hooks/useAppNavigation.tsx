@@ -13,11 +13,19 @@ export const CorpusenseRoutes = {
 const useAppNavigation = () => {
   const navigate = useNavigate();
 
-  const goToManifestExplorer = async (manifestId?: string) => {
-    if (manifestId === undefined) {
-      await navigate(`${CorpusenseRoutes.MANIFEST}`);
+  const goToManifestExplorer = async ({
+    manifestId,
+    indexeddbId,
+  }: {
+    manifestId?: string;
+    indexeddbId?: string;
+  }) => {
+    if (manifestId === undefined && indexeddbId === undefined) {
+      await navigate(`/${CorpusenseRoutes.MANIFEST}`);
+    } else if (indexeddbId === undefined) {
+      await navigate(`/${CorpusenseRoutes.MANIFEST}?manifestId=${manifestId}`);
     } else {
-      await navigate(`${CorpusenseRoutes.MANIFEST}?manifestId=${manifestId}`);
+      await navigate(`/${CorpusenseRoutes.MANIFEST}?indexeddbId=${indexeddbId}`);
     }
   };
   const goToCollectionsManager = async () => {
