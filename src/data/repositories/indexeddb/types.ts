@@ -139,6 +139,7 @@ export interface FSHandleRepository {
 }
 
 export interface ConvertedFileRepository {
+  getById(id: string): Promise<ConvertedFile>;
   add(file: ConvertedFile): Promise<void>;
   delete(id: string): Promise<void>;
 }
