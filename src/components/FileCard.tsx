@@ -1,5 +1,6 @@
 import { ConvertedFile } from '@/data/models/ConvertedFile';
 import useConvertedFileIO from '@/hooks/data/convertedFiles/useConvertedFileIO';
+import useAppNavigation from '@/hooks/useAppNavigation';
 import { Clock, Layers, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
@@ -10,6 +11,7 @@ interface FileCardProps {
 
 export function FileCard({ file }: FileCardProps) {
   const { removeConvertedFile } = useConvertedFileIO();
+  const { goToManifestExplorer } = useAppNavigation();
   const thumbUrl = useMemo(() => URL.createObjectURL(file.thumbnailBlob), [file.thumbnailBlob]);
 
   const handleRemoveConvertedFile: React.MouseEventHandler<HTMLDivElement> = (event) => {
@@ -20,7 +22,7 @@ export function FileCard({ file }: FileCardProps) {
   return (
     <Card
       className='card-file flex flex-col overflow-hidden bg-white'
-      //   onClick={() => navigate(`/file/${file.id}`)}
+      onClick={() => void goToManifestExplorer({ indexeddbId: file.id })}
       style={{ cursor: 'pointer' }}
     >
       <CardHeader className='overflow-hidden'>
