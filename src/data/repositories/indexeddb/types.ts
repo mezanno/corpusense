@@ -1,6 +1,7 @@
 import { Annotation, AnnotationDTO, ElementType } from '@/data/models/Annotation';
 import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { CollectionElement } from '@/data/models/CollectionElement';
+import { ConvertedFile } from '@/data/models/ConvertedFile';
 import { DataModel } from '@/data/models/DataModel';
 import { FSHandle } from '@/data/models/FSHandle';
 import { History } from '@/data/models/History';
@@ -135,4 +136,9 @@ export interface WorkerRepository {
 export interface FSHandleRepository {
   getAll(): Promise<FSHandle[]>;
   put(handle: FSHandle): Promise<void>;
+}
+
+export interface ConvertedFileRepository {
+  add(file: ConvertedFile): Promise<void>;
+  delete(id: string): Promise<void>;
 }

@@ -1,5 +1,6 @@
 import { Annotation } from '@/data/models/Annotation';
 import { CollectionContent, CollectionDetails } from '@/data/models/Collection';
+import { ConvertedFile } from '@/data/models/ConvertedFile';
 import { DataModel } from '@/data/models/DataModel';
 import { FSHandle } from '@/data/models/FSHandle';
 import { History } from '@/data/models/History';
@@ -26,6 +27,7 @@ const db = new Dexie('mezanno') as Dexie & {
   results: EntityTable<Result, 'id'>;
   workers: EntityTable<Worker, 'id'>;
   handles: EntityTable<FSHandle, 'id'>;
+  convertedFiles: EntityTable<ConvertedFile, 'id'>;
 };
 
 db.version(1).stores({
@@ -45,6 +47,7 @@ db.version(1).stores({
   results: '++id, workerName, workerId, [scopeKey+workerName], taskId',
   workers: '&id, name, status, [scopeKey+name]',
   handles: '&id',
+  convertedFiles: '&id',
 });
 
 export const clearDatabase = async () => {

@@ -1,9 +1,11 @@
 import { IndexedDBAnnotationRepository } from './annotations';
 import { IndexedDBCollectionRepository } from './collections';
+import { IndexedDBConvertedFileRepository } from './convertedFile';
 import { IndexedDBFSHandleRepository } from './fsHandle';
 import { IndexedDBItemMetadataRepository } from './itemMetadata';
 import { IndexedDBAnnotationLiveRepository } from './liveQuery/annotations.live';
 import { IndexedDBCollectionLiveRepository } from './liveQuery/collections.live';
+import { IndexedDBConvertedFileLiveRepository } from './liveQuery/convertedFile.live';
 import { IndexedDBManifestLiveRepository } from './liveQuery/manifests.live';
 import { IndexedDBModelLiveRepository } from './liveQuery/models.live';
 import { IndexedDBNamedEntityLiveRepository } from './liveQuery/namedEntity.live';
@@ -87,4 +89,12 @@ export function getWorkerLiveRepository() {
 
 export function getFSHandleRepository() {
   return new IndexedDBFSHandleRepository();
+}
+
+export function getConvertedFileRepository() {
+  return new IndexedDBConvertedFileRepository();
+}
+
+export function getConvertedFileLiveRepository() {
+  return new IndexedDBConvertedFileLiveRepository();
 }

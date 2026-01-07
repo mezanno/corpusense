@@ -1,5 +1,6 @@
 import { Annotation } from '@/data/models/Annotation';
 import { Collection, CollectionDetails } from '@/data/models/Collection';
+import { ConvertedFile } from '@/data/models/ConvertedFile';
 import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
 import { NamedEntity } from '@/data/models/NamedEntity';
@@ -47,4 +48,8 @@ export interface WorkerLiveRepository {
 
 export interface ResultLiveRepository {
   getAll(): () => Promise<Result[]>;
+}
+
+export interface ConvertedFileLiveRepository {
+  getAll(): () => Promise<ConvertedFile[]>;
 }
