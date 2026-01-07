@@ -47,7 +47,7 @@ db.version(1).stores({
   results: '++id, workerName, workerId, [scopeKey+workerName], taskId',
   workers: '&id, name, status, [scopeKey+name]',
   handles: '&id',
-  convertedFiles: '&id',
+  convertedFiles: '&id, folderName',
 });
 
 export const clearDatabase = async () => {

@@ -191,6 +191,7 @@ export function usePdfConverter() {
           outputDirectoryHandle: dirHandle,
           timestamp: Date.now(),
           manifestName,
+          folderName: dirHandle.name,
         });
       }
     } catch (err) {

@@ -6,4 +6,5 @@ export interface ConvertedFile {
   outputDirectoryHandle: FileSystemDirectoryHandle;
   timestamp: number;
   manifestName: string;
+  folderName: string;
 }
