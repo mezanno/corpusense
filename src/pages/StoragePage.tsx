@@ -5,6 +5,7 @@ import { generateManifest } from '@/utils/manifest';
 import { Manifest } from '@iiif/presentation-3';
 import { Archive, Trash } from 'lucide-react';
 // import imageBlobReduce from 'image-blob-reduce';
+import LocalStorageDashboard from '@/components/LocalStorageDashboard';
 import { useConnectedUserContext } from '@/components/reducers/ConnectedUserContext';
 import { getImage } from '@/data/utils/canvas';
 import { useUserManifests } from '@/hooks/useUserManifests';
@@ -214,6 +215,7 @@ const StoragePage = () => {
 
   return (
     <div className='panel h-full w-full flex-col space-y-2'>
+      <LocalStorageDashboard />
       <h1 className='flex items-center text-2xl font-bold'>
         <Archive className='mr-2' /> {t('page_title_storage')}
       </h1>

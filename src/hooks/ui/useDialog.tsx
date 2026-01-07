@@ -1,4 +1,5 @@
 import ContactForm from '@/components/forms/ContactForm';
+import ConvertPdfForm from '@/components/forms/ConvertPdfForm';
 import DuplicateLayoutForm from '@/components/forms/DuplicateLayoutForm';
 import ExportCollectionForm from '@/components/forms/ExportCollectionForm';
 import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
@@ -186,6 +187,14 @@ const useDialog = () => {
     });
   };
 
+  const openConvertPdfDialog = () => {
+    openDialog({
+      title: t('title_import_pdf'),
+      description: t('description_select_pdf'),
+      children: <ConvertPdfForm />,
+    });
+  };
+
   return {
     openOpenManifestDialog,
     openImportCollectionDialog,
@@ -199,6 +208,7 @@ const useDialog = () => {
     openDuplicateLayoutDialog,
     openRemoveAnnotationsDialog,
     openExportCollectionDialog,
+    openConvertPdfForm: openConvertPdfDialog,
   };
 };
 
