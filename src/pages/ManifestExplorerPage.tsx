@@ -4,6 +4,7 @@ import NoManifestToShow from '@/components/NoManifestToShow';
 import NothingToShow from '@/components/NothingToShow';
 import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
 import { Toggle } from '@/components/ui/toggle';
+import useConvertedFileIO from '@/hooks/data/convertedFiles/useConvertedFileIO';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { fecthManifestRequest } from '@/state/reducers/manifests';
 import { Canvas } from '@iiif/presentation-3';
@@ -19,6 +20,7 @@ const ManifestExplorerPage = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const { isLoading, isLoaded, loadedData } = useAppSelector((state) => state.manifests);
+  const { loadManifest } = useConvertedFileIO();
 
   const [searchParams] = useSearchParams();
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(null);
@@ -34,6 +36,16 @@ const ManifestExplorerPage = () => {
     const id = searchParams.get('manifestId');
     if (id != null) {
       appDispatch(fecthManifestRequest(id));
+    } else {
+      const indexeddbId = searchParams.get('indexeddbId');
+
+      if (indexeddbId != null) {
+        try {
+          const manifest = loadManifest(indexeddbId);
+        } catch (error) {
+          console.error('Error loading manifest from IndexedDB:', error);
+        }
+      }
     }
     setCanvasToDisplay(null);
   }, [searchParams]);
