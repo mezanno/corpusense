@@ -15,7 +15,7 @@ export function FileCard({ file }: FileCardProps) {
   const thumbUrl = useMemo(() => URL.createObjectURL(file.thumbnailBlob), [file.thumbnailBlob]);
 
   const handleRemoveConvertedFile: React.MouseEventHandler<HTMLDivElement> = (event) => {
-    event.preventDefault();
+    event.stopPropagation();
     void removeConvertedFile(file.id);
   };
 
