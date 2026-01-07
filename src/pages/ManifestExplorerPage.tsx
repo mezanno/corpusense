@@ -41,7 +41,7 @@ const ManifestExplorerPage = () => {
 
       if (indexeddbId != null) {
         try {
-          const manifest = loadManifest(indexeddbId);
+          void loadManifest(indexeddbId);
         } catch (error) {
           console.error('Error loading manifest from IndexedDB:', error);
         }
