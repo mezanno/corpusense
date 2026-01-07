@@ -10,22 +10,20 @@ export const CorpusenseRoutes = {
   DOCUMENTATION: 'doc',
 };
 
+type ManifestParams =
+  | { manifestId: string; indexeddbId?: never }
+  | { indexeddbId: string; manifestId?: never };
+
 const useAppNavigation = () => {
   const navigate = useNavigate();
 
-  const goToManifestExplorer = async ({
-    manifestId,
-    indexeddbId,
-  }: {
-    manifestId?: string;
-    indexeddbId?: string;
-  }) => {
-    if (manifestId === undefined && indexeddbId === undefined) {
+  const goToManifestExplorer = async (manifest?: ManifestParams) => {
+    if (manifest === undefined) {
       await navigate(`/${CorpusenseRoutes.MANIFEST}`);
-    } else if (indexeddbId === undefined) {
-      await navigate(`/${CorpusenseRoutes.MANIFEST}?manifestId=${manifestId}`);
+    } else if (manifest.indexeddbId === undefined) {
+      await navigate(`/${CorpusenseRoutes.MANIFEST}?manifestId=${manifest.manifestId}`);
     } else {
-      await navigate(`/${CorpusenseRoutes.MANIFEST}?indexeddbId=${indexeddbId}`);
+      await navigate(`/${CorpusenseRoutes.MANIFEST}?indexeddbId=${manifest.indexeddbId}`);
     }
   };
   const goToCollectionsManager = async () => {
