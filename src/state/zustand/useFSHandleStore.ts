@@ -3,12 +3,8 @@ import { create } from 'zustand';
 
 interface FSHandleState {
   directoryHandles: FileSystemDirectoryHandle[];
-  cachedFileHandles: Map<string, FileSystemFileHandle>;
   addDirectoryHandle: (handle: FileSystemDirectoryHandle) => Promise<void>;
   getDirectoryHandle: (directoryName: string) => FileSystemDirectoryHandle | undefined;
-  loadDirectoryHandles: () => Promise<void>;
-  addFileHandleToCache: (handle: FileSystemFileHandle) => void;
-  addFileHandlesToCache: (handles: Map<string, FileSystemFileHandle>) => void;
 }
 
 export const useFSHandleStore = create<FSHandleState>((set, get) => ({
@@ -32,21 +28,5 @@ export const useFSHandleStore = create<FSHandleState>((set, get) => ({
     const fsHandleRepository = getFSHandleRepository();
     const handlers = await fsHandleRepository.getAll();
     set({ directoryHandles: handlers.map((item) => item.handle) });
-  },
-  addFileHandleToCache: (handle: FileSystemFileHandle) => {
-    set((state) => {
-      const newCache = new Map(state.cachedFileHandles);
-      newCache.set(handle.name, handle);
-      return { cachedFileHandles: newCache };
-    });
-  },
-  addFileHandlesToCache: (handles: Map<string, FileSystemFileHandle>) => {
-    set((state) => {
-      const newCache = new Map(state.cachedFileHandles);
-      handles.forEach((handle, name) => {
-        newCache.set(name, handle);
-      });
-      return { cachedFileHandles: newCache };
-    });
   },
 }));
