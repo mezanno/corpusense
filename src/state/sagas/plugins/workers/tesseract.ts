@@ -6,8 +6,7 @@ import {
   getAnnotationRepository,
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { getImage } from '@/data/utils/canvas';
-import { getFile } from '@/hooks/useFs';
+import { getFile, getImage } from '@/data/utils/canvas';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';

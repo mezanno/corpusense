@@ -15,7 +15,6 @@ import {
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage, toGallicaUrl } from '@/data/utils/canvas';
-import { getFile, imageToBase64 } from '@/hooks/useFs';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
@@ -25,6 +24,7 @@ import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
 import * as XLSX from 'xlsx';
 import z from 'zod/v3';
+import { getFile, imageToBase64 } from '@/data/utils/canvas';
 
 export const pluginName = 'mistralocr';
 export const pluginDisplayName = 'Mistral OCR';
@@ -32,24 +32,29 @@ export const pluginDescription = 'Reconnaissance de texte';
 export const pluginCategory = 'OCR';
 export const pluginExportFormats = ['txt'];
 
-const DocumentSchemaZOD = z.object({
+const BBoxItemSchema = z
+  .object({
+    text: z.string().describe('The text content of the element.'),
+    top_left_x: z.number(),
+    top_left_y: z.number(),
+    bottom_right_x: z.number(),
+    bottom_right_y: z.number(),
+  })
+  .describe('A bounding box representing an element of text.');
+
+const SizeSchema = z.object({
+  width: z.number().describe('The width of the image in pixels.'),
+  height: z.number().describe('The height of the image in pixels.'),
+});
+
+export const DocumentSchemaZOD = z.object({
   bbox: z
-    .array(
-      z.object({
-        text: z.string().describe('The text content of the line.'),
-        x: z
-          .number()
-          .describe('The x-coordinate in pixels of the top-left corner of the line bounding box.'),
-        y: z
-          .number()
-          .describe('The y-coordinate in pixels of the top-left corner of the line bounding box.'),
-        width: z.number().describe('The width in pixels of the line bounding box.'),
-        height: z.number().describe('The height in pixels of the line bounding box.'),
-      }),
-    )
+    .array(BBoxItemSchema)
     .describe(
-      'List of bounding boxes detected in the image. Each bounding box contains the text of a line and its coordinates in pixels based on the dimensions of the document sended. 0,0 is the top-left corner of the document.',
+      'List of bounding boxes detected in the image. Each bounding box contains an element of text and its coordinates in pixels based on the dimensions of the document sent. 0,0 is the top-left corner of the document.',
     ),
+  image: SizeSchema.describe('The dimensions of the processed image.'),
+  origin: SizeSchema.describe('The dimensions of the received image.'),
 });
 
 /*
@@ -149,6 +154,10 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     if (response.documentAnnotation !== null && response.documentAnnotation !== undefined) {
       const json = JSON.parse(response.documentAnnotation) as unknown;
       console.log('Parsed OCR result:', json);
+      console.log('image dimensions :', image.width, image.height);
+      const ratioX = 1.5; //image.width / 600;
+      const ratioY = 1.5;//image.height / 800;
+      console.log('ratio: ', ratioX, ' / ', ratioY);
       const ocrResult = DocumentSchemaZOD.parse(json);
       const annotations: AnnotationDTO[] = [];
       for (const bbox of ocrResult.bbox) {
@@ -156,10 +165,10 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
           createAnnotation({
             canvasId: task.scope.canvasId,
             collectionId: task.scope.collectionId,
-            minX: bbox.x,
-            minY: bbox.y,
-            maxX: bbox.x + bbox.width,
-            maxY: bbox.y + bbox.height,
+            minX: bbox.top_left_x * ratioX,
+            minY: bbox.top_left_y * ratioY,
+            maxX: bbox.bottom_right_x * ratioX,
+            maxY: bbox.bottom_right_y * ratioY,
             type: ElementType.TEXT_LINE,
             value: bbox.text,
           }),

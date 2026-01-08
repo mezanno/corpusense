@@ -53,28 +53,26 @@ const getImageForThumbnail = (canvas: Canvas, maxWidth: number = 150): IIIFExter
   return image;
 };
 
-const getObjectUrl = async (filepath: string) => {
+const getFile = async (filepath: string) => {
   const pathParts = filepath.split('/');
   if (pathParts.length < 2) {
     throw new Error('Invalid filepath');
   }
-  //TODO : il faut récupérer le handle dans un convertfile de la BDD puis récupérer le fichier via le handleù
-  try {
-    const convertedFilesRepository = getConvertedFileRepository();
-    const folderName = pathParts[0];
-    const convertedFile = await convertedFilesRepository.getByFolderName(folderName);
-    const handle = convertedFile.outputDirectoryHandle;
-    const perm = await handle.queryPermission({ mode: 'read' });
-    if (perm !== 'granted') {
-      throw new Error('No permission to read the manifest directory');
-    }
-    const filename = pathParts[1];
-    const fileHandle = await handle.getFileHandle(filename);
-    const file = await fileHandle.getFile();
-    return URL.createObjectURL(file);
-  } catch (e) {
-    console.error(e);
+  const convertedFilesRepository = getConvertedFileRepository();
+  const folderName = pathParts[0];
+  const convertedFile = await convertedFilesRepository.getByFolderName(folderName);
+  const handle = convertedFile.outputDirectoryHandle;
+  const perm = await handle.queryPermission({ mode: 'read' });
+  if (perm !== 'granted') {
+    throw new Error('No permission to read the manifest directory');
   }
+  const filename = pathParts[1];
+  const fileHandle = await handle.getFileHandle(filename);
+  return await fileHandle.getFile();
+};
+
+const getObjectUrl = async (filepath: string) => {
+  return URL.createObjectURL(await getFile(filepath));
 };
 
 const getSource = async (canvas: Canvas): Promise<TileSource[]> => {
@@ -108,4 +106,28 @@ const toGallicaUrl = (iiifUrl: string) => {
   );
 };
 
-export { getImage, getImageForThumbnail, getLabel, getObjectUrl, getSource, toGallicaUrl };
+const imageToBase64 = async (image: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result); // data:image/...;base64,...
+      } else {
+        reject(new Error('Conversion en base64 échouée'));
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(image);
+  });
+};
+
+export {
+  getFile,
+  getImage,
+  getImageForThumbnail,
+  getLabel,
+  getObjectUrl,
+  getSource,
+  imageToBase64,
+  toGallicaUrl,
+};

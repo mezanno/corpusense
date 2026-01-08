@@ -2,7 +2,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { FormProps } from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
-import useExperimental from '@/hooks/useExperimental';
 import { fecthManifestRequest } from '@/state/reducers/manifests';
 import { selectManifestURL } from '@/state/selectors/manifests';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,9 +11,7 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import Loading from '../Loading';
-import LocalManifestBrowser from '../LocalManifestBrowser';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from '../ui/form';
-import { Separator } from '../ui/separator';
 
 const contentFormSchema = z.object({
   manifestInput: z.string().nonempty({ message: i18next.t('form_error_required') }),
@@ -23,7 +20,6 @@ const contentFormSchema = z.object({
 const OpenManifestForm = ({ formRef, closeDialog, setCanSubmit }: FormProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const { experimentalFeaturesActivated } = useExperimental();
   const currentManifestId = useAppSelector(selectManifestURL) ?? '';
   const { isLoading, loadedData, error } = useAppSelector((state) => state.manifests);
   const navigation = useAppNavigation();
@@ -92,12 +88,6 @@ const OpenManifestForm = ({ formRef, closeDialog, setCanSubmit }: FormProps) => 
           />
         </form>
       </div>
-      {experimentalFeaturesActivated && (
-        <>
-          <Separator orientation='horizontal' />
-          <LocalManifestBrowser />
-        </>
-      )}
     </Form>
   );
 };
