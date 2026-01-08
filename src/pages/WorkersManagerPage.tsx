@@ -16,7 +16,7 @@ import { getWorkerStatusIcon } from '@/components/workerUtils';
 import { Worker, WorkerStatus } from '@/data/models/Worker';
 import useWorkers from '@/hooks/data/workers/useWorkers';
 import { ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal, Trash } from 'lucide-react';
+import { ArrowUpDown, MoreHorizontal, Trash } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
@@ -65,7 +65,17 @@ const WorkersManagerPage = () => {
     {
       accessorFn: (row: Worker) => row.name,
       accessorKey: 'name',
-      header: t('list_title_worker_name'),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant='ghost'
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            {t('list_title_worker_name')}
+            <ArrowUpDown className='ml-2 h-4 w-4' />
+          </Button>
+        );
+      },
     },
     {
       accessorFn: (row: Worker) => row.scope,
@@ -93,7 +103,17 @@ const WorkersManagerPage = () => {
     {
       accessorFn: (row: Worker) => row.createdAt,
       accessorKey: 'createdAt',
-      header: t('list_title_worker_createdAt'),
+      header: ({ column }) => {
+        return (
+          <Button
+            variant='ghost'
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            {t('list_title_worker_createdAt')}
+            <ArrowUpDown className='ml-2 h-4 w-4' />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const date = new Date(row.getValue('createdAt'));
         return <div>{date.toLocaleString()}</div>;

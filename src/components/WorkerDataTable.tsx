@@ -1,5 +1,13 @@
 import { Worker } from '@/data/models/Worker';
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+} from '@tanstack/react-table';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from './ui/table';
 import { getTaskStatusColor } from './workerUtils';
@@ -18,10 +26,16 @@ const WorkerDataTable = <TData, TValue>({
   setSelectedWorkerId,
 }: WorkerDataTableProps<TData, TValue>) => {
   const { t } = useTranslation();
+  const [sorting, setSorting] = useState<SortingState>([]);
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    state: {
+      sorting,
+    },
   });
 
   return (
