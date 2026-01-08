@@ -1,4 +1,5 @@
 import { getConvertedFileRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { useFSHandleStore } from '@/state/zustand/useFSHandleStore';
 import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentation-3';
 import i18next from 'i18next';
 import { TileSource } from 'openseadragon';
@@ -60,13 +61,27 @@ const getFile = async (filepath: string) => {
   }
   const convertedFilesRepository = getConvertedFileRepository();
   const folderName = pathParts[0];
-  const convertedFile = await convertedFilesRepository.getByFolderName(folderName);
-  const handle = convertedFile.outputDirectoryHandle;
+  try {
+    const convertedFile = await convertedFilesRepository.getByFolderName(folderName);
+    const handle = convertedFile.outputDirectoryHandle;
+    return await getFileFromHandle(pathParts[1], handle);
+  } catch (e) {
+    //if there is no converted file, we try to get it from the FSHandle store
+    const fsHandleStore = useFSHandleStore.getState();
+    const dirHandle = fsHandleStore.getDirectoryHandle(folderName);
+    if (dirHandle) {
+      return await getFileFromHandle(pathParts[1], dirHandle);
+    } else {
+      throw e;
+    }
+  }
+};
+
+const getFileFromHandle = async (filename: string, handle: FileSystemDirectoryHandle) => {
   const perm = await handle.queryPermission({ mode: 'read' });
   if (perm !== 'granted') {
     throw new Error('No permission to read the manifest directory');
   }
-  const filename = pathParts[1];
   const fileHandle = await handle.getFileHandle(filename);
   return await fileHandle.getFile();
 };
