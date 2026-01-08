@@ -60,11 +60,13 @@ const CanvasCard = ({
     setSelection,
   } = useCanvasSelection();
   const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const inputCollectionName = useRef(null);
 
   useEffect(() => {
     const fetchThumbnail = async () => {
+      setError(null);
       const originalThumb = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
         getImageForThumbnail(canvas, 200),
       ];
@@ -77,6 +79,7 @@ const CanvasCard = ({
           item.id = await getObjectUrl(item.id);
         } catch (err) {
           console.error('Failed to get file for thumbnail:', err);
+          setError(t('error_fsfile_not_found', { id: item.id }));
         }
       }
 
@@ -159,19 +162,23 @@ const CanvasCard = ({
               data-canvas-id={canvas.id}
               role='listitem'
             >
-              {thumbnail !== null && (
-                <div className='w-fit flex-1'>
-                  <AutoSizer disableWidth>
-                    {({ height }) => (
-                      <Thumbnail
-                        thumbnail={thumbnail}
-                        style={{ width: 'auto', height: `${height}px`, objectFit: 'contain' }}
-                        aria-label='canvas thumbnail'
-                        draggable={false}
-                      />
-                    )}
-                  </AutoSizer>
-                </div>
+              {error !== null ? (
+                <div className='text-sm text-red-400'>{error}</div>
+              ) : (
+                thumbnail !== null && (
+                  <div className='w-fit flex-1'>
+                    <AutoSizer disableWidth>
+                      {({ height }) => (
+                        <Thumbnail
+                          thumbnail={thumbnail}
+                          style={{ width: 'auto', height: `${height}px`, objectFit: 'contain' }}
+                          aria-label='canvas thumbnail'
+                          draggable={false}
+                        />
+                      )}
+                    </AutoSizer>
+                  </div>
+                )
               )}
               <div className='flex w-full justify-between p-1 text-xs'>
                 {canvas.label !== undefined && canvas.label !== null && (
