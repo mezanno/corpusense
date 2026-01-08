@@ -279,6 +279,7 @@
   "description_delete_model": "Êtes-vous sûr de vouloir supprimer ce modèle ? Cette action est irréversible",
   "description_delete_datafield": "Êtes-vous sûr de vouloir supprimer ce champ ? Cette action est irréversible",
   "description_select_export_formats": "Sélectionnez les formats d'export souhaités :",
+  "description_delete_converted_file": "Êtes-vous sûr de vouloir retirer le document de Corpusense ? Cette action est irréversible. Attention ! Ceci ne supprimera pas les documents de votre disque dur.",
   "description_local_manifest": "Sélectionnez un dossier contenant soit un pdf, soit une ou plusieurs images (jpg, png, tiff). Corpusense générera un manifest IIIF à partir de ces fichiers.",
   "description_select_pdf": "Sélectionnez un fichier pdf afin d'en extraire les pages et générer un manifest",
   "description_pdf_files": "Fichiers PDF",

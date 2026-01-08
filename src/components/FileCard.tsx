@@ -3,6 +3,8 @@ import useConvertedFileIO from '@/hooks/data/convertedFiles/useConvertedFileIO';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { Clock, Layers, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useAlertDialogContext } from './reducers/useAlertDialogContext';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 
 interface FileCardProps {
@@ -10,13 +12,23 @@ interface FileCardProps {
 }
 
 export function FileCard({ file }: FileCardProps) {
+  const { t } = useTranslation();
   const { removeConvertedFile } = useConvertedFileIO();
   const { goToManifestExplorer } = useAppNavigation();
+  const { openDialog } = useAlertDialogContext();
+
   const thumbUrl = useMemo(() => URL.createObjectURL(file.thumbnailBlob), [file.thumbnailBlob]);
 
   const handleRemoveConvertedFile: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
-    void removeConvertedFile(file.id);
+    openDialog({
+      title: t('title_are_you_sure'),
+      description: t('description_delete_converted_file'),
+      onConfirm: {
+        message: t('btn_yes'),
+        action: () => void removeConvertedFile(file.id),
+      },
+    });
   };
 
   return (
