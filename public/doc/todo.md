@@ -2,6 +2,7 @@
 
 ## Priority
 
+TODO ; ajouter la catégorie du plugin dans la liste des traitements
 FIX : si on supprime les results à la main, il faut mettre à jour le statut des task d'un worker. --> voir avec dbSync
 TODO : gestion des tags en mémoire.
 TODO : revoir le flou artistique autour du fait de relancer l'ocr sur un canvas qui en possède déjà

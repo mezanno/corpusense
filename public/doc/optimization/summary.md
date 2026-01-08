@@ -1,53 +1,51 @@
 # Résumé de l'Audit et des Recommandations
 
-**Date** : 27 Novembre 2025
-**Contexte** : Audit complet du projet `corpusense-dev` pour identifier les pistes d'optimisation, les améliorations possibles et le respect des bonnes pratiques, sans modification du code existant.
+**Dernière mise à jour** : 8 Janvier 2026
+**Date initiale** : 27 Novembre 2025
+**Contexte** : Audit complet du projet `corpusense-dev` pour identifier les pistes d'optimisation, les améliorations possibles et le respect des bonnes pratiques.
 
-## Documents Générés
+## État d'avancement (Janvier 2026)
 
-L'ensemble des recommandations a été détaillé dans les fichiers suivants, situés dans ce même répertoire (`public/doc/optimization/`) :
+Depuis l'audit initial, plusieurs recommandations majeures ont été mises en œuvre :
+- **Migration vers `useLiveQuery` (Dexie)** : Une grande partie de l'état "Données" a été migrée hors de Redux vers des hooks réactifs basés sur Dexie. Cela inclut les Collections, les Annotations, les Tags, les Modèles et l'historique des Manifestes.
+- **Simplification de Redux** : Le store Redux a été considérablement allégé. Il ne gère plus que les événements système, l'état des Workers et la file d'attente des Manifestes.
+- **Mise à jour de la Stack** : Les versions de React, Vite, TypeScript et Tailwind ont été maintenues à jour vers leurs dernières versions stables (React 19.2, Vite 7, TS 5.9, Tailwind 4.1).
 
-1.  **[01-Architecture-and-Structure.md](./01-Architecture-and-Structure.md)**
-    *   Analyse de l'architecture globale (React 19, Vite, Redux/Saga, Zustand).
-    *   Suggestions pour clarifier la cohabitation des gestionnaires d'état.
-    *   Propositions pour une meilleure organisation modulaire des composants.
+## Documents Détaillés
+
+L'ensemble des recommandations est détaillé dans les fichiers suivants :
+
+1.  **[01-Architecture-and-Structure.md](./01-Architecture-and-Structure.md)** (Updated)
+    *   Analyse de l'architecture globale et mise à jour de la stack technique.
+    *   Suggestions pour l'organisation modulaire des composants (toujours d'actualité).
 
 2.  **[02-Code-Quality-and-Best-Practices.md](./02-Code-Quality-and-Best-Practices.md)**
-    *   Identification de code mort et de logs résiduels.
-    *   Amélioration de la robustesse du typage TypeScript (réduction des `as`).
-    *   Recommandations sur l'usage des `useEffect` et des formulaires (`react-hook-form`).
+    *   Amélioration de la robustesse du typage et nettoyage du code.
 
 3.  **[03-Performance-Optimization.md](./03-Performance-Optimization.md)**
-    *   Stratégies pour le chargement des images (Lazy Loading).
-    *   Optimisation du bundle (Code Splitting) et du rendu React (`React.memo`).
-    *   Gestion des logs en production.
+    *   Stratégies pour le chargement des images et l'optimisation du rendu React.
 
-4.  **[04-State-Management.md](./04-State-Management.md)**
-    *   Analyse critique de la stack Redux/Sagas vs Zustand vs React Query.
-    *   **Mise à jour** : Clarification sur l'usage de **`useLiveQuery` (Dexie)** pour les données locales (IndexedDB) vs **React Query** pour les données distantes.
+4.  **[04-State-Management.md](./04-State-Management.md)** (Updated)
+    *   Détail de la transition Redux -> `useLiveQuery`.
 
 5.  **[05-UI-UX-Improvements.md](./05-UI-UX-Improvements.md)**
-    *   Amélioration du feedback visuel pour les actions asynchrones.
-    *   Utilisation optimale de Tailwind CSS pour le responsive design.
-    *   Points sur l'accessibilité et l'internationalisation.
+    *   Accessibilité et feedback visuel.
 
 6.  **[06-Testing-and-CI.md](./06-Testing-and-CI.md)**
-    *   État des lieux des tests unitaires (Vitest).
-    *   Nécessité d'ajouter des tests E2E (Playwright) pour les interactions complexes.
-    *   Suggestions pour l'intégration continue (CI/CD).
+    *   Politique exhaustive de tests (Unitaire, Composant, E2E) et automatisation CI/CD.
 
-7.  **[07-Component-Structure-Proposal.md](./07-Component-Structure-Proposal.md)** (Nouveau)
-    *   Proposition détaillée de restructuration du dossier `components`.
-    *   Adoption d'une approche **Feature-First** (`features/`, `ui/`, `layout/`, `common/`) pour améliorer la scalabilité et la maintenabilité.
+7.  **[07-Component-Structure-Proposal.md](./07-Component-Structure-Proposal.md)**
+    *   Proposition de restructuration "Feature-First" (en attente de mise en œuvre).
 
-8.  **[08-Migration-Example-UseLiveQuery.md](./08-Migration-Example-UseLiveQuery.md)** (Nouveau)
-    *   Guide pratique pour migrer de Redux vers `useLiveQuery`.
-    *   Exemple concret sur `CollectionsManagerPage` : création d'un hook `useCollections` réactif et suppression du boilerplate Redux.
+8.  **[08-Migration-Example-UseLiveQuery.md](./08-Migration-Example-UseLiveQuery.md)** (Fait)
+    *   Guide utilisé pour la migration réussie de `CollectionsManagerPage`.
 
-## Conclusion Générale
 
-Le projet repose sur une base technique solide et moderne. Les principales opportunités d'amélioration résident dans :
-- La **simplification de la gestion d'état** : Transitionner de Redux/Sagas vers une approche plus native "Local-First" avec `useLiveQuery` pour Dexie, et React Query pour le distant.
-- La **restructuration des composants** : Organiser le code par fonctionnalité métier pour faciliter l'évolution du projet.
-- L'**optimisation des performances** de rendu pour les grandes collections d'images.
-- Le **renforcement de la qualité** via des tests E2E et une rigueur accrue sur le typage et le nettoyage du code.
+## Prochaines Étapes Prioritaires
+
+1.  **Restructuration des composants** : Appliquer la proposition du document 07 pour améliorer la scalabilité.
+2.  **Optimisation de `CanvasCard`** : Implémenter `React.memo` et améliorer le lazy-loading des images.
+3.  **Implémentation de la Politique de Tests** : Réactiver les tests existants et couvrir les utilitaires de données.
+4.  **Nettoyage de Redux/Saga** : Continuer à migrer les Workers et les Manifestes pour supprimer totalement Redux-Saga à terme.
+
+

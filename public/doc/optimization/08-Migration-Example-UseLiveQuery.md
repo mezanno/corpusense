@@ -1,6 +1,9 @@
-# Exemple de Migration : De Redux vers useLiveQuery
+# Migration Réussie : De Redux vers useLiveQuery (Exemple Collections)
 
-Ce document détaille les étapes pour migrer la page `CollectionsManagerPage` d'une gestion d'état Redux vers une gestion réactive locale avec `useLiveQuery` (Dexie), tout en respectant l'architecture existante (DAL).
+**Statut : TERMINÉ (Janvier 2026)**
+
+Ce document, initialement rédigé comme un guide, décrit la migration réelle effectuée sur la page `CollectionsManagerPage`.Cette approche sert désormais de modèle pour les autres pages de l'application.
+
 
 ## Objectif
 Remplacer `useAppSelector(selectCollections)` et `dispatch(removeCollectionRequest(id))` par un hook personnalisé `useCollections` qui interagit directement avec la base de données locale de manière réactive.

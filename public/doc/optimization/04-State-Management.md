@@ -5,31 +5,32 @@ Le projet utilise une combinaison de Redux Toolkit (avec Sagas), Zustand et Reac
 
 ## Points d'Amélioration
 
-### 1. Clarification des Rôles et Options pour Dexie
+## Stratégie Adoptée (Mise à jour Janvier 2026)
 
-Vous avez tout à fait raison de soulever ce point. Si votre "source de vérité" est locale (IndexedDB via Dexie), **React Query n'est pas forcément la meilleure solution par défaut** pour lire ces données, bien qu'il puisse gérer n'importe quelle promesse.
+L'application a migré vers une architecture **Local-First** pour les données persistantes.
 
-#### Option A : Dexie `useLiveQuery` (Recommandée pour le local)
-Puisque vous utilisez déjà `dexie-react-hooks`, c'est l'option la plus performante et la plus simple pour les données locales.
-- **Avantage** : C'est **réactif**. Si vous ajoutez un élément dans la DB (via un worker ou une autre action), le composant se met à jour *automatiquement* sans avoir besoin d'invalider un cache manuellement.
-- **Usage** : Remplacer les sélecteurs Redux qui lisent les données par des hooks `useLiveQuery`.
+### 1. Données Locales : Dexie `useLiveQuery` (Standard)
+C'est désormais la méthode standard pour interagir avec IndexedDB de manière réactive.
 
-#### Option B : React Query (TanStack Query)
-- **Usage** : À privilégier pour les **données distantes** (API REST, chargement initial de Manifestes IIIF depuis une URL) ou pour des calculs asynchrones lourds qui ne viennent pas directement de la DB.
-- **Pattern "Offline-First"** : Souvent, on utilise React Query pour *fetcher* les données serveur et les synchroniser dans Dexie, mais l'UI, elle, lit Dexie via `useLiveQuery`.
+**État d'avancement :**
+- **Collections & Annotations** : Entièrement migré vers `useLiveQuery`.
+- **Modèles, Tags & Historique** : Entièrement migré.
+- **Workers** : Toujours sous Redux/Sagas (Prochaines étapes).
 
-#### Option C : Redux + Sagas (Actuel)
-- **Inconvénient** : Pour lire IndexedDB, vous devez actuellement : déclencher une action -> Saga -> lire DB -> mettre dans le store Redux -> Sélecteur. C'est beaucoup d'étapes pour afficher une donnée qui est déjà stockée localement.
+### 2. Données Distantes : React Query / Axios
+Utilisé pour le fetching initial des Manifestes IIIF externes.
 
-**Nouvelle Recommandation Stratégique** :
-1.  Utiliser **`useLiveQuery`** pour toute lecture de données persistées localement (Collections, Annotations stockées).
-2.  Garder **React Query** uniquement pour les appels réseaux externes directs (s'il y en a) ou pour gérer la synchronisation.
-3.  Garder **Zustand** pour l'état UI volatile (menus ouverts, sélection courante temporaire).
+### 3. État UI Volatile : Zustand
+Utilisé pour les états globaux simples (ex: configuration, sessions temporaires).
 
+### 4. État Système : Redux Toolkit
+Redux est maintenu pour la gestion des événements (`events`), le statut des Workers et la file d'attente des Manifestes.
 
-### 2. Sélecteurs
-L'utilisation de sélecteurs mémosés (Reselect) est une bonne pratique observée.
-- **Recommandation**: Continuer à utiliser des sélecteurs pour dériver les données et éviter les calculs coûteux dans les composants.
+## Bonnes Pratiques Maintenues
 
-### 3. Context API
-Pour les états très locaux (ex: état d'un formulaire complexe ou d'un composant composé), ne pas hésiter à utiliser le Context API de React pour éviter de polluer le store global.
+### Sélecteurs
+L'utilisation de sélecteurs mémosés (Reselect) reste recommandée pour transformer les données issues de `useLiveQuery`.
+
+### Context API
+Le Context API est utilisé pour les états locaux de pages complexes (ex: `AnnotationContext`, `CollectionContext`).
+

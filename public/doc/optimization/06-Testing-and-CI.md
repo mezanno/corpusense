@@ -1,21 +1,61 @@
-# Tests et CI/CD
+# Tests et CI/CD : Politique et Recommandations
 
-## Analyse Actuelle
-Vitest est configuré pour les tests unitaires et d'intégration, ce qui est un excellent choix (rapide et compatible Jest).
+## Vue d'ensemble
+Actuellement, l'utilisation des tests unitaires est très limitée et de nombreux tests existants sont désactivés. Pour garantir la stabilité de Corpusense, nous adoptons une stratégie structurée axée sur la confiance et la maintenabilité.
 
-## Points d'Amélioration
+---
 
-### 1. Couverture de Tests
-- **Recommandation**: Viser une couverture de code critique (logique métier, utilitaires). Utiliser l'outil de couverture de Vitest (`vitest --coverage`) pour identifier les zones non testées.
+## 1. Pyramide des Tests
 
-### 2. Tests End-to-End (E2E)
-Il ne semble pas y avoir de configuration explicite pour Cypress ou Playwright.
-- **Recommandation**: Ajouter **Playwright** pour les tests E2E. Cela permet de tester les parcours utilisateurs critiques (connexion, navigation, manipulation de canvas) dans de vrais navigateurs. C'est essentiel pour une application complexe manipulant des graphiques (Canvas/Konva).
+Nous adoptons une structure en trois niveaux pour maximiser l'efficacité :
 
-### 3. Tests Visuels
-Pour une application graphique (visualisation de documents), les régressions visuelles sont vite arrivées.
-- **Recommandation**: Intégrer des tests de régression visuelle (via Playwright ou Storybook + Chromatic) pour s'assurer que le rendu des composants ne change pas inopinément.
+### A. Tests Unitaires (Vitest) - *Base de la confiance*
+- **Cible** : Fonctions pures (`utils/`), transformations de données (`data/models/converters`), et logique métier isolée.
+- **Règle** : Tout nouvel utilitaire ou service de conversion **doit** avoir ses tests unitaires associés.
+- **Outil** : Vitest (configuré et rapide).
 
-### 4. Intégration Continue (CI)
-- **Recommandation**: S'assurer que les commandes `lint`, `type-check` (tsc), et `test` sont exécutées à chaque commit ou Pull Request via GitHub Actions (ou autre CI).
-  - Ajouter un step `npm run build` dans la CI pour vérifier que le build de production passe toujours.
+### B. Tests de Composants et Hooks (Vitest + React Testing Library)
+- **Cible** : Composants UI complexes (ex: `CanvasCard`, `AnnotationOrderPanel`) et hooks personnalisés (ex: `useCollections`).
+- **Objectif** : Tester les interactions utilisateur et le rendu conditionnel sans dépendre d'une infrastructure complète.
+- **Mocks** : Utiliser `MSW` (Mock Service Worker) pour intercepter les appels API externes.
+
+### C. Tests End-to-End (E2E) (Playwright) - *Validation des Parcours*
+- **Cible** : Parcours utilisateur critiques (ex: Import de manifeste -> Création de collection -> Annotation).
+- **Action** : Ajouter **Playwright** au projet pour tester les interactions réelles dans un navigateur (essentiel pour les graphiques Canvas/Konva).
+
+---
+
+## 2. Standards et Conventions de Développement
+
+- **Nommage** : Les fichiers doivent être nommés `*.test.ts` ou `*.test.tsx` et situés dans un sous-dossier `__tests__`.
+- **Méthode AAA** :
+    - **Arrange** : Préparer les données et mocks.
+    - **Act** : Exécuter l'action.
+    - **Assert** : Vérifier le résultat.
+- **Tests Visuels** : Pour prévenir les régressions graphiques, intégrer des tests de capture (via Playwright) sur les composants de visualisation majeurs.
+
+---
+
+## 3. Priorités d'Implémentation (Roadmap)
+
+1.  **Réactivation** : Réactiver et corriger les tests unitaires existants (actuellement obsolètes ou commentés).
+2.  **Logic Métier** : Couvrir 100% du dossier `src/data/utils/` (calculs IIIF, gestion des collections).
+3.  **Hooks DAL** : Créer des tests pour les hooks utilisant `useLiveQuery` (ex: `useCollections`).
+4.  **CI/CD** : Automatiser l'exécution des tests sur chaque Pull Request.
+
+---
+
+## 4. Intégration Continue (CI)
+
+Les tests doivent être automatisés via GitHub Actions (ou équivalent) :
+- **Validation** : Les commandes `npm run lint`, `npm run type-check` et `npm run test` doivent passer pour autoriser une fusion.
+- **Build de Production** : Interdire le build si la suite de tests échoue.
+- **Couverture** : Utiliser `vitest --coverage` pour identifier les zones non testées, sans viser un pourcentage arbitraire mais en priorisant les fichiers avec une logique complexe.
+
+---
+
+## 5. Outils Recommandés
+
+- **MSW (Mock Service Worker)** : Pour simuler proprement les API externes (APIs IIIF, Mistral).
+- **Playwright** : Pour les tests de bout en bout et les tests de régression visuelle.
+- **Coverage Vitest** : Pour le suivi de la qualité du code.
