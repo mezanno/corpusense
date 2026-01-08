@@ -133,7 +133,12 @@ const CollectionInspectorContent = ({
                               <Fragment key={virtualRow.key}>
                                 {colVirtualizer.getVirtualItems().map((virtualColumn) => {
                                   const index = virtualRow.index * colCount + virtualColumn.index;
+
                                   if (index >= collection.contentSize) return null;
+                                  const gtCanvas = getCanvasById(
+                                    collection.content[index].canvasId,
+                                  );
+                                  if (gtCanvas === null) return null;
                                   return (
                                     <div
                                       key={`${virtualRow.key}-${virtualColumn.key}`}
@@ -147,8 +152,8 @@ const CollectionInspectorContent = ({
                                       }}
                                     >
                                       <GridThumb
-                                        canvasId={collection.content[index].canvasId}
-                                        collectionId={collection.id ?? ''}
+                                        canvas={gtCanvas}
+                                        collectionId={collection.id}
                                         thumbWidth={virtualColumn.size}
                                         thumbHeight={virtualRow.size}
                                         setCanvasToDisplay={setCanvasToDisplay}
