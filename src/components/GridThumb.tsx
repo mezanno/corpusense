@@ -117,7 +117,7 @@ const GridThumb = ({
         )}
       </div>
       {error !== null ? (
-        <div className='text-sm text-red-400'>{error}</div>
+        <div className='text-sm wrap-anywhere text-red-400'>{error}</div>
       ) : (
         thumbnail !== null && (
           <div className='w-fit flex-1'>
