@@ -226,6 +226,7 @@
   "error_fs_access_not_supported": "L'API File System Access n'est pas supportée par votre navigateur. Essayez avec un autre navigateur (Chrome ou Edge).",
   "error_fsfile_not_found": "La source locale (id = {{id}}) n'a pas été ajotuée à Corpusense.",
   "error_fsfolder_not_found": "Le répertoire local ({{name}}) n'a pas été ajouté à Corpusense.",
+  "error_malformed_filepath": "Le chemin du fichier est mal formé : {{path}}",
   "info_empty_collection": "Cette collection est vide",
   "info_empty_manifest": "Ce manifest ne contient aucune page",
   "info_no_collection": "Vous n'avez aucune collection actuellement",

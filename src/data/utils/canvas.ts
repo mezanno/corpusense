@@ -57,7 +57,7 @@ const getImageForThumbnail = (canvas: Canvas, maxWidth: number = 150): IIIFExter
 const getFile = async (filepath: string) => {
   const pathParts = filepath.split('/');
   if (pathParts.length < 2) {
-    throw new Error('Invalid filepath');
+    throw new Error(i18next.t('error_malformed_filepath', { path: filepath }));
   }
   const convertedFilesRepository = getConvertedFileRepository();
   const folderName = pathParts[0];
