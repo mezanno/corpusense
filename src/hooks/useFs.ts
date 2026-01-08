@@ -108,12 +108,6 @@ export const parseDirectoryForFile = async (
   }
 };
 
-export const getObjectUrl = async (filename: string): Promise<string> => {
-  console.log('getObjectUrl called with filename: ', filename);
-  const file = await getFile(filename);
-  return URL.createObjectURL(file);
-};
-
 const getContent = async (handle: FileSystemFileHandle): Promise<string> => {
   const file = await handle.getFile();
   return file.type === 'application/pdf' ? await fileToBase64(file) : await file.text();

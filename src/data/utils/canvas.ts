@@ -1,4 +1,4 @@
-import { getObjectUrl } from '@/hooks/useFs';
+import { getConvertedFileRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentation-3';
 import i18next from 'i18next';
 import { TileSource } from 'openseadragon';
@@ -53,6 +53,30 @@ const getImageForThumbnail = (canvas: Canvas, maxWidth: number = 150): IIIFExter
   return image;
 };
 
+const getObjectUrl = async (filepath: string) => {
+  const pathParts = filepath.split('/');
+  if (pathParts.length < 2) {
+    throw new Error('Invalid filepath');
+  }
+  //TODO : il faut récupérer le handle dans un convertfile de la BDD puis récupérer le fichier via le handleù
+  try {
+    const convertedFilesRepository = getConvertedFileRepository();
+    const folderName = pathParts[0];
+    const convertedFile = await convertedFilesRepository.getByFolderName(folderName);
+    const handle = convertedFile.outputDirectoryHandle;
+    const perm = await handle.queryPermission({ mode: 'read' });
+    if (perm !== 'granted') {
+      throw new Error('No permission to read the manifest directory');
+    }
+    const filename = pathParts[1];
+    const fileHandle = await handle.getFileHandle(filename);
+    const file = await fileHandle.getFile();
+    return URL.createObjectURL(file);
+  } catch (e) {
+    console.error(e);
+  }
+};
+
 const getSource = async (canvas: Canvas): Promise<TileSource[]> => {
   const image = getImage(canvas);
 
@@ -84,4 +108,4 @@ const toGallicaUrl = (iiifUrl: string) => {
   );
 };
 
-export { getImage, getImageForThumbnail, getLabel, getSource, toGallicaUrl };
+export { getImage, getImageForThumbnail, getLabel, getObjectUrl, getSource, toGallicaUrl };

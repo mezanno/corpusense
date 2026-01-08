@@ -1,9 +1,8 @@
 import WorkerStatusIcon from '@/components/WorkerStatusIcon';
-import { getImageForThumbnail, getLabel } from '@/data/utils/canvas';
+import { getImageForThumbnail, getLabel, getObjectUrl } from '@/data/utils/canvas';
 import useOcrAnnotations from '@/hooks/data/annotations/useOcrAnnotations';
 import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
 import { useCollections } from '@/hooks/data/collections/useCollections';
-import { getObjectUrl } from '@/hooks/useFs';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
 import 'gridstack/dist/gridstack.min.css';

@@ -11,10 +11,9 @@ import {
   ContextMenuTrigger,
 } from './ui/context-menu';
 
-import { getImageForThumbnail, getLabel } from '@/data/utils/canvas';
+import { getImageForThumbnail, getLabel, getObjectUrl } from '@/data/utils/canvas';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
-import { getObjectUrl } from '@/hooks/useFs';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
