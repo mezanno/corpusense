@@ -2,6 +2,7 @@ import { Annotation, ElementType } from '@/data/models/Annotation';
 import { getRectFromBounds } from '@/data/utils/annotations';
 import { getSource } from '@/data/utils/canvas';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
+import { getErrorMessage } from '@/utils/utils';
 import {
   AnnotationState,
   AnnotoriousOpenSeadragonAnnotator,
@@ -15,6 +16,7 @@ import {
 import { Canvas } from '@iiif/presentation-3';
 import OpenSeadragon from 'openseadragon';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CanvasViewerMode } from './CanvasViewer';
 
 const colors = {
@@ -34,29 +36,37 @@ const CanvasViewerOSDContent = ({
   hovered: string | null;
   setHovered: (id: string | null) => void;
 }) => {
+  const { t } = useTranslation();
   const hover = useHover();
   const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
   const { removeAnnotationsByIds } = useAnnotationActions();
   const [options, setOptions] = useState<OpenSeadragon.Options | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>();
 
   useEffect(() => {
     const loadSource = async () => {
-      const source = await getSource(canvas);
-      setOptions({
-        prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
-        defaultZoomLevel: 0.5,
-        minZoomLevel: 0.1,
-        tileSources: source,
-        loadTilesWithAjax: true,
-        // crossOriginPolicy: 'false',
-        showSequenceControl: true,
-        showHomeControl: true,
-        showFullPageControl: true,
-        gestureSettingsMouse: {
-          clickToZoom: false,
-        },
-      });
+      setError(null);
+      try {
+        const source = await getSource(canvas);
+        setOptions({
+          prefixUrl: `${import.meta.env.VITE_BASE_PATH}/images/`,
+          defaultZoomLevel: 0.5,
+          minZoomLevel: 0.1,
+          tileSources: source,
+          loadTilesWithAjax: true,
+          // crossOriginPolicy: 'false',
+          showSequenceControl: true,
+          showHomeControl: true,
+          showFullPageControl: true,
+          gestureSettingsMouse: {
+            clickToZoom: false,
+          },
+        });
+      } catch (e) {
+        setError(getErrorMessage(e));
+        console.error(e);
+      }
     };
 
     void loadSource();
@@ -103,6 +113,14 @@ const CanvasViewerOSDContent = ({
       })();
     }
   };
+
+  if (error != null) {
+    return (
+      <div className='flex h-full w-full items-center justify-center'>
+        <p className='text-red-500'>{t('error_loading_canvas', { error: error })}</p>
+      </div>
+    );
+  }
 
   return (
     <OpenSeadragonAnnotator
