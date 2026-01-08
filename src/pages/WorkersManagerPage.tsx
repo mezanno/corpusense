@@ -142,7 +142,7 @@ const WorkersManagerPage = () => {
     <div className='panel h-full w-full'>
       <ResizablePanelGroup direction='horizontal'>
         <ResizablePanel minSize={50} defaultSize={70}>
-          <div className='flex h-full flex-col'>
+          <div className='flex h-full flex-col overflow-y-auto'>
             <div className='m-2 flex flex-wrap space-y-2 space-x-2'>
               {filters.map((filter) => (
                 <div key={filter.status} onClick={() => updateFilter(filter)}>
