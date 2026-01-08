@@ -11,6 +11,14 @@ export class IndexedDBConvertedFileRepository implements ConvertedFileRepository
     return file;
   }
 
+  async getByFolderName(folderName: string): Promise<ConvertedFile> {
+    const file = await db.convertedFiles.where('folderName').equals(folderName).first();
+    if (!file) {
+      throw new Error(`ConvertedFile with folderName ${folderName} not found`);
+    }
+    return file;
+  }
+
   async add(file: ConvertedFile): Promise<void> {
     await db.convertedFiles.add(file);
   }
