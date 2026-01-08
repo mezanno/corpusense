@@ -1,11 +1,13 @@
 import { getConvertedFileRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useAppDispatch } from '@/hooks/hooks';
 import { fecthManifestRequest } from '@/state/reducers/manifests';
+import { useFSHandleStore } from '@/state/zustand/useFSHandleStore';
 import { useCallback, useMemo } from 'react';
 
 const useConvertedFileIO = () => {
   const appDispatch = useAppDispatch();
   const convertedFilesRepository = useMemo(() => getConvertedFileRepository(), []);
+  const { addDirectoryHandle } = useFSHandleStore();
 
   const removeConvertedFile = async (id: string) => {
     await convertedFilesRepository.delete(id);
@@ -29,9 +31,15 @@ const useConvertedFileIO = () => {
     }
   }, []);
 
+  const requestPermission = async () => {
+    const handle = await window.showDirectoryPicker({ mode: 'read' });
+    await addDirectoryHandle(handle);
+  };
+
   return {
     loadManifest,
     removeConvertedFile,
+    requestPermission,
   };
 };
 

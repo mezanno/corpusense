@@ -2,6 +2,8 @@ import WorkerStatusIcon from '@/components/WorkerStatusIcon';
 import { getImageForThumbnail, getLabel, getObjectUrl } from '@/data/utils/canvas';
 import useOcrAnnotations from '@/hooks/data/annotations/useOcrAnnotations';
 import { useCollections } from '@/hooks/data/collections/useCollections';
+import useConvertedFileIO from '@/hooks/data/convertedFiles/useConvertedFileIO';
+import { useFSHandleStore } from '@/state/zustand/useFSHandleStore';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { Thumbnail } from '@samvera/clover-iiif/primitives';
@@ -35,6 +37,8 @@ const GridThumb = ({
   const { removeElementFromCollection } = useCollections();
   const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { requestPermission } = useConvertedFileIO();
+  const { directoryHandles } = useFSHandleStore();
 
   //TODO! 2 fois le même code que dans CanvasCard, à factoriser
   useEffect(() => {
@@ -60,10 +64,8 @@ const GridThumb = ({
       setThumbnail(thumb);
     };
 
-    if (canvas !== null) {
-      void fetchThumbnail();
-    }
-  }, [canvas]);
+    void fetchThumbnail();
+  }, [canvas, directoryHandles]);
 
   const handleDelete = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.stopPropagation();
@@ -75,24 +77,25 @@ const GridThumb = ({
     })();
   };
 
-  const handleOnClick = () => {
-    if (canvas !== null) {
+  const handleOnClick = async () => {
+    if (error === null) {
       setCanvasToDisplay(canvas);
+    } else {
+      // if (thumbnail === null) return;
+      // const image = thumbnail[0].id;
+      // const folder = image!.split('/')[image!.startsWith('/') ? 1 : 0];
+      await requestPermission();
     }
   };
 
   const match = canvas.id.match(/f\d+/);
   const canvasItemId = match ? match[0] : '';
 
-  // const thumbnail = (canvas.thumbnail as IIIFExternalWebResource[]) ?? [
-  //   getImageForThumbnail(canvas, 300),
-  // ];
-
   return (
     <div
       className={`group flex h-fit w-fit cursor-pointer flex-col items-center rounded-md p-1 shadow transition duration-200 hover:scale-105 ${idDisplayed ? 'bg-saffron-400' : 'bg-saffron-900'} `}
       style={{ width: `${thumbWidth}px`, height: `${thumbHeight}px` }}
-      onClick={handleOnClick}
+      onClick={() => void handleOnClick()}
       role='listitem'
     >
       <div className='flex w-full justify-between text-xs'>
