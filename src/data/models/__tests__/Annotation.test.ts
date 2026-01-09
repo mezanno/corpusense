@@ -18,15 +18,15 @@ vi.mock('uuid', () => {
 });
 
 describe('Annotation', () => {
-  const annotation = { ...annotationFromEdwin[0], type: ElementType.TEXT_REGION } as Annotation;
+  const annotation = { ...annotationFromEdwin[0], type: ElementType.TEXT_REGION, order: 0 } as Annotation;
   describe('getAnnotationType', () => {
     it('should get the correct annotation type', () => {
-      const expectedType = 'ENTRY';
+      const expectedType = ElementType.UNKNOWN;
       expect(getAnnotationType(annotation)).toBe(expectedType);
     });
 
-    it('should return TAG if type is undefined', () => {
-      const expectedType = 'TAG';
+    it('should return UNKNOWN if type is undefined', () => {
+      const expectedType = ElementType.UNKNOWN;
       // @ts-expect-error annotationWitoutTypeAndText undefined type
       expect(getAnnotationType(annotationWitoutTypeAndText)).toBe(expectedType);
     });
@@ -47,7 +47,7 @@ describe('Annotation', () => {
   describe('getBodies', () => {
     it('should get the correct bodies', () => {
       const expectedBodies = {
-        type: 'ENTRY',
+        type: ElementType.UNKNOWN,
         value: 'title_level_1',
       };
       expect(getBodies(annotation)).toEqual(expectedBodies);
@@ -59,22 +59,20 @@ describe('Annotation', () => {
       const newAnnotation = createAnnotation({
         canvasId: 'https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15',
         collectionId: 'collectionId',
-        order: 1,
         minX: 146.484375,
         minY: 292.96875,
         maxX: 585.9375,
         maxY: 878.90625,
-        type: ElementType.TEXT_REGION,
+        type: ElementType.UNKNOWN,
         value: 'title_level_1',
       });
-      expect(newAnnotation).toEqual(annotation);
+      expect(newAnnotation).toEqual(annotationFromEdwin[0]);
     });
 
     it('should create a new annotation from an AnnotationWithIdCreateDTO', () => {
       const newAnnotation = createAnnotation({
         canvasId: 'https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15',
         collectionId: 'collectionId',
-        order: 1,
         id: 'anotherId',
         minX: 146.484375,
         minY: 292.96875,

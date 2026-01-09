@@ -1,18 +1,5 @@
 // global.d.ts
-declare global {
-  interface MatchMedia {
-    matches: boolean;
-    addEventListener: (type: string, listener: EventListener) => void;
-    removeEventListener: (type: string, listener: EventListener) => void;
-  }
+// Use this file to extend the global scope if needed.
+// Avoid redefining globalThis as it can conflict with built-in types.
 
-  // Déclarez une signature d'index pour globalThis
-  interface Global {
-    [key: string]: any; // Permet d'ajouter dynamiquement des propriétés
-    matchMedia?: (query: string) => MatchMedia;
-  }
-
-  var globalThis: Global;
-}
-
-export {};
+export { };

@@ -5,7 +5,7 @@
         "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
         "id": "799caa82-346a-475f-8689-2d6ba8ef3b65/class",
         "purpose": "classifying",
-        "value": "LINE"
+        "value": "TEXT_LINE"
       },
       {
         "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
@@ -17,7 +17,7 @@
     "canvasId": "canvasId",
     "collectionId": "collectionId",
     "id": "799caa82-346a-475f-8689-2d6ba8ef3b65",
-    "order": 0,
+    "type": "TEXT_LINE",
     "target": {
       "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
       "selector": {
@@ -43,7 +43,7 @@
         "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
         "id": "799caa82-346a-475f-8689-2d6ba8ef3b65/class",
         "purpose": "classifying",
-        "value": "LINE"
+        "value": "TEXT_LINE"
       },
       {
         "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
@@ -55,7 +55,7 @@
     "canvasId": "canvasId",
     "collectionId": "collectionId",
     "id": "799caa82-346a-475f-8689-2d6ba8ef3b65",
-    "order": 1,
+    "type": "TEXT_LINE",
     "target": {
       "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
       "selector": {

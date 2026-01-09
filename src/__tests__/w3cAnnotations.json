@@ -5,7 +5,7 @@
         "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
         "id": "799caa82-346a-475f-8689-2d6ba8ef3b65/class",
         "purpose": "classifying",
-        "value": "LINE"
+        "value": "UNKNOWN"
       },
       {
         "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
@@ -18,6 +18,7 @@
     "collectionId": "collectionId",
     "id": "799caa82-346a-475f-8689-2d6ba8ef3b65",
     "order": 0,
+    "type": "UNKNOWN",
     "target": {
       "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
       "selector": {
@@ -43,7 +44,7 @@
         "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
         "id": "799caa82-346a-475f-8689-2d6ba8ef3b65/class",
         "purpose": "classifying",
-        "value": "LINE"
+        "value": "UNKNOWN"
       },
       {
         "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
@@ -56,6 +57,7 @@
     "collectionId": "collectionId",
     "id": "799caa82-346a-475f-8689-2d6ba8ef3b65",
     "order": 1,
+    "type": "UNKNOWN",
     "target": {
       "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
       "selector": {

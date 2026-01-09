@@ -12,8 +12,22 @@ To ensure a stable and predictable testing environment, several global mocks are
 
 - **UI Components (Clover IIIF)**: Components from `@samvera/clover-iiif/primitives` (Label, Metadata, Summary, Thumbnail) are mocked to render their content into simple `div` elements with `data-testid` attributes. This prevents CSSOM errors (`insertRule` failures) while allowing tests to assert on the actual data passed to these components.
 - **Supabase**: The `@/utils/config` Supabase client is mocked globally to prevent real network calls and provide a controlled environment for authentication-related logic.
-- **`matchMedia` Polyfill**: Added to `globalThis` to support components from `shadcn-ui` and `sonner` that rely on viewport detection (used in `use-mobile` hooks and toast positioning).
+- **`matchMedia` Polyfill**: Added via `vi.stubGlobal('matchMedia', ...)` to support components from `shadcn-ui` and `sonner` that rely on viewport detection. Note: Using `vi.stubGlobal` is required instead of direct `globalThis` assignment to avoid TypeScript build errors (`TS7017`) in strict environments like GitHub CI.
 - **i18next**: Mocked to return translation keys directly, simplifying assertions and avoiding localization dependencies in unit tests.
+
+### Handling Global Mocking for CI/TypeScript
+
+When mocking global browser APIs (like `matchMedia` or `ResizeObserver`) in `vitest.setup.ts`, avoid direct assignments to `globalThis` (e.g., `globalThis.matchMedia = ...`).
+
+This causes build-time errors in GitHub Actions or any environment running `tsc` because the built-in `globalThis` interface doesn't include these properties. Instead, use Vitest's utility:
+
+```typescript
+vi.stubGlobal('matchMedia', vi.fn().mockImplementation(query => ({
+  matches: false,
+  media: query,
+  // ... rest of the interface
+})));
+```
 
 ### Test Utilities (`src/__tests__/utils.tsx`)
 
