@@ -116,7 +116,7 @@ const getSource = async (canvas: Canvas): Promise<TileSource[]> => {
 
 const toGallicaUrl = (iiifUrl: string) => {
   return iiifUrl.replace(
-    /https:\/\/openapi\.bnf\.fr\/iiif\/presentation\/v3\/(ark:\/12148\/[^/]+\/[^/]+)\/canvas/,
+    /https:\/\/openapi\.bnf\.fr\/iiif\/presentation\/v3\/(ark:\/12148\/[^/]+)\/canvas.*/,
     'https://gallica.bnf.fr/$1.item',
   );
 };
