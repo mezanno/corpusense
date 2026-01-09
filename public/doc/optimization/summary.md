@@ -10,6 +10,7 @@ Depuis l'audit initial, plusieurs recommandations majeures ont été mises en œ
 - **Migration vers `useLiveQuery` (Dexie)** : Une grande partie de l'état "Données" a été migrée hors de Redux vers des hooks réactifs basés sur Dexie. Cela inclut les Collections, les Annotations, les Tags, les Modèles et l'historique des Manifestes.
 - **Simplification de Redux** : Le store Redux a été considérablement allégé. Il ne gère plus que les événements système, l'état des Workers et la file d'attente des Manifestes.
 - **Mise à jour de la Stack** : Les versions de React, Vite, TypeScript et Tailwind ont été maintenues à jour vers leurs dernières versions stables (React 19.2, Vite 7, TS 5.9, Tailwind 4.1).
+- **Couverture de Tests** : Réactivation et extension de la suite de tests unitaires et de composants. 77 tests passent désormais sur l'ensemble du projet, couvrant les utilitaires de données critiques et les pages principales.
 
 ## Documents Détaillés
 
@@ -40,12 +41,15 @@ L'ensemble des recommandations est détaillé dans les fichiers suivants :
 8.  **[08-Migration-Example-UseLiveQuery.md](./08-Migration-Example-UseLiveQuery.md)** (Fait)
     *   Guide utilisé pour la migration réussie de `CollectionsManagerPage`.
 
+9.  **[09-Unit-Tests-Documentation.md](./09-Unit-Tests-Documentation.md)** (Fait)
+    *   Documentation détaillée des tests implémentés, de la configuration globale et de la stratégie de mocking.
+
 
 ## Prochaines Étapes Prioritaires
 
 1.  **Restructuration des composants** : Appliquer la proposition du document 07 pour améliorer la scalabilité.
 2.  **Optimisation de `CanvasCard`** : Implémenter `React.memo` et améliorer le lazy-loading des images.
-3.  **Implémentation de la Politique de Tests** : Réactiver les tests existants et couvrir les utilitaires de données.
-4.  **Nettoyage de Redux/Saga** : Continuer à migrer les Workers et les Manifestes pour supprimer totalement Redux-Saga à terme.
+3.  **Nettoyage de Redux/Saga** : Continuer à migrer les Workers et les Manifestes pour supprimer totalement Redux-Saga à terme.
+4.  **Tests E2E** : Commencer l'implémentation de tests de bout en bout avec Playwright comme suggéré dans le document 06.
 
 
