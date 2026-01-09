@@ -32,11 +32,8 @@ initI18n()
   });
 
 function App() {
-  // useServiceWorker();// Hook to manage service worker updates (cached files updates)
-
   return (
     <BrowserRouter basename={basePath}>
-      {/* <LocalManifestProvider> */}
       <ConnectedUserProvider>
         <CollectionProvider>
           <WorkerProvider>
@@ -76,7 +73,6 @@ function App() {
             </ExperimentalProvider>
           </WorkerProvider>
         </CollectionProvider>
-        {/* </LocalManifestProvider> */}
       </ConnectedUserProvider>
     </BrowserRouter>
   );
