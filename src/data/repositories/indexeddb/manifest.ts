@@ -28,15 +28,10 @@ export class IndexedDBManifestRepository implements ManifestRepository {
   async getCanvasesByIds(manifestId: string, canvasIds: string[]): Promise<Canvas[]> {
     try {
       const manifest = await this.getById(manifestId);
-      const canvases = extractCanvasesByIds(manifest, canvasIds);
-      if (canvases?.length > 0) {
-        return canvases;
-      }
+      return extractCanvasesByIds(manifest, canvasIds);
     } catch (error) {
-      // throw new Error(i18next.t('error_canvas_not_found'));
       throw new Error(getErrorMessage(error));
     }
-    throw new Error(i18next.t('error_canvas_not_found'));
   }
 
   async getById(manifestId: string): Promise<Manifest> {
