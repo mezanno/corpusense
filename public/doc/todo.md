@@ -2,6 +2,10 @@
 
 ## Priority
 
+TODO : envoyer des régions d'image à MistralOCR
+FIX : gérer l'utilisation de la mémoire (URLObject)
+FIX : que faire lorsque l'on supprime des sources et que l'on avait créer une collection à partir de cette source ?
+TODO : ouvrir la fenêtre de modification des annotations dans la partie texte
 TODO ; ajouter la catégorie du plugin dans la liste des traitements
 FIX : si on supprime les results à la main, il faut mettre à jour le statut des task d'un worker. --> voir avec dbSync
 TODO : gestion des tags en mémoire.
