@@ -7,6 +7,7 @@ export type WorkerPluginInfo = {
   description?: string;
   category?: string;
   exportFormats?: string[];
+  batchCompatible?: boolean;
 };
 export type WorkerPlugin = {
   run: WorkerRunFunction;
@@ -25,6 +26,7 @@ type WorkerModule = {
   pluginDescription?: string;
   pluginCategory?: string;
   pluginExportFormats?: string[];
+  pluginBatchCompatible?: boolean;
   exportResult?: WorkerExportFunction;
 };
 
@@ -51,7 +53,8 @@ const isWorkerModule = (mod: unknown): mod is WorkerModule => {
     (m.pluginExportFormats === undefined ||
       (Array.isArray(m.pluginExportFormats) &&
         m.pluginExportFormats.every((f) => typeof f === 'string'))) &&
-    (m.exportResult === undefined || typeof m.exportResult === 'function')
+    (m.exportResult === undefined || typeof m.exportResult === 'function') &&
+    (m.pluginBatchCompatible === undefined || typeof m.pluginBatchCompatible === 'boolean')
   );
 };
 
@@ -77,6 +80,7 @@ export function loadWorkerPlugins() {
             description: mod.pluginDescription,
             category: mod.pluginCategory,
             exportFormats: mod.pluginExportFormats,
+            batchCompatible: mod.pluginBatchCompatible,
           },
           export: mod.exportResult,
         };
