@@ -358,6 +358,7 @@ function* loadWorkerPluginsInfo(): Generator<Effect, void, { name: string; hasEx
     description: workerPlugins[name].info.description,
     category: workerPlugins[name].info.category,
     exportFormats: workerPlugins[name].info.exportFormats,
+    batchCompatible: workerPlugins[name].info.batchCompatible,
   }));
   yield put(setPlugins(pluginsInfo));
 }

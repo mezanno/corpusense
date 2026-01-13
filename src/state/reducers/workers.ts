@@ -9,6 +9,7 @@ export interface WorkerState {
     description?: string;
     category?: string;
     exportFormats?: string[];
+    batchCompatible?: boolean;
   }[];
 }
 
@@ -43,6 +44,7 @@ export const workerSlice = createSlice({
           description?: string;
           category?: string;
           exportFormats?: string[];
+          batchCompatible?: boolean;
         }[]
       >,
     ) {

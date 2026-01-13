@@ -7,7 +7,7 @@ export type WorkerPluginInfo = {
   description?: string;
   category?: string;
   exportFormats?: string[];
-  batchCompatible?: boolean;
+  batchCompatible: boolean;
 };
 export type WorkerPlugin = {
   run: WorkerRunFunction;
@@ -80,7 +80,7 @@ export function loadWorkerPlugins() {
             description: mod.pluginDescription,
             category: mod.pluginCategory,
             exportFormats: mod.pluginExportFormats,
-            batchCompatible: mod.pluginBatchCompatible,
+            batchCompatible: mod.pluginBatchCompatible ?? false,
           },
           export: mod.exportResult,
         };
@@ -100,8 +100,6 @@ export function loadImporterPlugins() {
   for (const path in modules) {
     //TODO : check if it is a valid plugin saga
     const mod = modules[path] as ImporterModule;
-    console.log('mod: ', mod);
-
     if (typeof mod.default === 'function') {
       importerPlugins[mod.pluginName] = { import: mod.default };
       console.info(`Plugin saga ${mod.pluginName} loaded successfully`);
