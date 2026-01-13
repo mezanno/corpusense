@@ -2,13 +2,14 @@ import { ElementType, getAnnotationType } from '@/data/models/Annotation';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
 import { Result } from '@/data/models/Result';
-import { isAnnotationScope, toString } from '@/data/models/Scope';
+import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
+import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
@@ -22,6 +23,12 @@ export const pluginExportFormats = ['txt'];
 
 export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
+  if (!isCanvasScope(task.scope)) {
+    return {
+      status: WorkerStatus.ERROR,
+      statusMessage: i18n.t('error_task_invalid_scope'),
+    };
+  }
   const annotationRepository = getAnnotationRepository();
   try {
     const collectionRepository = getCollectionRepository();

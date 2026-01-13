@@ -1,5 +1,5 @@
 import { PluginParams } from '@/state/reducers/workers';
-import { AnnotationScope, CanvasScope, Scope } from './Scope';
+import { Scope } from './Scope';
 
 export enum WorkerStatus {
   ALL = 'all', // Special status to represent all workers
@@ -15,7 +15,7 @@ export enum WorkerStatus {
 
 export interface Task {
   id: number;
-  scope: CanvasScope | AnnotationScope;
+  scope: Scope;
   status: WorkerStatus;
   statusMessage?: string; //optional message to display in the UI
 }

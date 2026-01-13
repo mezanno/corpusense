@@ -1,10 +1,12 @@
 import { convertEdwinResult, EdwinBox } from '@/data/models/converters/edwinMagic';
+import { isCanvasScope } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
+import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 
@@ -15,6 +17,12 @@ export const pluginCategory = 'Layout';
 export const experimental = true;
 
 export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
+  if (!isCanvasScope(task.scope)) {
+    return {
+      status: WorkerStatus.ERROR,
+      statusMessage: i18n.t('error_task_invalid_scope'),
+    };
+  }
   try {
     const collectionRepository = getCollectionRepository();
     const canvas = await collectionRepository.getCanvasByScope(task.scope);

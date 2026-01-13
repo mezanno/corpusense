@@ -68,6 +68,12 @@ type Region = {
  */
 export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
+  if (!isCanvasScope(task.scope)) {
+    return {
+      status: WorkerStatus.ERROR,
+      statusMessage: i18n.t('error_task_invalid_scope'),
+    };
+  }
   const annotationRepository = getAnnotationRepository();
   try {
     const collectionRepository = getCollectionRepository();

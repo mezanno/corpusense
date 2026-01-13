@@ -1,12 +1,13 @@
 import { createAnnotation, ElementType, getAnnotationType } from '@/data/models/Annotation';
 import { Result } from '@/data/models/Result';
-import { isAnnotationScope, toString } from '@/data/models/Scope';
+import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getFile, getImage } from '@/data/utils/canvas';
+import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
@@ -31,7 +32,12 @@ export const getTesseractWorker = async () => {
 
 export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
-
+  if (!isCanvasScope(task.scope)) {
+    return {
+      status: WorkerStatus.ERROR,
+      statusMessage: i18n.t('error_task_invalid_scope'),
+    };
+  }
   try {
     const annotationRepository = getAnnotationRepository();
     const collectionRepository = getCollectionRepository();
