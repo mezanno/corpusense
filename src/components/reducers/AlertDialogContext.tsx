@@ -18,7 +18,10 @@ type DialogProps = {
     action: () => void;
     closeOnAction?: boolean; //indique si le dialog doit se fermer après l'action de confirmation (optionnel, défaut true)
   };
-  onCancelMessage?: string;
+  onCancel?: {
+    action?: () => void;
+    message: string;
+  };
 };
 
 //AlertDialogContextType indique les fonctions et états disponibles dans le contexte
@@ -54,6 +57,13 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
     }
   };
 
+  const onCancel = () => {
+    if (dialogProps?.onCancel?.action) {
+      dialogProps.onCancel.action();
+    }
+    closeDialog();
+  };
+
   return (
     <AlertDialogContext.Provider value={{ openDialog, setCanSubmit, closeDialog }}>
       {children}
@@ -66,8 +76,8 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
             </AlertDialogHeader>
             {dialogProps.children}
             <AlertDialogFooter>
-              <button className='soft-button' onClick={closeDialog}>
-                {dialogProps?.onCancelMessage ?? t('btn_cancel')}
+              <button className='soft-button' onClick={onCancel}>
+                {dialogProps?.onCancel?.message ?? t('btn_cancel')}
               </button>
               {dialogProps?.onConfirm?.message !== undefined && (
                 <button
