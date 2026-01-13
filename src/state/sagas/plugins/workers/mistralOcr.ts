@@ -1,5 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
+// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// // @ts-nocheck
 import {
   AnnotationDTO,
   createAnnotation,
@@ -14,17 +14,15 @@ import {
   getAnnotationRepository,
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { getImage, toGallicaUrl } from '@/data/utils/canvas';
+import { getFile, getImage, toGallicaUrl } from '@/data/utils/canvas';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
+import { canvasToBase64, cropImage } from '@/utils/images';
 import { getErrorMessage } from '@/utils/utils';
 import { Mistral } from '@mistralai/mistralai';
-import { responseFormatFromZodObject } from '@mistralai/mistralai/extra/structChat';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
 import * as XLSX from 'xlsx';
-import z from 'zod/v3';
-import { getFile, imageToBase64 } from '@/data/utils/canvas';
 
 export const pluginName = 'mistralocr';
 export const pluginDisplayName = 'Mistral OCR';
@@ -32,30 +30,36 @@ export const pluginDescription = 'Reconnaissance de texte';
 export const pluginCategory = 'OCR';
 export const pluginExportFormats = ['txt'];
 
-const BBoxItemSchema = z
-  .object({
-    text: z.string().describe('The text content of the element.'),
-    top_left_x: z.number(),
-    top_left_y: z.number(),
-    bottom_right_x: z.number(),
-    bottom_right_y: z.number(),
-  })
-  .describe('A bounding box representing an element of text.');
+// const BBoxItemSchema = z
+//   .object({
+//     text: z.string().describe('The text content of the element.'),
+//     top_left_x: z.number(),
+//     top_left_y: z.number(),
+//     bottom_right_x: z.number(),
+//     bottom_right_y: z.number(),
+//   })
+//   .describe('A bounding box representing an element of text.');
 
-const SizeSchema = z.object({
-  width: z.number().describe('The width of the image in pixels.'),
-  height: z.number().describe('The height of the image in pixels.'),
-});
+// const SizeSchema = z.object({
+//   width: z.number().describe('The width of the image in pixels.'),
+//   height: z.number().describe('The height of the image in pixels.'),
+// });
 
-export const DocumentSchemaZOD = z.object({
-  bbox: z
-    .array(BBoxItemSchema)
-    .describe(
-      'List of bounding boxes detected in the image. Each bounding box contains an element of text and its coordinates in pixels based on the dimensions of the document sent. 0,0 is the top-left corner of the document.',
-    ),
-  image: SizeSchema.describe('The dimensions of the processed image.'),
-  origin: SizeSchema.describe('The dimensions of the received image.'),
-});
+// export const DocumentSchemaZOD = z.object({
+//   bbox: z
+//     .array(BBoxItemSchema)
+//     .describe(
+//       'List of bounding boxes detected in the image. Each bounding box contains an element of text and its coordinates in pixels based on the dimensions of the document sent. 0,0 is the top-left corner of the document.',
+//     ),
+//   image: SizeSchema.describe('The dimensions of the processed image.'),
+//   origin: SizeSchema.describe('The dimensions of the received image.'),
+// });
+type Region = {
+  xtl: number;
+  ytl: number;
+  xbr: number;
+  ybr: number;
+};
 
 /*
  * Mistral entry point for the Mistral plugin (default export)
@@ -75,17 +79,17 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
         statusMessage: 'Image ID is undefined',
       };
     }
-    let regions = JSON.stringify([]);
+    let regions: Region[] = [];
     if (isAnnotationScope(task.scope)) {
       const annotation = await annotationRepository.getById(task.scope.annotationId);
-      regions = JSON.stringify([
+      regions = [
         {
           xtl: annotation.target.selector.geometry.bounds.minX,
           ytl: annotation.target.selector.geometry.bounds.minY,
           xbr: annotation.target.selector.geometry.bounds.maxX,
           ybr: annotation.target.selector.geometry.bounds.maxY,
         },
-      ]);
+      ];
     } else {
       const annotations = await annotationRepository.getByScope({
         canvasId: canvas.id,
@@ -95,18 +99,27 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
         (a) => getAnnotationType(a) === ElementType.TEXT_REGION,
       );
       if (annotationRegions.length > 0) {
-        regions = JSON.stringify(
-          annotationRegions
-            .sort((a1, a2) => (a1.order ?? 0) - (a2.order ?? 0))
-            .map((annotation) => {
-              return {
-                xtl: annotation.target.selector.geometry.bounds.minX,
-                ytl: annotation.target.selector.geometry.bounds.minY,
-                xbr: annotation.target.selector.geometry.bounds.maxX,
-                ybr: annotation.target.selector.geometry.bounds.maxY,
-              };
-            }),
-        );
+        // regions = JSON.stringify(
+        regions = annotationRegions
+          .sort((a1, a2) => (a1.order ?? 0) - (a2.order ?? 0))
+          .map((annotation) => {
+            return {
+              xtl: annotation.target.selector.geometry.bounds.minX,
+              ytl: annotation.target.selector.geometry.bounds.minY,
+              xbr: annotation.target.selector.geometry.bounds.maxX,
+              ybr: annotation.target.selector.geometry.bounds.maxY,
+            };
+          });
+      } else {
+        // If no TEXT_REGION annotations, process the whole image
+        regions = [
+          {
+            xtl: 0,
+            ytl: 0,
+            xbr: image.width ?? 0,
+            ybr: image.height ?? 0,
+          },
+        ];
       }
     }
 
@@ -117,12 +130,10 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
     }
 
-    let imageUrl = image.id;
-
-    if (imageUrl !== null && imageUrl.startsWith('http') === false) {
+    let imageToProcess: string | File = image.id;
+    if (imageToProcess !== null && imageToProcess.startsWith('http') === false) {
       try {
-        const file = await getFile(image.id);
-        imageUrl = await imageToBase64(file);
+        imageToProcess = await getFile(image.id);
       } catch (err) {
         console.error('Failed to get file for thumbnail:', err);
       }
@@ -141,47 +152,51 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
         retryConnectionErrors: true, // réessayer en cas d'erreurs de connexion
       },
     });
-    const response = await client.ocr.process({
-      model: 'mistral-ocr-latest',
-      document: {
-        type: 'image_url',
-        imageUrl,
-      },
-      documentAnnotationFormat: responseFormatFromZodObject(DocumentSchemaZOD),
-    });
 
-    console.log('Response from Mistral:', response);
-    if (response.documentAnnotation !== null && response.documentAnnotation !== undefined) {
-      const json = JSON.parse(response.documentAnnotation) as unknown;
-      console.log('Parsed OCR result:', json);
-      console.log('image dimensions :', image.width, image.height);
-      const ratioX = 1.5; //image.width / 600;
-      const ratioY = 1.5;//image.height / 800;
-      console.log('ratio: ', ratioX, ' / ', ratioY);
-      const ocrResult = DocumentSchemaZOD.parse(json);
-      const annotations: AnnotationDTO[] = [];
-      for (const bbox of ocrResult.bbox) {
-        annotations.push(
-          createAnnotation({
-            canvasId: task.scope.canvasId,
-            collectionId: task.scope.collectionId,
-            minX: bbox.top_left_x * ratioX,
-            minY: bbox.top_left_y * ratioY,
-            maxX: bbox.bottom_right_x * ratioX,
-            maxY: bbox.bottom_right_y * ratioY,
-            type: ElementType.TEXT_LINE,
-            value: bbox.text,
-          }),
-        );
-      }
-      const newAnnotations = await annotationRepository.addAll(annotations);
-      return {
-        status: WorkerStatus.COMPLETED,
-        content: newAnnotations,
+    const annotations: AnnotationDTO[] = [];
+    for (const region of regions) {
+      const cropSize = {
+        x: region.xtl,
+        y: region.ytl,
+        width: region.xbr - region.xtl,
+        height: region.ybr - region.ytl,
       };
-    } else {
-      throw new Error('No document annotation in Mistral response');
+      const croppedCanvas = await cropImage(imageToProcess, cropSize);
+      const imageUrlBase64 = await canvasToBase64(croppedCanvas, 'image/jpeg', 0.7);
+      const response = await client.ocr.process({
+        model: 'mistral-ocr-latest',
+        document: {
+          type: 'image_url',
+          imageUrl: imageUrlBase64,
+        },
+        // documentAnnotationFormat: responseFormatFromZodObject(DocumentSchemaZOD),
+      });
+
+      console.log('Response from Mistral:', response);
+      if (response.pages !== null && response.pages[0] !== undefined) {
+        const markdown = response.pages[0].markdown;
+        const lines = markdown.split('|');
+        for (const line of lines) {
+          annotations.push(
+            createAnnotation({
+              canvasId: task.scope.canvasId,
+              collectionId: task.scope.collectionId,
+              minX: 0,
+              minY: 0,
+              maxX: 0,
+              maxY: 0,
+              type: ElementType.TEXT_LINE,
+              value: line.trim(),
+            }),
+          );
+        }
+      }
     }
+    const newAnnotations = await annotationRepository.addAll(annotations);
+    return {
+      status: WorkerStatus.COMPLETED,
+      content: newAnnotations,
+    };
   } catch (error) {
     return {
       status: WorkerStatus.ERROR,
