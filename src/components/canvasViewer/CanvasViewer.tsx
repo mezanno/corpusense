@@ -49,12 +49,10 @@ const CanvasViewer = ({
         )}
         <div className='flex h-full w-full'>
           {collectionId !== undefined && showText && (
-            <div className='w-1/2 flex-1 overflow-y-auto'>
-              <CanvasViewerText
-                scope={{ collectionId, canvasId: canvas.id }}
-                setHovered={setHovered}
-              />
-            </div>
+            <CanvasViewerText
+              scope={{ collectionId, canvasId: canvas.id }}
+              setHovered={setHovered}
+            />
           )}
           <div className='flex w-1/2 flex-1'>
             <CanvasViewerOSDContent
