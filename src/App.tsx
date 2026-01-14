@@ -53,7 +53,7 @@ function App() {
                     />
                     <Route path={CorpusenseRoutes.MODELS} element={<ModelsManagerPage />} />
                     <Route path={CorpusenseRoutes.CONFIGURATION} element={<ConfigurationPage />} />
-                    <Route path={CorpusenseRoutes.STORAGE} element={<StoragePage />} />
+                    <Route path={CorpusenseRoutes.LOCAL_SOURCES} element={<StoragePage />} />
                     <Route path={CorpusenseRoutes.WORKERS} element={<WorkersManagerPage />} />
                     <Route
                       path={`${CorpusenseRoutes.WORKERS}/:workerId`}

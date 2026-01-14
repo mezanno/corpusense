@@ -166,8 +166,8 @@ const SourcesSideBarGroup = () => {
   ];
   if (experimentalFeaturesActivated) {
     menus.push({
-      title: t('page_title_storage'),
-      url: CorpusenseRoutes.STORAGE,
+      title: t('page_title_local_storage'),
+      url: CorpusenseRoutes.LOCAL_SOURCES,
       icon: Archive,
     });
   }

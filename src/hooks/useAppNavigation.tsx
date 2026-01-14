@@ -5,7 +5,8 @@ export const CorpusenseRoutes = {
   COLLECTIONS: 'collections',
   CONFIGURATION: 'configuration',
   MODELS: 'models',
-  STORAGE: 'storage',
+  LOCAL_SOURCES: 'localSources',
+  IIIF_SOURCES: 'iiifSources',
   WORKERS: 'workers',
   DOCUMENTATION: 'doc',
 };
@@ -38,8 +39,8 @@ const useAppNavigation = () => {
   const goToModelsManager = async () => {
     await navigate(`/${CorpusenseRoutes.MODELS}`);
   };
-  const goToStorage = async () => {
-    await navigate(`/${CorpusenseRoutes.STORAGE}`);
+  const goToLocalSources = async () => {
+    await navigate(`/${CorpusenseRoutes.LOCAL_SOURCES}`);
   };
   const goToWorkersManager = async () => {
     await navigate(`/${CorpusenseRoutes.WORKERS}`);
@@ -54,7 +55,7 @@ const useAppNavigation = () => {
     goToCollectionInspector,
     goToConfiguration,
     goToModelsManager,
-    goToStorage,
+    goToLocalSources,
     goToWorkersManager,
     goToDocumentation,
   };
