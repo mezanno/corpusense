@@ -166,25 +166,54 @@ const generateTextWithAnnotationIdFromCanvas = async (canvasId: string, collecti
   return text;
 };
 
-const generateNumberedTextFromCanvas = async (canvasId: string, collectionId: string) => {
+const generateNumberedTextFromCanvas = async (
+  canvasId: string,
+  collectionId: string,
+  startTo?: number,
+) => {
   const annotations = await getAnnotationRepository().getByScope({
     canvasId,
     collectionId,
   });
   if (annotations === undefined || annotations.length === 0) {
     console.log(`No annotations found in canvas ${canvasId}`);
-    return '';
+    return { text: '', numLines: 0 };
   }
   let text = '';
+  let lineNumber = startTo !== undefined ? startTo : 0;
   for (let i = 0; i < annotations.length; i++) {
     const t = getAnnotationText(annotations[i]);
-    console.log(i, ' : ', t, annotations[i].order);
+    console.log(lineNumber, ' : ', t, annotations[i].order);
 
     if (t !== undefined && t.length > 0) {
-      text = text.concat(`{{${i}}}`).concat(t).concat('\n');
+      text = text.concat(`{{${lineNumber}}}`).concat(t).concat('\n');
+      lineNumber++;
     }
   }
-  return text;
+  return { text, numLines: lineNumber };
+};
+
+const generateNumberedTextForCollection = async (collectionId: string) => {
+  const canvases = await getCollectionRepository().getCanvasesByCollectionId(collectionId);
+  if (canvases === undefined || canvases.length === 0) {
+    throw new Error(i18next.t('error_export_collection_empty'));
+  }
+
+  let allTheText = '';
+  let lineCount = 0;
+  for (let i = 0; i < canvases.length; i++) {
+    const { text, numLines } = await generateNumberedTextFromCanvas(
+      canvases[i].id,
+      collectionId,
+      lineCount,
+    );
+    lineCount = numLines;
+    if (text !== undefined && text.length > 0) {
+      allTheText = allTheText.concat(text);
+    }
+  }
+
+  return allTheText;
 };
 
 const generateTextForCollection = async (collectionId: string) => {
@@ -208,6 +237,7 @@ export {
   generateAnnotationPage,
   generateCanvas,
   generateManifestFromCollection,
+  generateNumberedTextForCollection,
   generateNumberedTextFromCanvas,
   generateTextForAnnotation,
   generateTextForCollection,

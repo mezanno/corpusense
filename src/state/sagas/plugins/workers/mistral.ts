@@ -7,7 +7,10 @@ import {
   getModelRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { toGallicaUrl } from '@/data/utils/canvas';
-import { generateNumberedTextFromCanvas } from '@/data/utils/export';
+import {
+  generateNumberedTextForCollection,
+  generateNumberedTextFromCanvas,
+} from '@/data/utils/export';
 import { generateSchema } from '@/data/utils/model';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
@@ -23,19 +26,21 @@ export const pluginDescription =
   "Extrait des données structurées à partir du texte. Nécessite que l'OCR soit fait ainsi qu'un modèle de données.";
 export const pluginCategory = 'LLM';
 export const pluginExportFormats = ['json', 'csv', 'xlsx'];
+export const pluginBatchCompatible = true;
 
 //TODO: à déplacer dans un fichier utils
 async function getText(scope: Scope) {
-  let text = '';
+  let fullText = '';
   if (isCanvasScope(scope)) {
-    text = await generateNumberedTextFromCanvas(scope.canvasId, scope.collectionId);
+    const { text } = await generateNumberedTextFromCanvas(scope.canvasId, scope.collectionId);
+    fullText = text;
   } else if (isAnnotationScope(scope)) {
     //TODO: implement text extraction from annotation
-    text = '';
+    fullText = '';
   } else {
-    throw new Error(`Unsupported scope type for text: ${toString(scope)}`);
+    fullText = await generateNumberedTextForCollection(scope.collectionId);
   }
-  return text.replace(/["«»]/g, '');
+  return fullText.replace(/["«»]/g, '');
 }
 
 /*
@@ -90,9 +95,9 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
         strategy: 'backoff',
         backoff: {
           initialInterval: 500, // intervalle initial en millisecondes
-          maxInterval: 10000, // intervalle maximal en millisecondes entre tentatives
+          maxInterval: 30000, // intervalle maximal en millisecondes entre tentatives
           exponent: 1.5, // facteur exponentiel
-          maxElapsedTime: 60000, // durée max (en millisecondes) totale pour toutes les tentatives
+          maxElapsedTime: 120000, // durée max (en millisecondes) totale pour toutes les tentatives
         },
         retryConnectionErrors: true, // réessayer en cas d'erreurs de connexion
       },
