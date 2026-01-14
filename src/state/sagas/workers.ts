@@ -43,7 +43,7 @@ import { loadWorkerPlugins, WorkerPlugin } from './plugins/loader';
 export const workerPlugins: Record<string, WorkerPlugin> = loadWorkerPlugins();
 
 function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPayload>) {
-  const { workerName, params, scope } = action.payload;
+  const { workerName, params, scope, batchMode } = action.payload;
   if (workerPlugins[workerName] === undefined) {
     console.warn(`No plugin saga found for ${workerName}`);
     //TODO! afficher message d'erreur dans l'UI
@@ -55,6 +55,7 @@ function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPaylo
     name: workerName,
     scope,
     params,
+    batchMode,
   };
   yield call(forkStartWorker, worker);
 }
@@ -88,7 +89,7 @@ function* forkStartWorker(worker: Worker | WorkerCreateDTO): Generator<Effect, v
 
 /**
  *
- * @param worker Worker or WorkerCreateDTO
+ * @param worker Worker or WorkerCreateDTOr'
  */
 function* startWorker(
   worker: Worker | WorkerCreateDTO,
@@ -158,12 +159,22 @@ function* startWorker(
           yield put(pushError(i18n.t('info_empty_collection')));
           return;
         }
-        //else, we add the canvases to the worker queue
-        currentWorker.queue = canvases.map((canvas, index) => ({
-          id: index,
-          scope: { collectionId: collectionId, canvasId: canvas.id },
-          status: WorkerStatus.WAITING,
-        }));
+        if (worker.batchMode === true) {
+          currentWorker.queue = [
+            {
+              id: 0,
+              scope: worker.scope,
+              status: WorkerStatus.WAITING,
+            },
+          ];
+        } else {
+          //else, we add the canvases to the worker queue
+          currentWorker.queue = canvases.map((canvas, index) => ({
+            id: index,
+            scope: { collectionId: collectionId, canvasId: canvas.id },
+            status: WorkerStatus.WAITING,
+          }));
+        }
         yield call([workerRepository, workerRepository.patch], currentWorker.id, {
           queue: currentWorker.queue,
         });

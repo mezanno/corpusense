@@ -24,6 +24,7 @@ export interface Worker {
   id: string;
   name: string;
   scope: Scope;
+  batchMode?: boolean;
 
   scopeKey: string; //needed for indexeddb
   status: WorkerStatus;
@@ -44,6 +45,7 @@ export interface WorkerCreateDTO {
   name: string;
   scope: Scope;
   params: PluginParams;
+  batchMode?: boolean;
 }
 
 /*

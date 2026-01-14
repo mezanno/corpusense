@@ -26,6 +26,7 @@ export interface StartWorkerProcessPayload {
   workerName: string;
   scope: Scope;
   params: PluginParams;
+  batchMode?: boolean;
 }
 
 export const workerSlice = createSlice({
