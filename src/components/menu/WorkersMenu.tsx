@@ -1,5 +1,6 @@
 import { isCollectionScope, Scope } from '@/data/models/Scope';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useExperimental from '@/hooks/useExperimental';
 import { startWorkerProcessRequest } from '@/state/reducers/workers';
 import { selectWorkerPluginsInfo } from '@/state/selectors/workers';
 import { PocketKnife, ScanText } from 'lucide-react';
@@ -12,6 +13,7 @@ const WorkersMenu = ({ scope }: { scope: Scope }) => {
   const appDispatch = useAppDispatch();
   const pluginsInfo = useAppSelector(selectWorkerPluginsInfo);
   const { openDialog } = useAlertDialogContext();
+  const { experimentalFeaturesActivated } = useExperimental();
 
   const params = {
     name: 'btn_start_analysis',
@@ -23,7 +25,11 @@ const WorkersMenu = ({ scope }: { scope: Scope }) => {
         description: plugin.description,
         icon: <ScanText />,
         action: () => {
-          if (plugin.batchCompatible === true && isCollectionScope(scope)) {
+          if (
+            experimentalFeaturesActivated &&
+            plugin.batchCompatible === true &&
+            isCollectionScope(scope)
+          ) {
             openDialog({
               title: t('title_worker_scope_validation'),
               description: t('description_worker_scope_all'),
