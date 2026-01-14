@@ -18,12 +18,12 @@ import useExperimental from '@/hooks/useExperimental';
 import {
   Archive,
   Bolt,
+  Book,
   BookOpen,
   ChevronDown,
   Container,
   CornerDownRight,
   Database,
-  FolderSearch2,
   List,
   MoreHorizontal,
   PocketKnife,
@@ -155,22 +155,19 @@ const CollectionsSideBarGroup = () => {
 
 const SourcesSideBarGroup = () => {
   const { t } = useTranslation();
-  const { experimentalFeaturesActivated } = useExperimental();
 
   const menus = [
     {
-      title: t('page_title_manifexplorer'),
-      url: CorpusenseRoutes.MANIFEST,
-      icon: FolderSearch2,
+      title: t('page_title_iiif_storage'),
+      url: CorpusenseRoutes.IIIF_SOURCES,
+      icon: Book,
     },
-  ];
-  if (experimentalFeaturesActivated) {
-    menus.push({
+    {
       title: t('page_title_local_storage'),
       url: CorpusenseRoutes.LOCAL_SOURCES,
       icon: Archive,
-    });
-  }
+    },
+  ];
 
   return (
     <SidebarGroup id='collections'>

@@ -11,6 +11,7 @@ import CollectionsManagerPage from './pages/CollectionsManagerPage';
 import ConfigurationPage from './pages/ConfigurationPage';
 import DocumentationPage from './pages/DocumentationPage';
 import Home from './pages/Home';
+import IIIFSourcesPage from './pages/IIIFSourcesPage';
 import Layout from './pages/Layout';
 import ManifestExplorerPage from './pages/ManifestExplorerPage';
 import ModelsManagerPage from './pages/ModelsManagerPage';
@@ -54,6 +55,7 @@ function App() {
                     <Route path={CorpusenseRoutes.MODELS} element={<ModelsManagerPage />} />
                     <Route path={CorpusenseRoutes.CONFIGURATION} element={<ConfigurationPage />} />
                     <Route path={CorpusenseRoutes.LOCAL_SOURCES} element={<StoragePage />} />
+                    <Route path={CorpusenseRoutes.IIIF_SOURCES} element={<IIIFSourcesPage />} />
                     <Route path={CorpusenseRoutes.WORKERS} element={<WorkersManagerPage />} />
                     <Route
                       path={`${CorpusenseRoutes.WORKERS}/:workerId`}
