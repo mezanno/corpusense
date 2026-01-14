@@ -2,8 +2,8 @@ import { useConvertedFiles } from '@/hooks/data/convertedFiles/useConvertedFiles
 import useDialog from '@/hooks/ui/useDialog';
 import { Archive, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Card, CardContent } from '../ui/card';
 import { FileCard } from './FileCard';
-import { Card, CardContent } from './ui/card';
 
 const LocalStorageDashboard = () => {
   const { t } = useTranslation();
@@ -14,7 +14,7 @@ const LocalStorageDashboard = () => {
   return (
     <div>
       <h1 className='flex items-center text-2xl font-bold'>
-        <Archive className='mr-2' /> {t('page_title_storage')}
+        <Archive className='mr-2' /> {t('page_title_local_storage')}
       </h1>
 
       <div className='flex space-x-2'>

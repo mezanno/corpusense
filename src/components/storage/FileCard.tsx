@@ -4,8 +4,8 @@ import useAppNavigation from '@/hooks/useAppNavigation';
 import { Clock, Layers, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAlertDialogContext } from './reducers/useAlertDialogContext';
-import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
+import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
+import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 
 interface FileCardProps {
   file: ConvertedFile;

@@ -1,5 +1,5 @@
 // import imageBlobReduce from 'image-blob-reduce';
-import LocalStorageDashboard from '@/components/LocalStorageDashboard';
+import LocalStorageDashboard from '@/components/storage/LocalStorageDashboard';
 // import * as pdfjsLib from 'pdfjs-dist';
 
 // pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
