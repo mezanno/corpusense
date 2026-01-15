@@ -35,9 +35,9 @@ const WorkersManagerPage = () => {
       selected: true,
     })),
   );
-  const workers = useWorkerContext().getWorkersByStatus(
-    filters.filter((f) => f.selected).map((f) => f.status),
-  );
+  const workers = useWorkerContext()
+    .getWorkersByStatus(filters.filter((f) => f.selected).map((f) => f.status))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const { removeWorker } = useWorkers();
   const { openDialog } = useAlertDialogContext();
 
