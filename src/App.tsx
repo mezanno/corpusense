@@ -17,15 +17,22 @@ import ManifestExplorerPage from './pages/ManifestExplorerPage';
 import ModelsManagerPage from './pages/ModelsManagerPage';
 import StoragePage from './pages/StoragePage';
 import WorkersManagerPage from './pages/WorkersManagerPage';
-import { ImporterPlugin, loadImporterPlugins } from './state/sagas/plugins/loader';
+import {
+  ImporterPlugin,
+  loadImporterPlugins,
+  loadWorkerPlugins,
+  WorkerPlugin,
+} from './state/sagas/plugins/loader';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/strict-boolean-expressions
 const basePath: string = import.meta.env.VITE_BASE_PATH || '/';
 export let importerPlugins: Record<string, ImporterPlugin> = {};
+export let workerPlugins: Record<string, WorkerPlugin> = {};
 
 initI18n()
   .then(() => {
     console.info('i18n initialized');
+    workerPlugins = loadWorkerPlugins();
     importerPlugins = loadImporterPlugins(); // Load importer plugins after i18n initialization (if i18n is not loaded before, it will not be able to translate error messages)
   })
   .catch((error) => {
