@@ -29,7 +29,7 @@ const ConfigurationPage = () => {
               const savedValue = localStorage.getItem(storageKey);
               acc.push({
                 key: storageKey,
-                description: attributes.description,
+                description: `${plugin.displayName} : ${attributes.description}`,
                 defaultValue: savedValue ?? attributes.defaultValue ?? null,
               });
             }
