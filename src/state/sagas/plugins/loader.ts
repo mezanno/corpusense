@@ -2,12 +2,16 @@ import { Result } from '@/data/models/Result';
 import { Task, WorkerResponse } from '@/data/models/Worker';
 import { getIsExperimentalFeaturesActivated } from '@/hooks/useExperimental';
 
+export type WorkerConfigurationParams = {
+  [key: string]: { description: string; defaultValue?: string };
+};
 export type WorkerPluginInfo = {
   displayName?: string;
   description?: string;
   category?: string;
   exportFormats?: string[];
   batchCompatible: boolean;
+  configurationParams?: WorkerConfigurationParams;
 };
 export type WorkerPlugin = {
   run: WorkerRunFunction;
@@ -27,6 +31,7 @@ type WorkerModule = {
   pluginCategory?: string;
   pluginExportFormats?: string[];
   pluginBatchCompatible?: boolean;
+  pluginConfigurationParams?: WorkerConfigurationParams;
   exportResult?: WorkerExportFunction;
 };
 
@@ -54,7 +59,17 @@ const isWorkerModule = (mod: unknown): mod is WorkerModule => {
       (Array.isArray(m.pluginExportFormats) &&
         m.pluginExportFormats.every((f) => typeof f === 'string'))) &&
     (m.exportResult === undefined || typeof m.exportResult === 'function') &&
-    (m.pluginBatchCompatible === undefined || typeof m.pluginBatchCompatible === 'boolean')
+    (m.pluginBatchCompatible === undefined || typeof m.pluginBatchCompatible === 'boolean') &&
+    (m.pluginConfigurationParams === undefined ||
+      (typeof m.pluginConfigurationParams === 'object' &&
+        m.pluginConfigurationParams !== null &&
+        Object.values(m.pluginConfigurationParams).every(
+          (v) =>
+            typeof v === 'object' &&
+            v !== null &&
+            'description' in v &&
+            typeof v.description === 'string',
+        )))
   );
 };
 
@@ -81,6 +96,7 @@ export function loadWorkerPlugins() {
             category: mod.pluginCategory,
             exportFormats: mod.pluginExportFormats,
             batchCompatible: mod.pluginBatchCompatible ?? false,
+            configurationParams: mod.pluginConfigurationParams,
           },
           export: mod.exportResult,
         };

@@ -1,6 +1,7 @@
 import { Scope } from '@/data/models/Scope';
 import { Worker } from '@/data/models/Worker';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { WorkerConfigurationParams } from '../sagas/plugins/loader';
 export interface WorkerState {
   workerPluginsInfo: {
     name: string;
@@ -10,6 +11,7 @@ export interface WorkerState {
     category?: string;
     exportFormats?: string[];
     batchCompatible?: boolean;
+    configurationParams?: WorkerConfigurationParams;
   }[];
 }
 
@@ -46,6 +48,7 @@ export const workerSlice = createSlice({
           category?: string;
           exportFormats?: string[];
           batchCompatible?: boolean;
+          configurationParams?: WorkerConfigurationParams;
         }[]
       >,
     ) {
