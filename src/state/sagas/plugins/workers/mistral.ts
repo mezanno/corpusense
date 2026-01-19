@@ -12,6 +12,7 @@ import {
   generateNumberedTextFromCanvas,
 } from '@/data/utils/export';
 import { generateSchema } from '@/data/utils/model';
+import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
@@ -27,6 +28,11 @@ export const pluginDescription =
 export const pluginCategory = 'LLM';
 export const pluginExportFormats = ['json', 'csv', 'xlsx'];
 export const pluginBatchCompatible = true;
+export const pluginConfigurationParams = {
+  apiKey: {
+    description: 'Clé API Mistral',
+  },
+};
 
 //TODO: à déplacer dans un fichier utils
 async function getText(scope: Scope) {
@@ -77,7 +83,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_export_no_text') };
   }
 
-  const apiKey = localStorage.getItem('mistralApiKey');
+  const apiKey = getValueForPluginParam(pluginName, 'apiKey');
   //return an error if no API key is found
   if (apiKey === null || apiKey === '') {
     console.log('No Mistral API key found');

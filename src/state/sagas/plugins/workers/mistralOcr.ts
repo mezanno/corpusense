@@ -15,6 +15,7 @@ import {
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getFile, getImage, toGallicaUrl } from '@/data/utils/canvas';
+import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { canvasToBase64, cropImage } from '@/utils/images';
@@ -29,6 +30,11 @@ export const pluginDisplayName = 'Mistral OCR';
 export const pluginDescription = 'Reconnaissance de texte';
 export const pluginCategory = 'OCR';
 export const pluginExportFormats = ['txt'];
+export const pluginConfigurationParams = {
+  apiKey: {
+    description: 'Clé API Mistral',
+  },
+};
 
 // const BBoxItemSchema = z
 //   .object({
@@ -129,7 +135,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       }
     }
 
-    const apiKey = localStorage.getItem('mistralApiKey');
+    const apiKey = getValueForPluginParam(pluginName, 'apiKey');
     //return an error if no API key is found
     if (apiKey === null || apiKey === '') {
       console.log('No Mistral API key found');

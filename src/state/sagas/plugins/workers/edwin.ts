@@ -6,6 +6,7 @@ import {
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
+import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
@@ -15,6 +16,12 @@ export const pluginDisplayName = 'Détection de layout Edwin';
 export const pluginDescription = "Détection de layout avec utilisant la magie d'Edwin";
 export const pluginCategory = 'Layout';
 export const experimental = true;
+export const pluginConfigurationParams = {
+  apiUrl: {
+    description: "URL de l'API de détection de layouts (Edwin)",
+    defaultValue: 'https://api.mezanno.xyz/layout',
+  },
+};
 
 export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   if (!isCanvasScope(task.scope)) {
@@ -28,7 +35,14 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     const canvas = await collectionRepository.getCanvasByScope(task.scope);
     const image = getImage(canvas);
 
-    const response: Response = await fetch(`https://api.mezanno.xyz/layout?image_url=${image.id}`);
+    const url = getValueForPluginParam(pluginName, 'apiUrl');
+    if (url === null) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: 'API URL is not configured',
+      };
+    }
+    const response: Response = await fetch(`${url}?image_url=${image.id}`);
     if (!response.ok) {
       return {
         status: WorkerStatus.ERROR,

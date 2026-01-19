@@ -9,17 +9,25 @@ import {
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
+import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
 import FileSaver from 'file-saver';
 
-export const pluginName = 'peroocr';
-export const pluginDisplayName = 'Pero OCR';
-export const pluginDescription = 'Reconnaissance de texte';
+export const pluginName = 'peroocr'; //name of the plugin, used to register the plugin inside Corpusense
+export const pluginDisplayName = 'Pero OCR'; //display name of the plugin, used in the UI
+export const pluginDescription = 'Reconnaissance de texte'; //description of the plugin, used in the UI
 export const pluginCategory = 'OCR';
-export const pluginExportFormats = ['txt'];
+export const pluginExportFormats = ['txt']; //available export formats for this plugin (must match the formats handled in exportResult function)
+/*
+  Configuration parameters for this plugin
+  Each parameter must have a description and can have a default value
+*/
+export const pluginConfigurationParams = {
+  apiUrl: { description: "URL de l'API Pero OCR", defaultValue: 'https://api.mezanno.xyz/ocr/' },
+};
 
 export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
@@ -75,7 +83,15 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       }
     }
 
-    const client = await Client.connect('https://api.mezanno.xyz/ocr/');
+    const peroUrl = getValueForPluginParam(pluginName, 'apiUrl');
+    if (peroUrl === null) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: 'Pero OCR API URL is not configured',
+      };
+    }
+
+    const client = await Client.connect(peroUrl);
     /* We change the image to size to match the maximum size. We do this to avoir lower sizes used in image ids.
      */
     const gradioResult = await client.predict('/transcribe', {
