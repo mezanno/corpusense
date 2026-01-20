@@ -48,21 +48,29 @@ async function cropImage(source: ImageSource, crop: Crop): Promise<HTMLCanvasEle
 }
 
 async function canvasToBase64(
-  canvas: HTMLCanvasElement,
+  element: HTMLCanvasElement | HTMLImageElement,
   type: 'image/png' | 'image/jpeg' = 'image/png',
   quality?: number,
 ): Promise<string> {
+  const canvas = element instanceof HTMLCanvasElement ? element : imageToCanvas(element);
+
   const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (b) => {
-        if (b) resolve(b);
-        else reject(new Error('toBlob failed'));
-      },
-      type, // ex: 'image/png' ou 'image/jpeg'
-      quality, // ex: 0.8 pour JPEG
-    );
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), type, quality);
   });
-  return await blobToBase64(blob);
+
+  return blobToBase64(blob);
+}
+
+function imageToCanvas(img: HTMLImageElement): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('2D context unavailable');
+
+  ctx.drawImage(img, 0, 0);
+  return canvas;
 }
 
 function blobToBase64(blob: Blob): Promise<string> {
@@ -74,4 +82,4 @@ function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-export { canvasToBase64, cropImage };
+export { canvasToBase64, cropImage, loadImageFromUrl };
