@@ -42,10 +42,10 @@ initI18n()
 function App() {
   return (
     <BrowserRouter basename={basePath}>
-      <ConnectedUserProvider>
-        <CollectionProvider>
-          <WorkerProvider>
-            <ExperimentalProvider>
+      <ExperimentalProvider>
+        <ConnectedUserProvider>
+          <CollectionProvider>
+            <WorkerProvider>
               <AlertDialogProvider>
                 <Routes>
                   <Route element={<Layout />}>
@@ -79,10 +79,10 @@ function App() {
                   </Route>
                 </Routes>
               </AlertDialogProvider>
-            </ExperimentalProvider>
-          </WorkerProvider>
-        </CollectionProvider>
-      </ConnectedUserProvider>
+            </WorkerProvider>
+          </CollectionProvider>
+        </ConnectedUserProvider>
+      </ExperimentalProvider>
     </BrowserRouter>
   );
 }
