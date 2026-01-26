@@ -77,15 +77,21 @@ export type Database = {
           payload: Json | null
           result: Json | null
           status: string
+<<<<<<< HEAD
           task_id: number
           updated_at: string | null
           user_id: string
           worker_id: string
+=======
+          updated_at: string | null
+          user_id: string
+>>>>>>> 10f6723 (🐛 fix Database type definition)
           worker_name: string
         }
         Insert: {
           created_at?: string
           error?: Json | null
+<<<<<<< HEAD
           id?: never
           payload?: Json | null
           result?: Json | null
@@ -94,11 +100,20 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           worker_id: string
+=======
+          id?: number
+          payload?: Json | null
+          result?: Json | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+>>>>>>> 10f6723 (🐛 fix Database type definition)
           worker_name: string
         }
         Update: {
           created_at?: string
           error?: Json | null
+<<<<<<< HEAD
           id?: never
           payload?: Json | null
           result?: Json | null
@@ -107,6 +122,14 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           worker_id?: string
+=======
+          id?: number
+          payload?: Json | null
+          result?: Json | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+>>>>>>> 10f6723 (🐛 fix Database type definition)
           worker_name?: string
         }
         Relationships: []
@@ -169,10 +192,15 @@ export type Database = {
           payload: Json | null
           result: Json | null
           status: string
+<<<<<<< HEAD
           task_id: number
           updated_at: string | null
           user_id: string
           worker_id: string
+=======
+          updated_at: string | null
+          user_id: string
+>>>>>>> 10f6723 (🐛 fix Database type definition)
           worker_name: string
         }[]
         SetofOptions: {
