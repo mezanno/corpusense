@@ -1,5 +1,5 @@
 import { Result } from '@/data/models/Result';
-import { Task, WorkerResponse } from '@/data/models/Worker';
+import { Task, Worker, WorkerResponse } from '@/data/models/Worker';
 import { getIsExperimentalFeaturesActivated } from '@/hooks/useExperimental';
 
 export type WorkerConfigurationParams = {
@@ -16,12 +16,10 @@ export type WorkerPluginInfo = {
 export type WorkerPlugin = {
   run: WorkerRunFunction;
   export?: WorkerExportFunction;
+  processResult?: WorkerProcessResultFunction;
   info: WorkerPluginInfo;
 };
-export type WorkerRunFunction = (
-  task: Task,
-  params?: Record<string, unknown>,
-) => Promise<WorkerResponse>; //saga or async function : if we need to call an effect (eg: call, put, select), we have to use a saga
+export type WorkerRunFunction = (task: Task, worker: Worker) => Promise<WorkerResponse>; //saga or async function : if we need to call an effect (eg: call, put, select), we have to use a saga
 export type WorkerExportFunction = (results: Result[], formats: string[]) => void;
 type WorkerModule = {
   default: WorkerRunFunction;
@@ -33,7 +31,9 @@ type WorkerModule = {
   pluginBatchCompatible?: boolean;
   pluginConfigurationParams?: WorkerConfigurationParams;
   exportResult?: WorkerExportFunction;
+  processResult?: WorkerProcessResultFunction;
 };
+export type WorkerProcessResultFunction = (result: unknown, task: Task) => Promise<WorkerResponse>;
 
 export type ImporterPlugin = { import: ImportFunction };
 export type ImportFunction = (url: string) => Promise<object>;
@@ -48,6 +48,7 @@ const isWorkerModule = (mod: unknown): mod is WorkerModule => {
 
   const m = mod as Partial<WorkerModule>;
 
+  //TODO : il faut valider les types des paramètres de default
   return (
     typeof m.default === 'function' &&
     typeof m.pluginName === 'string' &&
@@ -59,6 +60,7 @@ const isWorkerModule = (mod: unknown): mod is WorkerModule => {
       (Array.isArray(m.pluginExportFormats) &&
         m.pluginExportFormats.every((f) => typeof f === 'string'))) &&
     (m.exportResult === undefined || typeof m.exportResult === 'function') &&
+    (m.processResult === undefined || typeof m.processResult === 'function') &&
     (m.pluginBatchCompatible === undefined || typeof m.pluginBatchCompatible === 'boolean') &&
     (m.pluginConfigurationParams === undefined ||
       (typeof m.pluginConfigurationParams === 'object' &&
@@ -99,6 +101,7 @@ export function loadWorkerPlugins() {
             configurationParams: mod.pluginConfigurationParams,
           },
           export: mod.exportResult,
+          processResult: mod.processResult,
         };
 
         console.info(`Plugin saga ${mod.pluginName} loaded successfully`);
