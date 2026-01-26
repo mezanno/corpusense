@@ -205,7 +205,7 @@ function* startWorker(
 
       //start the saga for the task
       try {
-        const taskResult = (yield call(saga.run, task, worker.params)) as WorkerResponse;
+        const taskResult = (yield call(saga.run, task, currentWorker)) as WorkerResponse;
         switch (taskResult.status) {
           case WorkerStatus.COMPLETED:
             {
@@ -236,6 +236,12 @@ function* startWorker(
                 queue: updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.COMPLETED, ''), //on ajoute un message vide pour supprimer un potentiel précédent message d'erreur
               };
             }
+            break;
+          case WorkerStatus.POSTED:
+            currentWorker = {
+              ...currentWorker,
+              queue: updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.POSTED, ''),
+            };
             break;
           case WorkerStatus.ERROR:
             console.error(
@@ -286,8 +292,14 @@ function* startWorker(
       currentWorker = { ...currentWorker, status: WorkerStatus.COMPLETED_WITH_ERRORS };
       yield put(pushError(i18n.t('info_worker_completed_with_error')));
     } else {
-      currentWorker = { ...currentWorker, status: WorkerStatus.COMPLETED };
-      yield put(pushInfo(i18n.t('info_worker_completed')));
+      const hasTaskPosted = currentWorker.queue.some((t) => t.status === WorkerStatus.POSTED);
+      if (hasTaskPosted) {
+        currentWorker = { ...currentWorker, status: WorkerStatus.POSTED };
+        yield put(pushInfo(i18n.t('info_worker_all_tasks_posted')));
+      } else {
+        currentWorker = { ...currentWorker, status: WorkerStatus.COMPLETED };
+        yield put(pushInfo(i18n.t('info_worker_completed')));
+      }
     }
     yield call([workerRepository, workerRepository.patch], currentWorker.id, {
       status: currentWorker.status,
