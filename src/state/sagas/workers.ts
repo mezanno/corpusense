@@ -14,6 +14,7 @@ import {
   getResultRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
+import { updateTaskStatus } from '@/data/utils/worker';
 import i18n from '@/i18n';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
@@ -324,19 +325,6 @@ function* startWorker(
         });
       }
     }
-  }
-}
-
-function updateTaskStatus(
-  queue: Task[],
-  index: number,
-  status: WorkerStatus,
-  statusMessage?: string,
-): Task[] {
-  if (statusMessage === undefined) {
-    return queue.map((task, i) => (i === index ? { ...task, status } : task));
-  } else {
-    return queue.map((task, i) => (i === index ? { ...task, status, statusMessage } : task));
   }
 }
 
