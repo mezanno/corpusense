@@ -7,7 +7,7 @@ import { useTags } from '@/hooks/data/tags/useTags';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Tag as FormTag, TagInput } from 'emblor';
 import { uniq } from 'lodash';
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -102,8 +102,12 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
     }
   };
 
+  const onCollection = useEffectEvent((formTags: FormTag[]) => {
+    setTags(formTags);
+  });
+
   useEffect(() => {
-    setTags(collectionTagsDefaultValue);
+    onCollection(collectionTagsDefaultValue);
     form.setValue('name', collection.name);
     form.setValue('about', collection.about);
     form.setValue('modelId', collection.modelId);
