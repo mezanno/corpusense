@@ -16,9 +16,11 @@ import { generateManifestFromCollection } from '@/data/utils/export';
 import { useAppDispatch } from '@/hooks/hooks';
 import i18n from '@/i18n';
 import { pushError, pushInfo } from '@/state/reducers/events';
+import { fecthManifestRequest } from '@/state/reducers/manifests';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import { default as JSZip } from 'jszip';
+import { uniq } from 'lodash';
 import { useMemo } from 'react';
 
 export interface ExportCollectionOptions {
@@ -62,6 +64,15 @@ export const useCollectionIO = () => {
       workers?: Worker[];
       results?: Result[];
     };
+
+    //réimporte les manifestes liés à la collection (si besoin)
+    const manifests = uniq(collection.content.map((item) => item.manifestId));
+    manifests.forEach((manifestId) => {
+      if (manifestId.startsWith('http://') || manifestId.startsWith('https://')) {
+        appDispatch(fecthManifestRequest(manifestId));
+      }
+    });
+
     try {
       await collectionRepository.create(collection);
     } catch (e) {

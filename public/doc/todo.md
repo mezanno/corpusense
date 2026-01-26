@@ -2,7 +2,8 @@
 
 ## Priority
 
-TODO : envoyer des régions d'image à MistralOCR
+TODO : lors de l'import d'une collection : gérer l'import de manifest locaux
+TODO : ajouter les documents locaux lors de l'export de collections
 FIX : gérer l'utilisation de la mémoire (URLObject)
 FIX : que faire lorsque l'on supprime des sources et que l'on avait créer une collection à partir de cette source ?
 TODO : ouvrir la fenêtre de modification des annotations dans la partie texte
