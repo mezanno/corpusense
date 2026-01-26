@@ -6,9 +6,11 @@ import { useModels } from '@/hooks/data/models/useModels';
 import { useTags } from '@/hooks/data/tags/useTags';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Tag as FormTag, TagInput } from 'emblor';
+import { uniq } from 'lodash';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import { z } from 'zod';
 import {
@@ -76,6 +78,8 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
   const { setValue } = form;
 
   const { t } = useTranslation();
+
+  const manifestIds = uniq(collection.content.map((el) => el.manifestId));
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values.tags);
@@ -210,6 +214,20 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
                 </FormItem>
               )}
             />
+            <div className='flex h-full flex-col rounded border bg-white p-2'>
+              <h3 className='mb-2 font-bold'>{t('Manifests utilisés dans cette collection')}</h3>
+              <ul className='max-h-20 flex-1 overflow-auto'>
+                {manifestIds.map((id) => (
+                  <Link
+                    className='block break-all underline'
+                    key={id}
+                    to={`/manifest?manifestId==${id}`}
+                  >
+                    {id}
+                  </Link>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
         <div className='flex w-full items-center justify-start pt-3'>
