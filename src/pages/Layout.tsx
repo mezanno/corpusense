@@ -1,6 +1,7 @@
 import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
+import useJobRealtime from '@/hooks/useJobRealtime';
 import { resetLastEvent } from '@/state/reducers/events';
 import { selectLastErrorEvent, selectLastInfoEvent } from '@/state/selectors/events';
 import { Mail } from 'lucide-react';
@@ -17,6 +18,7 @@ const Layout = () => {
   const { openContactUsDialog } = useDialog();
   const lastInfo = useAppSelector(selectLastInfoEvent);
   const lastError = useAppSelector(selectLastErrorEvent);
+  useJobRealtime();
 
   useEffect(() => {
     if (lastInfo !== undefined) {
