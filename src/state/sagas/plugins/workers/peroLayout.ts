@@ -6,7 +6,7 @@ import {
 } from '@/data/models/Annotation';
 import { Result } from '@/data/models/Result';
 import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/Scope';
-import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
+import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -14,11 +14,13 @@ import {
 import { getFile, getImage } from '@/data/utils/canvas';
 import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
-import { PluginParams } from '@/state/reducers/workers';
+import { supabase } from '@/utils/config';
 import { canvasToBase64, loadImageFromUrl } from '@/utils/images';
 import { getErrorMessage } from '@/utils/utils';
+import { Canvas } from '@iiif/presentation-3';
 import FileSaver from 'file-saver';
 import z from 'zod';
+import { uploadCanvasImage } from './supabase/utils';
 
 export const pluginName = 'perolayout'; //name of the plugin, used to register the plugin inside Corpusense
 export const pluginDisplayName = 'Pero Layout'; //display name of the plugin, used in the UI
@@ -77,15 +79,22 @@ async function post(
   }
 }
 
-export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
-  console.log(`Processing task for scope ${toString(task.scope)}`);
+export default async function run(task: Task, worker: Worker): Promise<WorkerResponse> {
+  console.log(`Processing task for scope ${toString(task.scope)} with params: `, worker.params);
+
+  const peroUrl = getValueForPluginParam(pluginName, 'apiUrl');
+  if (peroUrl === null) {
+    return {
+      status: WorkerStatus.ERROR,
+      statusMessage: 'Pero OCR API URL is not configured',
+    };
+  }
   if (!isCanvasScope(task.scope)) {
     return {
       status: WorkerStatus.ERROR,
       statusMessage: i18n.t('error_task_invalid_scope'),
     };
   }
-  const annotationRepository = getAnnotationRepository();
   try {
     const collectionRepository = getCollectionRepository();
     const canvas = await collectionRepository.getCanvasByScope(task.scope);
@@ -96,96 +105,48 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
         statusMessage: 'Image ID is undefined',
       };
     }
-    let regions: Region[] = [];
-    if (isAnnotationScope(task.scope)) {
-      const annotation = await annotationRepository.getById(task.scope.annotationId);
-      regions = [
-        {
-          xtl: annotation.target.selector.geometry.bounds.minX,
-          ytl: annotation.target.selector.geometry.bounds.minY,
-          xbr: annotation.target.selector.geometry.bounds.maxX,
-          ybr: annotation.target.selector.geometry.bounds.maxY,
-        },
-      ];
-    } else {
-      const annotations = await annotationRepository.getByScope({
-        canvasId: canvas.id,
-        collectionId: task.scope.collectionId,
-      });
-      const annotationRegions = annotations.filter(
-        (a) => getAnnotationType(a) === ElementType.TEXT_REGION,
-      );
-      if (annotationRegions.length > 0) {
-        regions = annotationRegions
-          .sort((a1, a2) => (a1.order ?? 0) - (a2.order ?? 0))
-          .map((annotation) => {
-            return {
-              xtl: annotation.target.selector.geometry.bounds.minX,
-              ytl: annotation.target.selector.geometry.bounds.minY,
-              xbr: annotation.target.selector.geometry.bounds.maxX,
-              ybr: annotation.target.selector.geometry.bounds.maxY,
-            };
-          });
-      }
-    }
 
-    const peroUrl = getValueForPluginParam(pluginName, 'apiUrl');
-    if (peroUrl === null) {
-      return {
-        status: WorkerStatus.ERROR,
-        statusMessage: 'Pero OCR API URL is not configured',
-      };
-    }
+    const regions: Region[] = await computeRegionsForTask(task, canvas);
 
     try {
-      let url = image.id;
-      if (image.id.startsWith('http') === false) {
-        try {
-          const imageToProcess = await getFile(image.id);
-          const canvasImage = await loadImageFromUrl(imageToProcess);
-          url = await canvasToBase64(canvasImage, 'image/jpeg', 0.7);
-        } catch (err) {
-          console.error('Failed to get file for thumbnail:', err);
-        }
-      }
+      const user = (await supabase.auth.getUser()).data.user;
+      if (user !== null) {
+        const imageUrl = await uploadCanvasImage(image);
 
-      const detected_regions = await post('layout', url, regions);
-      const newAnnotations: AnnotationDTO[] = [];
-      for (const region of detected_regions.regions) {
-        const { minX, minY, maxX, maxY } = region.polygon.reduce(
-          (acc, [x, y]) => {
-            return {
-              minX: Math.min(acc.minX, x),
-              minY: Math.min(acc.minY, y),
-              maxX: Math.max(acc.maxX, x),
-              maxY: Math.max(acc.maxY, y),
-            };
-          },
-          {
-            minX: Number.POSITIVE_INFINITY,
-            minY: Number.POSITIVE_INFINITY,
-            maxX: Number.NEGATIVE_INFINITY,
-            maxY: Number.NEGATIVE_INFINITY,
-          },
-        );
-        const regionAnnotation = createAnnotation({
-          canvasId: canvas.id,
-          collectionId: task.scope.collectionId,
-          minX,
-          minY,
-          maxX,
-          maxY,
-          type: ElementType.TEXT_REGION,
-          value: undefined,
-        });
-        newAnnotations.push(regionAnnotation);
+        const { data, error: supabaseError } = await supabase
+          .from('cs_jobs')
+          .insert({
+            worker_id: worker.id,
+            task_id: task.id,
+            worker_name: pluginName,
+            payload: { url: imageUrl },
+            user_id: user.id,
+          })
+          .select();
+        if (supabaseError || data === null) {
+          throw supabaseError;
+        }
+        return {
+          status: WorkerStatus.POSTED,
+          statusMessage: 'Task has been added to the processing queue',
+        };
+      } else {
+        let url = image.id;
+        if (image.id.startsWith('http') === false) {
+          try {
+            const imageToProcess = await getFile(image.id);
+            const canvasImage = await loadImageFromUrl(imageToProcess);
+            url = await canvasToBase64(canvasImage, 'image/jpeg', 0.7);
+          } catch (err) {
+            console.error('Failed to get file for thumbnail:', err);
+          }
+        }
+
+        const detected_regions = await post('layout', url, regions);
+        return await processResult(detected_regions, task);
       }
-      const savedAnnotations = await annotationRepository.addAll(newAnnotations);
-      return {
-        status: WorkerStatus.COMPLETED,
-        content: savedAnnotations,
-      };
     } catch (error) {
+      console.log('Error calling pero layout API: ', error);
       return {
         status: WorkerStatus.ERROR,
         statusMessage: getErrorMessage(error),
@@ -199,6 +160,86 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       statusMessage: getErrorMessage(error),
     };
   }
+}
+
+async function computeRegionsForTask(task: Task, canvas: Canvas) {
+  const annotationRepository = getAnnotationRepository();
+  let regions: Region[] = [];
+  if (isAnnotationScope(task.scope)) {
+    const annotation = await annotationRepository.getById(task.scope.annotationId);
+    regions = [
+      {
+        xtl: annotation.target.selector.geometry.bounds.minX,
+        ytl: annotation.target.selector.geometry.bounds.minY,
+        xbr: annotation.target.selector.geometry.bounds.maxX,
+        ybr: annotation.target.selector.geometry.bounds.maxY,
+      },
+    ];
+  } else {
+    const annotations = await annotationRepository.getByScope({
+      canvasId: canvas.id,
+      collectionId: task.scope.collectionId,
+    });
+    const annotationRegions = annotations.filter(
+      (a) => getAnnotationType(a) === ElementType.TEXT_REGION,
+    );
+    if (annotationRegions.length > 0) {
+      regions = annotationRegions
+        .sort((a1, a2) => (a1.order ?? 0) - (a2.order ?? 0))
+        .map((annotation) => {
+          return {
+            xtl: annotation.target.selector.geometry.bounds.minX,
+            ytl: annotation.target.selector.geometry.bounds.minY,
+            xbr: annotation.target.selector.geometry.bounds.maxX,
+            ybr: annotation.target.selector.geometry.bounds.maxY,
+          };
+        });
+    }
+  }
+  return regions;
+}
+
+export async function processResult(result: PeroLayoutResult, task: Task): Promise<WorkerResponse> {
+  if (!isCanvasScope(task.scope)) {
+    throw new Error(i18n.t('error_task_invalid_scope'));
+  }
+
+  const annotationRepository = getAnnotationRepository();
+  const newAnnotations: AnnotationDTO[] = [];
+  for (const region of result.regions) {
+    const { minX, minY, maxX, maxY } = region.polygon.reduce(
+      (acc, [x, y]) => {
+        return {
+          minX: Math.min(acc.minX, x),
+          minY: Math.min(acc.minY, y),
+          maxX: Math.max(acc.maxX, x),
+          maxY: Math.max(acc.maxY, y),
+        };
+      },
+      {
+        minX: Number.POSITIVE_INFINITY,
+        minY: Number.POSITIVE_INFINITY,
+        maxX: Number.NEGATIVE_INFINITY,
+        maxY: Number.NEGATIVE_INFINITY,
+      },
+    );
+    const regionAnnotation = createAnnotation({
+      canvasId: task.scope.canvasId,
+      collectionId: task.scope.collectionId,
+      minX,
+      minY,
+      maxX,
+      maxY,
+      type: ElementType.TEXT_REGION,
+      value: undefined,
+    });
+    newAnnotations.push(regionAnnotation);
+  }
+  const savedAnnotations = await annotationRepository.addAll(newAnnotations);
+  return {
+    status: WorkerStatus.COMPLETED,
+    content: savedAnnotations,
+  };
 }
 
 export function exportResult(results: Result[], formats: string[]) {
