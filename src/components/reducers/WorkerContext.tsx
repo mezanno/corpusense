@@ -1,6 +1,6 @@
 import { Result } from '@/data/models/Result';
 import { isCollectionScope, isSameScope, Scope } from '@/data/models/Scope';
-import { Worker, WorkerStatus } from '@/data/models/Worker';
+import { Task, Worker, WorkerStatus } from '@/data/models/Worker';
 import {
   getResultLiveRepository,
   getWorkerLiveRepository,
@@ -11,6 +11,7 @@ import { createContext, useContext, useMemo } from 'react';
 type WorkerContextValue = {
   workers: Worker[];
   getWorkerById: (id: string) => Worker | undefined;
+  getTaskById: (workerId: string, taskId: number) => Task | undefined;
   getWorkersByStatus: (status: WorkerStatus | WorkerStatus[]) => Worker[];
   getStatus: (scope: Scope) => WorkerStatus | undefined;
   isWorkerOrTaskRunning: (scope: Scope) => boolean;
@@ -34,6 +35,14 @@ export const WorkerProvider = ({ children }: Props) => {
 
   const value = useMemo<WorkerContextValue>(() => {
     const getWorkerById = (id: string) => workers.find((c) => c.id === id);
+
+    const getTaskById = (workerId: string, taskId: number) => {
+      const worker = getWorkerById(workerId);
+      if (worker === undefined) {
+        return undefined;
+      }
+      return worker.queue.find((t) => t.id === taskId);
+    };
 
     const getWorkersByStatus = (status: WorkerStatus | WorkerStatus[]) => {
       const statuses = Array.isArray(status) ? status : [status];
@@ -129,6 +138,7 @@ export const WorkerProvider = ({ children }: Props) => {
     return {
       workers,
       getWorkerById,
+      getTaskById,
       getWorkersByStatus,
       getStatus,
       isWorkerOrTaskRunning,
