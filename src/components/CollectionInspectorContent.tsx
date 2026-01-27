@@ -4,7 +4,6 @@ import CollectionMetadataForm from '@/components/forms/CollectionMetadataForm';
 import GridThumb from '@/components/GridThumb';
 import { useAnnotationContext } from '@/components/reducers/AnnotationContext';
 import { useCollectionContext } from '@/components/reducers/CollectionContext';
-import TextViewer from '@/components/textviewer/TextViewer';
 import {
   Accordion,
   AccordionContent,
@@ -12,7 +11,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
 import { Canvas } from '@iiif/presentation-3';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -34,7 +32,7 @@ const CollectionInspectorContent = ({
   const { setScope } = useAnnotationContext();
   const canvas = canvasId !== null ? getCanvasById(canvasId) : null;
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(canvas);
-  const [activeTab, setActiveTab] = useState('document');
+  // const [activeTab, setActiveTab] = useState('document');
 
   const [colCount, setColCount] = useState(5);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -189,25 +187,26 @@ const CollectionInspectorContent = ({
               {t('info_no_canvas_selected')}
             </div>
           ) : (
-            <Tabs
-              defaultValue='document'
-              className='panel h-full w-full'
-              value={activeTab}
-              onValueChange={setActiveTab}
-            >
-              <div className='flex w-full justify-between'>
-                <TabsList>
-                  <TabsTrigger value='document'>Vue document</TabsTrigger>
-                  <TabsTrigger value='text'>Vue texte</TabsTrigger>
-                </TabsList>
-              </div>
-              <TabsContent value='document'>
-                <CanvasViewer collectionId={collectionId} canvas={canvasToDisplay} />
-              </TabsContent>
-              <TabsContent value='text'>
-                <TextViewer collectionId={collectionId} canvas={canvasToDisplay} />
-              </TabsContent>
-            </Tabs>
+            // <Tabs
+            //   defaultValue='document'
+            //   className='panel h-full w-full'
+            //   value={activeTab}
+            //   onValueChange={setActiveTab}
+            // >
+            //   <div className='flex w-full justify-between'>
+            //     <TabsList>
+            //       <TabsTrigger value='document'>Vue document</TabsTrigger>
+            //       <TabsTrigger value='text'>Vue texte</TabsTrigger>
+            //     </TabsList>
+            //   </div>
+            //   <TabsContent value='document'>
+            //     <CanvasViewer collectionId={collectionId} canvas={canvasToDisplay} />
+            //   </TabsContent>
+            //   <TabsContent value='text'>
+            //     <TextViewer collectionId={collectionId} canvas={canvasToDisplay} />
+            //   </TabsContent>
+            // </Tabs>
+            <CanvasViewer collectionId={collectionId} canvas={canvasToDisplay} />
           )}
         </ResizablePanel>
       </ResizablePanelGroup>
