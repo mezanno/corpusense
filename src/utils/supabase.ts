@@ -105,6 +105,7 @@ export type Database = {
           payload?: Json | null
           result?: Json | null
           status?: string
+          task_id: number
           updated_at?: string | null
           user_id?: string
 >>>>>>> 10f6723 (🐛 fix Database type definition)
@@ -127,6 +128,7 @@ export type Database = {
           payload?: Json | null
           result?: Json | null
           status?: string
+          task_id?: number
           updated_at?: string | null
           user_id?: string
 >>>>>>> 10f6723 (🐛 fix Database type definition)
