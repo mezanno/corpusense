@@ -13,15 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import { z } from 'zod';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '../ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import './taginput.css'; //permet d'enlever le background transparent du taginput
@@ -213,14 +205,13 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
                       alt={t('aria_label_tags')}
                     />
                   </FormControl>
-                  <FormDescription>{t('form_description_tags')}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className='flex h-full flex-col rounded border bg-white p-2'>
-              <h3 className='mb-2 font-bold'>{t('Manifests utilisés dans cette collection')}</h3>
-              <ul className='max-h-20 flex-1 overflow-auto'>
+            <div className='mt-2 flex h-full flex-col'>
+              <FormLabel>{t('Manifests utilisés dans cette collection')}</FormLabel>
+              <ul className='mt-1 max-h-32 flex-1 overflow-auto rounded border bg-white p-2'>
                 {manifestIds.map((id) => (
                   <Link
                     className='block break-all underline'

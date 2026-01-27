@@ -132,6 +132,7 @@
   "form_label_include_workers": "Inclure les résultats des traitements",
   "form_label_include_manifest": "Inclure un manifest IIIF (canvas + annotations)",
   "form_label_include_model": "Inclure le modèle de données (si associé)",
+  "form_label_collection_manifest": "Manifests utilisés dans cette collection",
   "form_option_distribution_all_pages": "Sur toutes les pages",
   "form_option_distribution_each2_pages": "1 page sur 2",
   "form_option_limit_before": "Seulement sur les pages précédentes",
