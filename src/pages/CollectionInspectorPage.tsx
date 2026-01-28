@@ -18,7 +18,7 @@ const CollectionInspectorPage = () => {
     <div className='flex justify-center'>{t('error_id_collection_invalid')}</div>
   ) : (
     <AnnotationContextProvider>
-      <CollectionInspectorContent collectionId={collectionId} canvasId={canvasId} />
+      <CollectionInspectorContent collectionId={collectionId} defaultCanvasId={canvasId} />
     </AnnotationContextProvider>
   );
 };

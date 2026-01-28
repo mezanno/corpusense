@@ -18,19 +18,20 @@ import 'gridstack/dist/gridstack.min.css';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import CollectionNavigation from './collectionPage/CollectionNavigation';
 
 const CollectionInspectorContent = ({
   collectionId,
-  canvasId,
+  defaultCanvasId,
 }: {
   collectionId: string;
-  canvasId: string | null;
+  defaultCanvasId: string | null;
 }) => {
   const { t } = useTranslation();
   const { collection, getCanvasById } = useCollectionContent(collectionId);
   const { openCollection } = useCollectionContext();
   const { setScope } = useAnnotationContext();
-  const canvas = canvasId !== null ? getCanvasById(canvasId) : null;
+  const canvas = defaultCanvasId !== null ? getCanvasById(defaultCanvasId) : null;
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(canvas);
   // const [activeTab, setActiveTab] = useState('document');
 
@@ -187,26 +188,14 @@ const CollectionInspectorContent = ({
               {t('info_no_canvas_selected')}
             </div>
           ) : (
-            // <Tabs
-            //   defaultValue='document'
-            //   className='panel h-full w-full'
-            //   value={activeTab}
-            //   onValueChange={setActiveTab}
-            // >
-            //   <div className='flex w-full justify-between'>
-            //     <TabsList>
-            //       <TabsTrigger value='document'>Vue document</TabsTrigger>
-            //       <TabsTrigger value='text'>Vue texte</TabsTrigger>
-            //     </TabsList>
-            //   </div>
-            //   <TabsContent value='document'>
-            //     <CanvasViewer collectionId={collectionId} canvas={canvasToDisplay} />
-            //   </TabsContent>
-            //   <TabsContent value='text'>
-            //     <TextViewer collectionId={collectionId} canvas={canvasToDisplay} />
-            //   </TabsContent>
-            // </Tabs>
-            <CanvasViewer collectionId={collectionId} canvas={canvasToDisplay} />
+            <div className='flex h-full w-full flex-col'>
+              <CanvasViewer collectionId={collectionId} canvas={canvasToDisplay} />
+              <CollectionNavigation
+                collectionId={collectionId}
+                currentCanvasId={canvasToDisplay.id}
+                setCanvasToDisplay={setCanvasToDisplay}
+              />
+            </div>
           )}
         </ResizablePanel>
       </ResizablePanelGroup>
