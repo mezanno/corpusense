@@ -1,17 +1,13 @@
-import { DataField, DataModel, DataModelCreateDTO } from '@/data/models/DataModel';
+import { DataField, DataModelCreateDTO } from '@/data/models/DataModel';
 import {
   getModelLiveRepository,
   getModelRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { useAppDispatch } from '@/hooks/hooks';
-import i18n from '@/i18n';
-import { pushInfo } from '@/state/reducers/events';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
 
 export const useModels = () => {
-  const appDispatch = useAppDispatch();
   const modelRepository = useMemo(() => getModelRepository(), []);
   const modelLiveRepository = useMemo(() => getModelLiveRepository(), []);
 
@@ -58,21 +54,10 @@ export const useModels = () => {
     await modelRepository.add(newModel);
   };
 
-  const saveModel = async (model: DataModel) => {
-    await modelRepository.update(model);
-    appDispatch(pushInfo(i18n.t('info_model_saved')));
-  };
-
-  const removeModel = async (id: string) => {
-    await modelRepository.deleteById(id);
-  };
-
   return {
     models,
     getModelById,
     getDatafieldById,
     createModel,
-    saveModel,
-    removeModel,
   };
 };

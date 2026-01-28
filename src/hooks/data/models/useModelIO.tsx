@@ -2,7 +2,7 @@ import { DataModel } from '@/data/models/DataModel';
 import { getModelRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useAppDispatch } from '@/hooks/hooks';
 import i18n from '@/i18n';
-import { pushError } from '@/state/reducers/events';
+import { pushError, pushInfo } from '@/state/reducers/events';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import { useMemo } from 'react';
@@ -10,6 +10,15 @@ import { useMemo } from 'react';
 export const useModelIO = () => {
   const appDispatch = useAppDispatch();
   const modelRepository = useMemo(() => getModelRepository(), []);
+
+  const saveModel = async (model: DataModel) => {
+    await modelRepository.update(model);
+    appDispatch(pushInfo(i18n.t('info_model_saved')));
+  };
+
+  const removeModel = async (id: string) => {
+    await modelRepository.deleteById(id);
+  };
 
   const exportModel = async (id: string) => {
     try {
@@ -42,6 +51,8 @@ export const useModelIO = () => {
   };
 
   return {
+    saveModel,
+    removeModel,
     exportModel,
     importModel,
   };
