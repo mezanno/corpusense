@@ -1,8 +1,9 @@
-import { DataField } from '@/data/models/DataModel';
+import { DataField, DataModel } from '@/data/models/DataModel';
+import { useModelIO } from '@/hooks/data/models/useModelIO';
 import { useModels } from '@/hooks/data/models/useModels';
 import useDialog from '@/hooks/ui/useDialog';
 import { CircleArrowDown, CircleArrowUp, CirclePlus, CircleX, Eye, Save } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { analogue } from 'simpler-color';
@@ -23,7 +24,8 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
   const { t } = useTranslation();
   const { openDialog } = useAlertDialogContext();
   const { openModelPreviewDialog } = useDialog();
-  const { getModelById, saveModel } = useModels();
+  const { getModelById } = useModels();
+  const { saveModel } = useModelIO();
   const model = getModelById(modelId);
   const [fields, setFields] = useState(model?.fields ?? []);
   const [description, setDescription] = useState('');
@@ -35,12 +37,16 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
     { value: 'number', label: t('model_field_number') },
   ];
 
+  const onModel = useEffectEvent((dm: DataModel) => {
+    setModelName(dm.name);
+    setFields(dm.fields);
+    setDescription(dm.description ?? '');
+    setPrompt(dm.prompt ?? '');
+  });
+
   useEffect(() => {
     if (model !== undefined) {
-      setModelName(model.name);
-      setFields(model.fields);
-      setDescription(model.description ?? '');
-      setPrompt(model.prompt ?? '');
+      onModel(model);
     }
   }, [model]);
 

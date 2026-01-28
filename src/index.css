@@ -250,6 +250,10 @@
   .card-file {
     @apply h-60 max-w-[180px] cursor-pointer border-2 border-secondary bg-card-foreground transition duration-150 ease-linear hover:-translate-y-0.5 hover:border-primary hover:bg-card;
   }
+
+  .card-model {
+    @apply h-30 w-[200px] cursor-pointer border-2 border-secondary bg-card-foreground transition duration-150 ease-linear hover:-translate-y-0.5 hover:border-primary hover:bg-card;
+  }
 }
 
 @layer utilities {
