@@ -24,9 +24,8 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
   const { t } = useTranslation();
   const { openDialog } = useAlertDialogContext();
   const { openModelPreviewDialog } = useDialog();
-  const { getModelById } = useModels();
+  const model = useModels().getModelById(modelId);
   const { saveModel } = useModelIO();
-  const model = getModelById(modelId);
   const [fields, setFields] = useState(model?.fields ?? []);
   const [description, setDescription] = useState('');
   const [prompt, setPrompt] = useState('');

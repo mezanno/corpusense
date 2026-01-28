@@ -20,7 +20,7 @@ const ModelsManagerPage = () => {
       <ResizablePanelGroup direction='horizontal' className='flex-1 space-x-2'>
         <ResizablePanel order={1} id='metadata-panel' className='flex flex-col' minSize={50}>
           {selectedModelId !== null && (
-            <div className='flex w-full flex-col'>
+            <div className='flex h-full w-full flex-col'>
               <div className='flex w-full justify-end'>
                 <button
                   className={`soft-button ${canvasViewVisible ? '' : 'bg-transparent'} `}
