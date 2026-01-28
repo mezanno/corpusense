@@ -210,7 +210,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
               )}
             />
             <div className='mt-2 flex h-full flex-col'>
-              <FormLabel>{t('Manifests utilisés dans cette collection')}</FormLabel>
+              <FormLabel>{t('form_label_collection_manifest')}</FormLabel>
               <ul className='mt-1 max-h-32 flex-1 overflow-auto rounded border bg-white p-2'>
                 {manifestIds.map((id) => (
                   <Link
