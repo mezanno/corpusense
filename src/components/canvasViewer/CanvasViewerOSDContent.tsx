@@ -1,4 +1,4 @@
-import { Annotation, ElementType } from '@/data/models/Annotation';
+import { Annotation, ElementType, getDistanceBetweenAnnotations } from '@/data/models/Annotation';
 import { getRectFromBounds } from '@/data/utils/annotations';
 import { getSource } from '@/data/utils/canvas';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
@@ -7,13 +7,16 @@ import {
   AnnotationState,
   AnnotoriousOpenSeadragonAnnotator,
   DrawingStyleExpression,
+  OpenSeadragonAnnotationPopup,
   OpenSeadragonAnnotator,
   OpenSeadragonViewer,
+  PopupProps,
   useAnnotator,
   useHover,
   useSelection,
 } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
+import { MoveHorizontal, MoveVertical } from 'lucide-react';
 import OpenSeadragon from 'openseadragon';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -122,6 +125,11 @@ const CanvasViewerOSDContent = ({
     );
   }
 
+  const distanceBetweenSelectedAnnotations =
+    selected?.length === 2
+      ? getDistanceBetweenAnnotations(selected[0].annotation, selected[1].annotation)
+      : null;
+
   return (
     <OpenSeadragonAnnotator
       autoSave={true}
@@ -143,6 +151,18 @@ const CanvasViewerOSDContent = ({
           />
         )}
       </div>
+      {distanceBetweenSelectedAnnotations && (
+        <OpenSeadragonAnnotationPopup
+          popup={(_props: PopupProps) => (
+            <div className='flex items-center space-x-1 rounded bg-white p-2 text-sm shadow'>
+              <MoveHorizontal size={16} />
+              {distanceBetweenSelectedAnnotations.horizontal.toFixed()}
+              <MoveVertical className='ml-3' size={16} />
+              {distanceBetweenSelectedAnnotations.vertical.toFixed()}
+            </div>
+          )}
+        />
+      )}
     </OpenSeadragonAnnotator>
   );
 };
