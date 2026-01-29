@@ -4,6 +4,7 @@ import {
   getAnnotationText,
   getAnnotationType,
   getBodies,
+  getDimensions,
 } from '@/data/models/Annotation';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
@@ -20,6 +21,7 @@ import Toolbar from '../ToolBar';
 import { Button } from '../ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Separator } from '../ui/separator';
 import { Textarea } from '../ui/textarea';
 
 const annotationFormSchema = z.object({
@@ -40,6 +42,8 @@ const AnnotationForm = ({
   });
   const { updateAnnotation, removeAnnotationsByIds, removeAnnotationsInside } =
     useAnnotationActions();
+
+  const dimensions = getDimensions(annotation);
 
   const form = useForm<z.infer<typeof annotationFormSchema>>({
     resolver: zodResolver(annotationFormSchema),
@@ -74,10 +78,20 @@ const AnnotationForm = ({
 
   return (
     <section
-      className='panel h-full w-full flex-col shadow-[-8px_0_10px_-8px_rgba(0,0,0,0.3)]'
+      className='panel h-full w-full flex-col space-y-1 shadow-[-8px_0_10px_-8px_rgba(0,0,0,0.3)]'
       aria-label='annotation form'
     >
-      <div className='w-full text-right text-sm font-light'>{annotation.id}</div>
+      <div className='flex w-full flex-col text-right text-sm font-light'>
+        <span>{annotation.id}</span>
+        <span>
+          {t('info_dimensions', {
+            width: dimensions.width.toFixed(),
+            height: dimensions.height.toFixed(),
+          })}
+        </span>
+      </div>
+
+      <Separator />
       {isWorkerRunning ? (
         <div>
           <strong>{t('info_worker_running')}</strong>
