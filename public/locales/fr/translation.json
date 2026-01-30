@@ -194,6 +194,7 @@
   "table_col_title_taskID": "ID : ",
   "table_col_title_status": "Status : ",
   "list_title_worker_name": "Nom du traitement",
+  "list_title_worker_category": "Catégorie",
   "list_title_worker_status": "Statut du traitement",
   "list_title_worker_createdAt": "Démarré le",
   "list_title_worker_scope": "Scope du traitement",

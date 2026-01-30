@@ -15,6 +15,7 @@ import WorkerDetails from '@/components/WorkerDetails';
 import { getWorkerStatusIcon } from '@/components/workerUtils';
 import { Worker, WorkerStatus } from '@/data/models/Worker';
 import useWorkers from '@/hooks/data/workers/useWorkers';
+import { getWorkerCategory } from '@/utils/workers';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, MoreHorizontal, Trash } from 'lucide-react';
 import { useState } from 'react';
@@ -58,9 +59,14 @@ const WorkersManagerPage = () => {
 
   const columns: ColumnDef<Worker, unknown>[] = [
     {
-      accessorFn: (row: Worker) => row.id,
+      accessorFn: (row: Worker) => row.id.substring(0, 8),
       accessorKey: 'id',
       header: 'ID',
+    },
+    {
+      accessorFn: (row: Worker) => getWorkerCategory(row.name),
+      accessorKey: 'type',
+      header: t('list_title_worker_category'),
     },
     {
       accessorFn: (row: Worker) => row.name,
