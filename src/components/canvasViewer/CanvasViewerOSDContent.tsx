@@ -26,6 +26,7 @@ const colors = {
   [ElementType.TEXT_LINE.toString()]: '#2a9d8f',
   [ElementType.TEXT_REGION.toString()]: '#e76f51',
   [ElementType.UNKNOWN.toString()]: '#e9c46a',
+  [ElementType.TEMP.toString()]: '#2646bb',
 };
 
 const CanvasViewerOSDContent = ({
