@@ -21,6 +21,7 @@ export enum ElementType {
   UNKNOWN = 'UNKNOWN',
   TEXT_LINE = 'TEXT_LINE',
   TEXT_REGION = 'TEXT_REGION',
+  TEMP = 'TEMP',
 }
 
 export interface Annotation extends ImageAnnotation {
@@ -172,11 +173,6 @@ function contains(a1: ImageAnnotation, a2: ImageAnnotation) {
 }
 
 function getVerticalDistanceBetweenAnnotations(a1: ImageAnnotation, a2: ImageAnnotation) {
-  console.log(contains(a1, a2));
-  console.log(contains(a2, a1));
-  console.log(getTop(a2) <= getBottom(a1));
-  console.log(getTop(a1) <= getBottom(a2));
-
   if (
     contains(a1, a2) ||
     contains(a2, a1) ||
@@ -321,6 +317,14 @@ export const duplicateAnnotation = (annotation: Annotation, canvasId?: string): 
       getAnnotationValue(annotation) ?? '',
       newId,
     ),
+  };
+};
+
+export const changeType = (annotation: Annotation, newType: ElementType): Annotation => {
+  return {
+    ...annotation,
+    type: newType,
+    bodies: createBodies(newType, getAnnotationValue(annotation) ?? '', annotation.id),
   };
 };
 
