@@ -1,4 +1,4 @@
-import { Annotation } from '@/data/models/Annotation';
+import { Annotation, ElementType } from '@/data/models/Annotation';
 import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { ConvertedFile } from '@/data/models/ConvertedFile';
 import { DataModel } from '@/data/models/DataModel';
@@ -26,6 +26,7 @@ export interface ModelLiveRepository {
 export interface AnnotationLiveRepository {
   getByScope(scope: Scope): () => Promise<Annotation[]>;
   hasOcrAnnotations(scope: CanvasScope): () => Promise<boolean>;
+  getByScopeAndType(scope: CanvasScope, type: ElementType): () => Promise<Annotation[]>;
 }
 
 export interface ManifestLiveRepository {
