@@ -59,9 +59,13 @@ const WorkersManagerPage = () => {
 
   const columns: ColumnDef<Worker, unknown>[] = [
     {
-      accessorFn: (row: Worker) => row.id.substring(0, 8),
+      accessorFn: (row: Worker) => row.id,
       accessorKey: 'id',
       header: 'ID',
+      cell: ({ row }) => {
+        const id: string = row.getValue('id');
+        return <div className='font-mono'>{id.substring(0, 8)}</div>;
+      },
     },
     {
       accessorFn: (row: Worker) => getWorkerCategory(row.name),
