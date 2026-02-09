@@ -216,7 +216,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
                   <Link
                     className='block break-all underline'
                     key={id}
-                    to={`/manifest?manifestId==${id}`}
+                    to={`/manifest?manifestId=${id}`}
                   >
                     {id}
                   </Link>
