@@ -13,21 +13,11 @@ import {
 
 import { getImageForThumbnail, getLabel, getObjectUrl } from '@/data/utils/canvas';
 import { useCollections } from '@/hooks/data/collections/useCollections';
+import useDialog from '@/hooks/ui/useDialog';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { Button } from './ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from './ui/dialog';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 
 interface CanvasCardProps {
   index: number;
@@ -49,8 +39,7 @@ const CanvasCard = ({
   canvasToDisplay,
 }: CanvasCardProps) => {
   const { t } = useTranslation();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const { collections, createCollectionWithSelection, addSelectionToCollection } = useCollections();
+  const { collections, addSelectionToCollection } = useCollections();
   const {
     isSelected,
     hasSelectedElements,
@@ -59,10 +48,10 @@ const CanvasCard = ({
     setSelectionStart,
     setSelection,
   } = useCanvasSelection();
+
   const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const inputCollectionName = useRef(null);
+  const { openNewCollectionDialog } = useDialog();
 
   useEffect(() => {
     const fetchThumbnail = async () => {
@@ -128,19 +117,7 @@ const CanvasCard = ({
   };
 
   const handleCreateCollection = () => {
-    void (async () => {
-      const input: HTMLInputElement | null = inputCollectionName.current;
-      //TODO! : gérer le cas où input est null
-      if (input === null) return;
-      const collectionName = (input as HTMLInputElement).value;
-
-      await createCollectionWithSelection({
-        selection: getSelectedCanvases(),
-        name: collectionName,
-        manifestId,
-      });
-      setDialogOpen(false);
-    })();
+    openNewCollectionDialog({ selection: getSelectedCanvases(), manifestId });
   };
 
   const idDisplayed = canvasToDisplay?.id === canvas?.id;
@@ -193,7 +170,7 @@ const CanvasCard = ({
         <ContextMenuContent>
           {hasSelectedElements() && (
             <>
-              <ContextMenuItem onClick={() => setDialogOpen(true)}>
+              <ContextMenuItem onClick={handleCreateCollection}>
                 {t('menu_create_from_selection')}
               </ContextMenuItem>
               {collections?.length > 0 && (
@@ -231,29 +208,6 @@ const CanvasCard = ({
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('btn_create_collection')}</DialogTitle>
-            <DialogDescription>{t('form_description_create_collection')}</DialogDescription>
-          </DialogHeader>
-          <div className='grid grid-cols-4 items-center gap-4'>
-            <Label htmlFor='name' className='text-right'>
-              {t('form_label_collection_name')}
-            </Label>
-            <Input
-              ref={inputCollectionName}
-              id='name'
-              placeholder={t('form_placeholder_collection_name')}
-              className='col-span-3'
-            />
-          </div>
-          <DialogFooter>
-            <Button onClick={handleCreateCollection}>{t('btn_create')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };

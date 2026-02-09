@@ -122,13 +122,17 @@ const CollectionsManagerPage = () => {
     openExportCollectionDialog(selectedCollections);
   };
 
+  const handleNewCollection = () => {
+    openNewCollectionDialog();
+  };
+
   return (
     <div className='panel flex-col items-center space-y-4'>
       <section className='mt-2 ml-4 flex w-full justify-center space-x-2'>
         <button
           className='soft-button'
           title={t('btn_create_collection')}
-          onClick={openNewCollectionDialog}
+          onClick={handleNewCollection}
         >
           <FilePlus />
           {t('btn_create_collection')}

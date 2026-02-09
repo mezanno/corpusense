@@ -8,9 +8,11 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { AllOrNothing } from '@/data/utils/types';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Canvas } from '@iiif/presentation-3';
 import i18next from 'i18next';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -24,9 +26,21 @@ const formSchema = z.object({
     .min(2, { message: i18next.t('form_error_required') }),
 });
 
-const NewCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
+export type NewCollectionFormParams = AllOrNothing<{
+  selection: Canvas[];
+  manifestId: string;
+}>;
+
+type NewCollectionFormProps = FormProps & NewCollectionFormParams;
+
+const NewCollectionForm = ({
+  formRef,
+  setCanSubmit,
+  selection,
+  manifestId,
+}: NewCollectionFormProps) => {
   const { t } = useTranslation();
-  const { createCollection, nameAlreadyExists } = useCollections();
+  const { createCollection, createCollectionWithSelection, nameAlreadyExists } = useCollections();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,7 +74,15 @@ const NewCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
   }, [canSubmit]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    await createCollection(values.name);
+    if (selection && selection.length > 0 && manifestId !== undefined) {
+      await createCollectionWithSelection({
+        selection,
+        name: values.name,
+        manifestId,
+      });
+    } else {
+      await createCollection(values.name);
+    }
   }
 
   return (

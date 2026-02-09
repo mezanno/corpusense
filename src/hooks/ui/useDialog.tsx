@@ -6,7 +6,7 @@ import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionF
 import ImportCollectionForm from '@/components/forms/ImportCollectionForm';
 import ImportModelForm from '@/components/forms/ImportModelForm';
 import LoginForm from '@/components/forms/LoginForm';
-import NewCollectionForm from '@/components/forms/NewCollectionForm';
+import NewCollectionForm, { NewCollectionFormParams } from '@/components/forms/NewCollectionForm';
 import NewModelForm from '@/components/forms/NewModelForm';
 import OpenManifestForm from '@/components/forms/OpenManifestForm';
 import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
@@ -70,11 +70,20 @@ const useDialog = () => {
     });
   };
 
-  const openNewCollectionDialog = () => {
+  const openNewCollectionDialog = (params?: NewCollectionFormParams) => {
+    const extraProps =
+      params?.selection !== undefined && params.manifestId !== undefined
+        ? {
+            selection: params.selection,
+            manifestId: params.manifestId,
+          }
+        : {};
     openFormDialog({
       title: t('btn_create_collection'),
       confirmLabel: t('btn_create'),
-      renderForm: (formRef) => <NewCollectionForm formRef={formRef} setCanSubmit={setCanSubmit} />,
+      renderForm: (formRef) => (
+        <NewCollectionForm formRef={formRef} setCanSubmit={setCanSubmit} {...extraProps} />
+      ),
     });
   };
 
