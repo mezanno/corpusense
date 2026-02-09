@@ -33,7 +33,7 @@ const CanvasViewerText = ({
       text.map((line, i) => (
         <div
           key={i}
-          className={`mb-1 rounded border border-cyan-700/30 pr-1 pl-1 hover:bg-yellow-100 ${hover?.id === line.annotationId ? 'bg-yellow-100' : ''}`}
+          className={`mb-1 min-h-5 rounded border border-cyan-700/30 pr-1 pl-1 hover:bg-yellow-100 ${hover?.id === line.annotationId ? 'bg-yellow-100' : ''}`}
           onMouseOver={() => {
             if (snapToAnnotation) setHovered(line.annotationId);
           }}
