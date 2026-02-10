@@ -127,6 +127,7 @@ export interface ResultRepository {
 
 export interface WorkerRepository {
   getAll(): Promise<Worker[]>;
+  getById(id: string): Promise<Worker>;
   getByScope(scope: Scope, subScope: boolean): Promise<Worker[]>;
   getByNameAndScope(workerName: string, scope: Scope): Promise<Worker | undefined>;
 

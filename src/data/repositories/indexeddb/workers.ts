@@ -9,6 +9,14 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
     return await db.workers.toArray();
   }
 
+  async getById(id: string): Promise<Worker> {
+    const worker = await db.workers.get(id);
+    if (!worker) {
+      throw new Error(`Worker with id ${id} not found`);
+    }
+    return worker;
+  }
+
   async getByScope(scope: Scope, subScope: boolean): Promise<Worker[]> {
     if (subScope) {
       return await db.workers
