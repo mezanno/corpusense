@@ -37,10 +37,12 @@ export const WorkerProvider = ({ children }: Props) => {
     const getWorkerById = (id: string) => workers.find((c) => c.id === id);
 
     const getTaskById = (workerId: string, taskId: number) => {
-      const worker = getWorkerById(workerId);
+      const worker = workers.find((c) => c.id === workerId);
       if (worker === undefined) {
         return undefined;
       }
+      // console.log('worker founded: ', worker);
+
       return worker.queue.find((t) => t.id === taskId);
     };
 
