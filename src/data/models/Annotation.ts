@@ -344,3 +344,33 @@ export const createBodies = (type: ElementType, value: string, annotationId: str
     },
   ];
 };
+
+export const mergeTwoAnnotations = (a1: Annotation, a2: Annotation) => {
+  return {
+    ...a1,
+    id: a1.id,
+    bodies: createBodies(
+      getAnnotationType(a1),
+      getAnnotationValue(a1) + ' ' + getAnnotationValue(a2),
+      a1.id,
+    ),
+    target: {
+      ...a1.target,
+      selector: {
+        type: ShapeType.RECTANGLE,
+        geometry: {
+          bounds: {
+            minX: Math.min(getLeft(a1), getLeft(a2)),
+            minY: Math.min(getTop(a1), getTop(a2)),
+            maxX: Math.max(getRight(a1), getRight(a2)),
+            maxY: Math.max(getBottom(a1), getBottom(a2)),
+          },
+          x: Math.min(getLeft(a1), getLeft(a2)),
+          y: Math.min(getTop(a1), getTop(a2)),
+          w: Math.max(getRight(a1), getRight(a2)) - Math.min(getLeft(a1), getLeft(a2)),
+          h: Math.max(getBottom(a1), getBottom(a2)) - Math.min(getTop(a1), getTop(a2)),
+        },
+      },
+    },
+  };
+};
