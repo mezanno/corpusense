@@ -6,5 +6,5 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-export type Job = Database['public']['Tables']['cs_jobs']['Row'];
+export type JobRow = Database['public']['Tables']['cs_jobs']['Row'];
 export type UserFile = Database['public']['Views']['user_files']['Row'];
