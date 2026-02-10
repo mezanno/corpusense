@@ -50,17 +50,15 @@ const AnnotationMergeForm = ({ scope }: { scope: CanvasScope }) => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof mergeFormSchema>) {
-    // await duplicateRegions({
-    //   scope,
-    //   distribution: values.distribution as DuplicateDistribution,
-    //   limit: values.limit as DuplicateLimit,
-    // });
+  async function onSubmit(values: z.infer<typeof mergeFormSchema>) {
     console.log(values);
 
     // closeDialog?.();
     if (values.mergeVertically || values.mergeHorizontally) {
-      mergeAnnotations(values.mergeVerticalThreshold ?? 0, values.mergeHorizontalThreshold ?? 0);
+      await mergeAnnotations(
+        values.mergeVerticalThreshold ?? 0,
+        values.mergeHorizontalThreshold ?? 0,
+      );
     }
   }
 
