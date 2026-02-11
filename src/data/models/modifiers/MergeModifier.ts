@@ -1,4 +1,5 @@
 import { getDistanceBetweenAnnotations, mergeTwoAnnotations } from '@/data/utils/annotations';
+import i18n from '@/i18n';
 import { v4 as uuid } from 'uuid';
 import z from 'zod';
 import { Annotation } from '../Annotation';
@@ -14,7 +15,28 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
   readonly horizontalThresholdMax: number;
 
   constructor(verticalThresholdMax: number, horizontalThresholdMax: number) {
-    super(uuid(), 'MergeModifier', mergeSchema);
+    super(
+      uuid(),
+      'MergeModifier',
+      mergeSchema,
+      {
+        verticalThreshold: {
+          label: i18n.t('form_label_modifier_merge_vertical'),
+          description: i18n.t('form_description_modifier_merge_vertical'),
+          min: 0,
+          max: verticalThresholdMax,
+          step: 1,
+        },
+        horizontalThreshold: {
+          label: i18n.t('form_label_modifier_merge_horizontal'),
+          description: i18n.t('form_description_modifier_merge_horizontal'),
+          min: 0,
+          max: horizontalThresholdMax,
+          step: 1,
+        },
+      },
+      i18n.t('form_description_modifier_merge'),
+    );
     this.verticalThresholdMax = verticalThresholdMax;
     this.horizontalThresholdMax = horizontalThresholdMax;
   }

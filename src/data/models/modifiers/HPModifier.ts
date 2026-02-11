@@ -1,4 +1,5 @@
 import { getDimensions } from '@/data/utils/annotations';
+import i18n from '@/i18n';
 import { v4 as uuid } from 'uuid';
 import z from 'zod';
 import { Annotation } from '../Annotation';
@@ -12,7 +13,21 @@ export class HPModifier extends Modifier<typeof hpSchema> {
   readonly hpThresholdMax: number;
 
   constructor(hpThresholdMax: number) {
-    super(uuid(), 'HPModifier', hpSchema);
+    super(
+      uuid(),
+      'HPModifier',
+      hpSchema,
+      {
+        hpThreshold: {
+          label: i18n.t('form_label_modifier_hp_threshold'),
+          description: i18n.t('form_description_modifier_hp_threshold'),
+          min: 0,
+          max: hpThresholdMax,
+          step: 1,
+        },
+      },
+      i18n.t('form_description_modifier_hp'),
+    );
     this.hpThresholdMax = hpThresholdMax;
   }
 
