@@ -89,6 +89,11 @@ const AnnotationForm = ({
             height: dimensions.height.toFixed(),
           })}
         </span>
+        <span>
+          {t('info_surface', {
+            surface: (dimensions.width * dimensions.height).toFixed(),
+          })}
+        </span>
       </div>
 
       <Separator />
