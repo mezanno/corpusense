@@ -97,6 +97,8 @@
   "btn_worker_batch_no": "Page par page",
   "btn_next_canvas": "Canvas suivant",
   "btn_previous_canvas": "Canvas précédent",
+  "btn_add_modifier": "Ajouter un modificateur",
+  "btn_apply_modifiers": "Appliquer les modificateurs",
   "link_open_element": "ouvrir l'élément",
   "form_placeholder_key": "Une clé",
   "form_placeholder_value": "Une valeur",
