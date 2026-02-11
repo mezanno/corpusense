@@ -19,7 +19,7 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import CollectionNavigation from './collectionPage/CollectionNavigation';
-import AnnotationMergeForm from './forms/AnnotationMergeForm';
+import ModifierChainForm from './forms/ModifierChainForm';
 
 const CollectionInspectorContent = ({
   collectionId,
@@ -191,7 +191,8 @@ const CollectionInspectorContent = ({
           ) : (
             <div className='flex h-full w-full flex-col'>
               <CanvasViewer collectionId={collectionId} canvas={canvasToDisplay} />
-              <AnnotationMergeForm scope={{ collectionId, canvasId: canvasToDisplay.id }} />
+              <ModifierChainForm />
+              {/* <AnnotationMergeForm scope={{ collectionId, canvasId: canvasToDisplay.id }} /> */}
               <CollectionNavigation
                 collectionId={collectionId}
                 currentCanvasId={canvasToDisplay.id}
