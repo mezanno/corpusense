@@ -1,24 +1,25 @@
 import { getDistanceBetweenAnnotations, mergeTwoAnnotations } from '@/data/utils/annotations';
 import { v4 as uuid } from 'uuid';
+import z from 'zod';
 import { Annotation } from '../Annotation';
 import { Modifier } from './Modifier';
 
-type MergeModifierValues = {
-  verticalThreshold: number;
-  horizontalThreshold: number;
-};
+const mergeSchema = z.object({
+  verticalThreshold: z.number().min(0),
+  horizontalThreshold: z.number().min(0),
+});
 
-export class MergeModifier extends Modifier<MergeModifierValues> {
+export class MergeModifier extends Modifier<typeof mergeSchema> {
   readonly verticalThresholdMax: number;
   readonly horizontalThresholdMax: number;
 
   constructor(verticalThresholdMax: number, horizontalThresholdMax: number) {
-    super(uuid(), 'MergeModifier');
+    super(uuid(), 'MergeModifier', mergeSchema);
     this.verticalThresholdMax = verticalThresholdMax;
     this.horizontalThresholdMax = horizontalThresholdMax;
   }
 
-  apply = (data: Annotation[], values: MergeModifierValues) => {
+  apply = (data: Annotation[], values: z.infer<typeof mergeSchema>) => {
     if (data.length > 1) {
       const verticalThreshold = values.verticalThreshold;
       const horizontalThreshold = values.horizontalThreshold;
