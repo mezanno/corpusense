@@ -3,15 +3,16 @@ import {
   changeType,
   duplicateAnnotation,
   ElementType,
+  getDimensions,
   getDistanceBetweenAnnotations,
   mergeTwoAnnotations,
 } from '@/data/models/Annotation';
 import {
   getAnnotationLiveRepository,
-  getAnnotationRepository,
+  getAnnotationTempRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useEffectEvent, useMemo } from 'react';
+import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 
 const useAnnotationMergeAction = ({
   collectionId,
@@ -21,21 +22,38 @@ const useAnnotationMergeAction = ({
   canvasId: string;
 }) => {
   const annotationLiveRepository = useMemo(() => getAnnotationLiveRepository(), []);
-  const annotationRepository = useMemo(() => getAnnotationRepository(), []);
+  const annotationTempRepository = useMemo(() => getAnnotationTempRepository(), []);
   const scope = useMemo(() => ({ collectionId, canvasId }), [collectionId, canvasId]);
+  const [tempAnnotations, setTempAnnotations] = useState<Annotation[]>([]);
 
-  // const [workingAnnotations, setWorkingAnnotations] = useState<Annotation[]>([]);
   const scopeAnnotations = useLiveQuery(
     annotationLiveRepository.getByScopeAndType(scope, ElementType.TEXT_REGION),
     [scope, annotationLiveRepository],
     [],
   );
-  console.log(scopeAnnotations);
+
+  const biggestSurface = useMemo(() => {
+    let maxSurface = 0;
+    for (const annotation of scopeAnnotations) {
+      const dimensions = getDimensions(annotation);
+      const surface = dimensions.width * dimensions.height;
+      if (surface > maxSurface) {
+        maxSurface = surface;
+      }
+    }
+    return maxSurface;
+  }, [scopeAnnotations]);
 
   useEffect(() => {
     void (async () => {
-      await annotationRepository.deleteByScopeAndType({ collectionId }, [ElementType.TEMP]);
+      await annotationTempRepository.deleteByCollection(collectionId);
     });
+
+    return () => {
+      void (async () => {
+        await annotationTempRepository.deleteByCollection(collectionId);
+      })();
+    };
   }, []);
 
   const onScopeChange = useEffectEvent(() => {
@@ -45,10 +63,9 @@ const useAnnotationMergeAction = ({
         const tempAnnotation = changeType(duplicateAnnotation(annotation), ElementType.TEMP);
         temps.push(tempAnnotation);
       }
-
-      // setWorkingAnnotations(temps);
-      await annotationRepository.deleteByScopeAndType({ collectionId }, [ElementType.TEMP]);
-      await annotationRepository.addAll(temps);
+      await annotationTempRepository.deleteByCollection(collectionId);
+      await annotationTempRepository.addAll(temps);
+      setTempAnnotations(temps);
     })();
   });
 
@@ -56,72 +73,101 @@ const useAnnotationMergeAction = ({
     onScopeChange();
   }, [scopeAnnotations]);
 
-  const mergeAnnotations = async (verticalThreshold: number, horizontalThreshold: number) => {
-    if (scopeAnnotations.length > 1) {
-      let annotations = [];
-      for (const annotation of scopeAnnotations) {
-        const tempAnnotation = changeType(duplicateAnnotation(annotation), ElementType.TEMP);
-        annotations.push(tempAnnotation);
-      }
+  //TODO: extract logic to a util function and test it
+  const mergeAnnotations = async (
+    fromAnnotations: Annotation[],
+    verticalThreshold: number,
+    horizontalThreshold: number,
+  ) => {
+    if (fromAnnotations.length > 1) {
+      const annotations = [...fromAnnotations];
       annotations.sort(
         (a, b) => a.target.selector.geometry.bounds.minY - b.target.selector.geometry.bounds.minY,
       );
-      // console.log(
-      //   'annotations to merge: ',
-      //   annotations.map((a) => a.id.substring(0, 2)),
-      // );
+      console.log(
+        'annotations to merge: ',
+        annotations.map((a) => a.id.substring(0, 2)),
+      );
 
-      const mergedAnnotations: Annotation[] = [];
-      const notMerged: Annotation[] = [];
-      let current = annotations.shift()!;
-      do {
-        do {
-          const next = annotations.shift()!;
-          const distance = getDistanceBetweenAnnotations(current, next);
-          // console.log('current: ', current.id.substring(0, 2));
-          // console.log('next: ', next.id.substring(0, 2));
-          // console.log(
-          //   'annotations: ',
-          //   annotations.map((a) => a.id.substring(0, 2)),
-          // );
-          // console.log(
-          //   'notMerged: ',
-          //   notMerged.map((a) => a.id.substring(0, 2)),
-          // );
-          if (
-            Math.abs(distance.vertical) <= verticalThreshold &&
-            Math.abs(distance.horizontal) <= horizontalThreshold
-          ) {
-            // console.log('oui');
-            current = mergeTwoAnnotations(current, next);
-            annotations = [...notMerged, ...annotations];
-          } else {
-            // console.log('non');
-            notMerged.push(next);
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (let i = 0; i < annotations.length; i++) {
+          for (let j = i + 1; j < annotations.length; j++) {
+            const distance = getDistanceBetweenAnnotations(annotations[i], annotations[j]);
+            if (
+              Math.abs(distance.vertical) <= verticalThreshold &&
+              Math.abs(distance.horizontal) <= horizontalThreshold
+            ) {
+              annotations[i] = mergeTwoAnnotations(annotations[i], annotations[j]);
+              annotations.splice(j, 1);
+              changed = true;
+              break; // Break the inner loop to restart checking from the beginning
+            }
           }
-        } while (annotations.length > 0);
-        mergedAnnotations.push(current);
-        // console.log(
-        //   'merged: ',
-        //   mergedAnnotations.map((a) => a.id.substring(0, 2)),
-        // );
-        current = notMerged.shift()!;
-        annotations = [...notMerged];
-        //clear notMerged for next iteration
-        notMerged.length = 0;
-      } while (annotations.length > 0);
-      mergedAnnotations.push(current, ...annotations);
-      // console.log(
-      //   'mergedAnnotations: ',
-      //   mergedAnnotations.map((a) => a.id.substring(0, 2)),
-      // );
-      await annotationRepository.deleteByScopeAndType({ collectionId }, [ElementType.TEMP]);
-      // setWorkingAnnotations(mergedAnnotations);
-      await annotationRepository.addAll(mergedAnnotations);
+          if (changed) {
+            break; // Break the outer loop to restart checking from the beginning
+          }
+        }
+      }
+      if (fromAnnotations.length !== annotations.length) {
+        console.log(
+          'annotations merged: ',
+          annotations.map((a) => a.id.substring(0, 2)),
+        );
+        await annotationTempRepository.deleteByCollection(collectionId);
+        await annotationTempRepository.addAll(annotations);
+      }
+      return annotations;
     }
+    return fromAnnotations;
   };
 
-  return { mergeAnnotations };
+  const disolveAnnotations = async (fromAnnotations: Annotation[], sizeThreshold: number) => {
+    if (fromAnnotations.length > 1) {
+      const annotations = [...fromAnnotations];
+      for (let i = 0; i < annotations.length; i++) {
+        const dimensions = getDimensions(annotations[i]);
+        if (dimensions.width * dimensions.height < sizeThreshold) {
+          annotations.splice(i, 1);
+          i--;
+        }
+      }
+      if (fromAnnotations.length !== annotations.length) {
+        // console.log(
+        //   'annotations merged: ',
+        //   annotations.map((a) => a.id.substring(0, 2)),
+        // );
+        await annotationTempRepository.deleteByCollection(collectionId);
+        await annotationTempRepository.addAll(annotations);
+      }
+      return annotations;
+    }
+    return fromAnnotations;
+  };
+
+  const disolve = async (sizeThreshold: number) => {
+    await disolveAnnotations(tempAnnotations, sizeThreshold);
+  };
+
+  const merge = async (verticalThreshold: number, horizontalThreshold: number) => {
+    await mergeAnnotations(tempAnnotations, verticalThreshold, horizontalThreshold);
+  };
+
+  const mergeAndDissolve = async (
+    verticalThreshold: number,
+    horizontalThreshold: number,
+    sizeThreshold: number,
+  ) => {
+    const mergedAnnotations = await mergeAnnotations(
+      tempAnnotations,
+      verticalThreshold,
+      horizontalThreshold,
+    );
+    await disolveAnnotations(mergedAnnotations, sizeThreshold);
+  };
+
+  return { merge, disolve, mergeAndDissolve, biggestSurface };
 };
 
 export default useAnnotationMergeAction;

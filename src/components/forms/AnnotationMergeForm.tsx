@@ -36,7 +36,7 @@ const mergeFormSchema = z
 const AnnotationMergeForm = ({ scope }: { scope: CanvasScope }) => {
   const { t } = useTranslation();
   // const [liveResult, setLiveResult] = useState(true);
-  const { mergeAnnotations } = useAnnotationMergeAction({
+  const { merge, disolve, mergeAndDissolve, biggestSurface } = useAnnotationMergeAction({
     collectionId: scope.collectionId,
     canvasId: scope.canvasId,
   });
@@ -54,11 +54,20 @@ const AnnotationMergeForm = ({ scope }: { scope: CanvasScope }) => {
     console.log(values);
 
     // closeDialog?.();
-    if (values.mergeVertically || values.mergeHorizontally) {
-      await mergeAnnotations(
+    if ((values.mergeVertically || values.mergeHorizontally) && values.deleteSmallRegions) {
+      await mergeAndDissolve(
         values.mergeVerticalThreshold ?? 0,
         values.mergeHorizontalThreshold ?? 0,
+        values.sizeThreshold ?? 0,
       );
+    } else {
+      if (values.mergeVertically || values.mergeHorizontally) {
+        await merge(values.mergeVerticalThreshold ?? 0, values.mergeHorizontalThreshold ?? 0);
+      }
+
+      if (values.deleteSmallRegions) {
+        await disolve(values.sizeThreshold ?? 0);
+      }
     }
   }
 
@@ -239,7 +248,7 @@ const AnnotationMergeForm = ({ scope }: { scope: CanvasScope }) => {
                         value={[field.value ?? 0]}
                         onValueChange={([value]) => field.onChange(value)}
                         step={1}
-                        max={1000}
+                        max={biggestSurface}
                         className='mx-auto w-full max-w-xs'
                       />
                     </FormControl>
