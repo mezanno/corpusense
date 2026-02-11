@@ -10,6 +10,7 @@ const hpSchema = z.object({
 });
 
 export class HPModifier extends Modifier<typeof hpSchema> {
+  type = 'HPModifier';
   readonly hpThresholdMax: number;
 
   constructor(hpThresholdMax: number) {

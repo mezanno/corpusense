@@ -15,6 +15,7 @@ export abstract class Modifier<TSchema extends z.ZodTypeAny> {
   schema: TSchema;
   fieldMeta: Record<keyof z.infer<TSchema>, FieldMetadata>;
   description?: string;
+  abstract type: string;
 
   constructor(
     id: string,
@@ -32,6 +33,8 @@ export abstract class Modifier<TSchema extends z.ZodTypeAny> {
 
   abstract apply(data: Annotation[], values: z.infer<TSchema>): Annotation[];
 }
+
+export type AnyModifier = Modifier<z.ZodObject<z.ZodRawShape>>;
 
 export interface ModifierChain {
   id: string;

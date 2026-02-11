@@ -1,5 +1,5 @@
-import { AnyModifier } from '@/data/models/modifiers';
-import { MergeModifier } from '@/data/models/modifiers/MergeModifier';
+import { AnyModifier } from '@/data/models/modifiers/Modifier';
+import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import { Play, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,14 +12,21 @@ const ModifierChainForm = () => {
   const [modifierValues, setModifierValues] = useState<Record<string, unknown>>({});
   console.log('modifierValues: ', modifierValues);
 
-  const addModifier = () => {
-    // Exemple : ajouter un MergeModifier par défaut
-    const newModifier = new MergeModifier(50, 50); // seuils par défaut
-    setModifiers([...modifiers, newModifier]);
+  const addModifier = (type: string = 'MergeModifier') => {
+    const factory = modifierRegistry[type];
+    if (factory === undefined || factory === null) return;
+
+    const newModifier = factory.create();
+    setModifiers((prev) => [...prev, newModifier]);
   };
 
   const deleteModifier = (modifierId: string) => {
     setModifiers(modifiers.filter((m) => m.id !== modifierId));
+    setModifierValues((prev) => {
+      const copy = { ...prev };
+      delete copy[modifierId];
+      return copy;
+    });
   };
 
   const updateModifierValues = (modifierId: string, values: unknown) => {
@@ -31,10 +38,31 @@ const ModifierChainForm = () => {
         return prev; // permet d'éviter de déclencher un re-render
       }
 
-      return {
-        ...prev,
-        [modifierId]: values,
-      };
+      return { ...prev, [modifierId]: values };
+    });
+  };
+
+  // Changer le type d'un modifier (via le select)
+  const changeModifierType = (modifierId: string, newType: string) => {
+    const factory = modifierRegistry[newType];
+    if (factory === undefined || factory === null) return;
+
+    setModifiers((prev) =>
+      prev.map((m) => {
+        if (m.id !== modifierId) return m;
+
+        const newModifier = factory.create();
+        newModifier.id = m.id; // conserver le même id
+        return newModifier;
+      }),
+    );
+
+    // Réinitialiser ses valeurs (évite des incohérences si les champs sont différents entre les types)
+    //TODO : bug
+    setModifierValues((prev) => {
+      const copy = { ...prev };
+      delete copy[modifierId];
+      return copy;
     });
   };
 
@@ -46,10 +74,11 @@ const ModifierChainForm = () => {
           key={modifier.id}
           onDelete={deleteModifier}
           onChange={updateModifierValues}
+          onTypeChange={changeModifierType}
         />
       ))}
       <div className='h-full'>
-        <Card className='card-file h-fit border-dashed' onClick={addModifier}>
+        <Card className='card-file h-fit border-dashed' onClick={() => addModifier()}>
           <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
             <Plus size={48} />
             <span className='text-center'>{t('btn_add_modifier')}</span>

@@ -11,6 +11,7 @@ const mergeSchema = z.object({
 });
 
 export class MergeModifier extends Modifier<typeof mergeSchema> {
+  type = 'MergeModifier';
   readonly verticalThresholdMax: number;
   readonly horizontalThresholdMax: number;
 
