@@ -1,5 +1,5 @@
-import { Annotation, ElementType, getDistanceBetweenAnnotations } from '@/data/models/Annotation';
-import { getRectFromBounds } from '@/data/utils/annotations';
+import { Annotation, ElementType } from '@/data/models/Annotation';
+import { getDistanceBetweenAnnotations, getRectFromBounds } from '@/data/utils/annotations';
 import { getSource } from '@/data/utils/canvas';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import { getErrorMessage } from '@/utils/utils';

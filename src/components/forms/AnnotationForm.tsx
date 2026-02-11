@@ -4,8 +4,8 @@ import {
   getAnnotationText,
   getAnnotationType,
   getBodies,
-  getDimensions,
 } from '@/data/models/Annotation';
+import { getDimensions } from '@/data/utils/annotations';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';

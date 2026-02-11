@@ -1,16 +1,13 @@
-import {
-  Annotation,
-  changeType,
-  duplicateAnnotation,
-  ElementType,
-  getDimensions,
-  getDistanceBetweenAnnotations,
-  mergeTwoAnnotations,
-} from '@/data/models/Annotation';
+import { Annotation, changeType, duplicateAnnotation, ElementType } from '@/data/models/Annotation';
 import {
   getAnnotationLiveRepository,
   getAnnotationTempRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
+import {
+  getDimensions,
+  getDistanceBetweenAnnotations,
+  mergeTwoAnnotations,
+} from '@/data/utils/annotations';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 
