@@ -29,6 +29,10 @@ export interface AnnotationLiveRepository {
   getByScopeAndType(scope: CanvasScope, type: ElementType): () => Promise<Annotation[]>;
 }
 
+export interface AnnotationTempLiveRepository {
+  getByScope(scope: Scope): () => Promise<Annotation[]>;
+}
+
 export interface ManifestLiveRepository {
   getHistoryEntries(): () => Promise<History[]>;
   getDetailsByManifestIds(manifestIds: string[]): () => Promise<StoredManifestDetails[]>;

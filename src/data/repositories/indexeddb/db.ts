@@ -22,6 +22,7 @@ const db = new Dexie('mezanno') as Dexie & {
   itemMetadata: EntityTable<ItemMetadata, 'id'>;
   tags: EntityTable<Tag, 'id'>;
   annotations: EntityTable<Annotation, 'id'>;
+  annotationsTemp: EntityTable<Annotation, 'id'>;
   models: EntityTable<DataModel, 'id'>;
   namedEntities: EntityTable<NamedEntity, 'id'>;
   results: EntityTable<Result, 'id'>;
@@ -42,6 +43,8 @@ db.version(1).stores({
   models: '&id, name',
   //TODO: il faudrait peut-être revoir le format et ne garder IIIF que pour l'export
   annotations:
+    '&id, canvasId, collectionId, [canvasId+collectionId], order, [canvasId+collectionId+type]',
+  annotationsTemp:
     '&id, canvasId, collectionId, [canvasId+collectionId], order, [canvasId+collectionId+type]',
   namedEntities: '&id, *annotationIds, type.id',
   results: '++id, workerName, workerId, [scopeKey+workerName], taskId',

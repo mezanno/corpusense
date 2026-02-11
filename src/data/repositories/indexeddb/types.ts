@@ -25,10 +25,16 @@ export interface AnnotationRepository {
   deleteById(id: string): Promise<void>;
   deleteByIds(ids: string[]): Promise<string[]>;
   deleteByScope(scope: Scope): Promise<string[]>;
-  deleteByScopeAndType(scope: Scope, types: ElementType[]): Promise<string[]>;
+  deleteByScopeAndType(scope: Scope, types: ElementType[], isTemp: boolean): Promise<string[]>;
 
   update(annotation: Annotation): Promise<Annotation[]>;
   updateOrder(annotationId: string, order: number): Promise<Annotation[]>;
+}
+
+export interface AnnotationTempRepository {
+  getAll(): Promise<Annotation[]>;
+  addAll(annotations: AnnotationDTO[]): Promise<Annotation[]>;
+  deleteByCollection(collectionId: string): Promise<void>;
 }
 
 export interface CollectionRepository {

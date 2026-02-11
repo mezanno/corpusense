@@ -1,9 +1,11 @@
 import { IndexedDBAnnotationRepository } from './annotations';
+import { IndexedDBAnnotationTempRepository } from './annotationsTemp';
 import { IndexedDBCollectionRepository } from './collections';
 import { IndexedDBConvertedFileRepository } from './convertedFile';
 import { IndexedDBFSHandleRepository } from './fsHandle';
 import { IndexedDBItemMetadataRepository } from './itemMetadata';
 import { IndexedDBAnnotationLiveRepository } from './liveQuery/annotations.live';
+import { IndexedDBAnnotationTempLiveRepository } from './liveQuery/annotationsTemp.live';
 import { IndexedDBCollectionLiveRepository } from './liveQuery/collections.live';
 import { IndexedDBConvertedFileLiveRepository } from './liveQuery/convertedFile.live';
 import { IndexedDBManifestLiveRepository } from './liveQuery/manifests.live';
@@ -25,6 +27,14 @@ export function getAnnotationRepository() {
 
 export function getAnnotationLiveRepository() {
   return new IndexedDBAnnotationLiveRepository();
+}
+
+export function getAnnotationTempRepository() {
+  return new IndexedDBAnnotationTempRepository();
+}
+
+export function getAnnotationTempLiveRepository() {
+  return new IndexedDBAnnotationTempLiveRepository();
 }
 
 export function getCollectionRepository() {
