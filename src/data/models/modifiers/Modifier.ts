@@ -22,10 +22,12 @@ export type EnumFieldMetadata<T extends string = string> = BaseFieldMetadata & {
 
 type FieldMetadataFor<T> = T extends number
   ? NumberFieldMetadata
-  : T extends string
-    ? StringFieldMetadata
-    : T extends boolean
-      ? BaseFieldMetadata
+  : T extends boolean
+    ? BaseFieldMetadata
+    : T extends string
+      ? string extends T
+        ? StringFieldMetadata
+        : EnumFieldMetadata<string>
       : BaseFieldMetadata;
 
 export function isNumberFieldMeta(meta: BaseFieldMetadata): meta is NumberFieldMetadata {
