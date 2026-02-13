@@ -1,6 +1,7 @@
 import { Annotation, changeType, duplicateAnnotation, ElementType } from '@/data/models/Annotation';
 import { HPModifier } from '@/data/models/modifiers/HPModifier';
 import { MergeModifier } from '@/data/models/modifiers/MergeModifier';
+import { ReOrderModifier } from '@/data/models/modifiers/ReOrderModifier';
 import {
   getAnnotationLiveRepository,
   getAnnotationTempRepository,
@@ -123,7 +124,12 @@ const useAnnotationMergeAction = ({
       verticalThreshold,
       horizontalThreshold,
     );
-    await disolveAnnotations(mergedAnnotations, sizeThreshold);
+    const disolvedAnnotations = await disolveAnnotations(mergedAnnotations, sizeThreshold);
+
+    const reorderModifier = new ReOrderModifier();
+    const finalAnnotations = reorderModifier.apply(disolvedAnnotations, { order: '' });
+    await annotationTempRepository.deleteByCollection(collectionId);
+    await annotationTempRepository.addAll(finalAnnotations);
   };
 
   return { merge, disolve, mergeAndDissolve, biggestSurface };
