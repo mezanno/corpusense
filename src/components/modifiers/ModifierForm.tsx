@@ -1,4 +1,9 @@
-import { Modifier } from '@/data/models/modifiers/Modifier';
+import {
+  isEnumFieldMeta,
+  isNumberFieldMeta,
+  isStringFieldMeta,
+  Modifier,
+} from '@/data/models/modifiers/Modifier';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleQuestionMark } from 'lucide-react';
 import { useEffect } from 'react';
@@ -8,6 +13,21 @@ import { FormControl, FormDescription, FormField, FormItem, FormLabel } from '..
 import { Input } from '../ui/input';
 import { Slider } from '../ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+
+// function getFieldType(schema: ZodTypeAny): 'number' | 'enum' | 'string' | 'boolean' {
+//   if (schema instanceof ZodNumber) return 'number';
+//   if (schema instanceof ZodEnum) return 'enum';
+//   if (schema instanceof ZodString) return 'string';
+//   if (schema instanceof ZodBoolean) return 'boolean';
+//   if (schema instanceof ZodDefault) {
+//     return getFieldType(schema.def.innerType as ZodTypeAny);
+//   }
+//   if (schema instanceof ZodEffects) {
+//     return getFieldType(schema._def.schema as ZodTypeAny);
+//   }
+
+//   return 'string'; // fallback
+// }
 
 type ModifierFormProps<TSchema extends ZodObject<ZodRawShape>> = {
   modifier: Modifier<TSchema>;
@@ -45,6 +65,7 @@ function ModifierForm<TSchema extends ZodObject<ZodRawShape>>({
         >
           {(Object.keys(shape) as Array<keyof z.infer<TSchema>>).map((key) => {
             const meta = modifier.fieldMeta[key] ?? {};
+
             return (
               <FormField
                 key={String(key)}
@@ -60,26 +81,49 @@ function ModifierForm<TSchema extends ZodObject<ZodRawShape>>({
                         <TooltipContent side='top'>{meta.description}</TooltipContent>
                       </Tooltip>
                     </div>
-                    <FormControl>
-                      <Input
-                        type='number'
-                        {...field}
-                        min={0}
-                        value={(field.value as number) ?? 0}
-                        onChange={(e) =>
-                          field.onChange(e.target.value === '' ? undefined : Number(e.target.value))
-                        }
-                      />
-                    </FormControl>
-                    <FormControl>
-                      <Slider
-                        value={[field.value ?? 0]}
-                        onValueChange={([value]) => field.onChange(value)}
-                        step={meta.step ?? 1}
-                        max={meta.max ?? 100}
-                        //   className='mx-auto w-full max-w-xs'
-                      />
-                    </FormControl>
+
+                    {isNumberFieldMeta(meta) && (
+                      <>
+                        <FormControl>
+                          <Input
+                            type='number'
+                            {...field}
+                            min={0}
+                            value={(field.value as number) ?? 0}
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value === '' ? undefined : Number(e.target.value),
+                              )
+                            }
+                          />
+                        </FormControl>
+                        <FormControl>
+                          <Slider
+                            value={[field.value ?? 0]}
+                            onValueChange={([value]) => field.onChange(value)}
+                            step={meta.step ?? 1}
+                            max={meta.max ?? 100}
+                            //   className='mx-auto w-full max-w-xs'
+                          />
+                        </FormControl>
+                      </>
+                    )}
+                    {isStringFieldMeta(meta) && (
+                      <FormControl>
+                        <Input type='text' {...field} placeholder={meta.placeholder} />
+                      </FormControl>
+                    )}
+                    {isEnumFieldMeta(meta) && (
+                      <FormControl>
+                        <select {...field} className='w-full rounded border p-1'>
+                          {(meta.options ?? []).map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </FormControl>
+                    )}
                   </FormItem>
                 )}
               />
