@@ -12,9 +12,8 @@ export type NumberFieldMetadata = BaseFieldMetadata & {
   step?: number;
 };
 
-export type StringFieldMetadata<T extends string = string> = BaseFieldMetadata & {
+export type StringFieldMetadata = BaseFieldMetadata & {
   placeholder?: string;
-  options?: readonly T[];
 };
 
 export type EnumFieldMetadata<T extends string = string> = BaseFieldMetadata & {
@@ -28,6 +27,18 @@ type FieldMetadataFor<T> = T extends number
     : T extends boolean
       ? BaseFieldMetadata
       : BaseFieldMetadata;
+
+export function isNumberFieldMeta(meta: BaseFieldMetadata): meta is NumberFieldMetadata {
+  return 'min' in meta || 'max' in meta || 'step' in meta;
+}
+
+export function isStringFieldMeta(meta: BaseFieldMetadata): meta is StringFieldMetadata {
+  return 'placeholder' in meta;
+}
+
+export function isEnumFieldMeta(meta: BaseFieldMetadata): meta is EnumFieldMetadata {
+  return 'options' in meta;
+}
 
 export abstract class Modifier<TSchema extends z.ZodTypeAny> {
   id: string;
