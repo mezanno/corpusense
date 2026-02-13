@@ -1,6 +1,7 @@
 import { HPModifier } from './HPModifier';
 import { MergeModifier } from './MergeModifier';
 import { AnyModifier } from './Modifier';
+import { ReOrderModifier } from './ReOrderModifier';
 
 export type ModifierFactory = () => AnyModifier;
 
@@ -18,5 +19,9 @@ export const modifierRegistry: Record<
   HPModifier: {
     label: 'HP Modifier',
     create: () => new HPModifier(10000), // seuil max par défaut
+  },
+  ReOrderModifier: {
+    label: 'Reorder Modifier',
+    create: () => new ReOrderModifier(),
   },
 };
