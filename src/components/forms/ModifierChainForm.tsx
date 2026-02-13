@@ -1,16 +1,22 @@
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
+import { CanvasScope, CollectionScope, isCanvasScope } from '@/data/models/Scope';
+import useModifierChain from '@/hooks/data/annotations/useModifierChain';
 import { Play, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ModifierCard from '../modifiers/ModifierCard';
 import { Card, CardContent } from '../ui/card';
 
-const ModifierChainForm = () => {
+const ModifierChainForm = ({ scope }: { scope: CollectionScope | CanvasScope }) => {
   const { t } = useTranslation();
   const [modifiers, setModifiers] = useState<AnyModifier[]>([]);
   const [modifierValues, setModifierValues] = useState<Record<string, unknown>>({});
   console.log('modifierValues: ', modifierValues);
+  const { applyModifierChain } = useModifierChain({
+    collectionId: scope.collectionId,
+    canvasId: isCanvasScope(scope) ? scope.canvasId : '',
+  });
 
   const addModifier = (type: string = 'MergeModifier') => {
     const factory = modifierRegistry[type];
@@ -59,11 +65,18 @@ const ModifierChainForm = () => {
 
     // Réinitialiser ses valeurs (évite des incohérences si les champs sont différents entre les types)
     //TODO : bug
-    setModifierValues((prev) => {
-      const copy = { ...prev };
-      delete copy[modifierId];
-      return copy;
-    });
+    // setModifierValues((prev) => {
+    //   const copy = { ...prev };
+    //   delete copy[modifierId];
+    //   return copy;
+    // });
+    setModifierValues((prev) => ({ ...prev, [modifierId]: undefined }));
+  };
+
+  const applychain = () => {
+    if (isCanvasScope(scope)) {
+      applyModifierChain(modifiers, modifierValues);
+    }
   };
 
   return (
@@ -85,7 +98,7 @@ const ModifierChainForm = () => {
           </CardContent>
         </Card>
         {modifiers.length > 0 && (
-          <Card className='card-file h-fit border-dashed'>
+          <Card className='card-file h-fit border-dashed' onClick={applychain}>
             <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
               <Play size={48} />
               <span className='text-center'>{t('btn_apply_modifiers')}</span>
