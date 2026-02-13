@@ -1,5 +1,5 @@
 import { Annotation, changeType, duplicateAnnotation, ElementType } from '@/data/models/Annotation';
-import { HPModifier } from '@/data/models/modifiers/HPModifier';
+import { FilterModifier } from '@/data/models/modifiers/FilterModifier';
 import { MergeModifier } from '@/data/models/modifiers/MergeModifier';
 import { ReOrderModifier } from '@/data/models/modifiers/ReOrderModifier';
 import {
@@ -95,8 +95,12 @@ const useAnnotationMergeAction = ({
 
   const disolveAnnotations = async (fromAnnotations: Annotation[], sizeThreshold: number) => {
     if (fromAnnotations.length > 1) {
-      const hpModifier = new HPModifier(biggestSurface);
-      const disolvedAnnotations = hpModifier.apply(fromAnnotations, { hpThreshold: sizeThreshold });
+      const hpModifier = new FilterModifier(biggestSurface);
+      const disolvedAnnotations = hpModifier.apply(fromAnnotations, {
+        threshold: sizeThreshold,
+        filterType: 'HP',
+        dimension: 'area',
+      });
       if (fromAnnotations.length !== disolvedAnnotations.length) {
         await annotationTempRepository.deleteByCollection(collectionId);
         await annotationTempRepository.addAll(disolvedAnnotations);
@@ -127,7 +131,7 @@ const useAnnotationMergeAction = ({
     const disolvedAnnotations = await disolveAnnotations(mergedAnnotations, sizeThreshold);
 
     const reorderModifier = new ReOrderModifier();
-    const finalAnnotations = reorderModifier.apply(disolvedAnnotations, { order: '' });
+    const finalAnnotations = reorderModifier.apply(disolvedAnnotations, { order: 'TL2BR' });
     await annotationTempRepository.deleteByCollection(collectionId);
     await annotationTempRepository.addAll(finalAnnotations);
   };
