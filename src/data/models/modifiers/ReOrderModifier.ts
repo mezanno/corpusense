@@ -1,11 +1,12 @@
 import { getDimensions, getLeft, getTop } from '@/data/utils/annotations';
+import i18n from '@/i18n';
 import { v4 as uuid } from 'uuid';
 import z from 'zod';
 import { Annotation } from '../Annotation';
 import { Modifier } from './Modifier';
 
 const reorderSchema = z.object({
-  order: z.string().default('0'),
+  order: z.enum(['TL2BR']).default('TL2BR'),
 });
 
 type Column = {
@@ -23,15 +24,17 @@ export class ReOrderModifier extends Modifier<typeof reorderSchema> {
       reorderSchema,
       {
         order: {
-          label: 'Order of annotations',
-          description: 'Define the new order of annotations by their IDs.',
+          label: i18n.t('form_label_modifier_reorder_order'),
+          description: i18n.t('form_description_modifier_reorder_order'),
+          options: ['TL2BR'],
         },
       },
-      'Reorder annotations based on a specified order of their IDs.',
+      i18n.t('form_description_modifier_reorder'),
     );
   }
 
   //Reading Order Resolution --> Column-based reading order //TODO: voir Docstrum algorithm
+  //TODO: ajouter d'autres ordres possibles (ex: ZIGZAG, etc.)
   apply = (data: Annotation[], values: z.infer<typeof reorderSchema>) => {
     console.log('Applying ReOrderModifier with values: ', values);
 

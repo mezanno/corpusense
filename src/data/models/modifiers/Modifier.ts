@@ -1,19 +1,41 @@
 import z from 'zod';
 import { Annotation } from '../Annotation';
 
-export type FieldMetadata = {
+export type BaseFieldMetadata = {
   label?: string;
   description?: string;
+};
+
+export type NumberFieldMetadata = BaseFieldMetadata & {
   min?: number;
   max?: number;
   step?: number;
 };
 
+export type StringFieldMetadata<T extends string = string> = BaseFieldMetadata & {
+  placeholder?: string;
+  options?: readonly T[];
+};
+
+export type EnumFieldMetadata<T extends string = string> = BaseFieldMetadata & {
+  options?: readonly T[];
+};
+
+type FieldMetadataFor<T> = T extends number
+  ? NumberFieldMetadata
+  : T extends string
+    ? StringFieldMetadata
+    : T extends boolean
+      ? BaseFieldMetadata
+      : BaseFieldMetadata;
+
 export abstract class Modifier<TSchema extends z.ZodTypeAny> {
   id: string;
   name: string;
   schema: TSchema;
-  fieldMeta: Record<keyof z.infer<TSchema>, FieldMetadata>;
+  fieldMeta: {
+    [K in keyof z.infer<TSchema>]: FieldMetadataFor<z.infer<TSchema>[K]>;
+  };
   description?: string;
   abstract type: string;
 
@@ -21,7 +43,9 @@ export abstract class Modifier<TSchema extends z.ZodTypeAny> {
     id: string,
     name: string,
     schema: TSchema,
-    fieldMeta: Record<keyof z.infer<TSchema>, FieldMetadata>,
+    fieldMeta: {
+      [K in keyof z.infer<TSchema>]: FieldMetadataFor<z.infer<TSchema>[K]>;
+    },
     description?: string,
   ) {
     this.id = id;

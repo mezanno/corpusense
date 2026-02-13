@@ -43,6 +43,7 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
   }
 
   apply = (data: Annotation[], values: z.infer<typeof mergeSchema>) => {
+    console.log('Applying MergeModifier with values: ', values);
     if (data.length > 1) {
       const verticalThreshold = values.verticalThreshold;
       const horizontalThreshold = values.horizontalThreshold;
