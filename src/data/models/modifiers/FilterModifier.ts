@@ -7,7 +7,7 @@ import { Modifier } from './Modifier';
 
 const hpSchema = z.object({
   filterType: z.enum(['HP', 'LP']).default('HP'),
-  threshold: z.number().min(0),
+  threshold: z.number().min(0).default(0),
   dimension: z.enum(['area', 'width', 'height']).default('area'),
 });
 

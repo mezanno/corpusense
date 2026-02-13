@@ -6,8 +6,8 @@ import { Annotation } from '../Annotation';
 import { Modifier } from './Modifier';
 
 const mergeSchema = z.object({
-  verticalThreshold: z.number().min(0),
-  horizontalThreshold: z.number().min(0),
+  verticalThreshold: z.number().min(0).default(0),
+  horizontalThreshold: z.number().min(0).default(0),
 });
 
 export class MergeModifier extends Modifier<typeof mergeSchema> {
@@ -45,8 +45,13 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
   apply = (data: Annotation[], values: z.infer<typeof mergeSchema>) => {
     console.log('Applying MergeModifier with values: ', values);
     if (data.length > 1) {
-      const verticalThreshold = values.verticalThreshold;
-      const horizontalThreshold = values.horizontalThreshold;
+      const {
+        verticalThreshold: defaultVerticalThreshold,
+        horizontalThreshold: defaultHorizontalThreshold,
+      } = mergeSchema.parse(values);
+      const verticalThreshold = values.verticalThreshold ?? defaultVerticalThreshold;
+      const horizontalThreshold = values.horizontalThreshold ?? defaultHorizontalThreshold;
+      console.log('Using ', verticalThreshold, '|', horizontalThreshold);
 
       const annotations = [...data];
       annotations.sort(
