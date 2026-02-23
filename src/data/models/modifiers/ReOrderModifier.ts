@@ -36,7 +36,7 @@ export class ReOrderModifier extends Modifier<typeof reorderSchema> {
   //Reading Order Resolution --> Column-based reading order //TODO: voir Docstrum algorithm
   //TODO: ajouter d'autres ordres possibles (ex: ZIGZAG, etc.)
   apply = (data: Annotation[], values: z.infer<typeof reorderSchema>) => {
-    console.log('Applying ReOrderModifier with values: ', values);
+    console.log('Applying ReOrderModifier with values: ', values, ' on data: ', data);
 
     if (data.length > 1) {
       const annotations = [...data];
