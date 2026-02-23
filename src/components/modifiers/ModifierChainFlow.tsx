@@ -2,10 +2,18 @@ import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import { CanvasScope, CollectionScope, isCanvasScope } from '@/data/models/Scope';
 import useModifierChain from '@/hooks/data/annotations/useModifierChain';
-import { Background, Controls, Edge, Node, ReactFlow } from '@xyflow/react';
+import {
+  Background,
+  Controls,
+  Edge,
+  Node,
+  ReactFlow,
+  useEdgesState,
+  useNodesState,
+} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Play } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AddNode from './AddNode';
 import ModifierNode from './ModifierNode';
@@ -21,7 +29,8 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
   const { t } = useTranslation();
   const [modifiers, setModifiers] = useState<AnyModifier[]>([]);
   const [modifierValues, setModifierValues] = useState<Record<string, unknown>>({});
-  console.log('scope: ', scope);
+  const [nodes, setNodes] = useNodesState<Node>([]);
+  const [edges, setEdges] = useEdgesState<Edge>([]);
 
   console.log('modifierValues: ', modifierValues);
   const { applyModifierChain } = useModifierChain({
@@ -29,29 +38,31 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
     canvasId: isCanvasScope(scope) ? scope.canvasId : '',
   });
 
-  const addModifier = (type: string = 'MergeModifier') => {
+  const createModifier = (type: string = 'MergeModifier') => {
     const factory = modifierRegistry[type];
     if (factory === undefined || factory === null) return;
+    return factory.create();
+  };
 
-    const newModifier = factory.create();
+  const addModifier = (type: string = 'MergeModifier') => {
+    const newModifier = createModifier(type);
+    if (!newModifier) return;
     setModifiers((prev) => [...prev, newModifier]);
   };
 
   const insertModifierAt = (index: number, type: string = 'MergeModifier') => {
-    const factory = modifierRegistry[type];
-    if (factory === undefined || factory === null) return;
-
-    const newModifier = factory.create();
+    const newModifier = createModifier(type);
+    if (!newModifier) return;
 
     setModifiers((prev) => [...prev.slice(0, index), newModifier, ...prev.slice(index)]);
   };
 
-  const insertAfter = (modifierId: string) => {
+  const insertModifierAfter = (modifierId: string) => {
     const index = modifiers.findIndex((m) => m.id === modifierId);
     if (index !== -1) insertModifierAt(index + 1);
   };
 
-  const insertBefore = (modifierId: string) => {
+  const insertModifierBefore = (modifierId: string) => {
     const index = modifiers.findIndex((m) => m.id === modifierId);
     if (index !== -1) insertModifierAt(index);
   };
@@ -109,20 +120,21 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
     }
   };
 
-  const { nodes, edges } = useMemo(() => {
+  useEffect(() => {
     if (modifiers.length === 0) {
-      const n: Node[] = [
+      setNodes([
         {
           id: 'add',
           type: 'addNode',
           position: { x: 0, y: 0 },
           data: { onAdd: () => addModifier() },
         },
-      ];
-      return { nodes: n, edges: [] };
+      ]);
+      setEdges([]);
+      return;
     }
 
-    const n: Node[] = modifiers.map((modifier, index) => ({
+    const newNodes: Node[] = modifiers.map((modifier, index) => ({
       id: modifier.id,
       type: 'modifierNode',
       position: {
@@ -134,28 +146,36 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
         onDelete: deleteModifier,
         onChange: updateModifierValues,
         onTypeChange: changeModifierType,
-        onInsertAfter: insertAfter,
-        onInsertBefore: insertBefore,
+        onInsertAfter: insertModifierAfter,
+        onInsertBefore: insertModifierBefore,
       },
     }));
 
-    const e: Edge[] = modifiers.slice(1).map((modifier, index) => ({
+    const newEdges: Edge[] = modifiers.slice(1).map((modifier, index) => ({
       id: `e-${modifiers[index].id}-${modifier.id}`,
       source: modifiers[index].id,
       target: modifier.id,
       type: 'smoothstep',
     }));
 
-    return { nodes: n, edges: e };
-  }, [
-    modifiers,
-    updateModifierValues,
-    changeModifierType,
-    addModifier,
-    deleteModifier,
-    insertAfter,
-    insertBefore,
-  ]);
+    setNodes((oldNodes) =>
+      newNodes.map((newNode) => {
+        const existing = oldNodes.find((n) => n.id === newNode.id);
+
+        if (existing) {
+          return {
+            ...existing,
+            position: newNode.position,
+            data: newNode.data,
+          };
+        }
+
+        return newNode;
+      }),
+    );
+
+    setEdges(newEdges);
+  }, [modifiers]);
 
   return (
     <div className='h-full w-full'>
@@ -183,6 +203,14 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
         <Background />
         <Controls />
       </ReactFlow>
+      {/* Animation CSS */}
+      <style>
+        {`
+          .react-flow__node {
+            transition: transform 0.25s ease;
+          }
+        `}
+      </style>
     </div>
   );
 };
