@@ -73,9 +73,14 @@ export abstract class Modifier<TSchema extends z.ZodTypeAny> {
 
 export type AnyModifier = Modifier<z.ZodObject<z.ZodRawShape>>;
 
-export interface ModifierChain {
+export interface ModifierDTO {
+  id: string;
+  type: string;
+  values: unknown;
+}
+export interface ModifierChainDTO {
   id: string;
   name: string;
   description?: string;
-  modifiers: Modifier<z.ZodTypeAny>[];
+  modifiers: ModifierDTO[];
 }

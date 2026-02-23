@@ -5,6 +5,7 @@ import { DataModel } from '@/data/models/DataModel';
 import { FSHandle } from '@/data/models/FSHandle';
 import { History } from '@/data/models/History';
 import { ItemMetadata } from '@/data/models/Metadata';
+import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Result } from '@/data/models/Result';
 import { StoredManifestContent, StoredManifestDetails } from '@/data/models/StoredManifest';
@@ -29,6 +30,7 @@ const db = new Dexie('mezanno') as Dexie & {
   workers: EntityTable<Worker, 'id'>;
   handles: EntityTable<FSHandle, 'id'>;
   convertedFiles: EntityTable<ConvertedFile, 'id'>;
+  modifierChains: EntityTable<ModifierChainDTO, 'id'>;
 };
 
 db.version(1).stores({
@@ -51,6 +53,7 @@ db.version(1).stores({
   workers: '&id, name, status, [scopeKey+name]',
   handles: '&id',
   convertedFiles: '&id, folderName',
+  modifierChains: '&id, name',
 });
 
 export const clearDatabase = async () => {

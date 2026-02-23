@@ -12,7 +12,7 @@ import {
   useNodesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Play } from 'lucide-react';
+import { Play, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AddNode from './AddNode';
@@ -33,7 +33,7 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
   const [edges, setEdges] = useEdgesState<Edge>([]);
 
   console.log('modifierValues: ', modifierValues);
-  const { applyModifierChain } = useModifierChain({
+  const { applyModifierChain, saveModifierChain } = useModifierChain({
     collectionId: scope.collectionId,
     canvasId: isCanvasScope(scope) ? scope.canvasId : '',
   });
@@ -48,6 +48,10 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
     const newModifier = createModifier(type);
     if (!newModifier) return;
     setModifiers((prev) => [...prev, newModifier]);
+    setModifierValues((prev) => ({
+      ...prev,
+      [newModifier.id]: newModifier.schema.parse({}),
+    }));
   };
 
   const insertModifierAt = (index: number, type: string = 'MergeModifier') => {
@@ -55,6 +59,10 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
     if (!newModifier) return;
 
     setModifiers((prev) => [...prev.slice(0, index), newModifier, ...prev.slice(index)]);
+    setModifierValues((prev) => ({
+      ...prev,
+      [newModifier.id]: newModifier.schema.parse({}),
+    }));
   };
 
   const insertModifierAfter = (modifierId: string) => {
@@ -104,20 +112,24 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
       }),
     );
 
-    // Réinitialiser ses valeurs (évite des incohérences si les champs sont différents entre les types)
-    //TODO : bug
-    // setModifierValues((prev) => {
-    //   const copy = { ...prev };
-    //   delete copy[modifierId];
-    //   return copy;
-    // });
-    setModifierValues((prev) => ({ ...prev, [modifierId]: undefined }));
+    // Réinitialiser les valeurs avec les defaults du nouveau schema
+    setModifierValues((prev) => {
+      const newModifier = factory.create();
+      return {
+        ...prev,
+        [modifierId]: newModifier.schema.parse({}), // <-- applique les valeurs par défaut
+      };
+    });
   };
 
   const applyChain = async () => {
     if (isCanvasScope(scope)) {
       await applyModifierChain(modifiers, modifierValues);
     }
+  };
+
+  const saveChain = async () => {
+    await saveModifierChain(modifiers, modifierValues);
   };
 
   useEffect(() => {
@@ -180,9 +192,12 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
   return (
     <div className='h-full w-full'>
       {modifiers.length > 0 && (
-        <div className='mt-4 flex justify-center'>
+        <div className='mt-4 flex justify-center space-x-2'>
           <button onClick={() => void applyChain()} className='soft-button'>
             <Play /> {t('btn_apply_modifiers')}
+          </button>
+          <button onClick={() => void saveChain()} className='soft-button'>
+            <Save />
           </button>
         </div>
       )}

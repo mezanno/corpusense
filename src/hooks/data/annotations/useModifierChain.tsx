@@ -3,10 +3,11 @@ import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import {
   getAnnotationLiveRepository,
   getAnnotationRepository,
+  getModifierChainRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
-import z from 'zod';
+import { v4 as uuid } from 'uuid';
 
 const useModifierChain = ({
   collectionId,
@@ -24,23 +25,38 @@ const useModifierChain = ({
     [],
   );
 
+  const saveModifierChain = async (modifiers: AnyModifier[], values: Record<string, unknown>) => {
+    if (modifiers.length === 0) return;
+
+    const chainDTO = {
+      id: uuid(),
+      name: `Modifier Chain ${new Date().toLocaleString()}`,
+      modifiers: modifiers.map((modifier) => {
+        const rawValues = values[modifier.id] ?? {};
+        const parsedValues = modifier.schema.parse(rawValues);
+
+        return {
+          id: modifier.id,
+          type: modifier.type,
+          values: parsedValues,
+        };
+      }),
+    };
+    console.log('chain DTO : ', chainDTO);
+
+    const modifierChainRepository = getModifierChainRepository();
+    await modifierChainRepository.add(chainDTO);
+  };
+
   const applyModifierChain = async (modifiers: AnyModifier[], values: Record<string, unknown>) => {
     if (modifiers.length === 0) return;
     let annotations = [...scopeAnnotations];
     modifiers.forEach((modifier) => {
       const modifierValues = values[modifier.id];
       if (modifierValues !== undefined) {
-        // const valid = modifier.schema.safeParse(modifierValues);
-        // if (valid.success) {
-        // annotations = modifier.apply(annotations, valid.data);
-        annotations = modifier.apply(
-          annotations,
-          values[modifier.id] as z.infer<typeof modifier.schema>,
-        );
-        // } else {
-        //   console.error('Invalid modifier values for modifier ', modifier.name, ': ', valid.error);
-        // }
-        console.log(modifier.name, ':', annotations);
+        const rawValues = values[modifier.id] ?? {};
+        const parsedValues = modifier.schema.parse(rawValues);
+        annotations = modifier.apply(annotations, parsedValues);
       }
     });
 
@@ -49,7 +65,7 @@ const useModifierChain = ({
     await annotationRepository.addAll(annotations);
   };
 
-  return { applyModifierChain };
+  return { applyModifierChain, saveModifierChain };
 };
 
 export default useModifierChain;

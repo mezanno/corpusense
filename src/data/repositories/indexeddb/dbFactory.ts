@@ -16,6 +16,7 @@ import { IndexedDBTagLiveRepository } from './liveQuery/tags.live';
 import { IndexedDBWorkerLiveRepository } from './liveQuery/workers.live';
 import { IndexedDBManifestRepository } from './manifest';
 import { IndexedDBModelRepository } from './models';
+import { IndexedDBModifierChainRepository } from './modifierChain';
 import { IndexedDBNamedEntityRepository } from './namedEntities';
 import { IndexedDBResultRepository } from './results';
 import { IndexedDBTagRepository } from './tags';
@@ -107,4 +108,8 @@ export function getConvertedFileRepository() {
 
 export function getConvertedFileLiveRepository() {
   return new IndexedDBConvertedFileLiveRepository();
+}
+
+export function getModifierChainRepository() {
+  return new IndexedDBModifierChainRepository();
 }
