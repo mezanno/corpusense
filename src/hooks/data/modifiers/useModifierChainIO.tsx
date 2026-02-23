@@ -42,13 +42,13 @@ const useModifierChainIO = () => {
   };
 
   const loadModifierChain = async (
-    name: string,
+    id: string,
   ): Promise<{
     modifiers: AnyModifier[];
     modifierValues: Record<string, unknown>;
   }> => {
     const modifierChainRepository = getModifierChainRepository();
-    const modifierDTO = await modifierChainRepository.getByName(name);
+    const modifierDTO = await modifierChainRepository.getById(id);
 
     const modifiers = modifierDTO.modifiers.map((dto) => {
       const factory = modifierRegistry[dto.type];
@@ -64,6 +64,8 @@ const useModifierChainIO = () => {
     modifierDTO.modifiers.forEach((dto) => {
       modifierValues[dto.id] = dto.values;
     });
+
+    console.log('Loaded modifier chain:', { modifiers, modifierValues });
 
     return { modifiers, modifierValues };
   };

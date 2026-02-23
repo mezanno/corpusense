@@ -156,7 +156,7 @@ export interface ConvertedFileRepository {
 
 export interface ModifierChainRepository {
   getAll(): Promise<ModifierChainDTO[]>;
-  getByName(name: string): Promise<ModifierChainDTO>;
+  getById(id: string): Promise<ModifierChainDTO>;
 
   add(chain: ModifierChainDTO): Promise<void>;
 

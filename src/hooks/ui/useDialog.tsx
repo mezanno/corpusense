@@ -5,6 +5,7 @@ import ExportCollectionForm from '@/components/forms/ExportCollectionForm';
 import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
 import ImportCollectionForm from '@/components/forms/ImportCollectionForm';
 import ImportModelForm from '@/components/forms/ImportModelForm';
+import LoadModifierChainForm from '@/components/forms/LoadModifierChainForm';
 import LoginForm from '@/components/forms/LoginForm';
 import NewCollectionForm, { NewCollectionFormParams } from '@/components/forms/NewCollectionForm';
 import NewModelForm from '@/components/forms/NewModelForm';
@@ -224,6 +225,20 @@ const useDialog = () => {
     });
   };
 
+  const openLoadModifierChainDialog = () => {
+    openFormDialog({
+      title: t('btn_load_modifierchain'),
+      confirmLabel: t('btn_load'),
+      renderForm: (formRef) => (
+        <LoadModifierChainForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          closeDialog={closeDialog}
+        />
+      ),
+    });
+  };
+
   return {
     openOpenManifestDialog,
     openImportCollectionDialog,
@@ -239,6 +254,7 @@ const useDialog = () => {
     openExportCollectionDialog,
     openConvertPdfForm: openConvertPdfDialog,
     openSaveModifierChainDialog,
+    openLoadModifierChainDialog,
   };
 };
 

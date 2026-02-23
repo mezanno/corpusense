@@ -13,7 +13,7 @@ import {
   useNodesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Play, Save } from 'lucide-react';
+import { FolderOpen, Play, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AddNode from './AddNode';
@@ -28,7 +28,7 @@ const GAP = 50;
 
 const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) => {
   const { t } = useTranslation();
-  const { openSaveModifierChainDialog } = useDialog();
+  const { openSaveModifierChainDialog, openLoadModifierChainDialog } = useDialog();
   const [modifiers, setModifiers] = useState<AnyModifier[]>([]);
   const [modifierValues, setModifierValues] = useState<Record<string, unknown>>({});
   const [nodes, setNodes] = useNodesState<Node>([]);
@@ -134,6 +134,10 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
     openSaveModifierChainDialog(modifiers, modifierValues);
   };
 
+  const handleLoadChain = () => {
+    openLoadModifierChainDialog();
+  };
+
   useEffect(() => {
     if (modifiers.length === 0) {
       setNodes([
@@ -193,16 +197,22 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
 
   return (
     <div className='h-full w-full'>
-      {modifiers.length > 0 && (
-        <div className='mt-4 flex justify-center space-x-2'>
-          <button onClick={() => void applyChain()} className='soft-button'>
-            <Play /> {t('btn_apply_modifiers')}
-          </button>
-          <button onClick={() => void saveChain()} className='soft-button'>
-            <Save />
-          </button>
-        </div>
-      )}
+      <div className='mt-4 flex justify-center space-x-2'>
+        <button onClick={handleLoadChain} className='soft-button'>
+          <FolderOpen />
+        </button>
+        {modifiers.length > 0 && (
+          <>
+            <button onClick={() => void applyChain()} className='soft-button'>
+              <Play /> {t('btn_apply_modifiers')}
+            </button>
+            <button onClick={() => void saveChain()} className='soft-button'>
+              <Save />
+            </button>
+          </>
+        )}
+      </div>
+
       <ReactFlow
         className='flex-1'
         nodes={nodes}
