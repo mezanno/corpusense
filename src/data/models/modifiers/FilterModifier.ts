@@ -45,19 +45,23 @@ export class FilterModifier extends Modifier<typeof hpSchema> {
   }
 
   apply = (data: Annotation[], values: z.infer<typeof hpSchema>) => {
-    console.log('Applying FilterModifier with values: ', values);
+    console.log('Applying FilterModifier with values: ', values, ' on data: ', data);
     if (data.length > 1) {
-      const sizeThreshold = values.threshold;
+      const sizeThreshold = values.threshold ?? 0;
+      const criterion = values.dimension ?? hpSchema.shape.dimension.def.defaultValue;
+      const filterType = values.filterType ?? hpSchema.shape.filterType.def.defaultValue;
       const annotations = [...data];
       return annotations.filter((a) => {
         const dimensions = getDimensions(a);
         const valueToCompare =
-          values.dimension === 'area'
+          criterion === 'area'
             ? dimensions.width * dimensions.height
-            : values.dimension === 'width'
+            : criterion === 'width'
               ? dimensions.width
               : dimensions.height;
-        return valueToCompare >= sizeThreshold;
+        return filterType === 'HP'
+          ? valueToCompare >= sizeThreshold
+          : valueToCompare <= sizeThreshold;
       });
     }
     return data;
