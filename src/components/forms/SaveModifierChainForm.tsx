@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
-import useModifierIO from '@/hooks/data/modifiers/useModifierIO';
+import useModifierIO from '@/hooks/data/modifiers/useModifierChainIO';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
@@ -39,7 +39,7 @@ const SaveModifierChainForm = ({
   modifiersValues,
 }: SaveModifierChainFormProps) => {
   const { t } = useTranslation();
-  const { saveModifierChain } = useModifierIO();
+  const { saveModifierChain, nameAlreadyExists } = useModifierIO();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,18 +49,18 @@ const SaveModifierChainForm = ({
     mode: 'onChange',
   });
 
-  // const name = form.watch('name'); //permet de redéclencher un render à chaque modif du champ name
   const formValues = useWatch({
     control: form.control,
   });
-  const collectionNameExists = false; //nameAlreadyExists(name);
-  const canSubmit = form.formState.isDirty && form.formState.isValid && !collectionNameExists;
+  const chainNameExists =
+    formValues.name !== undefined ? nameAlreadyExists(formValues.name) : false;
+  const canSubmit = form.formState.isDirty && form.formState.isValid && !chainNameExists;
+  console.log('chainNameExists: ', chainNameExists);
 
   useEffect(() => {
-    if (collectionNameExists) {
+    if (chainNameExists) {
       form.setError('name', {
-        type: 'manual',
-        message: t('form_collection_name_already_exists'),
+        message: t('form_collection_modifierchain_already_exists'),
       });
       setCanSubmit(false);
     } else if (!form.formState.isValid) {
@@ -95,15 +95,6 @@ const SaveModifierChainForm = ({
             </FormItem>
           )}
         />
-
-        {/* <button
-          className={`${canSubmit ? 'soft-button' : 'soft-button-diabled'}`}
-          type='submit'
-          title={t('btn_create')}
-          disabled={!canSubmit}
-        >
-          {t('btn_create')}
-        </button> */}
       </form>
     </Form>
   );

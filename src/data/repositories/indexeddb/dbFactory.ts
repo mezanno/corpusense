@@ -10,6 +10,7 @@ import { IndexedDBCollectionLiveRepository } from './liveQuery/collections.live'
 import { IndexedDBConvertedFileLiveRepository } from './liveQuery/convertedFile.live';
 import { IndexedDBManifestLiveRepository } from './liveQuery/manifests.live';
 import { IndexedDBModelLiveRepository } from './liveQuery/models.live';
+import { IndexedDBModifierChainlLiveRepository } from './liveQuery/modifierChain.live';
 import { IndexedDBNamedEntityLiveRepository } from './liveQuery/namedEntity.live';
 import { IndexedDBResultLiveRepository } from './liveQuery/results.live';
 import { IndexedDBTagLiveRepository } from './liveQuery/tags.live';
@@ -112,4 +113,8 @@ export function getConvertedFileLiveRepository() {
 
 export function getModifierChainRepository() {
   return new IndexedDBModifierChainRepository();
+}
+
+export function getModifierChainLiveRepository() {
+  return new IndexedDBModifierChainlLiveRepository();
 }

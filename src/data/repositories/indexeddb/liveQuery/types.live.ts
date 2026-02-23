@@ -3,6 +3,7 @@ import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { ConvertedFile } from '@/data/models/ConvertedFile';
 import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
+import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Result } from '@/data/models/Result';
 import { CanvasScope, Scope } from '@/data/models/Scope';
@@ -57,4 +58,8 @@ export interface ResultLiveRepository {
 
 export interface ConvertedFileLiveRepository {
   getAll(): () => Promise<ConvertedFile[]>;
+}
+
+export interface ModifierChainLiveRepository {
+  getAll(): () => Promise<ModifierChainDTO[]>;
 }
