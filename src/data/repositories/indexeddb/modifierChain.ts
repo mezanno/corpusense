@@ -11,6 +11,14 @@ export class IndexedDBModifierChainRepository implements ModifierChainRepository
     return await db.modifierChains.toArray();
   }
 
+  async getByName(name: string): Promise<ModifierChainDTO> {
+    const modifierChain = await db.modifierChains.where('name').equals(name).first();
+    if (!modifierChain) {
+      throw new Error(`Modifier chain with name "${name}" not found`);
+    }
+    return modifierChain;
+  }
+
   async delete(id: string): Promise<void> {
     await db.modifierChains.delete(id);
   }
