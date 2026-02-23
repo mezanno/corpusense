@@ -2,6 +2,7 @@ import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import { CanvasScope, CollectionScope, isCanvasScope } from '@/data/models/Scope';
 import useModifierChain from '@/hooks/data/modifiers/useModifierChain';
+import useDialog from '@/hooks/ui/useDialog';
 import {
   Background,
   Controls,
@@ -27,13 +28,14 @@ const GAP = 50;
 
 const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) => {
   const { t } = useTranslation();
+  const { openSaveModifierChainDialog } = useDialog();
   const [modifiers, setModifiers] = useState<AnyModifier[]>([]);
   const [modifierValues, setModifierValues] = useState<Record<string, unknown>>({});
   const [nodes, setNodes] = useNodesState<Node>([]);
   const [edges, setEdges] = useEdgesState<Edge>([]);
 
   console.log('modifierValues: ', modifierValues);
-  const { applyModifierChain, saveModifierChain } = useModifierChain({
+  const { applyModifierChain } = useModifierChain({
     collectionId: scope.collectionId,
     canvasId: isCanvasScope(scope) ? scope.canvasId : '',
   });
@@ -128,8 +130,8 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
     }
   };
 
-  const saveChain = async () => {
-    await saveModifierChain(modifiers, modifierValues);
+  const saveChain = () => {
+    openSaveModifierChainDialog(modifiers, modifierValues);
   };
 
   useEffect(() => {

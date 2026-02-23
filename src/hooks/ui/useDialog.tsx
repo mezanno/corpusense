@@ -10,9 +10,11 @@ import NewCollectionForm, { NewCollectionFormParams } from '@/components/forms/N
 import NewModelForm from '@/components/forms/NewModelForm';
 import OpenManifestForm from '@/components/forms/OpenManifestForm';
 import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
+import SaveModifierChainForm from '@/components/forms/SaveModifierChainForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { DataModel } from '@/data/models/DataModel';
+import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { CanvasScope, Scope } from '@/data/models/Scope';
 import { Worker } from '@/data/models/Worker';
 import { ReactNode, RefObject } from 'react';
@@ -204,6 +206,24 @@ const useDialog = () => {
     });
   };
 
+  const openSaveModifierChainDialog = (
+    modifiers: AnyModifier[],
+    modifiersValues: Record<string, unknown>,
+  ) => {
+    openFormDialog({
+      title: t('btn_save_modifierchain'),
+      confirmLabel: t('btn_save'),
+      renderForm: (formRef) => (
+        <SaveModifierChainForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          modifiers={modifiers}
+          modifiersValues={modifiersValues}
+        />
+      ),
+    });
+  };
+
   return {
     openOpenManifestDialog,
     openImportCollectionDialog,
@@ -218,6 +238,7 @@ const useDialog = () => {
     openRemoveAnnotationsDialog,
     openExportCollectionDialog,
     openConvertPdfForm: openConvertPdfDialog,
+    openSaveModifierChainDialog,
   };
 };
 
