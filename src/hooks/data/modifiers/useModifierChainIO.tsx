@@ -3,7 +3,7 @@ import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import { getModifierChainRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { v4 as uuid } from 'uuid';
 
-const useModifierIO = () => {
+const useModifierChainIO = () => {
   const saveModifierChain = async (
     name: string,
     modifiers: AnyModifier[],
@@ -59,4 +59,4 @@ const useModifierIO = () => {
   return { saveModifierChain, loadModifierChain };
 };
 
-export default useModifierIO;
+export default useModifierChainIO;
