@@ -1,5 +1,6 @@
 import { ElementType } from '@/data/models/Annotation';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
+import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import {
   getAnnotationLiveRepository,
   getAnnotationRepository,
@@ -42,10 +43,35 @@ const useModifierChain = ({
         };
       }),
     };
-    console.log('chain DTO : ', chainDTO);
-
     const modifierChainRepository = getModifierChainRepository();
     await modifierChainRepository.add(chainDTO);
+  };
+
+  const loadModifierChain = async (
+    name: string,
+  ): Promise<{
+    modifiers: AnyModifier[];
+    modifierValues: Record<string, unknown>;
+  }> => {
+    const modifierChainRepository = getModifierChainRepository();
+    const modifierDTO = await modifierChainRepository.getByName(name);
+
+    const modifiers = modifierDTO.modifiers.map((dto) => {
+      const factory = modifierRegistry[dto.type];
+      if (factory === undefined || factory === null) {
+        throw new Error(`No factory found for modifier type: ${dto.type}`);
+      }
+      const modifier = factory.create();
+      modifier.id = dto.id; // Assigner l'ID du DTO au modifier créé
+      return modifier;
+    });
+
+    const modifierValues: Record<string, unknown> = {};
+    modifierDTO.modifiers.forEach((dto) => {
+      modifierValues[dto.id] = dto.values;
+    });
+
+    return { modifiers, modifierValues };
   };
 
   const applyModifierChain = async (modifiers: AnyModifier[], values: Record<string, unknown>) => {
@@ -65,7 +91,7 @@ const useModifierChain = ({
     await annotationRepository.addAll(annotations);
   };
 
-  return { applyModifierChain, saveModifierChain };
+  return { applyModifierChain, saveModifierChain, loadModifierChain };
 };
 
 export default useModifierChain;

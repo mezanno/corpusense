@@ -1,7 +1,7 @@
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import { CanvasScope, CollectionScope, isCanvasScope } from '@/data/models/Scope';
-import useModifierChain from '@/hooks/data/annotations/useModifierChain';
+import useModifierChain from '@/hooks/data/modifiers/useModifierChain';
 import {
   Background,
   Controls,
