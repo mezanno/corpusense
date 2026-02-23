@@ -73,9 +73,9 @@ const ModifierChainForm = ({ scope }: { scope: CollectionScope | CanvasScope }) 
     setModifierValues((prev) => ({ ...prev, [modifierId]: undefined }));
   };
 
-  const applychain = () => {
+  const applychain = async () => {
     if (isCanvasScope(scope)) {
-      applyModifierChain(modifiers, modifierValues);
+      await applyModifierChain(modifiers, modifierValues);
     }
   };
 
@@ -98,7 +98,7 @@ const ModifierChainForm = ({ scope }: { scope: CollectionScope | CanvasScope }) 
           </CardContent>
         </Card>
         {modifiers.length > 0 && (
-          <Card className='card-file h-fit border-dashed' onClick={applychain}>
+          <Card className='card-file h-fit border-dashed' onClick={() => void applychain()}>
             <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
               <Play size={48} />
               <span className='text-center'>{t('btn_apply_modifiers')}</span>
