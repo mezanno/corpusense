@@ -8,6 +8,7 @@ import ModifierForm from './ModifierForm';
 
 export type ModifierNodeProps<TSchema extends ZodObject<ZodRawShape>> = {
   modifier: Modifier<TSchema>;
+  initialValues: z.infer<TSchema>;
   onDelete: (modifierId: string) => void;
   onInsertAfter: (modifierId: string) => void;
   onInsertBefore: (modifierId: string) => void;
@@ -18,8 +19,7 @@ export type ModifierNodeProps<TSchema extends ZodObject<ZodRawShape>> = {
 type ModifierNodeType = Node<ModifierNodeProps<ZodObject<ZodRawShape>>>;
 
 const ModifierNode = ({ data }: NodeProps<ModifierNodeType>) => {
-  console.log(modifierRegistry);
-  const { modifier, onDelete, onChange, onTypeChange } = data;
+  const { modifier, onDelete, onChange, onTypeChange, initialValues } = data;
 
   return (
     <>
@@ -65,6 +65,7 @@ const ModifierNode = ({ data }: NodeProps<ModifierNodeType>) => {
         <ModifierForm
           modifier={modifier}
           onChange={(formData) => onChange(modifier.id, formData)}
+          initialValues={initialValues}
         />
       </div>
       <Handle

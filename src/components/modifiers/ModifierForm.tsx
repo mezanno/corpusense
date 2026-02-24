@@ -14,33 +14,22 @@ import { Input } from '../ui/input';
 import { Slider } from '../ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
-// function getFieldType(schema: ZodTypeAny): 'number' | 'enum' | 'string' | 'boolean' {
-//   if (schema instanceof ZodNumber) return 'number';
-//   if (schema instanceof ZodEnum) return 'enum';
-//   if (schema instanceof ZodString) return 'string';
-//   if (schema instanceof ZodBoolean) return 'boolean';
-//   if (schema instanceof ZodDefault) {
-//     return getFieldType(schema.def.innerType as ZodTypeAny);
-//   }
-//   if (schema instanceof ZodEffects) {
-//     return getFieldType(schema._def.schema as ZodTypeAny);
-//   }
-
-//   return 'string'; // fallback
-// }
-
 type ModifierFormProps<TSchema extends ZodObject<ZodRawShape>> = {
   modifier: Modifier<TSchema>;
+  initialValues: z.infer<TSchema>;
   onChange: (data: z.infer<TSchema>) => void;
 };
 
 function ModifierForm<TSchema extends ZodObject<ZodRawShape>>({
   modifier,
   onChange,
+  initialValues,
 }: ModifierFormProps<TSchema>) {
   const form = useForm({
+    //@ts-expect-error - zodResolver is not correctly inferring the schema type from the generic, but it works at runtime
     resolver: zodResolver(modifier.schema),
     mode: 'onChange',
+    defaultValues: initialValues,
   });
 
   const values = useWatch({
@@ -55,14 +44,13 @@ function ModifierForm<TSchema extends ZodObject<ZodRawShape>>({
 
   const shape = modifier.schema.shape;
 
+  console.log('Initial values: ', initialValues);
+
   return (
     <div className='flex h-full w-full flex-col'>
       <FormProvider {...form}>
         <FormDescription>{modifier?.description}</FormDescription>
-        <form
-          //   onSubmit={form.handleSubmit(onSubmit)}
-          className='mt-2 flex w-full flex-col items-center gap-2'
-        >
+        <form className='mt-2 flex w-full flex-col items-center gap-2'>
           {(Object.keys(shape) as Array<keyof z.infer<TSchema>>).map((key) => {
             const meta = modifier.fieldMeta[key] ?? {};
 
@@ -103,7 +91,6 @@ function ModifierForm<TSchema extends ZodObject<ZodRawShape>>({
                             onValueChange={([value]) => field.onChange(value)}
                             step={meta.step ?? 1}
                             max={meta.max ?? 100}
-                            //   className='mx-auto w-full max-w-xs'
                           />
                         </FormControl>
                       </>

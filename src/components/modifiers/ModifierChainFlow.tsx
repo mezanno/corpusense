@@ -34,7 +34,6 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
   const [nodes, setNodes] = useNodesState<Node>([]);
   const [edges, setEdges] = useEdgesState<Edge>([]);
 
-  console.log('modifierValues: ', modifierValues);
   const { applyModifierChain } = useModifierChain({
     collectionId: scope.collectionId,
     canvasId: isCanvasScope(scope) ? scope.canvasId : '',
@@ -135,7 +134,12 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
   };
 
   const handleLoadChain = () => {
-    openLoadModifierChainDialog();
+    openLoadModifierChainDialog(({ modifiers: loadedModifiers, modifierValues: loadedValues }) => {
+      setNodes([]);
+      setEdges([]);
+      setModifiers(loadedModifiers);
+      setModifierValues(loadedValues);
+    });
   };
 
   useEffect(() => {
@@ -161,6 +165,7 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
       },
       data: {
         modifier,
+        initialValues: modifierValues[modifier.id],
         onDelete: deleteModifier,
         onChange: updateModifierValues,
         onTypeChange: changeModifierType,

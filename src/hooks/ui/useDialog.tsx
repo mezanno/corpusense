@@ -5,7 +5,9 @@ import ExportCollectionForm from '@/components/forms/ExportCollectionForm';
 import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
 import ImportCollectionForm from '@/components/forms/ImportCollectionForm';
 import ImportModelForm from '@/components/forms/ImportModelForm';
-import LoadModifierChainForm from '@/components/forms/LoadModifierChainForm';
+import LoadModifierChainForm, {
+  LoadModifierChainResult,
+} from '@/components/forms/LoadModifierChainForm';
 import LoginForm from '@/components/forms/LoginForm';
 import NewCollectionForm, { NewCollectionFormParams } from '@/components/forms/NewCollectionForm';
 import NewModelForm from '@/components/forms/NewModelForm';
@@ -21,10 +23,11 @@ import { Worker } from '@/data/models/Worker';
 import { ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export type FormProps = {
+export type FormProps<TResult = unknown> = {
   formRef: RefObject<HTMLFormElement | null>;
   setCanSubmit: (can: boolean) => void;
   closeDialog?: () => void;
+  onResult?: (result: TResult) => void;
 };
 
 type FormDialogOptions = {
@@ -225,7 +228,7 @@ const useDialog = () => {
     });
   };
 
-  const openLoadModifierChainDialog = () => {
+  const openLoadModifierChainDialog = (onResult: (result: LoadModifierChainResult) => void) => {
     openFormDialog({
       title: t('btn_load_modifierchain'),
       confirmLabel: t('btn_load'),
@@ -234,6 +237,7 @@ const useDialog = () => {
           formRef={formRef}
           setCanSubmit={setCanSubmit}
           closeDialog={closeDialog}
+          onResult={onResult}
         />
       ),
     });

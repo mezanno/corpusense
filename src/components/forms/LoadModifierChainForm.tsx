@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import useModifierChainIO from '@/hooks/data/modifiers/useModifierChainIO';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,7 +14,17 @@ const formSchema = z.object({
   fromChainId: z.string(),
 });
 
-const LoadModifierChainForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
+export type LoadModifierChainResult = {
+  modifiers: AnyModifier[];
+  modifierValues: Record<string, unknown>;
+};
+
+const LoadModifierChainForm = ({
+  formRef,
+  setCanSubmit,
+  closeDialog,
+  onResult,
+}: FormProps<LoadModifierChainResult>) => {
   const { t } = useTranslation();
   const { modifierChains, loadModifierChain } = useModifierChainIO();
 
@@ -28,7 +39,8 @@ const LoadModifierChainForm = ({ formRef, setCanSubmit, closeDialog }: FormProps
   }, [form.formState]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    await loadModifierChain(values.fromChainId);
+    const { modifiers, modifierValues } = await loadModifierChain(values.fromChainId);
+    onResult?.({ modifiers, modifierValues });
     if (closeDialog) closeDialog();
   }
 
