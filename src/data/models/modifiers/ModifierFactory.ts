@@ -16,7 +16,7 @@ export const modifierRegistry: Record<
     label: 'Merge Modifier',
     create: () => new MergeModifier(100, 100), // seuils max par défaut
   },
-  HPModifier: {
+  FilterModifier: {
     label: 'Filter Modifier',
     create: () => new FilterModifier(10000), // seuil max par défaut
   },
