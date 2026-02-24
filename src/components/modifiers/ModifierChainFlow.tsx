@@ -203,16 +203,24 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
   return (
     <div className='flex h-full w-full flex-col'>
       <div className='mt-4 flex justify-center space-x-2'>
-        <button onClick={handleLoadChain} className='soft-button'>
-          <FolderOpen />
+        <button onClick={handleLoadChain} className='soft-button' title={t('btn_load_modifiers')}>
+          <FolderOpen size={16} />
         </button>
         {modifiers.length > 0 && (
           <>
-            <button onClick={() => void applyChain()} className='soft-button'>
-              <Play /> {t('btn_apply_modifiers')}
+            <button
+              onClick={() => void applyChain()}
+              className='soft-button'
+              title={t('btn_apply_modifiers')}
+            >
+              <Play size={16} />
             </button>
-            <button onClick={() => void saveChain()} className='soft-button'>
-              <Save />
+            <button
+              onClick={() => void saveChain()}
+              className='soft-button'
+              title={t('btn_save_modifierchain')}
+            >
+              <Save size={16} />
             </button>
           </>
         )}

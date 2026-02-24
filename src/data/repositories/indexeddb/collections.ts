@@ -125,12 +125,16 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       content,
       modelId,
       offline,
+      postLayoutModifierChainId,
+      postOcrModifierChainId,
     }: {
       name: string;
       tags: string[];
       content: CollectionElement[];
       modelId?: string;
       offline: boolean;
+      postLayoutModifierChainId?: string;
+      postOcrModifierChainId?: string;
     },
   ): Promise<void> {
     await db.transaction('rw', db.collections, db.collectionContents, async () => {
@@ -139,6 +143,8 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
         tags,
         modelId,
         offline,
+        postLayoutModifierChainId,
+        postOcrModifierChainId,
       });
       await db.collectionContents.update(id, {
         content,

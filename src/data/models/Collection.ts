@@ -10,6 +10,8 @@ export type CollectionDetails = WithStringId & {
   modelId?: string;
   contentSize: number;
   offline: boolean;
+  postLayoutModifierChainId?: string;
+  postOcrModifierChainId?: string;
 };
 
 export type CollectionContent = WithStringId & {
