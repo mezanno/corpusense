@@ -201,7 +201,7 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
   }, [modifiers]);
 
   return (
-    <div className='h-full w-full'>
+    <div className='flex h-full w-full flex-col'>
       <div className='mt-4 flex justify-center space-x-2'>
         <button onClick={handleLoadChain} className='soft-button'>
           <FolderOpen />
@@ -218,23 +218,24 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
         )}
       </div>
 
-      <ReactFlow
-        className='flex-1'
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable={false}
-        panOnDrag={true}
-        selectionOnDrag={false}
-        //TODO: à revoir, ça log un clic à chaque fois qu'on clique sur un node, même pour interagir avec les inputs du form
-        onNodeClick={() => console.log('clic')}
-        fitView
-      >
-        <Background />
-        <Controls />
-      </ReactFlow>
+      <div className='min-h-0 flex-1'>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={false}
+          panOnDrag={true}
+          selectionOnDrag={false}
+          //TODO: à revoir, ça log un clic à chaque fois qu'on clique sur un node, même pour interagir avec les inputs du form
+          onNodeClick={() => console.log('clic')}
+          fitView
+        >
+          <Background />
+          <Controls />
+        </ReactFlow>
+      </div>
       {/* Animation CSS */}
       <style>
         {`
