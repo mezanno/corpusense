@@ -1,30 +1,18 @@
-import { ElementType } from '@/data/models/Annotation';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
-import {
-  getAnnotationLiveRepository,
-  getAnnotationRepository,
-} from '@/data/repositories/indexeddb/dbFactory';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { useMemo } from 'react';
+import { CanvasScope, CollectionScope } from '@/data/models/Scope';
+import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
 
-const useModifierChain = ({
-  collectionId,
-  canvasId,
-}: {
-  collectionId: string;
-  canvasId: string;
-}) => {
-  const annotationLiveRepository = useMemo(() => getAnnotationLiveRepository(), []);
-  const scope = useMemo(() => ({ collectionId, canvasId }), [collectionId, canvasId]);
-
-  const scopeAnnotations = useLiveQuery(
-    annotationLiveRepository.getByScopeAndType(scope, ElementType.TEXT_REGION),
-    [scope, annotationLiveRepository],
-    [],
-  );
-
-  const applyModifierChain = async (modifiers: AnyModifier[], values: Record<string, unknown>) => {
+const useModifierChain = () => {
+  const applyModifierChainToScope = async (
+    modifiers: AnyModifier[],
+    values: Record<string, unknown>,
+    scope: CollectionScope | CanvasScope,
+  ) => {
     if (modifiers.length === 0) return;
+
+    const annotationRepository = getAnnotationRepository();
+    const scopeAnnotations = await annotationRepository.getByScope(scope);
+
     let annotations = [...scopeAnnotations];
     modifiers.forEach((modifier) => {
       const modifierValues = values[modifier.id];
@@ -35,12 +23,11 @@ const useModifierChain = ({
       }
     });
 
-    const annotationRepository = getAnnotationRepository();
     await annotationRepository.deleteByIds(scopeAnnotations.map((a) => a.id));
     await annotationRepository.addAll(annotations);
   };
 
-  return { applyModifierChain };
+  return { applyModifierChainToScope };
 };
 
 export default useModifierChain;

@@ -2,6 +2,7 @@ import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import { CanvasScope, CollectionScope, isCanvasScope } from '@/data/models/Scope';
 import useModifierChain from '@/hooks/data/modifiers/useModifierChain';
+import useModifierChainIO from '@/hooks/data/modifiers/useModifierChainIO';
 import useDialog from '@/hooks/ui/useDialog';
 import {
   Background,
@@ -26,7 +27,13 @@ const nodeTypes = {
 const NODE_WIDTH = 280;
 const GAP = 50;
 
-const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) => {
+const ModifierChainFlow = ({
+  scope,
+  initialChainId,
+}: {
+  scope?: CollectionScope | CanvasScope;
+  initialChainId?: string;
+}) => {
   const { t } = useTranslation();
   const { openSaveModifierChainDialog, openLoadModifierChainDialog } = useDialog();
   const [modifiers, setModifiers] = useState<AnyModifier[]>([]);
@@ -34,10 +41,8 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
   const [nodes, setNodes] = useNodesState<Node>([]);
   const [edges, setEdges] = useEdgesState<Edge>([]);
 
-  const { applyModifierChain } = useModifierChain({
-    collectionId: scope.collectionId,
-    canvasId: isCanvasScope(scope) ? scope.canvasId : '',
-  });
+  const { applyModifierChainToScope } = useModifierChain();
+  const { loadModifierChain } = useModifierChainIO();
 
   const createModifier = (type: string = 'MergeModifier') => {
     const factory = modifierRegistry[type];
@@ -124,8 +129,8 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
   };
 
   const applyChain = async () => {
-    if (isCanvasScope(scope)) {
-      await applyModifierChain(modifiers, modifierValues);
+    if (scope && isCanvasScope(scope)) {
+      await applyModifierChainToScope(modifiers, modifierValues, scope);
     }
   };
 
@@ -143,6 +148,20 @@ const ModifierChainFlow = ({ scope }: { scope: CollectionScope | CanvasScope }) 
   };
 
   useEffect(() => {
+    if (initialChainId !== undefined) {
+      void (async () => {
+        try {
+          const { modifiers: loadedModifiers, modifierValues: loadedValues } =
+            await loadModifierChain(initialChainId);
+          setModifiers(loadedModifiers);
+          setModifierValues(loadedValues);
+        } catch (error) {
+          console.error('Failed to load modifier chain:', error);
+        }
+      })();
+      return;
+    }
+
     if (modifiers.length === 0) {
       setNodes([
         {
