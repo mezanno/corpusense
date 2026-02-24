@@ -32,7 +32,7 @@ const ModifierChainFlow = ({
   initialChainId,
 }: {
   scope?: CollectionScope | CanvasScope;
-  initialChainId?: string;
+  initialChainId?: string | null;
 }) => {
   const { t } = useTranslation();
   const { openSaveModifierChainDialog, openLoadModifierChainDialog } = useDialog();
@@ -148,21 +148,24 @@ const ModifierChainFlow = ({
   };
 
   useEffect(() => {
-    if (initialChainId !== undefined) {
-      void (async () => {
-        try {
-          const { modifiers: loadedModifiers, modifierValues: loadedValues } =
-            await loadModifierChain(initialChainId);
-          setModifiers(loadedModifiers);
-          setModifierValues(loadedValues);
-        } catch (error) {
-          console.error('Failed to load modifier chain:', error);
-        }
-      })();
-      return;
-    }
+    if (initialChainId === undefined || initialChainId === null) return;
 
-    if (modifiers.length === 0) {
+    void (async () => {
+      try {
+        const { modifiers: loadedModifiers, modifierValues: loadedValues } =
+          await loadModifierChain(initialChainId);
+        setNodes([]);
+        setEdges([]);
+        setModifiers(loadedModifiers);
+        setModifierValues(loadedValues);
+      } catch (error) {
+        console.error('Failed to load modifier chain:', error);
+      }
+    })();
+  }, [initialChainId]);
+
+  useEffect(() => {
+    if (modifiers.length === 0 && initialChainId === null) {
       setNodes([
         {
           id: 'add',
@@ -217,7 +220,7 @@ const ModifierChainFlow = ({
     );
 
     setEdges(newEdges);
-  }, [modifiers]);
+  }, [modifiers, modifierValues]);
 
   return (
     <div className='flex h-full w-full flex-col'>
