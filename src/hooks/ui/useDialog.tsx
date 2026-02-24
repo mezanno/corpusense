@@ -230,8 +230,8 @@ const useDialog = () => {
 
   const openLoadModifierChainDialog = (onResult: (result: LoadModifierChainResult) => void) => {
     openFormDialog({
-      title: t('btn_load_modifierchain'),
-      confirmLabel: t('btn_load'),
+      title: t('btn_load_modifiers'),
+      confirmLabel: t('btn_open'),
       renderForm: (formRef) => (
         <LoadModifierChainForm
           formRef={formRef}
