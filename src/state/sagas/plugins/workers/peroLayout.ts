@@ -244,7 +244,10 @@ export async function processResult(result: PeroLayoutResult, task: Task): Promi
   const collectionRepository = getCollectionRepository();
   const collection = await collectionRepository.getById(task.scope.collectionId);
   let savedAnnotations;
-  if (collection.postLayoutModifierChainId !== undefined) {
+  if (
+    collection.postLayoutModifierChainId !== undefined &&
+    collection.postLayoutModifierChainId.trim() !== ''
+  ) {
     const updatedAnnotations = await applyModifierChainToAnnotations(
       collection.postLayoutModifierChainId,
       newAnnotations.map((a) => ({ ...a, order: 0 })), //we have to set the order to transofrm AnnotationDTO into Annotation for the modifier chain function, but it will be reset when saving the annotations

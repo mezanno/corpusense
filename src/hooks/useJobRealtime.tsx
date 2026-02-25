@@ -85,7 +85,8 @@ const useJobRealtime = () => {
         hasError = hasError || job.status === 'failed';
         if (!hasError) {
           const plugin = workerPlugins[job.worker_name];
-          if (plugin.processResult) {
+
+          if (job.result !== null && plugin.processResult) {
             const response = await plugin.processResult(job.result, task);
             console.log('Processed worker result response:', response);
             if (response.status === WorkerStatus.ERROR) {
@@ -149,7 +150,7 @@ const useJobRealtime = () => {
             await processResult(worker, task, job.result);
             break;
           default:
-            console.error('Unknown job status:', job.status);
+            console.warn('Unknown job status:', job.status);
             return;
         }
       } catch (error) {
