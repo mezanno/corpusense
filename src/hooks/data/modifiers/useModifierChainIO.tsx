@@ -58,7 +58,7 @@ const useModifierChainIO = () => {
     return { modifiers, modifierValues };
   };
 
-  const deleteModifierChain = async (id: string) => {
+  const removeModifierChain = async (id: string) => {
     const modifierChainRepository = getModifierChainRepository();
     await modifierChainRepository.delete(id);
   };
@@ -66,7 +66,7 @@ const useModifierChainIO = () => {
   return {
     saveModifierChain,
     loadModifierChain,
-    deleteModifierChain,
+    removeModifierChain,
   };
 };
 

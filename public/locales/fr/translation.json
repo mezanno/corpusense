@@ -325,6 +325,7 @@
   "description_delete_collection": "Êtes-vous sûr de vouloir supprimer cette collection ? Cette action est irréversible et supprimera également tous les traitements associés.",
   "description_delete_worker": "Êtes-vous sûr de vouloir supprimer ce traitement ? Cette action est irréversible et supprimera également tous les résultats associés.",
   "description_delete_model": "Êtes-vous sûr de vouloir supprimer ce modèle ? Cette action est irréversible",
+  "description_delete_modifierchain": "Êtes-vous sûr de vouloir supprimer cette chaîne de modificateurs ? Cette action est irréversible",
   "description_delete_datafield": "Êtes-vous sûr de vouloir supprimer ce champ ? Cette action est irréversible",
   "description_select_export_formats": "Sélectionnez les formats d'export souhaités :",
   "description_delete_converted_file": "Êtes-vous sûr de vouloir retirer le document de Corpusense ? Cette action est irréversible. Attention ! Ceci ne supprimera pas les documents de votre disque dur.",

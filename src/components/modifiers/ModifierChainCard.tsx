@@ -1,5 +1,6 @@
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
-import { Download, Trash2 } from 'lucide-react';
+import useModifierChainIO from '@/hooks/data/modifiers/useModifierChainIO';
+import { Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
 import { Card, CardContent, CardFooter } from '../ui/card';
@@ -15,17 +16,17 @@ export function ModifierChainCard({
 }) {
   const { t } = useTranslation();
   const { openDialog } = useAlertDialogContext();
-  //   const { removeModel, exportModel } = useModelIO();
+  const { removeModifierChain } = useModifierChainIO();
 
   const handleRemoveConvertedFile: React.MouseEventHandler<HTMLDivElement> = (event) => {
     event.stopPropagation();
     openDialog({
       title: t('title_are_you_sure'),
-      description: t('description_delete_model'),
+      description: t('description_delete_modifierchain'),
       onConfirm: {
         message: t('btn_yes'),
         action: () => {
-          //   void removeModel(chain.id);
+          void removeModifierChain(chain.id);
           if (selectedChainId === chain.id) {
             setSelectedChainId(null);
           }
@@ -34,12 +35,12 @@ export function ModifierChainCard({
     });
   };
 
-  const handleDownloadModel: React.MouseEventHandler<HTMLDivElement> = (event) => {
-    event.stopPropagation();
-    void (async () => {
-      //   await exportModel(chain.id);
-    })();
-  };
+  // const handleDownloadModel: React.MouseEventHandler<HTMLDivElement> = (event) => {
+  //   event.stopPropagation();
+  //   void (async () => {
+  //     //   await exportModel(chain.id);
+  //   })();
+  // };
 
   return (
     <Card
@@ -60,13 +61,13 @@ export function ModifierChainCard({
         >
           <Trash2 size={20} />
         </div>
-        <div
+        {/* <div
           onClick={handleDownloadModel}
           title={t('btn_download_model')}
           aria-label={t('btn_download_model')}
         >
           <Download size={20} />
-        </div>
+        </div> */}
       </CardFooter>
     </Card>
   );
