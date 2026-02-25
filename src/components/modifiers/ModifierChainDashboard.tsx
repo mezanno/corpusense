@@ -1,4 +1,4 @@
-import useModifierChainIO from '@/hooks/data/modifiers/useModifierChainIO';
+import useModifierChainLive from '@/hooks/data/modifiers/useModifierChainLive';
 import useDialog from '@/hooks/ui/useDialog';
 import { Download, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +15,7 @@ const ModifierChainDashboard = ({
 }) => {
   const { t } = useTranslation();
   const { openCreateModelDialog, openImportModelDialog } = useDialog();
-  const { modifierChains } = useModifierChainIO();
+  const { modifierChains } = useModifierChainLive();
 
   return (
     <ScrollArea className='space-y-1'>

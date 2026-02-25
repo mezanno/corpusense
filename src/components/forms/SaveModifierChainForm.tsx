@@ -9,7 +9,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
-import useModifierIO from '@/hooks/data/modifiers/useModifierChainIO';
+import useModifierChainIO from '@/hooks/data/modifiers/useModifierChainIO';
+import useModifierChainLive from '@/hooks/data/modifiers/useModifierChainLive';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { zodResolver } from '@hookform/resolvers/zod';
 import i18next from 'i18next';
@@ -39,7 +40,8 @@ const SaveModifierChainForm = ({
   modifiersValues,
 }: SaveModifierChainFormProps) => {
   const { t } = useTranslation();
-  const { saveModifierChain, nameAlreadyExists } = useModifierIO();
+  const { saveModifierChain } = useModifierChainIO();
+  const { nameAlreadyExists } = useModifierChainLive();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

@@ -1,21 +1,9 @@
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
-import {
-  getModifierChainLiveRepository,
-  getModifierChainRepository,
-} from '@/data/repositories/indexeddb/dbFactory';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { useMemo } from 'react';
+import { getModifierChainRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { v4 as uuid } from 'uuid';
 
 const useModifierChainIO = () => {
-  const modifierChainLiveRepository = useMemo(() => getModifierChainLiveRepository(), []);
-  const modifierChains = useLiveQuery(
-    modifierChainLiveRepository.getAll(),
-    [modifierChainLiveRepository],
-    [],
-  );
-
   const saveModifierChain = async (
     name: string,
     modifiers: AnyModifier[],
@@ -70,11 +58,16 @@ const useModifierChainIO = () => {
     return { modifiers, modifierValues };
   };
 
-  const nameAlreadyExists = (name: string): boolean => {
-    return modifierChains?.some((chain) => chain.name === name) ?? false;
+  const deleteModifierChain = async (id: string) => {
+    const modifierChainRepository = getModifierChainRepository();
+    await modifierChainRepository.delete(id);
   };
 
-  return { modifierChains, saveModifierChain, loadModifierChain, nameAlreadyExists };
+  return {
+    saveModifierChain,
+    loadModifierChain,
+    deleteModifierChain,
+  };
 };
 
 export default useModifierChainIO;

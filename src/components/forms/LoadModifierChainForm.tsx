@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import useModifierChainIO from '@/hooks/data/modifiers/useModifierChainIO';
+import useModifierChainLive from '@/hooks/data/modifiers/useModifierChainLive';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
@@ -26,7 +27,8 @@ const LoadModifierChainForm = ({
   onResult,
 }: FormProps<LoadModifierChainResult>) => {
   const { t } = useTranslation();
-  const { modifierChains, loadModifierChain } = useModifierChainIO();
+  const { loadModifierChain } = useModifierChainIO();
+  const { modifierChains } = useModifierChainLive();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

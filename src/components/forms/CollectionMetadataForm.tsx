@@ -3,7 +3,7 @@
 import { Collection } from '@/data/models/Collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useModels } from '@/hooks/data/models/useModels';
-import useModifierChainIO from '@/hooks/data/modifiers/useModifierChainIO';
+import useModifierChainLive from '@/hooks/data/modifiers/useModifierChainLive';
 import { useTags } from '@/hooks/data/tags/useTags';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Tag as FormTag, TagInput } from 'emblor';
@@ -37,7 +37,7 @@ const formSchema = z.object({
 
 const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
   const { models } = useModels();
-  const { modifierChains } = useModifierChainIO();
+  const { modifierChains } = useModifierChainLive();
   const { tags: storedTags, createNewTag } = useTags();
 
   const { updateCollection } = useCollections();
