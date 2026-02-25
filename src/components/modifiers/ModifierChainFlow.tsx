@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AddNode from './AddNode';
 import ModifierNode from './ModifierNode';
+import './xy-theme.css';
 
 const nodeTypes = {
   modifierNode: ModifierNode,
