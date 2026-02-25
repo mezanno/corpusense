@@ -31,8 +31,6 @@ const getModifiersAndValues = async (
     modifierValues[dto.id] = dto.values;
   });
 
-  console.log('Loaded modifier chain:', { modifiers, modifierValues });
-
   return { modifiers, modifierValues };
 };
 
@@ -45,6 +43,8 @@ const applyModifiersToScope = async (
 
   const annotationRepository = getAnnotationRepository();
   const scopeAnnotations = await annotationRepository.getByScope(scope);
+
+  if (scopeAnnotations.length === 0) return;
 
   let annotations = [...scopeAnnotations];
   modifiers.forEach((modifier) => {
@@ -64,19 +64,24 @@ const applyModifierChainToAnnotations = async (
   modifierChainId: string,
   annotations: Annotation[],
 ) => {
-  const { modifiers, modifierValues } = await getModifiersAndValues(modifierChainId);
+  try {
+    const { modifiers, modifierValues } = await getModifiersAndValues(modifierChainId);
 
-  let updatedAnnotations = [...annotations];
-  modifiers.forEach((modifier) => {
-    const values = modifierValues[modifier.id];
-    if (values !== undefined) {
-      const rawValues = modifierValues[modifier.id] ?? {};
-      const parsedValues = modifier.schema.parse(rawValues);
-      updatedAnnotations = modifier.apply(updatedAnnotations, parsedValues);
-    }
-  });
+    let updatedAnnotations = [...annotations];
+    modifiers.forEach((modifier) => {
+      const values = modifierValues[modifier.id];
+      if (values !== undefined) {
+        const rawValues = modifierValues[modifier.id] ?? {};
+        const parsedValues = modifier.schema.parse(rawValues);
+        updatedAnnotations = modifier.apply(updatedAnnotations, parsedValues);
+      }
+    });
 
-  return updatedAnnotations;
+    return updatedAnnotations;
+  } catch (error) {
+    console.error(`Error applying modifier chain with id "${modifierChainId}":`, error);
+    return annotations;
+  }
 };
 
 export { applyModifierChainToAnnotations, applyModifiersToScope, getModifiersAndValues };
