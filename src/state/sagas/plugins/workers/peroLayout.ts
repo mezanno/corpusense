@@ -12,6 +12,7 @@ import {
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getFile, getImage } from '@/data/utils/canvas';
+import { applyModifierChainToAnnotations } from '@/data/utils/modifierChain';
 import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
 import { supabase } from '@/utils/config';
@@ -199,6 +200,9 @@ async function computeRegionsForTask(task: Task, canvas: Canvas) {
   return regions;
 }
 
+/*
+ * The scope must be a CanvasScope
+ */
 export async function processResult(result: PeroLayoutResult, task: Task): Promise<WorkerResponse> {
   if (!isCanvasScope(task.scope)) {
     throw new Error(i18n.t('error_task_invalid_scope'));
@@ -235,7 +239,21 @@ export async function processResult(result: PeroLayoutResult, task: Task): Promi
     });
     newAnnotations.push(regionAnnotation);
   }
-  const savedAnnotations = await annotationRepository.addAll(newAnnotations);
+
+  //if a post-processing function is defined for the collection, apply it to the new annotations before saving them
+  const collectionRepository = getCollectionRepository();
+  const collection = await collectionRepository.getById(task.scope.collectionId);
+  let savedAnnotations;
+  if (collection.postLayoutModifierChainId !== undefined) {
+    const updatedAnnotations = await applyModifierChainToAnnotations(
+      collection.postLayoutModifierChainId,
+      newAnnotations.map((a) => ({ ...a, order: 0 })), //we have to set the order to transofrm AnnotationDTO into Annotation for the modifier chain function, but it will be reset when saving the annotations
+    );
+    savedAnnotations = await annotationRepository.addAll(updatedAnnotations);
+  } else {
+    savedAnnotations = await annotationRepository.addAll(newAnnotations);
+  }
+
   return {
     status: WorkerStatus.COMPLETED,
     content: savedAnnotations,
