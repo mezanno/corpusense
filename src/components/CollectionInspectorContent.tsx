@@ -190,6 +190,7 @@ const CollectionInspectorContent = ({
           ) : (
             <div className='flex h-full w-full flex-col'>
               <CanvasViewer collectionId={collectionId} canvas={canvasToDisplay} />
+
               <CollectionNavigation
                 collectionId={collectionId}
                 currentCanvasId={canvasToDisplay.id}

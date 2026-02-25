@@ -27,7 +27,7 @@ const CanvasViewerAnnotations = ({
   const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
   const annotationsInAnnotorious = useAnnotations();
-  const { annotations: annotationsInStore, getLastOrderByType } = useAnnotationContext();
+  const { scopeAnnotations: annotationsInStore, getLastOrderByType } = useAnnotationContext();
   const { saveAnnotation, updateAnnotation } = useAnnotationActions();
 
   const isNewCanvas = useRef(true); //to check if the canvas is new (to avoid syncing the annotations when the canvas is the same)

@@ -15,6 +15,7 @@ import IIIFSourcesPage from './pages/IIIFSourcesPage';
 import Layout from './pages/Layout';
 import ManifestExplorerPage from './pages/ManifestExplorerPage';
 import ModelsManagerPage from './pages/ModelsManagerPage';
+import ModifierChainManagerPage from './pages/ModifierChainManagerPage';
 import StoragePage from './pages/StoragePage';
 import WorkersManagerPage from './pages/WorkersManagerPage';
 import {
@@ -60,6 +61,10 @@ function App() {
                       element={<CollectionInspectorPage />}
                     />
                     <Route path={CorpusenseRoutes.MODELS} element={<ModelsManagerPage />} />
+                    <Route
+                      path={CorpusenseRoutes.MODIFIERCHAIN}
+                      element={<ModifierChainManagerPage />}
+                    />
                     <Route path={CorpusenseRoutes.CONFIGURATION} element={<ConfigurationPage />} />
                     <Route path={CorpusenseRoutes.LOCAL_SOURCES} element={<StoragePage />} />
                     <Route path={CorpusenseRoutes.IIIF_SOURCES} element={<IIIFSourcesPage />} />

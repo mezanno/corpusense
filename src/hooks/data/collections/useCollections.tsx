@@ -140,7 +140,16 @@ export const useCollections = () => {
   };
 
   const updateCollection = async (collection: Collection) => {
-    const { id, name, tags, content, modelId, offline } = collection;
+    const {
+      id,
+      name,
+      tags,
+      content,
+      modelId,
+      offline,
+      postLayoutModifierChainId,
+      postOcrModifierChainId,
+    } = collection;
     try {
       if (id === undefined) {
         // yield put(setError(i18next.t('error_collection_not_found')));
@@ -152,6 +161,8 @@ export const useCollections = () => {
         content,
         modelId,
         offline,
+        postLayoutModifierChainId,
+        postOcrModifierChainId,
       });
 
       appDispatch(pushInfo(i18n.t('toast_collection_saved')));

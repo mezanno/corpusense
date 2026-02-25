@@ -1,19 +1,23 @@
 import { IndexedDBAnnotationRepository } from './annotations';
+import { IndexedDBAnnotationTempRepository } from './annotationsTemp';
 import { IndexedDBCollectionRepository } from './collections';
 import { IndexedDBConvertedFileRepository } from './convertedFile';
 import { IndexedDBFSHandleRepository } from './fsHandle';
 import { IndexedDBItemMetadataRepository } from './itemMetadata';
 import { IndexedDBAnnotationLiveRepository } from './liveQuery/annotations.live';
+import { IndexedDBAnnotationTempLiveRepository } from './liveQuery/annotationsTemp.live';
 import { IndexedDBCollectionLiveRepository } from './liveQuery/collections.live';
 import { IndexedDBConvertedFileLiveRepository } from './liveQuery/convertedFile.live';
 import { IndexedDBManifestLiveRepository } from './liveQuery/manifests.live';
 import { IndexedDBModelLiveRepository } from './liveQuery/models.live';
+import { IndexedDBModifierChainlLiveRepository } from './liveQuery/modifierChain.live';
 import { IndexedDBNamedEntityLiveRepository } from './liveQuery/namedEntity.live';
 import { IndexedDBResultLiveRepository } from './liveQuery/results.live';
 import { IndexedDBTagLiveRepository } from './liveQuery/tags.live';
 import { IndexedDBWorkerLiveRepository } from './liveQuery/workers.live';
 import { IndexedDBManifestRepository } from './manifest';
 import { IndexedDBModelRepository } from './models';
+import { IndexedDBModifierChainRepository } from './modifierChain';
 import { IndexedDBNamedEntityRepository } from './namedEntities';
 import { IndexedDBResultRepository } from './results';
 import { IndexedDBTagRepository } from './tags';
@@ -25,6 +29,14 @@ export function getAnnotationRepository() {
 
 export function getAnnotationLiveRepository() {
   return new IndexedDBAnnotationLiveRepository();
+}
+
+export function getAnnotationTempRepository() {
+  return new IndexedDBAnnotationTempRepository();
+}
+
+export function getAnnotationTempLiveRepository() {
+  return new IndexedDBAnnotationTempLiveRepository();
 }
 
 export function getCollectionRepository() {
@@ -97,4 +109,12 @@ export function getConvertedFileRepository() {
 
 export function getConvertedFileLiveRepository() {
   return new IndexedDBConvertedFileLiveRepository();
+}
+
+export function getModifierChainRepository() {
+  return new IndexedDBModifierChainRepository();
+}
+
+export function getModifierChainLiveRepository() {
+  return new IndexedDBModifierChainlLiveRepository();
 }

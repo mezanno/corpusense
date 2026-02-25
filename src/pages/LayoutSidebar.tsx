@@ -275,6 +275,14 @@ const LayoutSideBar = () => {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
+                <Link to={CorpusenseRoutes.MODIFIERCHAIN}>
+                  <Container />
+                  <span>{t('page_title_modifierchain_manager')}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
                 <Link to={CorpusenseRoutes.WORKERS}>
                   <PocketKnife />
                   <span>{t('page_title_workers_manager')}</span>

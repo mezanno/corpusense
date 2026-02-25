@@ -1,8 +1,9 @@
-import { Annotation } from '@/data/models/Annotation';
+import { Annotation, ElementType } from '@/data/models/Annotation';
 import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { ConvertedFile } from '@/data/models/ConvertedFile';
 import { DataModel } from '@/data/models/DataModel';
 import { History } from '@/data/models/History';
+import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Result } from '@/data/models/Result';
 import { CanvasScope, Scope } from '@/data/models/Scope';
@@ -26,6 +27,11 @@ export interface ModelLiveRepository {
 export interface AnnotationLiveRepository {
   getByScope(scope: Scope): () => Promise<Annotation[]>;
   hasOcrAnnotations(scope: CanvasScope): () => Promise<boolean>;
+  getByScopeAndType(scope: CanvasScope, type: ElementType): () => Promise<Annotation[]>;
+}
+
+export interface AnnotationTempLiveRepository {
+  getByScope(scope: Scope): () => Promise<Annotation[]>;
 }
 
 export interface ManifestLiveRepository {
@@ -52,4 +58,8 @@ export interface ResultLiveRepository {
 
 export interface ConvertedFileLiveRepository {
   getAll(): () => Promise<ConvertedFile[]>;
+}
+
+export interface ModifierChainLiveRepository {
+  getAll(): () => Promise<ModifierChainDTO[]>;
 }

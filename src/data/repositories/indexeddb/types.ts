@@ -6,6 +6,7 @@ import { DataModel } from '@/data/models/DataModel';
 import { FSHandle } from '@/data/models/FSHandle';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
+import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { AnnotationScope, CanvasScope, Scope } from '@/data/models/Scope';
@@ -25,10 +26,16 @@ export interface AnnotationRepository {
   deleteById(id: string): Promise<void>;
   deleteByIds(ids: string[]): Promise<string[]>;
   deleteByScope(scope: Scope): Promise<string[]>;
-  deleteByScopeAndType(scope: Scope, types: ElementType[]): Promise<string[]>;
+  deleteByScopeAndType(scope: Scope, types: ElementType[], isTemp: boolean): Promise<string[]>;
 
   update(annotation: Annotation): Promise<Annotation[]>;
   updateOrder(annotationId: string, order: number): Promise<Annotation[]>;
+}
+
+export interface AnnotationTempRepository {
+  getAll(): Promise<Annotation[]>;
+  addAll(annotations: AnnotationDTO[]): Promise<Annotation[]>;
+  deleteByCollection(collectionId: string): Promise<void>;
 }
 
 export interface CollectionRepository {
@@ -143,6 +150,15 @@ export interface ConvertedFileRepository {
   getByFolderName(folderName: string): Promise<ConvertedFile>;
 
   add(file: ConvertedFile): Promise<void>;
+
+  delete(id: string): Promise<void>;
+}
+
+export interface ModifierChainRepository {
+  getAll(): Promise<ModifierChainDTO[]>;
+  getById(id: string): Promise<ModifierChainDTO>;
+
+  add(chain: ModifierChainDTO): Promise<void>;
 
   delete(id: string): Promise<void>;
 }

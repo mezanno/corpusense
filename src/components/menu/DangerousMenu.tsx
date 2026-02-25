@@ -9,12 +9,14 @@ interface DangerousMenuProps {
   scope: Scope;
   handleDeleteAllAnnotations?: () => void;
   handleRecomputeRegions?: () => void;
+  handleFusionOfRegions?: () => void;
 }
 
 const DangerousMenu: FC<DangerousMenuProps> = ({
   scope,
   handleDeleteAllAnnotations,
   handleRecomputeRegions,
+  handleFusionOfRegions,
 }) => {
   const { t } = useTranslation();
   const params = {
@@ -31,6 +33,11 @@ const DangerousMenu: FC<DangerousMenuProps> = ({
         name: t('btn_reset_regions'),
         icon: <Combine />,
         action: handleRecomputeRegions,
+      },
+      {
+        name: t('btn_fusion_regions'),
+        icon: <Combine />,
+        action: handleFusionOfRegions,
       },
     ],
   };

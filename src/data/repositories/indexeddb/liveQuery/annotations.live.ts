@@ -36,4 +36,13 @@ export class IndexedDBAnnotationLiveRepository implements AnnotationLiveReposito
         .count()
         .then((count) => count > 0);
   }
+
+  getByScopeAndType(scope: CanvasScope, type: ElementType): () => Promise<Annotation[]> {
+    return () =>
+      db.annotations
+        .where({
+          '[canvasId+collectionId+type]': [scope.canvasId, scope.collectionId, type],
+        })
+        .sortBy('order');
+  }
 }

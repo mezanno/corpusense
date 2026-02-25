@@ -21,6 +21,7 @@ export enum ElementType {
   UNKNOWN = 'UNKNOWN',
   TEXT_LINE = 'TEXT_LINE',
   TEXT_REGION = 'TEXT_REGION',
+  TEMP = 'TEMP',
 }
 
 export interface Annotation extends ImageAnnotation {
@@ -108,123 +109,9 @@ export function getAnnotationType(annotation: Annotation | AnnotationDTO) {
   return type === undefined ? ElementType.UNKNOWN : convertToElementTypeEnum(type);
 }
 
-function getAnnotationValue(annotation: Annotation) {
+export function getAnnotationValue(annotation: Annotation) {
   const value = getValueForMotivation(annotation, W3CMotivationEnum.Tagging);
   return value === undefined ? '' : getValueForMotivation(annotation, W3CMotivationEnum.Tagging);
-}
-
-export function getDimensions(annotation: ImageAnnotation) {
-  const selector = annotation.target.selector;
-  if (selector.type === ShapeType.RECTANGLE) {
-    const geometry = selector.geometry;
-    return {
-      width: geometry.bounds.maxX - geometry.bounds.minX,
-      height: geometry.bounds.maxY - geometry.bounds.minY,
-    };
-  }
-  return { width: -1, height: -1 };
-}
-
-export function getPosition(annotation: ImageAnnotation) {
-  const selector = annotation.target.selector;
-  if (selector.type === ShapeType.RECTANGLE) {
-    const geometry = selector.geometry;
-    return {
-      x: geometry.bounds.minX,
-      y: geometry.bounds.minY,
-    };
-  }
-  return { x: 0, y: 0 };
-}
-
-function getTop(annotation: ImageAnnotation) {
-  return getPosition(annotation).y;
-}
-
-function getBottom(annotation: ImageAnnotation) {
-  const pos = getPosition(annotation);
-  const dim = getDimensions(annotation);
-  return pos.y + dim.height;
-}
-
-function getLeft(annotation: ImageAnnotation) {
-  return getPosition(annotation).x;
-}
-
-function getRight(annotation: ImageAnnotation) {
-  const pos = getPosition(annotation);
-  const dim = getDimensions(annotation);
-  return pos.x + dim.width;
-}
-
-function contains(a1: ImageAnnotation, a2: ImageAnnotation) {
-  const pos1 = getPosition(a1);
-  const dim1 = getDimensions(a1);
-  const pos2 = getPosition(a2);
-  const dim2 = getDimensions(a2);
-
-  return (
-    pos2.x >= pos1.x &&
-    pos2.y >= pos1.y &&
-    pos2.x + dim2.width <= pos1.x + dim1.width &&
-    pos2.y + dim2.height <= pos1.y + dim1.height
-  );
-}
-
-function getVerticalDistanceBetweenAnnotations(a1: ImageAnnotation, a2: ImageAnnotation) {
-  console.log(contains(a1, a2));
-  console.log(contains(a2, a1));
-  console.log(getTop(a2) <= getBottom(a1));
-  console.log(getTop(a1) <= getBottom(a2));
-
-  if (
-    contains(a1, a2) ||
-    contains(a2, a1) ||
-    (getTop(a2) <= getBottom(a1) && getBottom(a2) >= getTop(a1)) ||
-    (getBottom(a2) >= getTop(a1) && getTop(a2) <= getTop(a1))
-  ) {
-    return 0;
-  } else {
-    const top1 = getTop(a1);
-    const bottom1 = getBottom(a1);
-    const top2 = getTop(a2);
-    const bottom2 = getBottom(a2);
-
-    if (bottom1 < top2) {
-      return top2 - bottom1;
-    } else {
-      return top1 - bottom2;
-    }
-  }
-}
-
-function getHorizontalDistanceBetweenAnnotations(a1: ImageAnnotation, a2: ImageAnnotation) {
-  if (
-    contains(a1, a2) ||
-    contains(a2, a1) ||
-    (getLeft(a2) <= getRight(a1) && getRight(a2) >= getLeft(a1)) ||
-    (getRight(a2) >= getLeft(a1) && getLeft(a2) <= getLeft(a1))
-  ) {
-    return 0;
-  } else {
-    const left1 = getLeft(a1);
-    const right1 = getRight(a1);
-    const left2 = getLeft(a2);
-    const right2 = getRight(a2);
-
-    if (right1 < left2) {
-      return left2 - right1;
-    } else {
-      return left1 - right2;
-    }
-  }
-}
-
-export function getDistanceBetweenAnnotations(a1: ImageAnnotation, a2: ImageAnnotation) {
-  return {
-    horizontal: getHorizontalDistanceBetweenAnnotations(a1, a2),
-    vertical: getVerticalDistanceBetweenAnnotations(a1, a2),
-  };
 }
 
 function getValueForMotivation(
@@ -321,6 +208,14 @@ export const duplicateAnnotation = (annotation: Annotation, canvasId?: string): 
       getAnnotationValue(annotation) ?? '',
       newId,
     ),
+  };
+};
+
+export const changeType = (annotation: Annotation, newType: ElementType): Annotation => {
+  return {
+    ...annotation,
+    type: newType,
+    bodies: createBodies(newType, getAnnotationValue(annotation) ?? '', annotation.id),
   };
 };
 

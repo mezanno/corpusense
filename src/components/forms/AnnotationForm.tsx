@@ -4,8 +4,8 @@ import {
   getAnnotationText,
   getAnnotationType,
   getBodies,
-  getDimensions,
 } from '@/data/models/Annotation';
+import { getDimensions } from '@/data/utils/annotations';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -87,6 +87,11 @@ const AnnotationForm = ({
           {t('info_dimensions', {
             width: dimensions.width.toFixed(),
             height: dimensions.height.toFixed(),
+          })}
+        </span>
+        <span>
+          {t('info_surface', {
+            surface: (dimensions.width * dimensions.height).toFixed(),
           })}
         </span>
       </div>

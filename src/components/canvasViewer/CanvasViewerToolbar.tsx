@@ -1,7 +1,7 @@
 import { ElementType } from '@/data/models/Annotation';
 import useDialog from '@/hooks/ui/useDialog';
 import { Canvas } from '@iiif/presentation-3';
-import { Book, BookOpenText, Eye, EyeOff, Layout, NotebookPen } from 'lucide-react';
+import { Book, BookOpenText, Eye, EyeOff, Layout, NotebookPen, Wrench } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAnnotationContext } from '../reducers/AnnotationContext';
 import { useWorkerContext } from '../reducers/WorkerContext';
@@ -18,6 +18,8 @@ export const CanvasViewerToolbar = ({
   toggleAnnotations,
   toggleText,
   showText,
+  toggleMoidifiers,
+  showModifiers,
 }: {
   collectionId: string;
   canvas: Canvas;
@@ -27,6 +29,8 @@ export const CanvasViewerToolbar = ({
   toggleAnnotations: () => void;
   toggleText: () => void;
   showText: boolean;
+  toggleMoidifiers: () => void;
+  showModifiers: boolean;
 }) => {
   const { t } = useTranslation();
   const { openDuplicateLayoutDialog, openRemoveAnnotationsDialog } = useDialog();
@@ -96,6 +100,14 @@ export const CanvasViewerToolbar = ({
           </Toggle>
           <Toggle className='soft-button' size={null} onClick={toggleText} pressed={showText}>
             {showText ? <BookOpenText size={24} /> : <Book />}
+          </Toggle>
+          <Toggle
+            className='soft-button'
+            size={null}
+            onClick={toggleMoidifiers}
+            pressed={showModifiers}
+          >
+            {showModifiers ? <Wrench size={24} /> : <Wrench />}
           </Toggle>
         </div>
       )}

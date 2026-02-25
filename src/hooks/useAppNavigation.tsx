@@ -5,6 +5,7 @@ export const CorpusenseRoutes = {
   COLLECTIONS: 'collections',
   CONFIGURATION: 'configuration',
   MODELS: 'models',
+  MODIFIERCHAIN: 'modifier-chain',
   LOCAL_SOURCES: 'localSources',
   IIIF_SOURCES: 'iiifSources',
   WORKERS: 'workers',
@@ -39,6 +40,9 @@ const useAppNavigation = () => {
   const goToModelsManager = async () => {
     await navigate(`/${CorpusenseRoutes.MODELS}`);
   };
+  const goToModifierChainManager = async () => {
+    await navigate(`/${CorpusenseRoutes.MODIFIERCHAIN}`);
+  };
   const goToLocalSources = async () => {
     await navigate(`/${CorpusenseRoutes.LOCAL_SOURCES}`);
   };
@@ -55,6 +59,7 @@ const useAppNavigation = () => {
     goToCollectionInspector,
     goToConfiguration,
     goToModelsManager,
+    goToModifierChainManager,
     goToLocalSources,
     goToWorkersManager,
     goToDocumentation,

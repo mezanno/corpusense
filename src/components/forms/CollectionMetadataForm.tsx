@@ -3,6 +3,7 @@
 import { Collection } from '@/data/models/Collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useModels } from '@/hooks/data/models/useModels';
+import useModifierChainLive from '@/hooks/data/modifiers/useModifierChainLive';
 import { useTags } from '@/hooks/data/tags/useTags';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Tag as FormTag, TagInput } from 'emblor';
@@ -30,10 +31,13 @@ const formSchema = z.object({
     .optional(),
   about: z.string().optional(),
   modelId: z.string().optional(),
+  postLayoutModifierChainId: z.string().optional(),
+  postOcrModifierChainId: z.string().optional(),
 });
 
 const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
   const { models } = useModels();
+  const { modifierChains } = useModifierChainLive();
   const { tags: storedTags, createNewTag } = useTags();
 
   const { updateCollection } = useCollections();
@@ -64,6 +68,8 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
       about: collection.about,
       tags: collectionTagsDefaultValue,
       modelId: collection.modelId,
+      postLayoutModifierChainId: collection.postLayoutModifierChainId,
+      postOcrModifierChainId: collection.postOcrModifierChainId,
     },
   });
 
@@ -80,6 +86,8 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
     updatedCollection.name = values.name;
     updatedCollection.about = values.about;
     updatedCollection.modelId = values.modelId;
+    updatedCollection.postLayoutModifierChainId = values.postLayoutModifierChainId;
+    updatedCollection.postOcrModifierChainId = values.postOcrModifierChainId;
     if (values.tags !== undefined) {
       updatedCollection.tags = values.tags.map((tag) => tag.id);
     }
@@ -103,6 +111,8 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
     form.setValue('name', collection.name);
     form.setValue('about', collection.about);
     form.setValue('modelId', collection.modelId);
+    form.setValue('postLayoutModifierChainId', collection.postLayoutModifierChainId);
+    form.setValue('postOcrModifierChainId', collection.postOcrModifierChainId);
   }, [collection]);
 
   return (
@@ -209,21 +219,67 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
                 </FormItem>
               )}
             />
-            <div className='mt-2 flex h-full flex-col'>
-              <FormLabel>{t('form_label_collection_manifest')}</FormLabel>
-              <ul className='mt-1 max-h-32 flex-1 overflow-auto rounded border bg-white p-2'>
-                {manifestIds.map((id) => (
-                  <Link
-                    className='block break-all underline'
-                    key={id}
-                    to={`/manifest?manifestId=${id}`}
-                  >
-                    {id}
-                  </Link>
-                ))}
-              </ul>
-            </div>
+            <FormField
+              control={form.control}
+              name='postLayoutModifierChainId'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form_label_collection_postLayoutModifierChain')}</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className='h-10 w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+                    >
+                      <option value=''>{t('form_placeholder_modifierchain')}</option>
+                      {modifierChains.map((chain) => (
+                        <option key={chain.id} value={chain.id}>
+                          {chain.name}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='postOcrModifierChainId'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form_label_collection_postOcrModifierChain')}</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className='h-10 w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+                    >
+                      <option value=''>{t('form_placeholder_modifierchain')}</option>
+                      {modifierChains.map((chain) => (
+                        <option key={chain.id} value={chain.id}>
+                          {chain.name}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
+        </div>
+        <div className='mt-2 flex h-full flex-col'>
+          <FormLabel>{t('form_label_collection_manifest')}</FormLabel>
+          <ul className='mt-1 max-h-32 flex-1 overflow-auto rounded border bg-white p-2'>
+            {manifestIds.map((id) => (
+              <Link
+                className='block break-all underline'
+                key={id}
+                to={`/manifest?manifestId=${id}`}
+              >
+                {id}
+              </Link>
+            ))}
+          </ul>
         </div>
         <div className='flex w-full items-center justify-start pt-3'>
           <button className='soft-button'>{t('btn_save')}</button>

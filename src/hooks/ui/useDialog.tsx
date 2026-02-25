@@ -5,23 +5,29 @@ import ExportCollectionForm from '@/components/forms/ExportCollectionForm';
 import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
 import ImportCollectionForm from '@/components/forms/ImportCollectionForm';
 import ImportModelForm from '@/components/forms/ImportModelForm';
+import LoadModifierChainForm, {
+  LoadModifierChainResult,
+} from '@/components/forms/LoadModifierChainForm';
 import LoginForm from '@/components/forms/LoginForm';
 import NewCollectionForm, { NewCollectionFormParams } from '@/components/forms/NewCollectionForm';
 import NewModelForm from '@/components/forms/NewModelForm';
 import OpenManifestForm from '@/components/forms/OpenManifestForm';
 import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
+import SaveModifierChainForm from '@/components/forms/SaveModifierChainForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { DataModel } from '@/data/models/DataModel';
+import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { CanvasScope, Scope } from '@/data/models/Scope';
 import { Worker } from '@/data/models/Worker';
 import { ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export type FormProps = {
+export type FormProps<TResult = unknown> = {
   formRef: RefObject<HTMLFormElement | null>;
   setCanSubmit: (can: boolean) => void;
   closeDialog?: () => void;
+  onResult?: (result: TResult) => void;
 };
 
 type FormDialogOptions = {
@@ -204,6 +210,39 @@ const useDialog = () => {
     });
   };
 
+  const openSaveModifierChainDialog = (
+    modifiers: AnyModifier[],
+    modifiersValues: Record<string, unknown>,
+  ) => {
+    openFormDialog({
+      title: t('btn_save_modifierchain'),
+      confirmLabel: t('btn_save'),
+      renderForm: (formRef) => (
+        <SaveModifierChainForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          modifiers={modifiers}
+          modifiersValues={modifiersValues}
+        />
+      ),
+    });
+  };
+
+  const openLoadModifierChainDialog = (onResult: (result: LoadModifierChainResult) => void) => {
+    openFormDialog({
+      title: t('btn_load_modifiers'),
+      confirmLabel: t('btn_open'),
+      renderForm: (formRef) => (
+        <LoadModifierChainForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          closeDialog={closeDialog}
+          onResult={onResult}
+        />
+      ),
+    });
+  };
+
   return {
     openOpenManifestDialog,
     openImportCollectionDialog,
@@ -218,6 +257,8 @@ const useDialog = () => {
     openRemoveAnnotationsDialog,
     openExportCollectionDialog,
     openConvertPdfForm: openConvertPdfDialog,
+    openSaveModifierChainDialog,
+    openLoadModifierChainDialog,
   };
 };
 

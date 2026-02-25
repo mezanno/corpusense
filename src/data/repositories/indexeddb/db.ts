@@ -5,6 +5,7 @@ import { DataModel } from '@/data/models/DataModel';
 import { FSHandle } from '@/data/models/FSHandle';
 import { History } from '@/data/models/History';
 import { ItemMetadata } from '@/data/models/Metadata';
+import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Result } from '@/data/models/Result';
 import { StoredManifestContent, StoredManifestDetails } from '@/data/models/StoredManifest';
@@ -22,12 +23,14 @@ const db = new Dexie('mezanno') as Dexie & {
   itemMetadata: EntityTable<ItemMetadata, 'id'>;
   tags: EntityTable<Tag, 'id'>;
   annotations: EntityTable<Annotation, 'id'>;
+  annotationsTemp: EntityTable<Annotation, 'id'>;
   models: EntityTable<DataModel, 'id'>;
   namedEntities: EntityTable<NamedEntity, 'id'>;
   results: EntityTable<Result, 'id'>;
   workers: EntityTable<Worker, 'id'>;
   handles: EntityTable<FSHandle, 'id'>;
   convertedFiles: EntityTable<ConvertedFile, 'id'>;
+  modifierChains: EntityTable<ModifierChainDTO, 'id'>;
 };
 
 db.version(1).stores({
@@ -43,11 +46,14 @@ db.version(1).stores({
   //TODO: il faudrait peut-être revoir le format et ne garder IIIF que pour l'export
   annotations:
     '&id, canvasId, collectionId, [canvasId+collectionId], order, [canvasId+collectionId+type]',
+  annotationsTemp:
+    '&id, canvasId, collectionId, [canvasId+collectionId], order, [canvasId+collectionId+type]',
   namedEntities: '&id, *annotationIds, type.id',
   results: '++id, workerName, workerId, [scopeKey+workerName], taskId',
   workers: '&id, name, status, [scopeKey+name]',
   handles: '&id',
   convertedFiles: '&id, folderName',
+  modifierChains: '&id, name',
 });
 
 export const clearDatabase = async () => {
