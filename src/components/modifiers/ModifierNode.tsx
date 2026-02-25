@@ -1,6 +1,6 @@
 import { Modifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
-import { Handle, Node, NodeProps, Position } from '@xyflow/react';
+import { Handle, Node, NodeProps, Position, useNodeConnections } from '@xyflow/react';
 import { PlusCircle, Trash } from 'lucide-react';
 import z, { ZodObject, ZodRawShape } from 'zod';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -18,32 +18,38 @@ export type ModifierNodeProps<TSchema extends ZodObject<ZodRawShape>> = {
 
 type ModifierNodeType = Node<ModifierNodeProps<ZodObject<ZodRawShape>>>;
 
-const ModifierNode = ({ data }: NodeProps<ModifierNodeType>) => {
+const ModifierNode = ({ id, data }: NodeProps<ModifierNodeType>) => {
   const { modifier, onDelete, onChange, onTypeChange, initialValues } = data;
+  const connections = useNodeConnections({ id });
+
+  const isSource = connections.some((conn) => conn.source === id);
+  const isTarget = connections.some((conn) => conn.target === id);
 
   return (
     <>
-      <Handle
-        position={Position.Left}
-        type='target'
-        style={{
-          background: 'none',
-          border: 'none',
-          width: '1em',
-          height: '1em',
-        }}
-        onClick={() => data.onInsertBefore(modifier.id)}
-      >
-        <div
-          className='absolute -left-3 rounded-2xl bg-white'
+      {isTarget ? (
+        <Handle type='target' position={Position.Left}></Handle>
+      ) : (
+        <Handle
+          position={Position.Left}
+          type='target'
+          onClick={() => data.onInsertBefore(modifier.id)}
           style={{
-            pointerEvents: 'none',
+            background: 'white',
+            border: 'none',
+            width: 25,
+            height: 25,
+            borderRadius: '9999px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            left: -12, // ajuste la position
           }}
         >
-          <PlusCircle size={25} />
-        </div>
-      </Handle>
-      <div className='flex max-w-50 flex-col items-end rounded border p-2'>
+          <PlusCircle size={20} />
+        </Handle>
+      )}
+      <div className='flex max-w-50 flex-col items-end space-y-1 p-2 text-left'>
         <div className='flex w-full justify-between'>
           <Select value={modifier.type} onValueChange={(value) => onTypeChange(modifier.id, value)}>
             <SelectTrigger>
@@ -68,26 +74,28 @@ const ModifierNode = ({ data }: NodeProps<ModifierNodeType>) => {
           initialValues={initialValues}
         />
       </div>
-      <Handle
-        position={Position.Right}
-        type='source'
-        style={{
-          background: 'none',
-          border: 'none',
-          width: '1em',
-          height: '1em',
-        }}
-        onClick={() => data.onInsertAfter(modifier.id)}
-      >
-        <div
-          className='absolute left-1 rounded-2xl bg-white'
+      {isSource ? (
+        <Handle type='source' position={Position.Right}></Handle>
+      ) : (
+        <Handle
+          position={Position.Right}
+          type='source'
+          onClick={() => data.onInsertAfter(modifier.id)}
           style={{
-            pointerEvents: 'none',
+            background: 'white',
+            border: 'none',
+            width: 25,
+            height: 25,
+            borderRadius: '9999px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            right: -12, // ajuste la position
           }}
         >
-          <PlusCircle size={25} />
-        </div>
-      </Handle>
+          <PlusCircle size={20} />
+        </Handle>
+      )}
     </>
   );
 };
