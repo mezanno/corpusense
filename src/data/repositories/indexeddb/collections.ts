@@ -121,6 +121,7 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     id: string,
     {
       name,
+      about,
       tags,
       content,
       modelId,
@@ -129,6 +130,7 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
       postOcrModifierChainId,
     }: {
       name: string;
+      about?: string;
       tags: string[];
       content: CollectionElement[];
       modelId?: string;
@@ -140,6 +142,7 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
     await db.transaction('rw', db.collections, db.collectionContents, async () => {
       await db.collections.update(id, {
         name,
+        about,
         tags,
         modelId,
         offline,

@@ -143,6 +143,7 @@ export const useCollections = () => {
     const {
       id,
       name,
+      about,
       tags,
       content,
       modelId,
@@ -157,6 +158,7 @@ export const useCollections = () => {
       }
       await collectionRepository.update(id, {
         name,
+        about,
         tags,
         content,
         modelId,
