@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
-
 import { Collection } from '@/data/models/Collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useModels } from '@/hooks/data/models/useModels';
@@ -7,9 +5,9 @@ import useModifierChainLive from '@/hooks/data/modifiers/useModifierChainLive';
 import { useTags } from '@/hooks/data/tags/useTags';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Tag as FormTag, TagInput } from 'emblor';
-import { uniq } from 'lodash';
-import { useEffect, useEffectEvent, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { debounce, uniq } from 'lodash';
+import { useEffect, useEffectEvent, useMemo, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
@@ -79,21 +77,6 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
 
   const manifestIds = uniq(collection.content.map((el) => el.manifestId));
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values.tags);
-
-    const updatedCollection = { ...collection };
-    updatedCollection.name = values.name;
-    updatedCollection.about = values.about;
-    updatedCollection.modelId = values.modelId;
-    updatedCollection.postLayoutModifierChainId = values.postLayoutModifierChainId;
-    updatedCollection.postOcrModifierChainId = values.postOcrModifierChainId;
-    if (values.tags !== undefined) {
-      updatedCollection.tags = values.tags.map((tag) => tag.id);
-    }
-    await updateCollection(updatedCollection);
-  }
-
   const handleTagAdded = (newTags: FormTag[]) => {
     //on récupère les tags qui ne sont pas déjà dans la collection (state tags)
     const diff = newTags.filter((tag) => !tags.some((elt) => elt.id === tag.id));
@@ -107,20 +90,59 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
   });
 
   useEffect(() => {
+    form.reset({
+      name: collection.name,
+      about: collection.about,
+      tags: collectionTagsDefaultValue,
+      modelId: collection.modelId,
+      postLayoutModifierChainId: collection.postLayoutModifierChainId,
+      postOcrModifierChainId: collection.postOcrModifierChainId,
+    });
+
     onCollection(collectionTagsDefaultValue);
-    form.setValue('name', collection.name);
-    form.setValue('about', collection.about);
-    form.setValue('modelId', collection.modelId);
-    form.setValue('postLayoutModifierChainId', collection.postLayoutModifierChainId);
-    form.setValue('postOcrModifierChainId', collection.postOcrModifierChainId);
   }, [collection]);
+
+  const watchedValues = useWatch({
+    control: form.control,
+  }) as z.infer<typeof formSchema>;
+  const debouncedSave = useMemo(
+    () =>
+      debounce(async (values: z.infer<typeof formSchema>) => {
+        const updatedCollection = { ...collection };
+
+        updatedCollection.name = values.name;
+        updatedCollection.about = values.about;
+        updatedCollection.modelId = values.modelId;
+        updatedCollection.postLayoutModifierChainId = values.postLayoutModifierChainId;
+        updatedCollection.postOcrModifierChainId = values.postOcrModifierChainId;
+
+        if (values.tags) {
+          updatedCollection.tags = values.tags.map((tag) => tag.id);
+        } else {
+          updatedCollection.tags = [];
+        }
+
+        await updateCollection(updatedCollection);
+
+        // reset dirty state proprement
+        form.reset(values);
+      }, 600), // 600ms après la dernière modification
+    [collection, updateCollection, form],
+  );
+
+  useEffect(() => {
+    if (!form.formState.isDirty || watchedValues.name === undefined) return;
+
+    void debouncedSave(watchedValues);
+
+    return () => {
+      debouncedSave.cancel();
+    };
+  }, [watchedValues, form.formState.isDirty, debouncedSave]);
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className='mx-auto flex w-full flex-col gap-2 p-2 md:p-5'
-      >
+      <form className='mx-auto flex w-full flex-col gap-2 p-2 md:p-5'>
         <div className='flex gap-2'>
           <div className='flex w-1/2 flex-col gap-2'>
             <FormField
@@ -280,9 +302,6 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
               </Link>
             ))}
           </ul>
-        </div>
-        <div className='flex w-full items-center justify-start pt-3'>
-          <button className='soft-button'>{t('btn_save')}</button>
         </div>
       </form>
     </Form>
