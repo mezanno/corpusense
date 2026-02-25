@@ -12,7 +12,7 @@ const ModifierChainManagerPage = () => {
   return (
     <div className='flex h-full w-full flex-col space-y-2 p-4'>
       <h1 className='flex items-center text-2xl font-bold'>
-        <Container className='mr-2' /> {t('page_title_models_manager')}
+        <Container className='mr-2' /> {t('page_title_modifierchain_manager')}
       </h1>
       <ModifierChainDashboard
         setSelectedChainId={setSelectedChainId}
