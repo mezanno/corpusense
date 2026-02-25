@@ -1,6 +1,40 @@
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
+import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import { CanvasScope, CollectionScope } from '@/data/models/Scope';
-import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
+import {
+  getAnnotationRepository,
+  getModifierChainRepository,
+} from '@/data/repositories/indexeddb/dbFactory';
+import { Annotation } from '../models/Annotation';
+
+const getModifiersAndValues = async (
+  id: string,
+): Promise<{
+  modifiers: AnyModifier[];
+  modifierValues: Record<string, unknown>;
+}> => {
+  const modifierChainRepository = getModifierChainRepository();
+  const modifierDTO = await modifierChainRepository.getById(id);
+
+  const modifiers = modifierDTO.modifiers.map((dto) => {
+    const factory = modifierRegistry[dto.type];
+    if (factory === undefined || factory === null) {
+      throw new Error(`No factory found for modifier type: ${dto.type}`);
+    }
+    const modifier = factory.create();
+    modifier.id = dto.id; // Assigner l'ID du DTO au modifier créé
+    return modifier;
+  });
+
+  const modifierValues: Record<string, unknown> = {};
+  modifierDTO.modifiers.forEach((dto) => {
+    modifierValues[dto.id] = dto.values;
+  });
+
+  console.log('Loaded modifier chain:', { modifiers, modifierValues });
+
+  return { modifiers, modifierValues };
+};
 
 const applyModifiersToScope = async (
   modifiers: AnyModifier[],
@@ -26,4 +60,23 @@ const applyModifiersToScope = async (
   await annotationRepository.addAll(annotations);
 };
 
-export { applyModifiersToScope };
+const applyModifierChainToAnnotations = async (
+  modifierChainId: string,
+  annotations: Annotation[],
+) => {
+  const { modifiers, modifierValues } = await getModifiersAndValues(modifierChainId);
+
+  let updatedAnnotations = [...annotations];
+  modifiers.forEach((modifier) => {
+    const values = modifierValues[modifier.id];
+    if (values !== undefined) {
+      const rawValues = modifierValues[modifier.id] ?? {};
+      const parsedValues = modifier.schema.parse(rawValues);
+      updatedAnnotations = modifier.apply(updatedAnnotations, parsedValues);
+    }
+  });
+
+  return updatedAnnotations;
+};
+
+export { applyModifierChainToAnnotations, applyModifiersToScope, getModifiersAndValues };
