@@ -8,6 +8,7 @@ import {
   Background,
   Controls,
   Edge,
+  MarkerType,
   Node,
   ReactFlow,
   useEdgesState,
@@ -18,6 +19,7 @@ import { FolderOpen, Play, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AddNode from './AddNode';
+import ModifierChainEdge from './ModifierChainEdge';
 import ModifierNode from './ModifierNode';
 import './xy-theme.css';
 
@@ -25,6 +27,11 @@ const nodeTypes = {
   modifierNode: ModifierNode,
   addNode: AddNode,
 };
+
+const edgeTypes = {
+  modifierChainEdge: ModifierChainEdge,
+};
+
 const NODE_WIDTH = 280;
 const GAP = 50;
 
@@ -201,7 +208,13 @@ const ModifierChainFlow = ({
       id: `e-${modifiers[index].id}-${modifier.id}`,
       source: modifiers[index].id,
       target: modifier.id,
-      type: 'smoothstep',
+      type: 'modifierChainEdge',
+      data: {
+        modifierSourceId: modifiers[index].id,
+        onInsertAfter: insertModifierAfter,
+      },
+      markerEnd: { type: MarkerType.Arrow },
+      animated: true,
     }));
 
     setNodes((oldNodes) =>
@@ -258,6 +271,7 @@ const ModifierChainFlow = ({
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable={false}
