@@ -44,8 +44,6 @@ function ModifierForm<TSchema extends ZodObject<ZodRawShape>>({
 
   const shape = modifier.schema.shape;
 
-  console.log('Initial values: ', initialValues);
-
   return (
     <div className='flex h-full w-full flex-col'>
       <FormProvider {...form}>
