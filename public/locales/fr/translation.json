@@ -1,10 +1,10 @@
 {
   "page_title_manifexplorer": "Manifest Explorer",
-  "page_title_collection_manager": "Gestionnaire de collections",
+  "page_title_collection_manager": "Collections",
   "page_title_collection_inspector": "Inspecteur de collections",
   "page_title_configuration": "Paramètres de configuration",
-  "page_title_models_manager": "Gestionnaire de modèles",
-  "page_title_modifierchain_manager": "Gestionnaire de chaînes de modificateurs",
+  "page_title_models_manager": "Modèles de données",
+  "page_title_modifierchain_manager": "Chaînes de modificateurs",
   "page_title_local_storage": "Mes documents locaux",
   "page_title_iiif_storage": "Bibliothèques en ligne",
   "page_title_workers_manager": "Mes traitements",
