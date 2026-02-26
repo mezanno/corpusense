@@ -15,7 +15,8 @@ type WorkerContextValue = {
   getStatus: (scope: Scope) => WorkerStatus | undefined;
   isWorkerOrTaskRunning: (scope: Scope) => boolean;
   hasResult: (workerId: string) => boolean;
-  //   getWorkersByScopeAndStatus: (scope: Scope, status: WorkerStatus | WorkerStatus[]) => Worker[];
+  getWorkersByScope: (scope: Scope) => Worker[];
+  getWorkersByScopeAndStatus: (scope: Scope, status: WorkerStatus | WorkerStatus[]) => Worker[];
 };
 
 const WorkerContext = createContext<WorkerContextValue | undefined>(undefined);
@@ -41,12 +42,18 @@ export const WorkerProvider = ({ children }: Props) => {
         .sort((w1, w2) => w1.name.localeCompare(w2.name));
     };
 
-    // const getWorkersByScopeAndStatus = (scope: Scope, status: WorkerStatus | WorkerStatus[]) => {
-    //   const statuses = Array.isArray(status) ? status : [status];
-    //   return Object.values(workers)
-    //     .filter((worker) => isSameScope(worker.scope, scope) && statuses.includes(worker.status))
-    //     .sort((w1, w2) => w1.name.localeCompare(w2.name));
-    // };
+    const getWorkersByScopeAndStatus = (scope: Scope, status: WorkerStatus | WorkerStatus[]) => {
+      const statuses = Array.isArray(status) ? status : [status];
+      return Object.values(workers)
+        .filter((worker) => isSameScope(worker.scope, scope) && statuses.includes(worker.status))
+        .sort((w1, w2) => w1.name.localeCompare(w2.name));
+    };
+
+    const getWorkersByScope = (scope: Scope) => {
+      return Object.values(workers)
+        .filter((worker) => isSameScope(worker.scope, scope))
+        .sort((w1, w2) => w1.name.localeCompare(w2.name));
+    };
 
     /**
      * Get the worker related to a canvas
@@ -126,7 +133,8 @@ export const WorkerProvider = ({ children }: Props) => {
       getStatus,
       isWorkerOrTaskRunning,
       hasResult,
-      //   getWorkersByScopeAndStatus,
+      getWorkersByScope,
+      getWorkersByScopeAndStatus,
     };
   }, [workers, results]);
 

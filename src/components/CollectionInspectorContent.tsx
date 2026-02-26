@@ -15,10 +15,11 @@ import { useCollectionContent } from '@/hooks/data/collections/useCollectionCont
 import { Canvas } from '@iiif/presentation-3';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import 'gridstack/dist/gridstack.min.css';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import CollectionNavigation from './collectionPage/CollectionNavigation';
+import ResultsAvailable from './ResultsAvailable';
 
 const CollectionInspectorContent = ({
   collectionId,
@@ -75,6 +76,13 @@ const CollectionInspectorContent = ({
     overscan: 2,
   });
 
+  const currentCollectionScope = useMemo(
+    () => ({
+      collectionId,
+    }),
+    [collectionId],
+  );
+
   return (
     <section className='h-full max-h-full w-full max-w-full'>
       <ResizablePanelGroup direction='horizontal'>
@@ -101,7 +109,12 @@ const CollectionInspectorContent = ({
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-              {collection.content.length > 0 && <CollectionToolbar collection={collection} />}
+              {collection.content.length > 0 && (
+                <div className='flex w-full items-center justify-between'>
+                  <CollectionToolbar collection={collection} />
+                  <ResultsAvailable scope={currentCollectionScope} />
+                </div>
+              )}
               <div className='panel h-full w-full overflow-hidden'>
                 {collection.contentSize > 0 ? (
                   <AutoSizer
