@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import { resetLastEvent } from '@/state/reducers/events';
 import { selectLastErrorEvent, selectLastInfoEvent } from '@/state/selectors/events';
-import { FolderOpen } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
@@ -45,7 +45,7 @@ const Layout = () => {
                 aria-label={t('btn_open_contact')}
                 onClick={openContactUsDialog}
               >
-                <FolderOpen size={16} />
+                <Mail size={16} />
                 {t('btn_open_contact')}
               </button>
             </div>
