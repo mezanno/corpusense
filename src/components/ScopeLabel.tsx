@@ -23,10 +23,14 @@ const ScopeLabel = ({ scope }: { scope: Scope }) => {
         to={`/${CorpusenseRoutes.COLLECTIONS}/${scope.collectionId}${
           isCanvasScope(scope) ? '?canvas=' + scope.canvasId : ''
         }`}
-        className='h-full underline'
+        className='h-full w-fit underline'
         title={`Lien vers `}
       >
-        ({t('link_open_element')})
+        {isCanvasScope(scope) ? (
+          <span>({t('link_open_canvas')})</span>
+        ) : (
+          <span>({t('link_open_collection')})</span>
+        )}
       </Link>
     </div>
   );
