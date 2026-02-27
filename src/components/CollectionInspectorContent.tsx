@@ -18,7 +18,6 @@ import 'gridstack/dist/gridstack.min.css';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import CollectionNavigation from './collectionPage/CollectionNavigation';
 import ResultsAvailable from './ResultsAvailable';
 
 const CollectionInspectorContent = ({
@@ -202,11 +201,9 @@ const CollectionInspectorContent = ({
             </div>
           ) : (
             <div className='flex h-full w-full flex-col'>
-              <CanvasViewer collectionId={collectionId} canvas={canvasToDisplay} />
-
-              <CollectionNavigation
+              <CanvasViewer
                 collectionId={collectionId}
-                currentCanvasId={canvasToDisplay.id}
+                canvas={canvasToDisplay}
                 setCanvasToDisplay={setCanvasToDisplay}
               />
             </div>

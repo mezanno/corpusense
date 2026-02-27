@@ -2,6 +2,7 @@ import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { Annotorious } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
 import { useState } from 'react';
+import CollectionNavigation from '../collectionPage/CollectionNavigation';
 import ModifierChainFlow from '../modifiers/ModifierChainFlow';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable';
 import CanvasViewerAnnotations from './CanvasViewerAnnotations';
@@ -17,9 +18,11 @@ export enum CanvasViewerMode {
 const CanvasViewer = ({
   canvas,
   collectionId: collectionId,
+  setCanvasToDisplay,
 }: {
   canvas: Canvas;
   collectionId?: string;
+  setCanvasToDisplay?: (canvas: Canvas | null) => void;
 }) => {
   const [mode, setMode] = useState<CanvasViewerMode>(CanvasViewerMode.MOVE);
   const [showAnnotations, setShowAnnotations] = useState(true);
@@ -65,13 +68,20 @@ const CanvasViewer = ({
           )}
           <div className='flex w-1/2 flex-1'>
             <ResizablePanelGroup className='flex h-full w-full flex-col' direction='vertical'>
-              <ResizablePanel minSize={50}>
+              <ResizablePanel minSize={50} className='flex h-full w-full flex-col'>
                 <CanvasViewerOSDContent
                   canvas={canvas}
                   mode={mode}
                   hovered={hovered}
                   setHovered={setHovered}
                 />
+                {collectionId !== undefined && setCanvasToDisplay && (
+                  <CollectionNavigation
+                    collectionId={collectionId}
+                    currentCanvasId={canvas.id}
+                    setCanvasToDisplay={setCanvasToDisplay}
+                  />
+                )}
               </ResizablePanel>
               {showModifiers && collectionId !== undefined && (
                 <>
