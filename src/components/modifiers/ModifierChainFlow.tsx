@@ -54,7 +54,6 @@ const ModifierChainFlow = ({
   const [nodes, setNodes] = useNodesState<Node>([]);
   const [edges, setEdges] = useEdgesState<Edge>([]);
   const [showPreview, setShowPreview] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
 
   const { loadModifierChain } = useModifierChainIO();
 
