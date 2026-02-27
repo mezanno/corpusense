@@ -15,14 +15,14 @@ import {
   useNodesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { debounce } from 'lodash';
 import { FolderOpen, Save } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import AddNode from './AddNode';
 import ModifierChainEdge from './ModifierChainEdge';
 import ModifierNode from './ModifierNode';
-import ScopedModifierChainToolbar from './ScopedModifierChainToolbar';
 import './xy-theme.css';
 
 const nodeTypes = {
@@ -53,6 +53,7 @@ const ModifierChainFlow = ({
   );
   const [nodes, setNodes] = useNodesState<Node>([]);
   const [edges, setEdges] = useEdgesState<Edge>([]);
+  const [showPreview, setShowPreview] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
   const { loadModifierChain } = useModifierChainIO();
@@ -252,6 +253,24 @@ const ModifierChainFlow = ({
 
     setEdges(newEdges);
   }, [modifiers, modifierValues]);
+
+  //we use a debounced function to preview the modifier chain, to avoid triggering too many previews while the user is changing values
+  const debouncePreview = useMemo(
+    () =>
+      debounce(() => {
+        console.log('Previewing modifier chain with values:', modifierValues);
+      }, 300),
+    [modifierValues],
+  );
+
+  useEffect(() => {
+    if (showPreview) {
+      debouncePreview();
+    }
+    return () => {
+      debouncePreview.cancel();
+    };
+  }, [modifierValues, showPreview]);
 
   return (
     <div className='flex h-full w-full flex-col'>
