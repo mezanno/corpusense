@@ -36,10 +36,15 @@ Nous adoptons une structure en trois niveaux pour maximiser l'efficacité :
 
 ---
 
-## 3. Priorités d'Implémentation (Roadmap)
+## 3. Priorités d'Implémentation et État d'Avancement (Roadmap)
 
-1.  **Réactivation** : Réactiver et corriger les tests unitaires existants (actuellement obsolètes ou commentés).
-2.  **Logic Métier** : Couvrir 100% du dossier `src/data/utils/` (calculs IIIF, gestion des collections).
+**Statut (Février 2026)** : 
+- **Tests mis en place** : De nombreux tests unitaires ont été implémentés (plus de 77 tests) couvrant activement les convertisseurs et utilitaires.
+- **Problème Bloquant Actuel** : L'environnement de test Vitest ne parvient pas à initialiser `i18n.ts` pour les tests de composants (ex: `ManifestExplorerPage.test.tsx`), produisant l'erreur `TypeError: __vite_ssr_import_0__.default.use is not a function`. **Cela doit être résolu en priorité absolue.**
+
+**Prochaines Étapes :**
+1.  **Dépannage i18n (URGENT)** : Corriger la configuration Vitest/React pour que l'import de `i18next` fonctionne dans les tests de composants.
+2.  **Réactivation finale** : Corriger les derniers tests de composants restants qui sont commentés (ex: `CanvasCard.test.tsx`).
 3.  **Hooks DAL** : Créer des tests pour les hooks utilisant `useLiveQuery` (ex: `useCollections`).
 4.  **CI/CD** : Automatiser l'exécution des tests sur chaque Pull Request.
 
