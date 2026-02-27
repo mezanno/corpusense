@@ -15,8 +15,9 @@ import {
   useNodesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { debounce } from 'lodash';
 import { Eye, FolderOpen, Play, Save } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from '../ui/checkbox';
 import { Field, FieldLabel } from '../ui/field';
@@ -50,6 +51,7 @@ const ModifierChainFlow = ({
   const [modifierValues, setModifierValues] = useState<Record<string, unknown>>({});
   const [nodes, setNodes] = useNodesState<Node>([]);
   const [edges, setEdges] = useEdgesState<Edge>([]);
+  const [showPreview, setShowPreview] = useState(false);
 
   const { applyModifierChainToScope } = useModifierChain();
   const { loadModifierChain } = useModifierChainIO();
@@ -249,6 +251,24 @@ const ModifierChainFlow = ({
     setEdges(newEdges);
   }, [modifiers, modifierValues]);
 
+  //we use a debounced function to preview the modifier chain, to avoid triggering too many previews while the user is changing values
+  const debouncePreview = useMemo(
+    () =>
+      debounce(() => {
+        console.log('Previewing modifier chain with values:', modifierValues);
+      }, 300),
+    [modifierValues],
+  );
+
+  useEffect(() => {
+    if (showPreview) {
+      debouncePreview();
+    }
+    return () => {
+      debouncePreview.cancel();
+    };
+  }, [modifierValues, showPreview]);
+
   return (
     <div className='flex h-full w-full flex-col'>
       <div className='mt-4 flex justify-center space-x-2'>
@@ -273,7 +293,11 @@ const ModifierChainFlow = ({
                   className='soft-button w-auto'
                   title={t('btn_modifierchain_preview')}
                 >
-                  <Checkbox id='toggle-preview' />
+                  <Checkbox
+                    id='toggle-preview'
+                    checked={showPreview}
+                    onCheckedChange={() => setShowPreview((prev) => !prev)}
+                  />
                   <FieldLabel htmlFor='toggle-preview'>
                     <Eye />
                   </FieldLabel>
