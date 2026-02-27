@@ -1,14 +1,14 @@
 import { getConvertedFileRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useFSHandleStore } from '@/state/zustand/useFSHandleStore';
 import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentation-3';
-import i18next from 'i18next';
+import i18n from '@/i18n';
 import { TileSource } from 'openseadragon';
 
 const getLabel = (canvas: Canvas): string => {
   const label = canvas.label;
 
   if (!label) {
-    return i18next.t('no_label');
+    return i18n.t('no_label');
   }
 
   // 1. Si c'est une simple string → on renvoie directement
@@ -30,13 +30,13 @@ const getLabel = (canvas: Canvas): string => {
   }
 
   // 4. Fallback
-  return i18next.t('no_label');
+  return i18n.t('no_label');
 };
 
 const getImage = (canvas: Canvas): IIIFExternalWebResource => {
   const image = canvas.items?.[0]?.items?.[0].body as IIIFExternalWebResource;
   if (image === undefined) {
-    throw new Error(i18next.t('error_image_not_found'));
+    throw new Error(i18n.t('error_image_not_found'));
   }
   return image;
 };
@@ -57,7 +57,7 @@ const getImageForThumbnail = (canvas: Canvas, maxWidth: number = 150): IIIFExter
 const getFile = async (filepath: string) => {
   const pathParts = filepath.split('/');
   if (pathParts.length < 2) {
-    throw new Error(i18next.t('error_malformed_filepath', { path: filepath }));
+    throw new Error(i18n.t('error_malformed_filepath', { path: filepath }));
   }
   const convertedFilesRepository = getConvertedFileRepository();
   const folderName = pathParts[0];

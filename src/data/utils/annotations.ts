@@ -1,6 +1,6 @@
 import { ImageAnnotation, ShapeType } from '@annotorious/annotorious';
 import { AnnotationPage, Canvas } from '@iiif/presentation-3';
-import i18next from 'i18next';
+import i18n from '@/i18n';
 import { Rect } from 'openseadragon';
 import {
   Annotation,
@@ -39,7 +39,7 @@ const contains = (annotationContainer: ImageAnnotation, annotation: ImageAnnotat
 const generateRegionAnnotationForCanvas = (canvas: Canvas, collectionId: string) => {
   const image = getImage(canvas);
   if (image.width === undefined || image.height === undefined) {
-    throw new Error(i18next.t('error_image_dimensions'));
+    throw new Error(i18n.t('error_image_dimensions'));
   }
   return createAnnotation({
     canvasId: canvas.id,

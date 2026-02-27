@@ -5,7 +5,7 @@ import useAppNavigation from '@/hooks/useAppNavigation';
 import { fecthManifestRequest } from '@/state/reducers/manifests';
 import { selectManifestURL } from '@/state/selectors/manifests';
 import { zodResolver } from '@hookform/resolvers/zod';
-import i18next from 'i18next';
+import i18n from '@/i18n';
 import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +14,7 @@ import Loading from '../Loading';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from '../ui/form';
 
 const contentFormSchema = z.object({
-  manifestInput: z.string().nonempty({ message: i18next.t('form_error_required') }),
+  manifestInput: z.string().nonempty({ message: i18n.t('form_error_required') }),
 });
 
 const OpenManifestForm = ({ formRef, closeDialog, setCanSubmit }: FormProps) => {

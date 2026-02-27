@@ -1,5 +1,5 @@
 import { AnnotationPage, Canvas, Manifest } from '@iiif/presentation-3';
-import i18next from 'i18next';
+import i18n from '@/i18n';
 import {
   Annotation,
   ElementType,
@@ -24,7 +24,7 @@ const generateManifestFromCollection = async (id: string): Promise<ManifestExpor
     const collection = await getCollectionRepository().getById(id);
 
     if (collection.content.length === 0) {
-      throw new Error(i18next.t('error_export_collection_empty', { name: collection.name }));
+      throw new Error(i18n.t('error_export_collection_empty', { name: collection.name }));
     }
 
     const manifestId = 'https://1.rp.mezanno.xyz/toto.json'; //TODO: to be changed
@@ -54,7 +54,7 @@ const generateManifestFromCollection = async (id: string): Promise<ManifestExpor
   } catch (error) {
     //TODO: revoir le type d'erreur
     console.log('error', error);
-    throw new Error(i18next.t('error_export_collection_not_found'));
+    throw new Error(i18n.t('error_export_collection_not_found'));
   }
 };
 
@@ -196,7 +196,7 @@ const generateNumberedTextFromCanvas = async (
 const generateNumberedTextForCollection = async (collectionId: string) => {
   const canvases = await getCollectionRepository().getCanvasesByCollectionId(collectionId);
   if (canvases === undefined || canvases.length === 0) {
-    throw new Error(i18next.t('error_export_collection_empty'));
+    throw new Error(i18n.t('error_export_collection_empty'));
   }
 
   let allTheText = '';
@@ -219,7 +219,7 @@ const generateNumberedTextForCollection = async (collectionId: string) => {
 const generateTextForCollection = async (collectionId: string) => {
   const canvases = await getCollectionRepository().getCanvasesByCollectionId(collectionId);
   if (canvases === undefined || canvases.length === 0) {
-    throw new Error(i18next.t('error_export_collection_empty'));
+    throw new Error(i18n.t('error_export_collection_empty'));
   }
 
   let allTheText = '';

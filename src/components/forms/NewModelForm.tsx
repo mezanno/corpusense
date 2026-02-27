@@ -2,7 +2,7 @@
 import { useModels } from '@/hooks/data/models/useModels';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { zodResolver } from '@hookform/resolvers/zod';
-import i18next from 'i18next';
+import i18n from '@/i18n';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +15,7 @@ const formSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(1, { message: i18next.t('form_error_required') }),
+    .min(1, { message: i18n.t('form_error_required') }),
   description: z.string().optional(),
   fromModelId: z.string().optional(),
 });

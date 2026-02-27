@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input';
 import { useCollectionIO } from '@/hooks/data/collections/useCollectionIO';
 import { FormProps } from '@/hooks/ui/useDialog';
 import { zodResolver } from '@hookform/resolvers/zod';
-import i18next from 'i18next';
+import i18n from '@/i18n';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +14,7 @@ const schema = z.object({
     .instanceof(File)
     .refine(
       (file) => ['application/json', 'application/zip'].includes(file.type),
-      i18next.t('error_unsupported_file_type', { types: '.json, .zip' }),
+      i18n.t('error_unsupported_file_type', { types: '.json, .zip' }),
     ),
 });
 

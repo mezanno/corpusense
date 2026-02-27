@@ -1,5 +1,5 @@
 import { Canvas, Manifest } from '@iiif/presentation-3';
-import i18next from 'i18next';
+import i18n from '@/i18n';
 
 export const extractManifestDetails = (manifest: Manifest) => {
   const summaryNone = manifest.summary?.['none'];
@@ -18,7 +18,7 @@ export const extractManifestDetails = (manifest: Manifest) => {
 export const extractCanvasById = (manifest: Manifest, canvasId: string): Canvas => {
   const canvas = manifest.items?.find((item) => item.id === canvasId);
   if (!canvas) {
-    throw new Error(i18next.t('error_canvas_not_found'));
+    throw new Error(i18n.t('error_canvas_not_found'));
   }
   return canvas;
 };

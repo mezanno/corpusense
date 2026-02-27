@@ -1,4 +1,4 @@
-import i18next from 'i18next';
+import i18n from '@/i18n';
 import { DataField, DataModel } from '../models/DataModel';
 
 const generatePreview = (model: DataModel) => {
@@ -8,7 +8,7 @@ const generatePreview = (model: DataModel) => {
     preview = preview.concat(`"${field.name}":{`);
     preview = preview.concat(`"type":"${field.type}",`);
     preview = preview.concat(
-      `"description":"${field.description}.${field?.generated === true ? i18next.t('ia_generated') : ''}"`,
+      `"description":"${field.description}.${field?.generated === true ? i18n.t('ia_generated') : ''}"`,
     );
     preview = preview.concat(`}`);
     if (i !== model.fields.length - 1) {
@@ -58,7 +58,7 @@ const generateField = (field: DataField) => {
     return {
       type: 'array',
       description: (field.description ?? '').concat(
-        field?.generated === true ? i18next.t('ia_generated') : '',
+        field?.generated === true ? i18n.t('ia_generated') : '',
       ),
       items: {
         type: field.type,
@@ -68,7 +68,7 @@ const generateField = (field: DataField) => {
     return {
       type: field.type,
       description: (field.description ?? '').concat(
-        field.generated === true ? i18next.t('ia_generated') : '',
+        field.generated === true ? i18n.t('ia_generated') : '',
       ),
     };
   }

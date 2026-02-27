@@ -1,6 +1,6 @@
 import { isAnnotationScope, isCanvasScope, Scope } from '@/data/models/Scope';
 import { ShapeType } from '@annotorious/annotorious';
-import i18next from 'i18next';
+import i18n from '@/i18n';
 import { Annotation, AnnotationDTO, ElementType, getAnnotationType } from '../../models/Annotation';
 import { db } from './db';
 import { AnnotationRepository } from './types';
@@ -9,7 +9,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
   async getById(id: string): Promise<Annotation> {
     const annotation = await db.annotations.get(id);
     if (annotation === undefined) {
-      throw new Error(i18next.t('error_annotation_not_found'));
+      throw new Error(i18n.t('error_annotation_not_found'));
     }
     return annotation;
   }
@@ -119,7 +119,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
   async updateOrder(annotationId: string, order: number) {
     const annotationToUpdate = await db.annotations.get(annotationId);
     if (annotationToUpdate === undefined) {
-      throw new Error(i18next.t('error_annotation_not_found'));
+      throw new Error(i18n.t('error_annotation_not_found'));
     }
     const actualOrder = annotationToUpdate.order;
     const { canvasId, collectionId } = annotationToUpdate;
@@ -154,14 +154,14 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     const { canvasId } = annotations[0];
     annotations.forEach((annotation) => {
       if (annotation.canvasId !== canvasId) {
-        throw new Error(i18next.t('error_annotations_not_in_same_scope'));
+        throw new Error(i18n.t('error_annotations_not_in_same_scope'));
       }
     });
 
     //annotations have to be of type TEMP
     annotations.forEach((annotation) => {
       if (getAnnotationType(annotation) !== ElementType.TEMP) {
-        throw new Error(i18next.t('error_annotations_not_of_type_temp'));
+        throw new Error(i18n.t('error_annotations_not_of_type_temp'));
       }
     });
 
