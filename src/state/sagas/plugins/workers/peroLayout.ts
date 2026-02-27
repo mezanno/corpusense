@@ -240,6 +240,9 @@ export async function processResult(result: PeroLayoutResult, task: Task): Promi
     newAnnotations.push(regionAnnotation);
   }
 
+  //delete previous regions
+  await annotationRepository.deleteByScope(task.scope);
+
   //if a post-processing function is defined for the collection, apply it to the new annotations before saving them
   const collectionRepository = getCollectionRepository();
   const collection = await collectionRepository.getById(task.scope.collectionId);
