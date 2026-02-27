@@ -156,7 +156,18 @@ const ModifierChainFlow = ({
   };
 
   useEffect(() => {
-    if (initialChainId === undefined || initialChainId === null) return;
+    if (initialChainId === undefined || initialChainId === null) {
+      setNodes([
+        {
+          id: 'add',
+          type: 'addNode',
+          position: { x: 0, y: 0 },
+          data: { onAdd: () => addModifier() },
+        },
+      ]);
+      setEdges([]);
+      return;
+    }
 
     void (async () => {
       try {
@@ -173,7 +184,7 @@ const ModifierChainFlow = ({
   }, [initialChainId]);
 
   useEffect(() => {
-    if (modifiers.length === 0 && initialChainId === null) {
+    if (modifiers.length === 0) {
       setNodes([
         {
           id: 'add',
