@@ -15,9 +15,11 @@ import {
   useNodesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { FolderOpen, Play, Save } from 'lucide-react';
+import { Eye, FolderOpen, Play, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Checkbox } from '../ui/checkbox';
+import { Field, FieldLabel } from '../ui/field';
 import AddNode from './AddNode';
 import ModifierChainEdge from './ModifierChainEdge';
 import ModifierNode from './ModifierNode';
@@ -258,13 +260,25 @@ const ModifierChainFlow = ({
         {modifiers.length > 0 && (
           <>
             {scope && (
-              <button
-                onClick={() => void applyChain()}
-                className='soft-button'
-                title={t('btn_apply_modifiers')}
-              >
-                <Play size={16} />
-              </button>
+              <>
+                <button
+                  onClick={() => void applyChain()}
+                  className='soft-button'
+                  title={t('btn_apply_modifiers')}
+                >
+                  <Play size={16} />
+                </button>
+                <Field
+                  orientation='horizontal'
+                  className='soft-button w-auto'
+                  title={t('btn_modifierchain_preview')}
+                >
+                  <Checkbox id='toggle-preview' />
+                  <FieldLabel htmlFor='toggle-preview'>
+                    <Eye />
+                  </FieldLabel>
+                </Field>
+              </>
             )}
             <button
               onClick={() => void saveChain()}
