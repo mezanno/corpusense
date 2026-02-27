@@ -34,6 +34,7 @@ export interface AnnotationRepository {
 
 export interface AnnotationTempRepository {
   getAll(): Promise<Annotation[]>;
+  getByCanvas(scope: CanvasScope): Promise<Annotation[]>;
   addAll(annotations: AnnotationDTO[]): Promise<Annotation[]>;
   deleteByCollection(collectionId: string): Promise<void>;
 }

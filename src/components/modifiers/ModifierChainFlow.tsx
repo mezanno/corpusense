@@ -1,7 +1,6 @@
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
-import { CanvasScope, CollectionScope, isCanvasScope } from '@/data/models/Scope';
-import useModifierChain from '@/hooks/data/modifiers/useModifierChain';
+import { CanvasScope } from '@/data/models/Scope';
 import useModifierChainIO from '@/hooks/data/modifiers/useModifierChainIO';
 import useDialog from '@/hooks/ui/useDialog';
 import {
@@ -15,15 +14,13 @@ import {
   useNodesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { debounce } from 'lodash';
-import { Eye, FolderOpen, Play, Save } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { FolderOpen, Save } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Checkbox } from '../ui/checkbox';
-import { Field, FieldLabel } from '../ui/field';
 import AddNode from './AddNode';
 import ModifierChainEdge from './ModifierChainEdge';
 import ModifierNode from './ModifierNode';
+import ScopedModifierChainToolbar from './ScopedModifierChainToolbar';
 import './xy-theme.css';
 
 const nodeTypes = {
@@ -42,7 +39,7 @@ const ModifierChainFlow = ({
   scope,
   initialChainId,
 }: {
-  scope?: CollectionScope | CanvasScope;
+  scope?: CanvasScope;
   initialChainId?: string | null;
 }) => {
   const { t } = useTranslation();
@@ -53,7 +50,6 @@ const ModifierChainFlow = ({
   const [edges, setEdges] = useEdgesState<Edge>([]);
   const [showPreview, setShowPreview] = useState(false);
 
-  const { applyModifierChainToScope } = useModifierChain();
   const { loadModifierChain } = useModifierChainIO();
 
   const createModifier = (type: string = 'MergeModifier') => {
@@ -138,12 +134,6 @@ const ModifierChainFlow = ({
         [modifierId]: newModifier.schema.parse({}), // <-- applique les valeurs par défaut
       };
     });
-  };
-
-  const applyChain = async () => {
-    if (scope && isCanvasScope(scope)) {
-      await applyModifierChainToScope(modifiers, modifierValues, scope);
-    }
   };
 
   const saveChain = () => {
@@ -251,24 +241,6 @@ const ModifierChainFlow = ({
     setEdges(newEdges);
   }, [modifiers, modifierValues]);
 
-  //we use a debounced function to preview the modifier chain, to avoid triggering too many previews while the user is changing values
-  const debouncePreview = useMemo(
-    () =>
-      debounce(() => {
-        console.log('Previewing modifier chain with values:', modifierValues);
-      }, 300),
-    [modifierValues],
-  );
-
-  useEffect(() => {
-    if (showPreview) {
-      debouncePreview();
-    }
-    return () => {
-      debouncePreview.cancel();
-    };
-  }, [modifierValues, showPreview]);
-
   return (
     <div className='flex h-full w-full flex-col'>
       <div className='mt-4 flex justify-center space-x-2'>
@@ -278,40 +250,22 @@ const ModifierChainFlow = ({
           </button>
         )}
         {modifiers.length > 0 && (
-          <>
-            {scope && (
-              <>
-                <button
-                  onClick={() => void applyChain()}
-                  className='soft-button'
-                  title={t('btn_apply_modifiers')}
-                >
-                  <Play size={16} />
-                </button>
-                <Field
-                  orientation='horizontal'
-                  className='soft-button w-auto'
-                  title={t('btn_modifierchain_preview')}
-                >
-                  <Checkbox
-                    id='toggle-preview'
-                    checked={showPreview}
-                    onCheckedChange={() => setShowPreview((prev) => !prev)}
-                  />
-                  <FieldLabel htmlFor='toggle-preview'>
-                    <Eye />
-                  </FieldLabel>
-                </Field>
-              </>
-            )}
-            <button
-              onClick={() => void saveChain()}
-              className='soft-button'
-              title={t('btn_save_modifierchain')}
-            >
-              <Save size={16} />
-            </button>
-          </>
+          <button
+            onClick={() => void saveChain()}
+            className='soft-button'
+            title={t('btn_save_modifierchain')}
+          >
+            <Save size={16} />
+          </button>
+        )}
+        {scope && modifiers.length > 0 && (
+          <ScopedModifierChainToolbar
+            modifierValues={modifierValues}
+            modifiers={modifiers}
+            showPreview={showPreview}
+            setShowPreview={setShowPreview}
+            scope={scope}
+          />
         )}
       </div>
 
