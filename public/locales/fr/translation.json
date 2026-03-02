@@ -154,6 +154,7 @@
   "form_label_size_threshold": "Surface minimum (en pixels) :",
   "form_label_delete_small_regions": "Supprimer les petites régions",
   "form_label_live_result": "Afficher le résultat en direct",
+  "form_label_modifier_merge_origin": "Origine",
   "form_label_modifier_merge_vertical": "Seuil de fusion verticale (en pixels)",
   "form_label_modifier_merge_horizontal": "Seuil de fusion horizontale (en pixels)",
   "form_label_modifier_filter_threshold": "Seuil de suppression de petites régions (en pixels)",

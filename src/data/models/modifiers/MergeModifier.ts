@@ -1,4 +1,8 @@
-import { getDistanceBetweenAnnotations, mergeTwoAnnotations } from '@/data/utils/annotations';
+import {
+  getDistanceBetweenAnnotationCenters,
+  getDistanceBetweenAnnotations,
+  mergeTwoAnnotations,
+} from '@/data/utils/annotations';
 import i18n from '@/i18n';
 import { v4 as uuid } from 'uuid';
 import z from 'zod';
@@ -6,6 +10,7 @@ import { Annotation } from '../Annotation';
 import { Modifier } from './Modifier';
 
 const mergeSchema = z.object({
+  origin: z.enum(['center', 'bordure']).default('center'),
   verticalThreshold: z.number().min(-1).default(-1),
   horizontalThreshold: z.number().min(-1).default(-1),
 });
@@ -21,6 +26,11 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
       'MergeModifier',
       mergeSchema,
       {
+        origin: {
+          label: i18n.t('form_label_modifier_merge_origin'),
+          description: i18n.t('form_description_modifier_merge_origin'),
+          options: ['center', 'bordure'],
+        },
         verticalThreshold: {
           label: i18n.t('form_label_modifier_merge_vertical'),
           description: i18n.t('form_description_modifier_merge_vertical'),
@@ -46,6 +56,7 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
     console.log('Applying MergeModifier with values: ', values);
     if (data.length > 1) {
       const {
+        origin,
         verticalThreshold: defaultVerticalThreshold,
         horizontalThreshold: defaultHorizontalThreshold,
       } = mergeSchema.parse(values);
@@ -67,7 +78,11 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
         changed = false;
         for (let i = 0; i < annotations.length; i++) {
           for (let j = i + 1; j < annotations.length; j++) {
-            const distance = getDistanceBetweenAnnotations(annotations[i], annotations[j]);
+            const distance =
+              origin === 'center'
+                ? getDistanceBetweenAnnotationCenters(annotations[i], annotations[j])
+                : getDistanceBetweenAnnotations(annotations[i], annotations[j]);
+
             if (
               (verticalThreshold >= 0 && Math.abs(distance.vertical) <= verticalThreshold) ||
               (horizontalThreshold >= 0 && Math.abs(distance.horizontal) <= horizontalThreshold)
