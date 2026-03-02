@@ -1,5 +1,9 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
-import { getDistanceBetweenAnnotations, getRectFromBounds } from '@/data/utils/annotations';
+import {
+  getDistanceBetweenAnnotationCenters,
+  getDistanceBetweenAnnotations,
+  getRectFromBounds,
+} from '@/data/utils/annotations';
 import { getSource } from '@/data/utils/canvas';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import { getErrorMessage } from '@/utils/utils';
@@ -16,7 +20,12 @@ import {
   useSelection,
 } from '@annotorious/react';
 import { Canvas } from '@iiif/presentation-3';
-import { MoveHorizontal, MoveVertical } from 'lucide-react';
+import {
+  AlignHorizontalDistributeCenter,
+  AlignVerticalDistributeCenter,
+  MoveHorizontal,
+  MoveVertical,
+} from 'lucide-react';
 import OpenSeadragon from 'openseadragon';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -130,6 +139,10 @@ const CanvasViewerOSDContent = ({
     selected?.length === 2
       ? getDistanceBetweenAnnotations(selected[0].annotation, selected[1].annotation)
       : null;
+  const distanceBetweenSelectedAnnotationCenters =
+    selected?.length === 2
+      ? getDistanceBetweenAnnotationCenters(selected[0].annotation, selected[1].annotation)
+      : null;
 
   return (
     <OpenSeadragonAnnotator
@@ -152,7 +165,7 @@ const CanvasViewerOSDContent = ({
           />
         )}
       </div>
-      {distanceBetweenSelectedAnnotations && (
+      {distanceBetweenSelectedAnnotations && distanceBetweenSelectedAnnotationCenters && (
         <OpenSeadragonAnnotationPopup
           popup={(_props: PopupProps) => (
             <div className='flex items-center space-x-1 rounded bg-white p-2 text-sm shadow'>
@@ -160,6 +173,10 @@ const CanvasViewerOSDContent = ({
               {distanceBetweenSelectedAnnotations.horizontal.toFixed()}
               <MoveVertical className='ml-3' size={16} />
               {distanceBetweenSelectedAnnotations.vertical.toFixed()}
+              <AlignHorizontalDistributeCenter size={16} className='ml-3' />
+              {distanceBetweenSelectedAnnotationCenters.horizontal.toFixed()}
+              <AlignVerticalDistributeCenter size={16} className='ml-3' />
+              {distanceBetweenSelectedAnnotationCenters.vertical.toFixed()}
             </div>
           )}
         />
