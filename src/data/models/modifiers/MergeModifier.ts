@@ -1,6 +1,7 @@
 import {
   getDistanceBetweenAnnotationCenters,
   getDistanceBetweenAnnotations,
+  getLeft,
   mergeTwoAnnotations,
 } from '@/data/utils/annotations';
 import i18n from '@/i18n';
@@ -87,7 +88,17 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
               (verticalThreshold >= 0 && Math.abs(distance.vertical) <= verticalThreshold) ||
               (horizontalThreshold >= 0 && Math.abs(distance.horizontal) <= horizontalThreshold)
             ) {
-              annotations[i] = mergeTwoAnnotations(annotations[i], annotations[j]);
+              //TODO! hack temporaire pour forcer le merge dans le bon ordre (pour que le texte soit dans le bon ordre)
+              if (origin === 'center') {
+                if (getLeft(annotations[i]) < getLeft(annotations[j])) {
+                  //si merge de lignes, on merge de gauche à droite
+                  annotations[i] = mergeTwoAnnotations(annotations[i], annotations[j]);
+                } else {
+                  annotations[i] = mergeTwoAnnotations(annotations[j], annotations[i]);
+                }
+              } else {
+                annotations[i] = mergeTwoAnnotations(annotations[i], annotations[j]);
+              }
               annotations.splice(j, 1);
               changed = true;
               break; // Break the inner loop to restart checking from the beginning
