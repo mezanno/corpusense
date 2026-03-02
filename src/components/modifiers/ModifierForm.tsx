@@ -75,7 +75,7 @@ function ModifierForm<TSchema extends ZodObject<ZodRawShape>>({
                             type='number'
                             {...field}
                             min={0}
-                            value={(field.value as number) ?? 0}
+                            value={(field.value as number) ?? -1}
                             onChange={(e) =>
                               field.onChange(
                                 e.target.value === '' ? undefined : Number(e.target.value),
@@ -85,7 +85,7 @@ function ModifierForm<TSchema extends ZodObject<ZodRawShape>>({
                         </FormControl>
                         <FormControl>
                           <Slider
-                            value={[field.value ?? 0]}
+                            value={[field.value ?? -1]}
                             onValueChange={([value]) => field.onChange(value)}
                             step={meta.step ?? 1}
                             max={meta.max ?? 100}

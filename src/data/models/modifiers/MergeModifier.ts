@@ -6,8 +6,8 @@ import { Annotation } from '../Annotation';
 import { Modifier } from './Modifier';
 
 const mergeSchema = z.object({
-  verticalThreshold: z.number().min(0).default(0),
-  horizontalThreshold: z.number().min(0).default(0),
+  verticalThreshold: z.number().min(-1).default(-1),
+  horizontalThreshold: z.number().min(-1).default(-1),
 });
 
 export class MergeModifier extends Modifier<typeof mergeSchema> {
@@ -24,14 +24,14 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
         verticalThreshold: {
           label: i18n.t('form_label_modifier_merge_vertical'),
           description: i18n.t('form_description_modifier_merge_vertical'),
-          min: 0,
+          min: -1,
           max: verticalThresholdMax,
           step: 1,
         },
         horizontalThreshold: {
           label: i18n.t('form_label_modifier_merge_horizontal'),
           description: i18n.t('form_description_modifier_merge_horizontal'),
-          min: 0,
+          min: -1,
           max: horizontalThresholdMax,
           step: 1,
         },
@@ -69,8 +69,8 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
           for (let j = i + 1; j < annotations.length; j++) {
             const distance = getDistanceBetweenAnnotations(annotations[i], annotations[j]);
             if (
-              Math.abs(distance.vertical) <= verticalThreshold &&
-              Math.abs(distance.horizontal) <= horizontalThreshold
+              (verticalThreshold >= 0 && Math.abs(distance.vertical) <= verticalThreshold) ||
+              (horizontalThreshold >= 0 && Math.abs(distance.horizontal) <= horizontalThreshold)
             ) {
               annotations[i] = mergeTwoAnnotations(annotations[i], annotations[j]);
               annotations.splice(j, 1);
