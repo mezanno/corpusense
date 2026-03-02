@@ -1,6 +1,6 @@
+import i18n from '@/i18n';
 import { ImageAnnotation, ShapeType } from '@annotorious/annotorious';
 import { AnnotationPage, Canvas } from '@iiif/presentation-3';
-import i18n from '@/i18n';
 import { Rect } from 'openseadragon';
 import {
   Annotation,
@@ -185,10 +185,29 @@ function getHorizontalDistanceBetweenAnnotations(a1: ImageAnnotation, a2: ImageA
   }
 }
 
+function getHorizontalDistanceBetweenAnnotationCenters(a1: ImageAnnotation, a2: ImageAnnotation) {
+  const center1 = getLeft(a1) + getDimensions(a1).width / 2;
+  const center2 = getLeft(a2) + getDimensions(a2).width / 2;
+  return Math.abs(center1 - center2);
+}
+
+function getVerticalDistanceBetweenAnnotationCenters(a1: ImageAnnotation, a2: ImageAnnotation) {
+  const center1 = getTop(a1) + getDimensions(a1).height / 2;
+  const center2 = getTop(a2) + getDimensions(a2).height / 2;
+  return Math.abs(center1 - center2);
+}
+
 export function getDistanceBetweenAnnotations(a1: ImageAnnotation, a2: ImageAnnotation) {
   return {
     horizontal: getHorizontalDistanceBetweenAnnotations(a1, a2),
     vertical: getVerticalDistanceBetweenAnnotations(a1, a2),
+  };
+}
+
+export function getDistanceBetweenAnnotationCenters(a1: ImageAnnotation, a2: ImageAnnotation) {
+  return {
+    horizontal: getHorizontalDistanceBetweenAnnotationCenters(a1, a2),
+    vertical: getVerticalDistanceBetweenAnnotationCenters(a1, a2),
   };
 }
 
