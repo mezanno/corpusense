@@ -21,16 +21,18 @@ const duplicateAnnotations = (fromAnnotations: Annotation[]) => {
 const useAnnotationModifierActions = ({
   scope,
   showPreview,
+  applyModifierChainTo,
 }: {
   scope: CanvasScope;
   showPreview: boolean;
+  applyModifierChainTo: ElementType;
 }) => {
   const annotationLiveRepository = useMemo(() => getAnnotationLiveRepository(), []);
   const annotationTempRepository = useMemo(() => getAnnotationTempRepository(), []);
 
   const scopeAnnotations = useLiveQuery(
-    annotationLiveRepository.getByScopeAndType(scope, ElementType.TEXT_REGION),
-    [scope, annotationLiveRepository],
+    annotationLiveRepository.getByScopeAndType(scope, applyModifierChainTo),
+    [scope, applyModifierChainTo, annotationLiveRepository],
     [],
   );
 

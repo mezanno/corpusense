@@ -1,3 +1,4 @@
+import { ElementType } from '@/data/models/Annotation';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { CanvasScope } from '@/data/models/Scope';
 import useAnnotationModifierActions from '@/hooks/data/annotations/useAnnotationModifierActions';
@@ -12,6 +13,7 @@ type Props = {
   scope: CanvasScope;
   modifiers: AnyModifier[];
   modifierValues: Record<string, unknown>;
+  applyModifierChainTo: ElementType;
   showPreview: boolean;
   setShowPreview: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -20,11 +22,16 @@ export default function ScopedModifierChainToolbar({
   scope,
   modifiers,
   modifierValues,
+  applyModifierChainTo,
   showPreview,
   setShowPreview,
 }: Props) {
   const { t } = useTranslation();
-  const { applyModifierChain } = useAnnotationModifierActions({ scope, showPreview });
+  const { applyModifierChain } = useAnnotationModifierActions({
+    scope,
+    showPreview,
+    applyModifierChainTo,
+  });
 
   const applyChain = async () => {
     await applyModifierChain(modifiers, modifierValues);

@@ -1,3 +1,4 @@
+import { ElementType } from '@/data/models/Annotation';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
 import { CanvasScope } from '@/data/models/Scope';
@@ -17,6 +18,7 @@ import '@xyflow/react/dist/style.css';
 import { FolderOpen, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import AddNode from './AddNode';
 import ModifierChainEdge from './ModifierChainEdge';
 import ModifierNode from './ModifierNode';
@@ -46,6 +48,9 @@ const ModifierChainFlow = ({
   const { openSaveModifierChainDialog, openLoadModifierChainDialog } = useDialog();
   const [modifiers, setModifiers] = useState<AnyModifier[]>([]);
   const [modifierValues, setModifierValues] = useState<Record<string, unknown>>({});
+  const [applyModifierChainTo, setApplyModifierChainTo] = useState<ElementType>(
+    ElementType.TEXT_REGION,
+  );
   const [nodes, setNodes] = useNodesState<Node>([]);
   const [edges, setEdges] = useEdgesState<Edge>([]);
   const [showPreview, setShowPreview] = useState(false);
@@ -136,6 +141,12 @@ const ModifierChainFlow = ({
     });
   };
 
+  const setModifierActive = (modifierId: string, isActive: boolean) => {
+    console.log(modifierId, isActive);
+    const modifier = modifiers.find((m) => m.id === modifierId);
+    console.log(modifier);
+  };
+
   const saveChain = () => {
     openSaveModifierChainDialog(modifiers, modifierValues);
   };
@@ -206,6 +217,7 @@ const ModifierChainFlow = ({
         onTypeChange: changeModifierType,
         onInsertAfter: insertModifierAfter,
         onInsertBefore: insertModifierBefore,
+        setModifierActive: setModifierActive,
       },
     }));
 
@@ -245,9 +257,29 @@ const ModifierChainFlow = ({
     <div className='flex h-full w-full flex-col'>
       <div className='mt-4 flex justify-center space-x-2'>
         {scope && (
-          <button onClick={handleLoadChain} className='soft-button' title={t('btn_load_modifiers')}>
-            <FolderOpen size={16} />
-          </button>
+          <>
+            <button
+              onClick={handleLoadChain}
+              className='soft-button'
+              title={t('btn_load_modifiers')}
+            >
+              <FolderOpen size={16} />
+            </button>
+            <div className='h-fit w-fit rounded-xl bg-white'>
+              <Select
+                value={applyModifierChainTo}
+                onValueChange={(value) => setApplyModifierChainTo(value as ElementType)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ElementType.TEXT_REGION}>{ElementType.TEXT_REGION}</SelectItem>
+                  <SelectItem value={ElementType.TEXT_LINE}>{ElementType.TEXT_LINE}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
         )}
         {modifiers.length > 0 && (
           <button
@@ -262,6 +294,7 @@ const ModifierChainFlow = ({
           <ScopedModifierChainToolbar
             modifierValues={modifierValues}
             modifiers={modifiers}
+            applyModifierChainTo={applyModifierChainTo}
             showPreview={showPreview}
             setShowPreview={setShowPreview}
             scope={scope}
