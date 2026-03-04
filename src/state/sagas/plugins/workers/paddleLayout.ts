@@ -1,95 +1,46 @@
-import {
-  AnnotationDTO,
-  createAnnotation,
-  ElementType,
-  getAnnotationType,
-} from '@/data/models/Annotation';
+import { AnnotationDTO, createAnnotation, ElementType } from '@/data/models/Annotation';
 import { Result } from '@/data/models/Result';
-import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/Scope';
+import { isCanvasScope, toString } from '@/data/models/Scope';
 import { Task, Worker, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { getFile, getImage } from '@/data/utils/canvas';
+import { getImage } from '@/data/utils/canvas';
 import { applyModifierChainToAnnotations } from '@/data/utils/modifierChain';
-import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
 import { supabase } from '@/utils/config';
-import { canvasToBase64, loadImageFromUrl } from '@/utils/images';
 import { getErrorMessage } from '@/utils/utils';
-import { Canvas } from '@iiif/presentation-3';
 import FileSaver from 'file-saver';
 import z from 'zod';
 import { uploadCanvasImage } from './supabase/utils';
 
-export const pluginName = 'perolayout'; //name of the plugin, used to register the plugin inside Corpusense
-export const pluginDisplayName = 'Pero Layout'; //display name of the plugin, used in the UI
+export const pluginName = 'paddlelayout'; //name of the plugin, used to register the plugin inside Corpusense
+export const pluginDisplayName = 'Paddle Layout'; //display name of the plugin, used in the UI
 export const pluginDescription = 'Détection de layouts'; //description of the plugin, used in the UI
 export const pluginCategory = 'Layout';
 export const experimental = true;
-/*
-  Configuration parameters for this plugin
-  Each parameter must have a description and can have a default value
-*/
-export const pluginConfigurationParams = {
-  apiUrl: { description: "URL de l'API Pero Layouts", defaultValue: 'http://localhost:8000' },
-};
 
-interface Region {
-  xtl: number;
-  ytl: number;
-  xbr: number;
-  ybr: number;
-}
+// interface Region {
+//   xtl: number;
+//   ytl: number;
+//   xbr: number;
+//   ybr: number;
+// }
 
 const responseSchema = z.object({
   regions: z.array(
     z.object({
       polygon: z.array(z.tuple([z.number(), z.number()])),
+      type: z.string(),
     }),
   ),
 });
 type PeroLayoutResult = z.infer<typeof responseSchema>;
 
-async function post(
-  endpoint: 'ocr' | 'layout' | 'table',
-  url: string,
-  regions: Region[],
-): Promise<PeroLayoutResult> {
-  const apiUrl = getValueForPluginParam(pluginName, 'apiUrl');
-
-  const response = await fetch(`${apiUrl}/${endpoint}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      url: url,
-      regions: regions,
-    }),
-  });
-
-  try {
-    const json = (await response.json()) as unknown;
-    const peroResult = responseSchema.parse(json);
-    return peroResult;
-  } catch (error) {
-    console.error('Error parsing Pero Layout response:', error);
-    throw error;
-  }
-}
-
 export default async function run(task: Task, worker: Worker): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)} with params: `, worker.params);
 
-  const peroUrl = getValueForPluginParam(pluginName, 'apiUrl');
-  if (peroUrl === null) {
-    return {
-      status: WorkerStatus.ERROR,
-      statusMessage: 'Pero OCR API URL is not configured',
-    };
-  }
   if (!isCanvasScope(task.scope)) {
     return {
       status: WorkerStatus.ERROR,
@@ -107,7 +58,7 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
       };
     }
 
-    const regions: Region[] = await computeRegionsForTask(task, canvas);
+    // const regions: Region[] = await computeRegionsForTask(task, canvas);
 
     try {
       const user = (await supabase.auth.getUser()).data.user;
@@ -120,8 +71,17 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
             worker_id: worker.id,
             task_id: task.id,
             worker_name: pluginName,
-            payload: { url: imageUrl },
+            payload: {
+              url: imageUrl,
+              // regions: regions.map((r) => ({
+              //   xtl: r.xtl,
+              //   ytl: r.ytl,
+              //   xbr: r.xbr,
+              //   ybr: r.ybr,
+              // })),
+            },
             user_id: user.id,
+            status: 'pending',
           })
           .select();
         if (supabaseError || data === null) {
@@ -132,19 +92,11 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
           statusMessage: 'Task has been added to the processing queue',
         };
       } else {
-        let url = image.id;
-        if (image.id.startsWith('http') === false) {
-          try {
-            const imageToProcess = await getFile(image.id);
-            const canvasImage = await loadImageFromUrl(imageToProcess);
-            url = await canvasToBase64(canvasImage, 'image/jpeg', 0.7);
-          } catch (err) {
-            console.error('Failed to get file for thumbnail:', err);
-          }
-        }
-
-        const detected_regions = await post('layout', url, regions);
-        return await processResult(detected_regions, task);
+        console.log('User not connected');
+        return {
+          status: WorkerStatus.ERROR,
+          statusMessage: i18n.t('info_not_connected'),
+        };
       }
     } catch (error) {
       console.log('Error calling pero layout API: ', error);
@@ -163,42 +115,42 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
   }
 }
 
-async function computeRegionsForTask(task: Task, canvas: Canvas) {
-  const annotationRepository = getAnnotationRepository();
-  let regions: Region[] = [];
-  if (isAnnotationScope(task.scope)) {
-    const annotation = await annotationRepository.getById(task.scope.annotationId);
-    regions = [
-      {
-        xtl: annotation.target.selector.geometry.bounds.minX,
-        ytl: annotation.target.selector.geometry.bounds.minY,
-        xbr: annotation.target.selector.geometry.bounds.maxX,
-        ybr: annotation.target.selector.geometry.bounds.maxY,
-      },
-    ];
-  } else {
-    const annotations = await annotationRepository.getByScope({
-      canvasId: canvas.id,
-      collectionId: task.scope.collectionId,
-    });
-    const annotationRegions = annotations.filter(
-      (a) => getAnnotationType(a) === ElementType.TEXT_REGION,
-    );
-    if (annotationRegions.length > 0) {
-      regions = annotationRegions
-        .sort((a1, a2) => (a1.order ?? 0) - (a2.order ?? 0))
-        .map((annotation) => {
-          return {
-            xtl: annotation.target.selector.geometry.bounds.minX,
-            ytl: annotation.target.selector.geometry.bounds.minY,
-            xbr: annotation.target.selector.geometry.bounds.maxX,
-            ybr: annotation.target.selector.geometry.bounds.maxY,
-          };
-        });
-    }
-  }
-  return regions;
-}
+// async function computeRegionsForTask(task: Task, canvas: Canvas) {
+//   const annotationRepository = getAnnotationRepository();
+//   let regions: Region[] = [];
+//   if (isAnnotationScope(task.scope)) {
+//     const annotation = await annotationRepository.getById(task.scope.annotationId);
+//     regions = [
+//       {
+//         xtl: annotation.target.selector.geometry.bounds.minX,
+//         ytl: annotation.target.selector.geometry.bounds.minY,
+//         xbr: annotation.target.selector.geometry.bounds.maxX,
+//         ybr: annotation.target.selector.geometry.bounds.maxY,
+//       },
+//     ];
+//   } else {
+//     const annotations = await annotationRepository.getByScope({
+//       canvasId: canvas.id,
+//       collectionId: task.scope.collectionId,
+//     });
+//     const annotationRegions = annotations.filter(
+//       (a) => getAnnotationType(a) === ElementType.TEXT_REGION,
+//     );
+//     if (annotationRegions.length > 0) {
+//       regions = annotationRegions
+//         .sort((a1, a2) => (a1.order ?? 0) - (a2.order ?? 0))
+//         .map((annotation) => {
+//           return {
+//             xtl: annotation.target.selector.geometry.bounds.minX,
+//             ytl: annotation.target.selector.geometry.bounds.minY,
+//             xbr: annotation.target.selector.geometry.bounds.maxX,
+//             ybr: annotation.target.selector.geometry.bounds.maxY,
+//           };
+//         });
+//     }
+//   }
+//   return regions;
+// }
 
 /*
  * The scope must be a CanvasScope
@@ -235,7 +187,7 @@ export async function processResult(result: PeroLayoutResult, task: Task): Promi
       maxX,
       maxY,
       type: ElementType.TEXT_REGION,
-      value: undefined,
+      value: region.type,
     });
     newAnnotations.push(regionAnnotation);
   }
