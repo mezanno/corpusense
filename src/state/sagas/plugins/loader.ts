@@ -1,6 +1,7 @@
 import { Result } from '@/data/models/Result';
 import { Task, Worker, WorkerResponse } from '@/data/models/Worker';
 import { getIsExperimentalFeaturesActivated } from '@/hooks/useExperimental';
+import z from 'zod';
 
 export type WorkerConfigurationParams = {
   [key: string]: { description: string; defaultValue?: string };
@@ -18,11 +19,15 @@ export type WorkerPlugin = {
   export?: WorkerExportFunction;
   processResult?: WorkerProcessResultFunction;
   info: WorkerPluginInfo;
+  runtimeParametersSchema?: z.ZodTypeAny;
 };
+
 export type WorkerRunFunction = (task: Task, worker: Worker) => Promise<WorkerResponse>; //saga or async function : if we need to call an effect (eg: call, put, select), we have to use a saga
 export type WorkerExportFunction = (results: Result[], formats: string[]) => void;
 type WorkerModule = {
   default: WorkerRunFunction;
+  exportResult?: WorkerExportFunction;
+  processResult?: WorkerProcessResultFunction;
   pluginName: string;
   pluginDisplayName?: string;
   pluginDescription?: string;
@@ -30,8 +35,7 @@ type WorkerModule = {
   pluginExportFormats?: string[];
   pluginBatchCompatible?: boolean;
   pluginConfigurationParams?: WorkerConfigurationParams;
-  exportResult?: WorkerExportFunction;
-  processResult?: WorkerProcessResultFunction;
+  pluginRuntimeParameters?: z.ZodTypeAny;
 };
 export type WorkerProcessResultFunction = (result: unknown, task: Task) => Promise<WorkerResponse>;
 
@@ -102,6 +106,7 @@ export function loadWorkerPlugins() {
           },
           export: mod.exportResult,
           processResult: mod.processResult,
+          runtimeParametersSchema: mod.pluginRuntimeParameters,
         };
 
         console.info(`Plugin saga ${mod.pluginName} loaded successfully`);

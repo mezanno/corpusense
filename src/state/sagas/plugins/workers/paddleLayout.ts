@@ -15,10 +15,13 @@ import FileSaver from 'file-saver';
 import z from 'zod';
 import { uploadCanvasImage } from './supabase/utils';
 
-export const pluginName = 'paddlelayout'; //name of the plugin, used to register the plugin inside Corpusense
+export const pluginName = 'perolayout'; //name of the plugin, used to register the plugin inside Corpusense
 export const pluginDisplayName = 'Paddle Layout'; //display name of the plugin, used in the UI
 export const pluginDescription = 'Détection de layouts'; //description of the plugin, used in the UI
 export const pluginCategory = 'Layout';
+export const pluginRuntimeParameters = z.object({
+  type: z.enum(['perolayout', 'paddlelayout']).describe('Type de moteur OCR à utiliser'),
+});
 export const experimental = true;
 
 // interface Region {
@@ -40,6 +43,16 @@ type PeroLayoutResult = z.infer<typeof responseSchema>;
 
 export default async function run(task: Task, worker: Worker): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)} with params: `, worker.params);
+
+  const paramsValidation = pluginRuntimeParameters.safeParse(worker.params);
+  if (!paramsValidation.success) {
+    console.error('Invalid parameters for pero layout worker: ', paramsValidation.error);
+    return {
+      status: WorkerStatus.ERROR,
+      statusMessage: getErrorMessage(paramsValidation.error.message),
+    };
+  }
+  const params = paramsValidation.data;
 
   if (!isCanvasScope(task.scope)) {
     return {
@@ -70,7 +83,7 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
           .insert({
             worker_id: worker.id,
             task_id: task.id,
-            worker_name: pluginName,
+            worker_name: params.type,
             payload: {
               url: imageUrl,
               // regions: regions.map((r) => ({

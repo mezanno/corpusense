@@ -1,4 +1,3 @@
-import { PluginParams } from '@/state/reducers/workers';
 import { Scope } from './Scope';
 
 export enum WorkerStatus {
@@ -32,7 +31,7 @@ export interface Worker {
   statusMessage?: string; //optional message to display in the UI
   createdAt: string; // ISO date string
   estimatedDuration: number; // ms
-  params: PluginParams;
+  params: unknown;
   queue: Task[];
 }
 
@@ -45,7 +44,7 @@ export interface WorkerResponse {
 export interface WorkerCreateDTO {
   name: string;
   scope: Scope;
-  params: PluginParams;
+  params: unknown;
   batchMode?: boolean;
 }
 
