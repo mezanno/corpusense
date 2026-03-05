@@ -1,19 +1,16 @@
-import { isCollectionScope, Scope } from '@/data/models/Scope';
+import { workerPlugins } from '@/App';
+import { Scope } from '@/data/models/Scope';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import useExperimental from '@/hooks/useExperimental';
+import useDialog from '@/hooks/ui/useDialog';
 import { startWorkerProcessRequest } from '@/state/reducers/workers';
 import { selectWorkerPluginsInfo } from '@/state/selectors/workers';
 import { PocketKnife, ScanText } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
 import MultiOptionsMenu from './MultiOptionsMenu';
 
 const WorkersMenu = ({ scope }: { scope: Scope }) => {
-  const { t } = useTranslation();
   const appDispatch = useAppDispatch();
   const pluginsInfo = useAppSelector(selectWorkerPluginsInfo);
-  const { openDialog } = useAlertDialogContext();
-  const { experimentalFeaturesActivated } = useExperimental();
+  const { openStartWorkerDialog } = useDialog();
 
   const params = {
     name: 'btn_start_analysis',
@@ -25,38 +22,15 @@ const WorkersMenu = ({ scope }: { scope: Scope }) => {
         description: plugin.description,
         icon: <ScanText />,
         action: () => {
-          if (
-            experimentalFeaturesActivated &&
-            plugin.batchCompatible === true &&
-            isCollectionScope(scope)
-          ) {
-            openDialog({
-              title: t('title_worker_scope_validation'),
-              description: t('description_worker_scope_all'),
-              onConfirm: {
-                message: t('btn_worker_batch_yes'),
-                action: () =>
-                  appDispatch(
-                    startWorkerProcessRequest({
-                      workerName: plugin.name,
-                      params: {},
-                      scope,
-                      batchMode: true,
-                    }),
-                  ),
-              },
-              onCancel: {
-                message: t('btn_worker_batch_no'),
-                action: () =>
-                  appDispatch(
-                    startWorkerProcessRequest({
-                      workerName: plugin.name,
-                      params: {},
-                      scope,
-                    }),
-                  ),
-              },
-            });
+          const workerPlugin = workerPlugins[plugin.name];
+          //TODO: affiche une popup
+          if (workerPlugin === undefined || workerPlugin === null) {
+            console.error(`Plugin ${plugin.name} not found`);
+            return;
+          }
+
+          if (workerPlugin.runtimeParametersSchema !== undefined) {
+            openStartWorkerDialog(plugin.name, scope);
           } else {
             appDispatch(
               startWorkerProcessRequest({

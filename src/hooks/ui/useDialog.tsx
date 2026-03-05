@@ -14,6 +14,7 @@ import NewModelForm from '@/components/forms/NewModelForm';
 import OpenManifestForm from '@/components/forms/OpenManifestForm';
 import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
 import SaveModifierChainForm from '@/components/forms/SaveModifierChainForm';
+import StartWorkerForm from '@/components/forms/StartWorkerForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
 import { DataModel } from '@/data/models/DataModel';
@@ -243,6 +244,21 @@ const useDialog = () => {
     });
   };
 
+  const openStartWorkerDialog = (workerName: string, scope: Scope) => {
+    openFormDialog({
+      title: t('title_remove_annotations'),
+      confirmLabel: t('btn_delete'),
+      renderForm: (formRef) => (
+        <StartWorkerForm
+          formRef={formRef}
+          scope={scope}
+          workerName={workerName}
+          setCanSubmit={setCanSubmit}
+        />
+      ),
+    });
+  };
+
   return {
     openOpenManifestDialog,
     openImportCollectionDialog,
@@ -259,6 +275,7 @@ const useDialog = () => {
     openConvertPdfForm: openConvertPdfDialog,
     openSaveModifierChainDialog,
     openLoadModifierChainDialog,
+    openStartWorkerDialog,
   };
 };
 
