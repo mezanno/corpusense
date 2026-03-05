@@ -10,7 +10,6 @@ export interface WorkerState {
     description?: string;
     category?: string;
     exportFormats?: string[];
-    batchCompatible?: boolean;
     configurationParams?: WorkerConfigurationParams;
   }[];
 }
@@ -28,7 +27,6 @@ export interface StartWorkerProcessPayload {
   workerName: string;
   scope: Scope;
   params: PluginParams;
-  batchMode?: boolean;
 }
 
 export const workerSlice = createSlice({
@@ -47,7 +45,6 @@ export const workerSlice = createSlice({
           description?: string;
           category?: string;
           exportFormats?: string[];
-          batchCompatible?: boolean;
           configurationParams?: WorkerConfigurationParams;
         }[]
       >,

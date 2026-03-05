@@ -95,8 +95,6 @@
   "btn_extract_and_generate": "Extraire les pages et générer le manifest",
   "btn_add_pdf": "Ajouter un nouveau document",
   "btn_select_pdf": "Choisir un fichier pdf",
-  "btn_worker_batch_yes": "Toutes les pages",
-  "btn_worker_batch_no": "Page par page",
   "btn_next_canvas": "Canvas suivant",
   "btn_previous_canvas": "Canvas précédent",
   "btn_add_modifier": "Ajouter un modificateur",

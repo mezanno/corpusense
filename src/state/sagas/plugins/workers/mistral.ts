@@ -27,7 +27,6 @@ export const pluginDescription =
   "Extrait des données structurées à partir du texte. Nécessite que l'OCR soit fait ainsi qu'un modèle de données.";
 export const pluginCategory = 'LLM';
 export const pluginExportFormats = ['json', 'csv', 'xlsx'];
-export const pluginBatchCompatible = true;
 export const pluginConfigurationParams = {
   apiKey: {
     description: 'Clé API Mistral',

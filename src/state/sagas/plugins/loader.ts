@@ -11,7 +11,6 @@ export type WorkerPluginInfo = {
   description?: string;
   category?: string;
   exportFormats?: string[];
-  batchCompatible: boolean;
   configurationParams?: WorkerConfigurationParams;
 };
 export type WorkerPlugin = {
@@ -33,7 +32,6 @@ type WorkerModule = {
   pluginDescription?: string;
   pluginCategory?: string;
   pluginExportFormats?: string[];
-  pluginBatchCompatible?: boolean;
   pluginConfigurationParams?: WorkerConfigurationParams;
   pluginRuntimeParameters?: z.ZodTypeAny;
 };
@@ -65,7 +63,6 @@ const isWorkerModule = (mod: unknown): mod is WorkerModule => {
         m.pluginExportFormats.every((f) => typeof f === 'string'))) &&
     (m.exportResult === undefined || typeof m.exportResult === 'function') &&
     (m.processResult === undefined || typeof m.processResult === 'function') &&
-    (m.pluginBatchCompatible === undefined || typeof m.pluginBatchCompatible === 'boolean') &&
     (m.pluginConfigurationParams === undefined ||
       (typeof m.pluginConfigurationParams === 'object' &&
         m.pluginConfigurationParams !== null &&
@@ -101,7 +98,6 @@ export function loadWorkerPlugins() {
             description: mod.pluginDescription,
             category: mod.pluginCategory,
             exportFormats: mod.pluginExportFormats,
-            batchCompatible: mod.pluginBatchCompatible ?? false,
             configurationParams: mod.pluginConfigurationParams,
           },
           export: mod.exportResult,

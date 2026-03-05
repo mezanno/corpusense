@@ -92,8 +92,6 @@
   "btn_extract_and_generate": "Extract pages and generate manifest",
   "btn_add_pdf": "Add a new document",
   "btn_select_pdf": "Choose a PDF file",
-  "btn_worker_batch_yes": "All pages",
-  "btn_worker_batch_no": "Page by page",
   "link_open_element": "open element",
   "form_placeholder_key": "A key",
   "form_placeholder_value": "A value",

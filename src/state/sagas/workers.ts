@@ -44,7 +44,7 @@ import { loadWorkerPlugins, WorkerPlugin } from './plugins/loader';
 export const workerPlugins: Record<string, WorkerPlugin> = loadWorkerPlugins();
 
 function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPayload>) {
-  const { workerName, params, scope, batchMode } = action.payload;
+  const { workerName, params, scope } = action.payload;
   if (workerPlugins[workerName] === undefined) {
     console.warn(`No plugin saga found for ${workerName}`);
     //TODO! afficher message d'erreur dans l'UI
@@ -56,7 +56,6 @@ function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPaylo
     name: workerName,
     scope,
     params,
-    batchMode,
   };
   yield call(forkStartWorker, worker);
 }
@@ -160,22 +159,13 @@ function* startWorker(
           yield put(pushError(i18n.t('info_empty_collection')));
           return;
         }
-        if (worker.batchMode === true) {
-          currentWorker.queue = [
-            {
-              id: 0,
-              scope: worker.scope,
-              status: WorkerStatus.WAITING,
-            },
-          ];
-        } else {
-          //else, we add the canvases to the worker queue
-          currentWorker.queue = canvases.map((canvas, index) => ({
-            id: index,
-            scope: { collectionId: collectionId, canvasId: canvas.id },
-            status: WorkerStatus.WAITING,
-          }));
-        }
+        //else, we add the canvases to the worker queue
+        currentWorker.queue = canvases.map((canvas, index) => ({
+          id: index,
+          scope: { collectionId: collectionId, canvasId: canvas.id },
+          status: WorkerStatus.WAITING,
+        }));
+
         yield call([workerRepository, workerRepository.patch], currentWorker.id, {
           queue: currentWorker.queue,
         });
@@ -369,7 +359,6 @@ function* loadWorkerPluginsInfo(): Generator<Effect, void, { name: string; hasEx
     description: workerPlugins[name].info.description,
     category: workerPlugins[name].info.category,
     exportFormats: workerPlugins[name].info.exportFormats,
-    batchCompatible: workerPlugins[name].info.batchCompatible,
     configurationParams: workerPlugins[name].info.configurationParams,
   }));
   yield put(setPlugins(pluginsInfo));
