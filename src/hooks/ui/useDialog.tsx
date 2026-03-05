@@ -1,3 +1,4 @@
+import { workerPlugins } from '@/App';
 import ContactForm from '@/components/forms/ContactForm';
 import ConvertPdfForm from '@/components/forms/ConvertPdfForm';
 import DuplicateLayoutForm from '@/components/forms/DuplicateLayoutForm';
@@ -245,9 +246,15 @@ const useDialog = () => {
   };
 
   const openStartWorkerDialog = (workerName: string, scope: Scope) => {
+    const plugin = workerPlugins[workerName];
+    if (plugin.runtimeParametersSchema === undefined) {
+      console.error(`Plugin ${workerName} does not have a runtime parameters schema`);
+      return;
+    }
+
     openFormDialog({
-      title: t('title_remove_annotations'),
-      confirmLabel: t('btn_delete'),
+      title: `${t('btn_start_analysis')} - ${plugin.info.displayName}`,
+      confirmLabel: t('btn_start'),
       renderForm: (formRef) => (
         <StartWorkerForm
           formRef={formRef}
