@@ -97,6 +97,7 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
             },
             user_id: user.id,
             status: 'pending',
+            plugin_name: pluginName,
           })
           .select();
         if (supabaseError || data === null) {

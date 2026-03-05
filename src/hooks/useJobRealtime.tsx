@@ -84,9 +84,9 @@ const useJobRealtime = () => {
         }
         hasError = hasError || job.status === 'failed';
         if (!hasError) {
-          const plugin = workerPlugins[job.worker_name];
+          const plugin = workerPlugins[job.plugin_name];
 
-          if (job.result !== null && plugin.processResult) {
+          if (job.result !== null && plugin.processResult !== undefined) {
             const response = await plugin.processResult(job.result, task);
             console.log('Processed worker result response:', response);
             if (response.status === WorkerStatus.ERROR) {

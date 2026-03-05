@@ -69,12 +69,28 @@ export type Database = {
         }
         Relationships: []
       }
+      cs_job_rotation: {
+        Row: {
+          id: boolean
+          last_user_id: string | null
+        }
+        Insert: {
+          id?: boolean
+          last_user_id?: string | null
+        }
+        Update: {
+          id?: boolean
+          last_user_id?: string | null
+        }
+        Relationships: []
+      }
       cs_jobs: {
         Row: {
           created_at: string
           error: Json | null
           id: number
           payload: Json | null
+          plugin_name: string
           result: Json | null
           status: string
           task_id: number
@@ -88,6 +104,7 @@ export type Database = {
           error?: Json | null
           id?: never
           payload?: Json | null
+          plugin_name: string
           result?: Json | null
           status?: string
           task_id: number
@@ -101,6 +118,7 @@ export type Database = {
           error?: Json | null
           id?: never
           payload?: Json | null
+          plugin_name?: string
           result?: Json | null
           status?: string
           task_id?: number
@@ -161,12 +179,36 @@ export type Database = {
     }
     Functions: {
       fetch_job: {
+        Args: { name: string }
+        Returns: {
+          created_at: string
+          error: Json | null
+          id: number
+          payload: Json | null
+          plugin_name: string
+          result: Json | null
+          status: string
+          task_id: number
+          updated_at: string | null
+          user_id: string
+          worker_id: string
+          worker_name: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "cs_jobs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      fetch_job_old: {
         Args: never
         Returns: {
           created_at: string
           error: Json | null
           id: number
           payload: Json | null
+          plugin_name: string
           result: Json | null
           status: string
           task_id: number
