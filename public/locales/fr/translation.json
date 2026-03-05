@@ -60,7 +60,7 @@
   "btn_toggle_mode_annotate": "Mode annotation",
   "btn_toggle_mode_view": "Mode vue",
   "btn_toggle_canvas_view": "Afficher un canvas",
-  "btn_detect_layout": "Détection Mise En Page",
+  "btn_detect_layout": "Extraction de la Mise En Page",
   "btn_more_actions": " Plus d'actions",
   "btn_OCR_analyze": "Analyse OCR",
   "btn_data_extraction": "Extraction de données",
@@ -379,7 +379,7 @@
   "model_field_number": "Nombre",
   "category_other": "Autre",
   "category_ocr": "Extraction de texte (OCR)",
-  "category_layout": "Mise en page",
+  "category_layout": "Extraction de la Mise en Page",
   "category_llm": "Extraction de données",
   "no_label": "-",
   "log_selected_file": "Fichier sélectionné : {{fileName}}",
@@ -391,5 +391,7 @@
   "log_error_render": "Erreur lors du rendu de la page {{pageNumber}}",
   "log_saving": "Enregistrement de {{filename}}...",
   "log_conversion_completed": "Conversion terminée avec succès !",
-  "log_error": "Erreur : {{message}}"
+  "log_error": "Erreur : {{message}}",
+  "plugin_layout_description": "Détecter les éléments de mise en page (titres, paragraphes, images, etc.) sur les pages d'un manifest IIIF.",
+  "plugin_layoutextraction_description": "Modèle utilisé pour la détection"
 }

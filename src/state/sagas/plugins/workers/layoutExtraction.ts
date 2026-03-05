@@ -8,19 +8,21 @@ import {
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
 import { applyModifierChainToAnnotations } from '@/data/utils/modifierChain';
-import i18n from '@/i18n';
 import { supabase } from '@/utils/config';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
+import i18n from 'i18next';
 import z from 'zod';
 import { uploadCanvasImage } from './supabase/utils';
 
-export const pluginName = 'perolayout'; //name of the plugin, used to register the plugin inside Corpusense
-export const pluginDisplayName = 'Paddle Layout'; //display name of the plugin, used in the UI
-export const pluginDescription = 'Détection de layouts'; //description of the plugin, used in the UI
+export const pluginName = 'layoutExtraction'; //name of the plugin, used to register the plugin inside Corpusense
+export const pluginDisplayName = 'Pero / PaddlePaddle'; //display name of the plugin, used in the UI
+export const pluginDescription = i18n.t('plugin_layout_description'); //description of the plugin, used in the UI
 export const pluginCategory = 'Layout';
 export const pluginRuntimeParameters = z.object({
-  type: z.enum(['perolayout', 'paddlelayout']).describe('Type de moteur OCR à utiliser'),
+  type: z
+    .enum(['perolayout', 'paddlelayout'])
+    .describe(i18n.t('plugin_layoutextraction_description')),
 });
 export const experimental = true;
 
