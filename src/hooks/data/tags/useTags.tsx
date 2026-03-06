@@ -22,9 +22,18 @@ export const useTags = () => {
     }
   };
 
+  const getLabelById = useCallback(
+    (id: string) => {
+      const tag = tags.find((t) => t.id === id);
+      return tag ? tag.label : null;
+    },
+    [tags],
+  );
+
   return {
     tags,
     createNewTag,
     getTagsByIds,
+    getLabelById,
   };
 };

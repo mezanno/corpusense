@@ -1,7 +1,7 @@
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import { CollectionDetails } from '@/data/models/Collection';
-import { Tag } from '@/data/models/Tag';
 import { useCollections } from '@/hooks/data/collections/useCollections';
+import { useTags } from '@/hooks/data/tags/useTags';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, Eye, Trash2 } from 'lucide-react';
@@ -17,6 +17,7 @@ const CollectionTable = () => {
   const { openDialog } = useAlertDialogContext();
   const { removeCollection } = useCollections();
   const { collections } = useCollections();
+  const { getLabelById } = useTags();
 
   const handleDelete = (id: string) => {
     openDialog({
@@ -110,11 +111,11 @@ const CollectionTable = () => {
       accessorKey: 'tags',
       header: t('table_col_title_tags'),
       cell: ({ row }) => {
-        const tags: Tag[] = row.getValue('tags');
+        const tagIds: string[] = row.getValue('tags');
         return (
           <div className='flex flex-wrap gap-1'>
-            {tags.map((tag) => (
-              <Badge key={tag?.id}>{tag?.label}</Badge>
+            {tagIds.map((tagId) => (
+              <Badge key={tagId}>{getLabelById(tagId)}</Badge>
             ))}
           </div>
         );
