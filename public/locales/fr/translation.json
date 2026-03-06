@@ -161,6 +161,7 @@
   "form_label_modifier_filter_dimension": "Critère de filtrage (surface, largeur ou hauteur)",
   "form_label_modifier_reorder_order": "Ordre de réorganisation",
   "form_label_modifierchain_name": "Nom de la chaîne",
+  "form_label_filter_collection_table": "Filtrer les noms...",
   "form_option_distribution_all_pages": "Sur toutes les pages",
   "form_option_distribution_each2_pages": "1 page sur 2",
   "form_option_limit_before": "Seulement sur les pages précédentes",

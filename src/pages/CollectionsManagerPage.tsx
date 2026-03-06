@@ -1,126 +1,13 @@
-import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { CollectionDetails } from '@/data/models/Collection';
+import CollectionTable from '@/components/collectionPage/CollectionTable';
 import { useCollections } from '@/hooks/data/collections/useCollections';
-import { useTags } from '@/hooks/data/tags/useTags';
 import useDialog from '@/hooks/ui/useDialog';
-import useAppNavigation from '@/hooks/useAppNavigation';
-import { DownloadIcon, FilePlus, Import, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { FilePlus, Import } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-
-const CollectionTableRow = ({
-  collection,
-  addOrRemoveCollection,
-}: {
-  collection: CollectionDetails;
-  addOrRemoveCollection: (collectionId: string, isAdd: boolean) => void;
-}) => {
-  const { t } = useTranslation();
-  const navigation = useAppNavigation();
-  const { openDialog } = useAlertDialogContext();
-  const { removeCollection } = useCollections();
-
-  const tags = useTags().getTagsByIds(collection.tags);
-
-  const handleDelete = (id: string) => {
-    openDialog({
-      title: t('title_are_you_sure'),
-      description: t('description_delete_collection'),
-      onConfirm: {
-        message: t('btn_yes'),
-        action: () => void removeCollection(id),
-      },
-    });
-  };
-
-  const handleOnClick = async (id: string) => {
-    await navigation.goToCollectionInspector(id);
-  };
-
-  return (
-    <TableRow onClick={() => void handleOnClick(collection.id)}>
-      <TableCell>
-        <Checkbox
-          aria-label={t('aria_label_selection_collection')}
-          onClick={(e) => {
-            e.stopPropagation();
-            addOrRemoveCollection(
-              collection.id,
-              (e.target as HTMLInputElement).dataset['state'] === 'unchecked',
-            );
-          }}
-        />
-      </TableCell>
-      <TableCell>{collection.name}</TableCell>
-      <TableCell>{collection.id}</TableCell>
-      <TableCell>
-        {collection.contentSize === 0 ? (
-          <Badge variant='secondary' className='text-sm'>
-            {t('info_empty_collection')}
-          </Badge>
-        ) : (
-          <Badge className='text-md font-bold'>
-            {t('info_number_of_items', { number: collection.contentSize })}
-          </Badge>
-        )}
-      </TableCell>
-      <TableCell className='space-y-1 space-x-1'>
-        {tags.map((tag) => (
-          <Badge key={tag?.id}>{tag?.label}</Badge>
-        ))}
-      </TableCell>
-      <TableCell className='space-x-2 align-middle'>
-        <Button
-          className='cursor-pointer'
-          variant='destructive'
-          onClick={(event) => {
-            event.stopPropagation();
-            handleDelete(collection.id);
-          }}
-          title={t('btn_delete')}
-          aria-label={t('btn_delete')}
-        >
-          <Trash2 />
-        </Button>
-      </TableCell>
-    </TableRow>
-  );
-};
 
 const CollectionsManagerPage = () => {
   const { t } = useTranslation();
-  // const collections: CollectionDetails[] = useAppSelector(selectCollections);
   const { collections } = useCollections();
-  const { openImportCollectionDialog, openNewCollectionDialog, openExportCollectionDialog } =
-    useDialog();
-
-  const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
-
-  const addOrRemoveCollection = (id: string, isAdd: boolean) => {
-    if (isAdd) {
-      if (!selectedCollections.includes(id)) {
-        setSelectedCollections(selectedCollections.concat(id));
-      }
-    } else {
-      setSelectedCollections(selectedCollections.filter((collection) => collection !== id));
-    }
-  };
-
-  const handleExport = () => {
-    openExportCollectionDialog(selectedCollections);
-  };
+  const { openImportCollectionDialog, openNewCollectionDialog } = useDialog();
 
   const handleNewCollection = () => {
     openNewCollectionDialog();
@@ -152,47 +39,7 @@ const CollectionsManagerPage = () => {
           <h2 className='text-xl'>
             {t('info_number_of_collections', { number: collections.length })}
           </h2>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead></TableHead>
-                <TableHead>{t('table_col_title_collection_name')}</TableHead>
-                <TableHead>{t('table_col_title_collection_id')}</TableHead>
-                <TableHead>{t('table_col_title_collection_info')}</TableHead>
-                <TableHead>{t('table_col_title_tags')}</TableHead>
-                <TableHead>{t('table_col_title_actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {collections.map((col) => (
-                <CollectionTableRow
-                  collection={col}
-                  key={col.id}
-                  addOrRemoveCollection={addOrRemoveCollection}
-                />
-              ))}
-            </TableBody>
-            <TableFooter>
-              <TableRow>
-                <TableCell colSpan={4}>
-                  {t('info_selection')} {selectedCollections.length} / {collections.length}
-                </TableCell>
-                <TableCell>
-                  {selectedCollections.length > 0 ? (
-                    <Button
-                      onClick={handleExport}
-                      aria-label={t('btn_export_collection')}
-                      title={t('btn_export_collection')}
-                    >
-                      <DownloadIcon />
-                    </Button>
-                  ) : (
-                    <div>-</div>
-                  )}
-                </TableCell>
-              </TableRow>
-            </TableFooter>
-          </Table>
+          <CollectionTable />
         </section>
       ) : (
         <div role='alert' className='text-2xl'>
