@@ -1,7 +1,7 @@
 import { Scope } from '@/data/models/Scope';
 import { WorkerStatus } from '@/data/models/Worker';
 import { ClipLoader, GridLoader } from 'react-spinners';
-import { useWorkerContext } from './reducers/WorkerContext';
+import { useWorkerContext } from '../reducers/WorkerContext';
 
 const WorkerStatusIcon = ({ scope }: { scope: Scope }) => {
   const status = useWorkerContext().getStatus(scope);

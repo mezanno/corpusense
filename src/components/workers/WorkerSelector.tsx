@@ -1,7 +1,7 @@
 import { WorkerStatus } from '@/data/models/Worker';
 import { useTranslation } from 'react-i18next';
-import { useWorkerContext } from './reducers/WorkerContext';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { useWorkerContext } from '../reducers/WorkerContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import WorkerLabel from './WorkerLabel';
 
 const WorkerSelector = ({

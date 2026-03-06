@@ -1,6 +1,6 @@
 import { Worker } from '@/data/models/Worker';
 import { useTranslation } from 'react-i18next';
-import ScopeLabel from './ScopeLabel';
+import ScopeLabel from '../ScopeLabel';
 import { getTaskStatusColor, getWorkerStatusIcon } from './workerUtils';
 
 const WorkerLabel = ({ worker }: { worker: Worker }) => {

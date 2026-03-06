@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import WorkerLabel from '@/components/WorkerLabel';
+import WorkerLabel from '@/components/workers/WorkerLabel';
 import { WorkerStatus } from '@/data/models/Worker';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import useDialog from '@/hooks/ui/useDialog';

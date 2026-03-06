@@ -1,6 +1,6 @@
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import WorkerDetails from '@/components/WorkerDetails';
+import WorkerDetails from '@/components/workers/WorkerDetails';
 import WorkerTable from '@/components/workers/WorkerTable';
 import { WorkerStatus } from '@/data/models/Worker';
 import { useState } from 'react';

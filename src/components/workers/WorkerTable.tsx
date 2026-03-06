@@ -8,8 +8,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import WorkerDataTable from '@/components/WorkerDataTable';
-import { getWorkerStatusIcon } from '@/components/workerUtils';
+import WorkerDataTable from '@/components/workers/WorkerDataTable';
+import { getWorkerStatusIcon } from '@/components/workers/workerUtils';
 import { Worker, WorkerStatus } from '@/data/models/Worker';
 import useWorkers from '@/hooks/data/workers/useWorkers';
 import { getWorkerCategory } from '@/utils/workers';

@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-table';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Table, TableBody, TableHead, TableHeader, TableRow } from './ui/table';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '../ui/table';
 import { getTaskStatusColor } from './workerUtils';
 
 interface WorkerDataTableProps<TData, TValue> {

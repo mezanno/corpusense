@@ -5,9 +5,9 @@ import useDialog from '@/hooks/ui/useDialog';
 import { recoverWorkerRequest, stopWorkerProcessRequest } from '@/state/reducers/workers';
 import { CircleX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAlertDialogContext } from './reducers/useAlertDialogContext';
-import { useWorkerContext } from './reducers/WorkerContext';
-import ScopeLabel from './ScopeLabel';
+import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
+import { useWorkerContext } from '../reducers/WorkerContext';
+import ScopeLabel from '../ScopeLabel';
 import { getTaskStatusColor, getWorkerStatusIcon } from './workerUtils';
 
 const WorkerDetails = ({ workerId }: { workerId: string }) => {

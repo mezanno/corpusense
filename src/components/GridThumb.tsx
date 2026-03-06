@@ -1,4 +1,4 @@
-import WorkerStatusIcon from '@/components/WorkerStatusIcon';
+import WorkerStatusIcon from '@/components/workers/WorkerStatusIcon';
 import { getImageForThumbnail, getLabel, getObjectUrl } from '@/data/utils/canvas';
 import useOcrAnnotations from '@/hooks/data/annotations/useOcrAnnotations';
 import { useCollections } from '@/hooks/data/collections/useCollections';
