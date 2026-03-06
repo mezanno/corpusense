@@ -4,9 +4,9 @@ import {
   extractCanvasesByIds,
   extractManifestDetails,
 } from '@/data/utils/manifest';
+import i18n from '@/i18n';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas, Manifest } from '@iiif/presentation-3';
-import i18n from '@/i18n';
 import { db } from './db';
 import { ManifestRepository } from './types';
 

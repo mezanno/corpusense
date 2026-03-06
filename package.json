@@ -72,6 +72,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
+    "cozy-iiif": "^0.7.2",
     "dexie": "^4.2.1",
     "dexie-observable": "^4.0.1-beta.13",
     "dexie-react-hooks": "^4.2.0",

@@ -1,15 +1,14 @@
-import { Canvas, Manifest } from '@iiif/presentation-3';
 import i18n from '@/i18n';
+import { Canvas, Manifest } from '@iiif/presentation-3';
+import { Cozy } from 'cozy-iiif';
 
 export const extractManifestDetails = (manifest: Manifest) => {
-  const summaryNone = manifest.summary?.['none'];
-  const labelNone = manifest.label?.['none'];
-  const name =
-    Array.isArray(summaryNone) && summaryNone[0]
-      ? summaryNone[0]
-      : Array.isArray(labelNone) && labelNone[0]
-        ? labelNone[0]
-        : '';
+  const parsed = Cozy.parse(manifest);
+
+  if (parsed.type !== 'manifest') {
+    throw new Error(i18n.t('error_invalid_manifest_input'));
+  }
+  const name = parsed.resource.getLabel() ?? i18n.t('error_manifest_empty_name');
   const thumbnail = manifest.thumbnail?.[0];
 
   return { name, thumbnail };

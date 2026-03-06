@@ -236,6 +236,7 @@
   "list_title_worker_status": "Statut du traitement",
   "list_title_worker_createdAt": "Démarré le",
   "list_title_worker_scope": "Objet du traitement",
+  "error_manifest_empty_name": "Document sans nom",
   "error_unknown": "Erreur inconnue ¯\\_(ツ)_/¯",
   "error_occured": "Une erreur est survenue",
   "error_loading_manifest": "Erreur lors du chargement du manifest : {{error}}",
