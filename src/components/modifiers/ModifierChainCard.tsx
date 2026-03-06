@@ -58,6 +58,7 @@ export function ModifierChainCard({
           onClick={handleRemoveConvertedFile}
           title={t('btn_delete')}
           aria-label={t('btn_delete')}
+          className='cursor-pointer text-red-400 hover:text-red-600'
         >
           <Trash2 size={20} />
         </div>

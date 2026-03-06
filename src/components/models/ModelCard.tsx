@@ -65,6 +65,7 @@ export function ModelCard({
           onClick={handleRemoveConvertedFile}
           title={t('btn_delete')}
           aria-label={t('btn_delete')}
+          className='cursor-pointer text-red-400 hover:text-red-600'
         >
           <Trash2 size={20} />
         </div>
@@ -72,6 +73,7 @@ export function ModelCard({
           onClick={handleDownloadModel}
           title={t('btn_download_model')}
           aria-label={t('btn_download_model')}
+          className='cursor-pointer text-black/50 hover:text-black'
         >
           <Download size={20} />
         </div>

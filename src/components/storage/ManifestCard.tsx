@@ -59,7 +59,12 @@ export function ManifestCard({ details }: ManifestCardProps) {
           {details.name}
         </h3>
       </CardContent>
-      <CardFooter className='justify-end' onClick={handleRemoveConvertedFile}>
+      <CardFooter
+        title={t('btn_delete')}
+        aria-label={t('btn_delete')}
+        className='cursor-pointer justify-end text-red-400 hover:text-red-600'
+        onClick={handleRemoveConvertedFile}
+      >
         <Trash2 size={14} />
       </CardFooter>
     </Card>

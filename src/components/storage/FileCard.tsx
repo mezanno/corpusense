@@ -51,7 +51,12 @@ export function FileCard({ file }: FileCardProps) {
           <Clock size={14} /> <span>{new Date(file.timestamp).toLocaleDateString()}</span>
         </div>
       </CardContent>
-      <CardFooter className='justify-end' onClick={handleRemoveConvertedFile}>
+      <CardFooter
+        onClick={handleRemoveConvertedFile}
+        title={t('btn_delete')}
+        aria-label={t('btn_delete')}
+        className='cursor-pointer justify-end text-red-400 hover:text-red-600'
+      >
         <Trash2 size={14} />
       </CardFooter>
     </Card>
