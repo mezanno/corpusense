@@ -18,12 +18,12 @@ import useExperimental from '@/hooks/useExperimental';
 import {
   Archive,
   Bolt,
-  Book,
   BookOpen,
   ChevronDown,
   Container,
   CornerDownRight,
   Database,
+  Globe,
   List,
   MoreHorizontal,
   PocketKnife,
@@ -160,7 +160,7 @@ const SourcesSideBarGroup = () => {
     {
       title: t('page_title_iiif_storage'),
       url: CorpusenseRoutes.IIIF_SOURCES,
-      icon: Book,
+      icon: Globe,
     },
     {
       title: t('page_title_local_storage'),
