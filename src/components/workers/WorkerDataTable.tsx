@@ -1,38 +1,65 @@
 import { Worker } from '@/data/models/Worker';
+import { contains } from '@/data/utils/scope';
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
 } from '@tanstack/react-table';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Input } from '../ui/input';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '../ui/table';
 import { getTaskStatusColor } from './workerUtils';
 
-interface WorkerDataTableProps<TData, TValue> {
-  data: TData[];
-  columns: ColumnDef<TData, TValue>[];
+interface WorkerDataTableProps {
+  data: Worker[];
+  columns: ColumnDef<Worker>[];
   selectedWorkerId?: string | null;
   setSelectedWorkerId: (workerId: string) => void;
 }
 
-const WorkerDataTable = <TData, TValue>({
+const WorkerDataTable = ({
   data,
   columns,
   selectedWorkerId,
   setSelectedWorkerId,
-}: WorkerDataTableProps<TData, TValue>) => {
+}: WorkerDataTableProps) => {
   const { t } = useTranslation();
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [filterValue, setFilterValue] = useState('');
+  const [filteredData, setFilteredData] = useState(data);
+
+  useEffect(() => {
+    async function applyFilter() {
+      if (!filterValue) {
+        setFilteredData(data);
+        return;
+      }
+
+      const result = await Promise.all(
+        data.map(async (worker) => {
+          const match = await contains(worker.scope, filterValue);
+          return match ? worker : null;
+        }),
+      );
+
+      setFilteredData(result.filter((w) => w !== null));
+    }
+
+    void applyFilter();
+  }, [filterValue, data]);
+
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
     },
@@ -40,6 +67,14 @@ const WorkerDataTable = <TData, TValue>({
 
   return (
     <div>
+      <div className='flex items-center py-4'>
+        <Input
+          placeholder={t('form_label_filter_worker_table')}
+          value={filterValue}
+          onChange={(event) => setFilterValue(event.target.value)}
+          className='max-w-sm'
+        />
+      </div>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -60,7 +95,7 @@ const WorkerDataTable = <TData, TValue>({
               <TableRow
                 key={row.id}
                 onClick={() => setSelectedWorkerId(row.getValue('id'))}
-                className={`${row.getValue('id') === selectedWorkerId ? 'bg-amber-100 hover:bg-amber-100' : ''} ${getTaskStatusColor((data[index] as Worker).status)} `}
+                className={`${row.getValue('id') === selectedWorkerId ? 'bg-amber-100 hover:bg-amber-100' : ''} ${getTaskStatusColor(data[index].status)} `}
               >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className='px-2 py-1'>
