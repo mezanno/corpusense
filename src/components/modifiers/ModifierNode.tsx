@@ -28,7 +28,7 @@ const ModifierNode = ({ id, data }: NodeProps<ModifierNodeType>) => {
   return (
     <>
       {isTarget ? (
-        <Handle type='target' position={Position.Left}></Handle>
+        <Handle type='target' position={Position.Left} className='cursor-pointer'></Handle>
       ) : (
         <Handle
           position={Position.Left}
@@ -45,6 +45,7 @@ const ModifierNode = ({ id, data }: NodeProps<ModifierNodeType>) => {
             justifyContent: 'center',
             left: -12, // ajuste la position
           }}
+          className='cursor-pointer'
         >
           <PlusCircle size={20} />
         </Handle>
@@ -63,7 +64,10 @@ const ModifierNode = ({ id, data }: NodeProps<ModifierNodeType>) => {
               ))}
             </SelectContent>
           </Select>
-          <div onClick={() => onDelete(modifier.id)}>
+          <div
+            onClick={() => onDelete(modifier.id)}
+            className='cursor-pointer text-black/50 hover:text-black'
+          >
             <Trash size={16} />
           </div>
         </div>

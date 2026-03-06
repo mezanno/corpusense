@@ -50,7 +50,7 @@ const ModifierChainEdge = ({
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
             pointerEvents: 'all',
           }}
-          className='nodrag nopan rounded-2xl bg-white'
+          className='nodrag nopan cursor-pointer rounded-2xl bg-white'
           onClick={handleAddNode}
         >
           <PlusCircle size={20} />
