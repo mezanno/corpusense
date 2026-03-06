@@ -40,21 +40,20 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
 
   const { updateCollection } = useCollections();
   //liste des tags existants dans l'application
-  const autoCompleteTags = storedTags.map((tag) => ({
-    id: tag.id,
-    text: tag.label,
-  }));
+  const autoCompleteTags = useMemo(
+    () => storedTags.map((tag) => ({ id: tag.id, text: tag.label })),
+    [storedTags],
+  );
 
   //liste des tags de la collection
-  const collectionTagsDefaultValue: FormTag[] = [];
-  if (collection.tags !== undefined) {
-    collection.tags.forEach((tagId) => {
-      const tag = storedTags.find((t) => t.id === tagId);
-      if (tag) {
-        collectionTagsDefaultValue.push({ id: tag.id, text: tag.label });
-      }
-    });
-  }
+  const collectionTagsDefaultValue: FormTag[] = useMemo(() => {
+    return collection.tags
+      .map((tagId) => {
+        const tag = storedTags.find((t) => t.id === tagId);
+        return tag ? { id: tag.id, text: tag.label } : null;
+      })
+      .filter(Boolean) as FormTag[];
+  }, [collection, storedTags]);
   const [tags, setTags] = useState<FormTag[]>(collectionTagsDefaultValue);
 
   const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null);
@@ -77,11 +76,17 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
 
   const manifestIds = uniq(collection.content.map((el) => el.manifestId));
 
-  const handleTagAdded = (newTags: FormTag[]) => {
-    //on récupère les tags qui ne sont pas déjà dans la collection (state tags)
+  const handleTagAdded = async (newTags: FormTag[]) => {
     const diff = newTags.filter((tag) => !tags.some((elt) => elt.id === tag.id));
     if (diff.length > 0) {
-      void (async () => await createNewTag({ id: diff[0].id, label: diff[0].text }))();
+      const newTag = { id: diff[0].id, label: diff[0].text };
+      await createNewTag(newTag);
+
+      // ajouter le tag à l'état local pour qu'il soit reconnu après reload
+      setTags((prev) => [...prev, diff[0]]);
+
+      // optionnel : si useTags ne met pas automatiquement à jour storedTags
+      autoCompleteTags.push(diff[0]);
     }
   };
 
@@ -101,6 +106,10 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
 
     onCollection(collectionTagsDefaultValue);
   }, [collection]);
+
+  useEffect(() => {
+    onCollection(collectionTagsDefaultValue);
+  }, [collectionTagsDefaultValue]);
 
   const watchedValues = useWatch({
     control: form.control,
@@ -226,8 +235,8 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
                       autocompleteOptions={autoCompleteTags}
                       setTags={(newTags) => {
                         setTags(newTags);
-                        setValue('tags', newTags as [FormTag, ...FormTag[]]);
-                        handleTagAdded(newTags as FormTag[]);
+                        setValue('tags', newTags as [FormTag, ...FormTag[]], { shouldDirty: true });
+                        void handleTagAdded(newTags as FormTag[]);
                       }}
                       generateTagId={() => uuid()}
                       styleClasses={{ inlineTagsContainer: 'tagInputInlineContainer' }}
