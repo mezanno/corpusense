@@ -9,6 +9,7 @@ import {
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
+import { applyModifierChainToAnnotations } from '@/data/utils/modifierChain';
 import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
@@ -101,15 +102,31 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     console.log(gradioResult.data);
     try {
       const peroResult = peroResultSchema.parse(gradioResult.data);
-      const annotations = convertPeroTranscriptionsToAnnotations(
+      const newAnnotations = convertPeroTranscriptionsToAnnotations(
         peroResult,
         task.scope.canvasId,
         task.scope.collectionId,
       );
-      const newAnnotations = await annotationRepository.addAll(annotations);
+
+      //if a post-processing function is defined for the collection, apply it to the new annotations before saving them
+      const collection = await collectionRepository.getById(task.scope.collectionId);
+      let savedAnnotations;
+      if (
+        collection.postOcrModifierChainId !== undefined &&
+        collection.postOcrModifierChainId.trim() !== ''
+      ) {
+        const updatedAnnotations = await applyModifierChainToAnnotations(
+          collection.postOcrModifierChainId,
+          newAnnotations.map((a) => ({ ...a, order: 0 })), //we have to set the order to transofrm AnnotationDTO into Annotation for the modifier chain function, but it will be reset when saving the annotations
+        );
+        savedAnnotations = await annotationRepository.addAll(updatedAnnotations);
+      } else {
+        savedAnnotations = await annotationRepository.addAll(newAnnotations);
+      }
+
       return {
         status: WorkerStatus.COMPLETED,
-        content: newAnnotations,
+        content: savedAnnotations,
       };
     } catch (error) {
       try {
