@@ -159,8 +159,11 @@ export interface ConvertedFileRepository {
 export interface ModifierChainRepository {
   getAll(): Promise<ModifierChainDTO[]>;
   getById(id: string): Promise<ModifierChainDTO>;
+  getByName(name: string): Promise<ModifierChainDTO | undefined>;
 
   add(chain: ModifierChainDTO): Promise<void>;
+
+  put(chain: ModifierChainDTO): Promise<void>;
 
   delete(id: string): Promise<void>;
 }
