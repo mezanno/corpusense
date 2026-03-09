@@ -1,6 +1,6 @@
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { getModifierChainRepository } from '@/data/repositories/indexeddb/dbFactory';
-import { getModifiersAndValues } from '@/data/utils/modifierChain';
+import { getModifiersAndValues, ModifierChainData } from '@/data/utils/modifierChain';
 import { v4 as uuid } from 'uuid';
 
 const useModifierChainIO = () => {
@@ -32,12 +32,7 @@ const useModifierChainIO = () => {
     await modifierChainRepository.put(chainDTO);
   };
 
-  const loadModifierChain = async (
-    id: string,
-  ): Promise<{
-    modifiers: AnyModifier[];
-    modifierValues: Record<string, unknown>;
-  }> => {
+  const loadModifierChain = async (id: string): Promise<ModifierChainData> => {
     return getModifiersAndValues(id);
   };
 

@@ -7,12 +7,13 @@ import {
 } from '@/data/repositories/indexeddb/dbFactory';
 import { Annotation } from '../models/Annotation';
 
-const getModifiersAndValues = async (
-  id: string,
-): Promise<{
+export type ModifierChainData = {
   modifiers: AnyModifier[];
   modifierValues: Record<string, unknown>;
-}> => {
+  name?: string;
+};
+
+const getModifiersAndValues = async (id: string): Promise<ModifierChainData> => {
   const modifierChainRepository = getModifierChainRepository();
   const modifierDTO = await modifierChainRepository.getById(id);
 
@@ -31,7 +32,7 @@ const getModifiersAndValues = async (
     modifierValues[dto.id] = dto.values;
   });
 
-  return { modifiers, modifierValues };
+  return { modifiers, modifierValues, name: modifierDTO.name };
 };
 
 const applyModifiersToScope = async (

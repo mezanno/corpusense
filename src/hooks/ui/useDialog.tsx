@@ -6,9 +6,7 @@ import ExportCollectionForm from '@/components/forms/ExportCollectionForm';
 import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
 import ImportCollectionForm from '@/components/forms/ImportCollectionForm';
 import ImportModelForm from '@/components/forms/ImportModelForm';
-import LoadModifierChainForm, {
-  LoadModifierChainResult,
-} from '@/components/forms/LoadModifierChainForm';
+import LoadModifierChainForm from '@/components/forms/LoadModifierChainForm';
 import LoginForm from '@/components/forms/LoginForm';
 import NewCollectionForm, { NewCollectionFormParams } from '@/components/forms/NewCollectionForm';
 import NewModelForm from '@/components/forms/NewModelForm';
@@ -22,6 +20,7 @@ import { DataModel } from '@/data/models/DataModel';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { CanvasScope, Scope } from '@/data/models/Scope';
 import { Worker } from '@/data/models/Worker';
+import { ModifierChainData } from '@/data/utils/modifierChain';
 import { ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -215,6 +214,7 @@ const useDialog = () => {
   const openSaveModifierChainDialog = (
     modifiers: AnyModifier[],
     modifiersValues: Record<string, unknown>,
+    name?: string,
   ) => {
     openFormDialog({
       title: t('btn_save_modifierchain'),
@@ -224,13 +224,14 @@ const useDialog = () => {
           formRef={formRef}
           setCanSubmit={setCanSubmit}
           modifiers={modifiers}
-          modifiersValues={modifiersValues}
+          modifierValues={modifiersValues}
+          name={name}
         />
       ),
     });
   };
 
-  const openLoadModifierChainDialog = (onResult: (result: LoadModifierChainResult) => void) => {
+  const openLoadModifierChainDialog = (onResult: (result: ModifierChainData) => void) => {
     openFormDialog({
       title: t('btn_load_modifiers'),
       confirmLabel: t('btn_open'),

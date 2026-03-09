@@ -48,6 +48,7 @@ const ModifierChainFlow = ({
   const { openSaveModifierChainDialog, openLoadModifierChainDialog } = useDialog();
   const [modifiers, setModifiers] = useState<AnyModifier[]>([]);
   const [modifierValues, setModifierValues] = useState<Record<string, unknown>>({});
+  const [currentChainName, setCurrentChainName] = useState<string>(''); // pour afficher le nom de la chaîne chargée ou sauvegardée
   const [applyModifierChainTo, setApplyModifierChainTo] = useState<ElementType>(
     ElementType.TEXT_REGION,
   );
@@ -148,16 +149,19 @@ const ModifierChainFlow = ({
   };
 
   const saveChain = () => {
-    openSaveModifierChainDialog(modifiers, modifierValues);
+    openSaveModifierChainDialog(modifiers, modifierValues, currentChainName);
   };
 
   const handleLoadChain = () => {
-    openLoadModifierChainDialog(({ modifiers: loadedModifiers, modifierValues: loadedValues }) => {
-      setNodes([]);
-      setEdges([]);
-      setModifiers(loadedModifiers);
-      setModifierValues(loadedValues);
-    });
+    openLoadModifierChainDialog(
+      ({ modifiers: loadedModifiers, modifierValues: loadedValues, name }) => {
+        setNodes([]);
+        setEdges([]);
+        setModifiers(loadedModifiers);
+        setModifierValues(loadedValues);
+        if (name !== undefined) setCurrentChainName(name);
+      },
+    );
   };
 
   useEffect(() => {

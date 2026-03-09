@@ -8,7 +8,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { AnyModifier } from '@/data/models/modifiers/Modifier';
+import { ModifierChainData } from '@/data/utils/modifierChain';
 import useModifierChainIO from '@/hooks/data/modifiers/useModifierChainIO';
 import useModifierChainLive from '@/hooks/data/modifiers/useModifierChainLive';
 import { FormProps } from '@/hooks/ui/useDialog';
@@ -19,18 +19,14 @@ import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { Checkbox } from '../ui/checkbox';
 
-export type SaveModifierChainFormParams = {
-  modifiers: AnyModifier[];
-  modifiersValues: Record<string, unknown>;
-};
-
-type SaveModifierChainFormProps = FormProps & SaveModifierChainFormParams;
+type SaveModifierChainFormProps = FormProps & ModifierChainData;
 
 const SaveModifierChainForm = ({
   formRef,
   setCanSubmit,
   modifiers,
-  modifiersValues,
+  modifierValues,
+  name,
 }: SaveModifierChainFormProps) => {
   const { t } = useTranslation();
   const { saveModifierChain } = useModifierChainIO();
@@ -57,7 +53,7 @@ const SaveModifierChainForm = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
+      name: name,
       overwrite: false,
     },
     mode: 'onChange',
@@ -68,7 +64,7 @@ const SaveModifierChainForm = ({
   }, [form.formState.isDirty, form.formState.isValid]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    await saveModifierChain(values.name, modifiers, modifiersValues);
+    await saveModifierChain(values.name, modifiers, modifierValues);
   }
 
   const formValues = useWatch({
