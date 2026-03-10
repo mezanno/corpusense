@@ -1,3 +1,4 @@
+import { ElementType } from '@/data/models/Annotation';
 import { Collection } from '@/data/models/Collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useModels } from '@/hooks/data/models/useModels';
@@ -6,6 +7,7 @@ import { useTags } from '@/hooks/data/tags/useTags';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Tag as FormTag, TagInput } from 'emblor';
 import { debounce, uniq } from 'lodash';
+import { Play } from 'lucide-react';
 import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -35,7 +37,7 @@ const formSchema = z.object({
 
 const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
   const { models } = useModels();
-  const { modifierChains } = useModifierChainLive();
+  const { modifierChains, applyModifierChainToCollection } = useModifierChainLive();
   const { tags: storedTags, createNewTag } = useTags();
 
   const { updateCollection } = useCollections();
@@ -149,6 +151,28 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
     };
   }, [watchedValues, form.formState.isDirty, debouncedSave]);
 
+  const applyLayoutModifiersChain = async () => {
+    if (watchedValues.postLayoutModifierChainId === undefined) return;
+    await applyModifierChainToCollection(
+      watchedValues.postLayoutModifierChainId,
+      {
+        collectionId: collection.id,
+      },
+      ElementType.TEXT_REGION,
+    );
+  };
+
+  const applyOcrModifiersChain = async () => {
+    if (watchedValues.postOcrModifierChainId === undefined) return;
+    await applyModifierChainToCollection(
+      watchedValues.postOcrModifierChainId,
+      {
+        collectionId: collection.id,
+      },
+      ElementType.TEXT_LINE,
+    );
+  };
+
   return (
     <Form {...form}>
       <form className='mx-auto flex w-full flex-col gap-2 p-2 md:p-5'>
@@ -250,6 +274,7 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='postLayoutModifierChainId'
@@ -257,22 +282,32 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
                 <FormItem>
                   <FormLabel>{t('form_label_collection_postLayoutModifierChain')}</FormLabel>
                   <FormControl>
-                    <select
-                      {...field}
-                      className='h-10 w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
-                    >
-                      <option value=''>{t('form_placeholder_modifierchain')}</option>
-                      {modifierChains.map((chain) => (
-                        <option key={chain.id} value={chain.id}>
-                          {chain.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className='flex gap-1'>
+                      <select
+                        {...field}
+                        className='h-10 w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+                      >
+                        <option value=''>{t('form_placeholder_modifierchain')}</option>
+                        {modifierChains.map((chain) => (
+                          <option key={chain.id} value={chain.id}>
+                            {chain.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div
+                        onClick={() => void applyLayoutModifiersChain()}
+                        className='soft-button'
+                        title={t('btn_apply_modifiers')}
+                      >
+                        <Play size={16} />
+                      </div>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='postOcrModifierChainId'
@@ -280,17 +315,26 @@ const CollectionMetadataForm = ({ collection }: { collection: Collection }) => {
                 <FormItem>
                   <FormLabel>{t('form_label_collection_postOcrModifierChain')}</FormLabel>
                   <FormControl>
-                    <select
-                      {...field}
-                      className='h-10 w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
-                    >
-                      <option value=''>{t('form_placeholder_modifierchain')}</option>
-                      {modifierChains.map((chain) => (
-                        <option key={chain.id} value={chain.id}>
-                          {chain.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className='flex gap-1'>
+                      <select
+                        {...field}
+                        className='h-10 w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+                      >
+                        <option value=''>{t('form_placeholder_modifierchain')}</option>
+                        {modifierChains.map((chain) => (
+                          <option key={chain.id} value={chain.id}>
+                            {chain.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div
+                        onClick={() => void applyOcrModifiersChain()}
+                        className='soft-button'
+                        title={t('btn_apply_modifiers')}
+                      >
+                        <Play size={16} />
+                      </div>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
