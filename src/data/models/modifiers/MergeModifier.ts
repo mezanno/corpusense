@@ -1,6 +1,6 @@
 import {
+  getDimensions,
   getDistanceBetweenAnnotationCenters,
-  getDistanceBetweenAnnotations,
   getLeft,
   mergeTwoAnnotations,
 } from '@/data/utils/annotations';
@@ -53,70 +53,183 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
     this.horizontalThresholdMax = horizontalThresholdMax;
   }
 
+  // apply = (data: Annotation[], values: z.infer<typeof mergeSchema>) => {
+  //   console.log('Applying MergeModifier with values: ', values);
+  //   if (data.length > 1) {
+  //     const {
+  //       origin,
+  //       verticalThreshold: defaultVerticalThreshold,
+  //       horizontalThreshold: defaultHorizontalThreshold,
+  //     } = mergeSchema.parse(values);
+  //     const verticalThreshold = values.verticalThreshold ?? defaultVerticalThreshold;
+  //     const horizontalThreshold = values.horizontalThreshold ?? defaultHorizontalThreshold;
+  //     console.log('Using values ', verticalThreshold, '|', horizontalThreshold);
+
+  //     const verticalActive = verticalThreshold >= 0;
+  //     const horizontalActive = horizontalThreshold >= 0;
+
+  //     if (!verticalActive && !horizontalActive) return data;
+
+  //     const annotations = [...data];
+  //     annotations.sort(
+  //       (a, b) => a.target.selector.geometry.bounds.minY - b.target.selector.geometry.bounds.minY,
+  //     );
+  //     console.log(
+  //       'annotations to merge: ',
+  //       annotations.map((a) => a.id.substring(0, 2)),
+  //     );
+
+  //     let changed = true;
+  //     while (changed) {
+  //       changed = false;
+  //       for (let i = 0; i < annotations.length; i++) {
+  //         for (let j = i + 1; j < annotations.length; j++) {
+  //           const distance =
+  //             origin === 'center'
+  //               ? getDistanceBetweenAnnotationCenters(annotations[i], annotations[j])
+  //               : getDistanceBetweenAnnotations(annotations[i], annotations[j]);
+  //           console.log(
+  //             'distance between ',
+  //             annotations[i].id.substring(3),
+  //             '<->',
+  //             annotations[j].id.substring(3),
+  //             ': ',
+  //             distance,
+  //           );
+  //           const verticalOk = !verticalActive || Math.abs(distance.vertical) <= verticalThreshold;
+
+  //           const horizontalOk =
+  //             !horizontalActive || Math.abs(distance.horizontal) <= horizontalThreshold;
+
+  //           if (verticalOk && horizontalOk) {
+  //             //TODO! hack temporaire pour forcer le merge dans le bon ordre (pour que le texte soit dans le bon ordre)
+  //             if (origin === 'center') {
+  //               if (getLeft(annotations[i]) < getLeft(annotations[j])) {
+  //                 //si merge de lignes, on merge de gauche à droite
+  //                 annotations[i] = mergeTwoAnnotations(annotations[i], annotations[j]);
+  //               } else {
+  //                 annotations[i] = mergeTwoAnnotations(annotations[j], annotations[i]);
+  //               }
+  //             } else {
+  //               annotations[i] = mergeTwoAnnotations(annotations[i], annotations[j]);
+  //             }
+  //             annotations.splice(j, 1);
+  //             changed = true;
+  //             break; // Break the inner loop to restart checking from the beginning
+  //           }
+  //         }
+  //         if (changed) {
+  //           break; // Break the outer loop to restart checking from the beginning
+  //         }
+  //       }
+  //     }
+  //     if (data.length !== annotations.length) {
+  //       console.log(
+  //         'annotations merged: ',
+  //         annotations.map((a) => a.id.substring(0, 2)),
+  //       );
+  //     }
+  //     return annotations;
+  //   }
+  //   return data;
+  // };
+
   apply = (data: Annotation[], values: z.infer<typeof mergeSchema>) => {
-    console.log('Applying MergeModifier with values: ', values);
-    if (data.length > 1) {
-      const {
-        origin,
-        verticalThreshold: defaultVerticalThreshold,
-        horizontalThreshold: defaultHorizontalThreshold,
-      } = mergeSchema.parse(values);
-      const verticalThreshold = values.verticalThreshold ?? defaultVerticalThreshold;
-      const horizontalThreshold = values.horizontalThreshold ?? defaultHorizontalThreshold;
-      console.log('Using ', verticalThreshold, '|', horizontalThreshold);
+    if (data.length <= 1) return data;
 
-      const annotations = [...data];
-      annotations.sort(
-        (a, b) => a.target.selector.geometry.bounds.minY - b.target.selector.geometry.bounds.minY,
-      );
-      console.log(
-        'annotations to merge: ',
-        annotations.map((a) => a.id.substring(0, 2)),
-      );
+    const { origin, verticalThreshold, horizontalThreshold } = mergeSchema.parse(values);
 
-      let changed = true;
-      while (changed) {
-        changed = false;
-        for (let i = 0; i < annotations.length; i++) {
-          for (let j = i + 1; j < annotations.length; j++) {
-            const distance =
-              origin === 'center'
-                ? getDistanceBetweenAnnotationCenters(annotations[i], annotations[j])
-                : getDistanceBetweenAnnotations(annotations[i], annotations[j]);
+    const verticalActive = verticalThreshold >= 0;
+    const horizontalActive = horizontalThreshold >= 0;
 
-            if (
-              (verticalThreshold >= 0 && Math.abs(distance.vertical) <= verticalThreshold) ||
-              (horizontalThreshold >= 0 && Math.abs(distance.horizontal) <= horizontalThreshold)
-            ) {
-              //TODO! hack temporaire pour forcer le merge dans le bon ordre (pour que le texte soit dans le bon ordre)
-              if (origin === 'center') {
-                if (getLeft(annotations[i]) < getLeft(annotations[j])) {
-                  //si merge de lignes, on merge de gauche à droite
-                  annotations[i] = mergeTwoAnnotations(annotations[i], annotations[j]);
-                } else {
-                  annotations[i] = mergeTwoAnnotations(annotations[j], annotations[i]);
-                }
+    if (!verticalActive && !horizontalActive) return data;
+
+    const annotations = [...data];
+
+    annotations.sort(
+      (a, b) => a.target.selector.geometry.bounds.minY - b.target.selector.geometry.bounds.minY,
+    );
+
+    const overlap = (aMin: number, aMax: number, bMin: number, bMax: number) =>
+      Math.max(0, Math.min(aMax, bMax) - Math.max(aMin, bMin));
+
+    const getBounds = (a: Annotation) => a.target.selector.geometry.bounds;
+
+    let changed = true;
+
+    while (changed) {
+      changed = false;
+
+      for (let i = 0; i < annotations.length; i++) {
+        for (let j = i + 1; j < annotations.length; j++) {
+          const a = annotations[i];
+          const b = annotations[j];
+
+          const aB = getBounds(a);
+          const bB = getBounds(b);
+
+          if (origin === 'center') {
+            const distance = getDistanceBetweenAnnotationCenters(a, b);
+
+            const verticalOk = !verticalActive || Math.abs(distance.vertical) <= verticalThreshold;
+
+            const horizontalOk =
+              !horizontalActive || Math.abs(distance.horizontal) <= horizontalThreshold;
+
+            const verticalOverlap = overlap(aB.minY, aB.maxY, bB.minY, bB.maxY);
+            const horizontalOverlap = overlap(aB.minX, aB.maxX, bB.minX, bB.maxX);
+
+            if (verticalOk && horizontalOk && (verticalOverlap > 0 || horizontalOverlap > 0)) {
+              if (getLeft(a) < getLeft(b)) {
+                annotations[i] = mergeTwoAnnotations(a, b);
               } else {
-                annotations[i] = mergeTwoAnnotations(annotations[i], annotations[j]);
+                annotations[i] = mergeTwoAnnotations(b, a);
               }
+
               annotations.splice(j, 1);
               changed = true;
-              break; // Break the inner loop to restart checking from the beginning
+              break;
+            }
+          } else {
+            const verticalDistance = Math.max(0, Math.max(aB.minY - bB.maxY, bB.minY - aB.maxY));
+            const horizontalDistance = Math.max(0, Math.max(aB.minX - bB.maxX, bB.minX - aB.maxX));
+
+            const verticalOverlap = overlap(aB.minY, aB.maxY, bB.minY, bB.maxY);
+            const horizontalOverlap = overlap(aB.minX, aB.maxX, bB.minX, bB.maxX);
+
+            const dimensionA = getDimensions(a);
+            const dimensionB = getDimensions(b);
+
+            const verticalOverlapRatio =
+              verticalOverlap / Math.min(dimensionA.height, dimensionB.height);
+
+            const horizontalOverlapRatio =
+              horizontalOverlap / Math.min(dimensionA.width, dimensionB.width);
+
+            const horizontalMerge =
+              horizontalActive &&
+              horizontalDistance <= horizontalThreshold &&
+              verticalOverlapRatio > 0.3;
+
+            const verticalMerge =
+              verticalActive &&
+              verticalDistance <= verticalThreshold &&
+              horizontalOverlapRatio > 0.3;
+
+            if (horizontalMerge || verticalMerge) {
+              annotations[i] = mergeTwoAnnotations(a, b);
+
+              annotations.splice(j, 1);
+              changed = true;
+              break;
             }
           }
-          if (changed) {
-            break; // Break the outer loop to restart checking from the beginning
-          }
         }
+
+        if (changed) break;
       }
-      if (data.length !== annotations.length) {
-        console.log(
-          'annotations merged: ',
-          annotations.map((a) => a.id.substring(0, 2)),
-        );
-      }
-      return annotations;
     }
-    return data;
+
+    return annotations;
   };
 }
