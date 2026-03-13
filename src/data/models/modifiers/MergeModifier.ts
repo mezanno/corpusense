@@ -189,6 +189,23 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
 
     const annotationRepository = getAnnotationRepository();
 
+    //we fetch all parents before the loop to avoid fetching them multiple times (and also to speed up the process since we can do it in parallel)
+    //on ne paut pas utiliser ElementType.TEXT_LINE puisque les previews se font avec ElementType.TEMP
+    //mais de toute façon, seuls les ElementType.TEXT_LINE ont un parent.
+    // if (
+    //   getAnnotationType(a) === getAnnotationType(b) &&
+    //   getAnnotationType(a) === ElementType.TEXT_LINE
+    // ) {
+    const parents = new Map<string, Annotation | null>();
+    await Promise.all(
+      annotations.map(async (a) => {
+        parents.set(a.id, await annotationRepository.getParent(a));
+      }),
+    );
+
+    //we sort the annotations by their center Y coordinate to speed up the process (we will only compare annotations that are close to each other vertically)
+    annotations.sort((a, b) => getBounds(a).minY - getBounds(b).minY);
+
     let changed = true;
     while (changed) {
       changed = false;
@@ -201,19 +218,20 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
           const aB = getBounds(a);
           const bB = getBounds(b);
 
-          //on ne paut pas utiliser ElementType.TEXT_LINE puisque les previews se font avec ElementType.TEMP
-          //mais de toute façon, seuls les ElementType.TEXT_LINE ont un parent.
-          // if (
-          //   getAnnotationType(a) === getAnnotationType(b) &&
-          //   getAnnotationType(a) === ElementType.TEXT_LINE
-          // ) {
-          const parentA = await annotationRepository.getParent(a);
-          const parentB = await annotationRepository.getParent(b);
-
-          if (parentA?.id.startsWith('f1f761b5') === true) {
-            console.log('Comparing ', a.id.substring(0, 4), ' and ', b.id.substring(0, 4));
+          if (bB.minY - aB.maxY > verticalThreshold) {
+            break; //since the annotations are sorted by their minY, if the distance between a and b is greater than the vertical threshold, it will be greater for all the next annotations
           }
-          if (parentA !== null && parentB !== null && parentA.id !== parentB.id) {
+
+          const parentA = parents.get(a.id);
+          const parentB = parents.get(b.id);
+
+          if (
+            parentA !== null &&
+            parentA !== undefined &&
+            parentB !== null &&
+            parentB !== undefined &&
+            parentA.id !== parentB.id
+          ) {
             continue; // ne pas merger des annotations qui n'ont pas le même parent
           }
 
