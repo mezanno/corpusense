@@ -1,9 +1,15 @@
 import { Scope } from '@/data/models/Scope';
 import { Worker } from '@/data/models/Worker';
 import useDialog from '@/hooks/ui/useDialog';
+import { Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useWorkerContext } from './reducers/WorkerContext';
-import { Select, SelectContent, SelectItem, SelectTrigger } from './ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 
 const ResultsAvailable = ({ scope }: { scope: Scope }) => {
   const { t } = useTranslation();
@@ -22,27 +28,23 @@ const ResultsAvailable = ({ scope }: { scope: Scope }) => {
   };
 
   return (
-    <div className='h-fit w-fit rounded bg-white'>
-      <Select
-        onValueChange={(value) => {
-          const worker = workersWithResults.find((w) => w.id === value);
-          if (worker) {
-            handleExportResult(worker);
-          }
-        }}
-      >
-        <SelectTrigger>{t('info_results_available')}</SelectTrigger>
-        <SelectContent>
+    <div className='soft-button mr-2'>
+      <DropdownMenu>
+        <DropdownMenuTrigger className='flex gap-2'>
+          <Download />
+          {t('info_results_available')}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
           {workersWithResults
             .filter((w) => hasResult(w.id))
             .map((w) => (
-              <SelectItem key={w.id} value={w.id}>
+              <DropdownMenuItem key={w.id} onClick={() => handleExportResult(w)}>
                 <span className='font-bold'>{w.name}</span> -{' '}
                 {new Date(w.createdAt).toLocaleString()}
-              </SelectItem>
+              </DropdownMenuItem>
             ))}
-        </SelectContent>
-      </Select>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };
