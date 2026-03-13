@@ -1,6 +1,8 @@
 import z from 'zod';
 import { Annotation } from '../Annotation';
 
+type MaybePromise<T> = T | Promise<T>;
+
 export type BaseFieldMetadata = {
   label?: string;
   description?: string;
@@ -68,7 +70,7 @@ export abstract class Modifier<TSchema extends z.ZodTypeAny> {
     this.description = description;
   }
 
-  abstract apply(data: Annotation[], values: z.infer<TSchema>): Annotation[];
+  abstract apply(data: Annotation[], values: z.infer<TSchema>): MaybePromise<Annotation[]>;
 }
 
 export type AnyModifier = Modifier<z.ZodObject<z.ZodRawShape>>;

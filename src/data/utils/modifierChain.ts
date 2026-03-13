@@ -49,7 +49,7 @@ const applyModifiersToScope = async (
   if (isCanvasScope(scope)) {
     const scopeAnnotations = await annotationRepository.getByScopeAndTypes(scope, [type]);
     if (scopeAnnotations.length === 0) return;
-    const updatedAnnotations = applyChainToAnnotations(modifiers, values, scopeAnnotations);
+    const updatedAnnotations = await applyChainToAnnotations(modifiers, values, scopeAnnotations);
     await annotationRepository.deleteByIds(scopeAnnotations.map((a) => a.id));
     await annotationRepository.addAll(updatedAnnotations);
   } else {
@@ -60,7 +60,7 @@ const applyModifiersToScope = async (
       const canvasScope = { collectionId: scope.collectionId, canvasId: canvas.id };
       const scopeAnnotations = await annotationRepository.getByScopeAndTypes(canvasScope, [type]);
       if (scopeAnnotations.length === 0) continue;
-      const updatedAnnotations = applyChainToAnnotations(modifiers, values, scopeAnnotations);
+      const updatedAnnotations = await applyChainToAnnotations(modifiers, values, scopeAnnotations);
       await annotationRepository.deleteByIds(scopeAnnotations.map((a) => a.id));
       await annotationRepository.addAll(updatedAnnotations);
     }
@@ -80,20 +80,26 @@ const applyModifierChainToAnnotations = async (
   }
 };
 
-const applyChainToAnnotations = (
+const applyChainToAnnotations = async (
   modifiers: AnyModifier[],
   modifierValues: Record<string, unknown>,
   annotations: Annotation[],
 ) => {
   let updatedAnnotations = [...annotations];
-  modifiers.forEach((modifier) => {
+  for (const modifier of modifiers) {
     const values = modifierValues[modifier.id];
     if (values !== undefined) {
       const rawValues = modifierValues[modifier.id] ?? {};
       const parsedValues = modifier.schema.parse(rawValues);
-      updatedAnnotations = modifier.apply(updatedAnnotations, parsedValues);
+      updatedAnnotations = await modifier.apply(updatedAnnotations, parsedValues);
     }
-  });
+
+    // const rawValues = modifierValues[modifier.id];
+    // if (rawValues !== undefined) {
+    //   const parsedValues = modifier.schema.parse(rawValues);
+    //   updatedAnnotations = await modifier.apply(updatedAnnotations, parsedValues);
+    // }
+  }
   return updatedAnnotations;
 };
 

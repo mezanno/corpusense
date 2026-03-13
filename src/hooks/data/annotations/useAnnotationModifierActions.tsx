@@ -82,14 +82,14 @@ const useAnnotationModifierActions = ({
       : scopeAnnotations;
 
     let annotations = [...annotationsToModify];
-    modifiers.forEach((modifier) => {
+    for (const modifier of modifiers) {
       const modifierValues = values[modifier.id];
       if (modifierValues !== undefined) {
         const rawValues = values[modifier.id] ?? {};
         const parsedValues = modifier.schema.parse(rawValues);
-        annotations = modifier.apply(annotations, parsedValues);
+        annotations = await modifier.apply(annotations, parsedValues);
       }
-    });
+    }
 
     if (showPreview) {
       await annotationTempRepository.deleteByCollection(scope.collectionId);
