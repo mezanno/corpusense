@@ -20,6 +20,7 @@ export interface AnnotationRepository {
   getByScope(scope: Scope): Promise<Annotation[]>;
   getByScopeAndTypes(scope: Scope, types: ElementType[]): Promise<Annotation[]>;
   getNextOrderByScopeAndType(scope: Scope, type: ElementType): Promise<number>;
+  getParent(annotation: Annotation): Promise<Annotation | null>;
 
   addAll(annotations: AnnotationDTO[]): Promise<Annotation[]>;
 

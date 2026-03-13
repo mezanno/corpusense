@@ -1,6 +1,7 @@
 import { isAnnotationScope, isCanvasScope, Scope } from '@/data/models/Scope';
-import { ShapeType } from '@annotorious/annotorious';
+import { containsAtLeast2Corners, getSurface } from '@/data/utils/annotations';
 import i18n from '@/i18n';
+import { ShapeType } from '@annotorious/annotorious';
 import { Annotation, AnnotationDTO, ElementType, getAnnotationType } from '../../models/Annotation';
 import { db } from './db';
 import { AnnotationRepository } from './types';
@@ -44,6 +45,38 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
       return 1;
     }
     return annotations[annotations.length - 1].order + 1;
+  }
+
+  /*
+   * This function is used to get the parent annotation of a text line annotation. The parent annotation is the annotation that has the same canvasId and collectionId, and contains at least 2 corners of the given annotation. If there are multiple annotations that satisfy this condition, we return the one that has the smallest area. If there is no annotation that satisfies this condition, we throw an error.
+   */
+  async getParent(annotation: Annotation): Promise<Annotation | null> {
+    if (
+      getAnnotationType(annotation) !== ElementType.TEXT_LINE &&
+      getAnnotationType(annotation) !== ElementType.TEMP
+    ) {
+      throw new Error(i18n.t('error_annotation_not_of_type_text_line'));
+    }
+    const regionAnnotations = await this.getByScopeAndTypes(
+      { collectionId: annotation.collectionId, canvasId: annotation.canvasId },
+      [ElementType.TEXT_REGION],
+    );
+
+    const parent = regionAnnotations.reduce(
+      (closest, current) => {
+        if (containsAtLeast2Corners(current, annotation)) {
+          const currentArea = getSurface(current);
+          const closestArea = closest ? getSurface(closest) : Number.POSITIVE_INFINITY;
+          if (currentArea < closestArea) {
+            return current;
+          }
+        }
+        return closest;
+      },
+      null as Annotation | null,
+    );
+
+    return parent;
   }
 
   //TODO! il faut ordonner les annotations par collection et canvas sinon l'ordre sera faux
