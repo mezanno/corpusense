@@ -36,6 +36,25 @@ const contains = (annotationContainer: ImageAnnotation, annotation: ImageAnnotat
   );
 };
 
+const containsAtLeast2Corners = (
+  annotationContainer: ImageAnnotation,
+  annotation: ImageAnnotation,
+) => {
+  if (annotationContainer.id === annotation.id) return false;
+
+  const c = annotationContainer.target.selector.geometry.bounds;
+  const t = annotation.target.selector.geometry.bounds;
+
+  let count = 0;
+
+  if (t.minX >= c.minX && t.minX <= c.maxX && t.minY >= c.minY && t.minY <= c.maxY) count++;
+  if (t.maxX >= c.minX && t.maxX <= c.maxX && t.minY >= c.minY && t.minY <= c.maxY) count++;
+  if (t.minX >= c.minX && t.minX <= c.maxX && t.maxY >= c.minY && t.maxY <= c.maxY) count++;
+  if (t.maxX >= c.minX && t.maxX <= c.maxX && t.maxY >= c.minY && t.maxY <= c.maxY) count++;
+
+  return count >= 2;
+};
+
 const generateRegionAnnotationForCanvas = (canvas: Canvas, collectionId: string) => {
   const image = getImage(canvas);
   if (image.width === undefined || image.height === undefined) {
@@ -95,12 +114,14 @@ const getRectFromBounds = (annotation: Annotation | ImageAnnotation) => {
 
 export {
   contains,
+  containsAtLeast2Corners,
   generateFirstAnnotation,
   generateRegionAnnotationForCanvas,
   getAnnotationsByType,
   getRectFromBounds,
   importAnnotationFromJson,
 };
+
 export function getDimensions(annotation: ImageAnnotation) {
   const selector = annotation.target.selector;
   if (selector.type === ShapeType.RECTANGLE) {
@@ -111,6 +132,11 @@ export function getDimensions(annotation: ImageAnnotation) {
     };
   }
   return { width: -1, height: -1 };
+}
+
+export function getSurface(annotation: ImageAnnotation) {
+  const dimensions = getDimensions(annotation);
+  return dimensions.width * dimensions.height;
 }
 
 export function getPosition(annotation: ImageAnnotation) {
