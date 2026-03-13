@@ -1,3 +1,4 @@
+import LanguageFlag from '@/components/LanguageFlag';
 import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
@@ -42,14 +43,17 @@ const Layout = () => {
           <header className='flex shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12'>
             <div className='flex w-full items-center justify-between space-x-2'>
               <SidebarTrigger />
-              <button
-                className='soft-button'
-                aria-label={t('btn_open_contact')}
-                onClick={openContactUsDialog}
-              >
-                <Mail size={16} />
-                {t('btn_open_contact')}
-              </button>
+              <div className='flex gap-2'>
+                <LanguageFlag />
+                <button
+                  className='soft-button'
+                  aria-label={t('btn_open_contact')}
+                  onClick={openContactUsDialog}
+                >
+                  <Mail size={16} />
+                  {t('btn_open_contact')}
+                </button>
+              </div>
             </div>
           </header>
           <main className='min-h-0 flex-1 pt-2'>
