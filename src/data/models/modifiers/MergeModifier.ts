@@ -1,3 +1,4 @@
+import { getAnnotationRepository } from '@/data/repositories/indexeddb/dbFactory';
 import {
   getDimensions,
   getDistanceBetweenAnnotationCenters,
@@ -5,6 +6,7 @@ import {
   mergeTwoAnnotations,
 } from '@/data/utils/annotations';
 import i18n from '@/i18n';
+import { Bounds } from '@annotorious/annotorious';
 import { v4 as uuid } from 'uuid';
 import z from 'zod';
 import { Annotation } from '../Annotation';
@@ -150,11 +152,109 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
       (a, b) => a.target.selector.geometry.bounds.minY - b.target.selector.geometry.bounds.minY,
     );
 
+    const getBounds = (a: Annotation) => a.target.selector.geometry.bounds;
     const overlap = (aMin: number, aMax: number, bMin: number, bMax: number) =>
       Math.max(0, Math.min(aMax, bMax) - Math.max(aMin, bMin));
 
-    const getBounds = (a: Annotation) => a.target.selector.geometry.bounds;
+    if (origin === 'center') {
+      return this.applyToCenters(
+        annotations,
+        values,
+        getBounds,
+        overlap,
+        verticalActive,
+        horizontalActive,
+      );
+    } else {
+      return this.applyToBorders(
+        annotations,
+        values,
+        getBounds,
+        overlap,
+        verticalActive,
+        horizontalActive,
+      );
+    }
+  };
 
+  applyToCenters = async (
+    annotations: Annotation[],
+    values: z.infer<typeof mergeSchema>,
+    getBounds: (a: Annotation) => Bounds,
+    overlap: (aMin: number, aMax: number, bMin: number, bMax: number) => number,
+    verticalActive: boolean,
+    horizontalActive: boolean,
+  ) => {
+    const { verticalThreshold, horizontalThreshold } = mergeSchema.parse(values);
+
+    const annotationRepository = getAnnotationRepository();
+
+    let changed = true;
+    while (changed) {
+      changed = false;
+
+      for (let i = 0; i < annotations.length; i++) {
+        for (let j = i + 1; j < annotations.length; j++) {
+          const a = annotations[i];
+          const b = annotations[j];
+
+          const aB = getBounds(a);
+          const bB = getBounds(b);
+
+          //on ne paut pas utiliser ElementType.TEXT_LINE puisque les previews se font avec ElementType.TEMP
+          //mais de toute façon, seuls les ElementType.TEXT_LINE ont un parent.
+          // if (
+          //   getAnnotationType(a) === getAnnotationType(b) &&
+          //   getAnnotationType(a) === ElementType.TEXT_LINE
+          // ) {
+          const parentA = await annotationRepository.getParent(a);
+          const parentB = await annotationRepository.getParent(b);
+
+          if (parentA?.id.startsWith('f1f761b5') === true) {
+            console.log('Comparing ', a.id.substring(0, 4), ' and ', b.id.substring(0, 4));
+          }
+          if (parentA !== null && parentB !== null && parentA.id !== parentB.id) {
+            continue; // ne pas merger des annotations qui n'ont pas le même parent
+          }
+
+          const distance = getDistanceBetweenAnnotationCenters(a, b);
+          const verticalOk = !verticalActive || Math.abs(distance.vertical) <= verticalThreshold;
+
+          const horizontalOk =
+            !horizontalActive || Math.abs(distance.horizontal) <= horizontalThreshold;
+
+          const verticalOverlap = overlap(aB.minY, aB.maxY, bB.minY, bB.maxY);
+          const horizontalOverlap = overlap(aB.minX, aB.maxX, bB.minX, bB.maxX);
+
+          if (verticalOk && horizontalOk && (verticalOverlap > 0 || horizontalOverlap > 0)) {
+            if (getLeft(a) < getLeft(b)) {
+              annotations[i] = mergeTwoAnnotations(a, b);
+            } else {
+              annotations[i] = mergeTwoAnnotations(b, a);
+            }
+
+            annotations.splice(j, 1);
+            changed = true;
+            break;
+          }
+        }
+
+        if (changed) break;
+      }
+    }
+
+    return annotations;
+  };
+
+  applyToBorders = (
+    annotations: Annotation[],
+    values: z.infer<typeof mergeSchema>,
+    getBounds: (a: Annotation) => Bounds,
+    overlap: (aMin: number, aMax: number, bMin: number, bMax: number) => number,
+    verticalActive: boolean,
+    horizontalActive: boolean,
+  ) => {
+    const { verticalThreshold, horizontalThreshold } = mergeSchema.parse(values);
     let changed = true;
 
     while (changed) {
@@ -168,68 +268,41 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
           const aB = getBounds(a);
           const bB = getBounds(b);
 
-          if (origin === 'center') {
-            const distance = getDistanceBetweenAnnotationCenters(a, b);
+          const verticalDistance = Math.max(0, Math.max(aB.minY - bB.maxY, bB.minY - aB.maxY));
+          const horizontalDistance = Math.max(0, Math.max(aB.minX - bB.maxX, bB.minX - aB.maxX));
 
-            const verticalOk = !verticalActive || Math.abs(distance.vertical) <= verticalThreshold;
+          const verticalOverlap = overlap(aB.minY, aB.maxY, bB.minY, bB.maxY);
+          const horizontalOverlap = overlap(aB.minX, aB.maxX, bB.minX, bB.maxX);
 
-            const horizontalOk =
-              !horizontalActive || Math.abs(distance.horizontal) <= horizontalThreshold;
+          const dimensionA = getDimensions(a);
+          const dimensionB = getDimensions(b);
 
-            const verticalOverlap = overlap(aB.minY, aB.maxY, bB.minY, bB.maxY);
-            const horizontalOverlap = overlap(aB.minX, aB.maxX, bB.minX, bB.maxX);
+          const verticalOverlapRatio =
+            verticalOverlap / Math.min(dimensionA.height, dimensionB.height);
 
-            if (verticalOk && horizontalOk && (verticalOverlap > 0 || horizontalOverlap > 0)) {
-              if (getLeft(a) < getLeft(b)) {
-                annotations[i] = mergeTwoAnnotations(a, b);
-              } else {
-                annotations[i] = mergeTwoAnnotations(b, a);
-              }
+          const horizontalOverlapRatio =
+            horizontalOverlap / Math.min(dimensionA.width, dimensionB.width);
 
-              annotations.splice(j, 1);
-              changed = true;
-              break;
-            }
-          } else {
-            const verticalDistance = Math.max(0, Math.max(aB.minY - bB.maxY, bB.minY - aB.maxY));
-            const horizontalDistance = Math.max(0, Math.max(aB.minX - bB.maxX, bB.minX - aB.maxX));
+          const horizontalMerge =
+            horizontalActive &&
+            horizontalDistance <= horizontalThreshold &&
+            verticalOverlapRatio > 0.3;
 
-            const verticalOverlap = overlap(aB.minY, aB.maxY, bB.minY, bB.maxY);
-            const horizontalOverlap = overlap(aB.minX, aB.maxX, bB.minX, bB.maxX);
+          const verticalMerge =
+            verticalActive && verticalDistance <= verticalThreshold && horizontalOverlapRatio > 0.3;
 
-            const dimensionA = getDimensions(a);
-            const dimensionB = getDimensions(b);
+          if (horizontalMerge || verticalMerge) {
+            annotations[i] = mergeTwoAnnotations(a, b);
 
-            const verticalOverlapRatio =
-              verticalOverlap / Math.min(dimensionA.height, dimensionB.height);
-
-            const horizontalOverlapRatio =
-              horizontalOverlap / Math.min(dimensionA.width, dimensionB.width);
-
-            const horizontalMerge =
-              horizontalActive &&
-              horizontalDistance <= horizontalThreshold &&
-              verticalOverlapRatio > 0.3;
-
-            const verticalMerge =
-              verticalActive &&
-              verticalDistance <= verticalThreshold &&
-              horizontalOverlapRatio > 0.3;
-
-            if (horizontalMerge || verticalMerge) {
-              annotations[i] = mergeTwoAnnotations(a, b);
-
-              annotations.splice(j, 1);
-              changed = true;
-              break;
-            }
+            annotations.splice(j, 1);
+            changed = true;
+            break;
           }
         }
 
         if (changed) break;
       }
     }
-
     return annotations;
   };
 }
