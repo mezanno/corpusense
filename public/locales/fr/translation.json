@@ -323,6 +323,7 @@
   "info_done": "Terminé !",
   "info_dimensions": "Dimensions (L x H) : {{width}} x {{height}}",
   "info_surface": "Surface : {{surface}}",
+  "info_parent": "Parent : {{parentId}}",
   "info_results_available": "Des résultats sont disponibles !",
   "description_select_model": "Choisissez un modèle de données",
   "description_import_collection": "Importer une collection (fichier JSON) ou un ensemble de collections (fichier ZIP)",

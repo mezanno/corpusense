@@ -10,7 +10,7 @@ import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActi
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, Trash2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -40,7 +40,8 @@ const AnnotationForm = ({
   const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({
     collectionId: annotation.collectionId,
   });
-  const { updateAnnotation, removeAnnotationsByIds, removeAnnotationsInside } =
+  const [parent, setParent] = useState<Annotation | null>(null);
+  const { updateAnnotation, removeAnnotationsByIds, removeAnnotationsInside, getParentAnnotation } =
     useAnnotationActions();
 
   const dimensions = getDimensions(annotation);
@@ -61,6 +62,12 @@ const AnnotationForm = ({
     const { type, value } = getBodies(annotation);
     form.setValue('type', type);
     form.setValue('value', value);
+
+    async function fetchParent() {
+      const p = await getParentAnnotation(annotation);
+      setParent(p);
+    }
+    void fetchParent();
   }, [annotation]);
 
   const handleRemoveAllAnnotationsInside = () => {
@@ -94,6 +101,13 @@ const AnnotationForm = ({
             surface: (dimensions.width * dimensions.height).toFixed(),
           })}
         </span>
+        {parent && (
+          <span>
+            {t('info_parent', {
+              parentId: parent.id.substring(0, 8),
+            })}
+          </span>
+        )}
       </div>
 
       <Separator />

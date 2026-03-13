@@ -306,7 +306,12 @@ export const useAnnotationActions = () => {
     }
   };
 
+  const getParentAnnotation = async (annotation: Annotation) => {
+    return annotationRepository.getParent(annotation);
+  };
+
   return {
+    getParentAnnotation,
     saveAnnotation,
     updateAnnotation,
     updateAnnotationOrder,
