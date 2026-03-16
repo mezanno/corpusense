@@ -14,8 +14,8 @@ const CollectionsManagerPage = () => {
   };
 
   return (
-    <div className='panel flex-col items-center space-y-4'>
-      <section className='mt-2 ml-4 flex w-full justify-center space-x-2'>
+    <div className='panel flex h-full min-h-0 flex-col items-center gap-4'>
+      <section className='mt-2 ml-4 flex w-full justify-center gap-2'>
         <button
           className='soft-button'
           title={t('btn_create_collection')}
@@ -35,7 +35,7 @@ const CollectionsManagerPage = () => {
       </section>
 
       {collections.length > 0 ? (
-        <section className='flex h-full w-4/5 flex-col items-center space-y-1'>
+        <section className='flex min-h-0 w-4/5 flex-1 flex-col items-center gap-1'>
           <h2 className='text-xl'>
             {t('info_number_of_collections', { number: collections.length })}
           </h2>
