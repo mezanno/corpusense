@@ -39,6 +39,12 @@ const CollectionInspectorContent = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    return () => {
+      containerRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
     openCollection(collectionId);
   }, [collectionId]);
 

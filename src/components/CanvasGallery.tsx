@@ -27,6 +27,12 @@ const CanvasGallery = ({
   // calcule les lignes en fonction des colonnes
   const rowCount = Math.ceil(canvases.length / colCount);
 
+  useEffect(() => {
+    return () => {
+      containerRef.current = null;
+    };
+  }, []);
+
   /** Virtualizer vertical (pour les lignes) */
   // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({

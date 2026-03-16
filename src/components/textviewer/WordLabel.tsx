@@ -42,6 +42,8 @@ const WordLabel = ({ word, index }: WordLabelProps) => {
     return () => {
       clearTimeout(timeout);
       cancelAnimationFrame(raf);
+      groupRef.current = null;
+      textRef.current = null;
     };
   }, []);
 

@@ -20,6 +20,12 @@ const TextViewer = ({ collectionId, canvas }: { collectionId: string; canvas: Ca
   const model = getModelById(collection?.modelId ?? '');
 
   useEffect(() => {
+    return () => {
+      containerRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
     const getText = async (c: Canvas) => {
       const lines = await getAnnotationsByType(ElementType.TEXT_LINE, c.id, collectionId);
       setText(lines);
