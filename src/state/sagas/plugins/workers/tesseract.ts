@@ -12,11 +12,12 @@ import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import Tesseract, { createWorker } from 'tesseract.js';
+import WorkerCategory from './WorkerCategory';
 
 export const pluginName = 'tesseractocr';
 export const pluginDisplayName = 'Tesseract OCR';
 export const pluginDescription = 'Reconnaissance de texte sans Internet !';
-export const pluginCategory = 'OCR';
+export const pluginCategory = WorkerCategory.OCR;
 export const pluginExportFormats = ['txt'];
 
 let worker: Tesseract.Worker | null = null;

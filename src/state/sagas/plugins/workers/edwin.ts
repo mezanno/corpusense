@@ -10,11 +10,12 @@ import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
+import WorkerCategory from './WorkerCategory';
 
 export const pluginName = 'edwin';
 export const pluginDisplayName = 'Détection de layout Edwin';
 export const pluginDescription = "Détection de layout avec utilisant la magie d'Edwin";
-export const pluginCategory = 'Layout';
+export const pluginCategory = WorkerCategory.LAYOUT;
 export const experimental = true;
 export const pluginConfigurationParams = {
   apiUrl: {

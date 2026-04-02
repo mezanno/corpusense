@@ -16,11 +16,12 @@ import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
 import FileSaver from 'file-saver';
+import WorkerCategory from './WorkerCategory';
 
 export const pluginName = 'peroocr'; //name of the plugin, used to register the plugin inside Corpusense
 export const pluginDisplayName = 'Pero OCR'; //display name of the plugin, used in the UI
 export const pluginDescription = 'Reconnaissance de texte'; //description of the plugin, used in the UI
-export const pluginCategory = 'OCR';
+export const pluginCategory = WorkerCategory.OCR;
 export const pluginExportFormats = ['txt']; //available export formats for this plugin (must match the formats handled in exportResult function)
 /*
   Configuration parameters for this plugin

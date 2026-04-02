@@ -24,11 +24,12 @@ import { Mistral } from '@mistralai/mistralai';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
 import * as XLSX from 'xlsx';
+import WorkerCategory from './WorkerCategory';
 
 export const pluginName = 'mistralocr';
 export const pluginDisplayName = 'Mistral OCR';
 export const pluginDescription = 'Reconnaissance de texte';
-export const pluginCategory = 'OCR';
+export const pluginCategory = WorkerCategory.OCR;
 export const pluginExportFormats = ['txt'];
 export const pluginConfigurationParams = {
   apiKey: {

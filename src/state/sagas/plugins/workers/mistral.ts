@@ -20,12 +20,13 @@ import { Mistral } from '@mistralai/mistralai';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
 import * as XLSX from 'xlsx';
+import WorkerCategory from './WorkerCategory';
 
 export const pluginName = 'mistral';
 export const pluginDisplayName = 'Extraction de données Mistral';
 export const pluginDescription =
   "Extrait des données structurées à partir du texte. Nécessite que l'OCR soit fait ainsi qu'un modèle de données.";
-export const pluginCategory = 'LLM';
+export const pluginCategory = WorkerCategory.LLM;
 export const pluginExportFormats = ['json', 'csv', 'xlsx'];
 export const pluginConfigurationParams = {
   apiKey: {

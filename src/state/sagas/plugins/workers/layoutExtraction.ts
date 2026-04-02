@@ -14,11 +14,12 @@ import FileSaver from 'file-saver';
 import i18n from 'i18next';
 import z from 'zod';
 import { uploadCanvasImage } from './supabase/utils';
+import WorkerCategory from './WorkerCategory';
 
 export const pluginName = 'layoutExtraction'; //name of the plugin, used to register the plugin inside Corpusense
 export const pluginDisplayName = 'Pero / PaddlePaddle'; //display name of the plugin, used in the UI
 export const pluginDescription = i18n.t('plugin_layout_description'); //description of the plugin, used in the UI
-export const pluginCategory = 'Layout';
+export const pluginCategory = WorkerCategory.LAYOUT; //category of the plugin, used to group plugins in the UI
 export const pluginRuntimeParameters = z.object({
   type: z
     .enum(['perolayout', 'paddlelayout'])
@@ -86,6 +87,7 @@ export default async function run(task: Task, worker: Worker): Promise<WorkerRes
             worker_id: worker.id,
             task_id: task.id,
             worker_name: params.type,
+            worker_category: pluginCategory,
             payload: {
               url: imageUrl,
               // regions: regions.map((r) => ({
