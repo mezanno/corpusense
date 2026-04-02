@@ -96,6 +96,7 @@ export type Database = {
           task_id: number
           updated_at: string | null
           user_id: string
+          worker_category: string
           worker_id: string
           worker_name: string
         }
@@ -110,6 +111,7 @@ export type Database = {
           task_id: number
           updated_at?: string | null
           user_id?: string
+          worker_category: string
           worker_id: string
           worker_name: string
         }
@@ -124,6 +126,7 @@ export type Database = {
           task_id?: number
           updated_at?: string | null
           user_id?: string
+          worker_category?: string
           worker_id?: string
           worker_name?: string
         }
@@ -191,6 +194,7 @@ export type Database = {
           task_id: number
           updated_at: string | null
           user_id: string
+          worker_category: string
           worker_id: string
           worker_name: string
         }[]
@@ -214,6 +218,7 @@ export type Database = {
           task_id: number
           updated_at: string | null
           user_id: string
+          worker_category: string
           worker_id: string
           worker_name: string
         }[]
