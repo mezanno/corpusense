@@ -16,7 +16,7 @@ import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
 import FileSaver from 'file-saver';
-import WorkerCategory from './WorkerCategory';
+import { WorkerCategory } from './WorkerCategory';
 
 export const pluginName = 'peroocr'; //name of the plugin, used to register the plugin inside Corpusense
 export const pluginDisplayName = 'Pero OCR'; //display name of the plugin, used in the UI

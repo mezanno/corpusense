@@ -2,7 +2,7 @@ import { toString } from '@/data/models/Scope';
 import { Task, WorkerResponse } from '@/data/models/Worker';
 import { PluginParams } from '@/state/reducers/workers';
 import { suryaRun } from './suryaCommon';
-import WorkerCategory from './WorkerCategory';
+import { WorkerCategory } from './WorkerCategory';
 
 export const pluginName = 'surya-ocr';
 export const pluginDisplayName = 'Détection de texte Surya';

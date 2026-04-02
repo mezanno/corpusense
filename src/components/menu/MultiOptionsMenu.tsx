@@ -81,7 +81,7 @@ const MultiOptionsMenu = ({
         )}
       </DropdownMenuGroup>
     ));
-  }, [params.items, isRunning]);
+  }, [params.items, isRunning, t, generateDropdownMenuItems]);
 
   //if no action is provided, the menu will not be shown
   if (params.items.every((item) => item.action === undefined)) {

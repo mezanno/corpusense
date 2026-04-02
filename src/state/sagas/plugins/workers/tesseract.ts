@@ -12,7 +12,7 @@ import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import Tesseract, { createWorker } from 'tesseract.js';
-import WorkerCategory from './WorkerCategory';
+import { WorkerCategory } from './WorkerCategory';
 
 export const pluginName = 'tesseractocr';
 export const pluginDisplayName = 'Tesseract OCR';

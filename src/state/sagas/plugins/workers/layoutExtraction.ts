@@ -14,7 +14,7 @@ import FileSaver from 'file-saver';
 import i18n from 'i18next';
 import z from 'zod';
 import { uploadCanvasImage } from './supabase/utils';
-import WorkerCategory from './WorkerCategory';
+import { WorkerCategory } from './WorkerCategory';
 
 export const pluginName = 'layoutExtraction'; //name of the plugin, used to register the plugin inside Corpusense
 export const pluginDisplayName = 'Pero / PaddlePaddle'; //display name of the plugin, used in the UI

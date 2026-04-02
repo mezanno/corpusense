@@ -10,7 +10,7 @@ import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
-import WorkerCategory from './WorkerCategory';
+import { WorkerCategory } from './WorkerCategory';
 
 export const pluginName = 'edwin';
 export const pluginDisplayName = 'Détection de layout Edwin';

@@ -1,8 +1,8 @@
-enum WorkerCategory {
-  LAYOUT = 'layout',
-  OCR = 'ocr',
-  LLM = 'llm',
-  OTHER = 'other',
-}
+export const WorkerCategory = {
+  LAYOUT: 'layout',
+  OCR: 'ocr',
+  LLM: 'llm',
+  OTHER: 'other',
+} as const;
 
-export default WorkerCategory;
+export type WorkerCategory = (typeof WorkerCategory)[keyof typeof WorkerCategory];
