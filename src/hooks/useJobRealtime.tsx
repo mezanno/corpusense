@@ -57,10 +57,10 @@ const processResult = async (worker: Worker, task: Task, result: unknown) => {
 
 const useJobRealtime = () => {
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const { getWorkersByStatus } = useWorkerContext();
+  const { getPostedWorkers } = useWorkerContext();
 
-  const workersPosted = getWorkersByStatus(WorkerStatus.POSTED);
-  console.log('workersPosted in useJobRealtime:', workersPosted);
+  const workersPosted = getPostedWorkers();
+  console.log('Il y a actuellemet ', workersPosted.length, ' workers posted: ', workersPosted);
 
   const workersPostedRef = useRef(workersPosted);
   useEffect(() => {

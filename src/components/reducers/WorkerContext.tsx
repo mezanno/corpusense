@@ -18,6 +18,7 @@ type WorkerContextValue = {
   hasResult: (workerId: string) => boolean;
   getWorkersByScope: (scope: Scope) => Worker[];
   getWorkersByScopeAndStatus: (scope: Scope, status: WorkerStatus | WorkerStatus[]) => Worker[];
+  getPostedWorkers: () => Worker[]; // Add the getPostedWorkers function to the context value
 };
 
 const WorkerContext = createContext<WorkerContextValue | undefined>(undefined);
@@ -64,6 +65,13 @@ export const WorkerProvider = ({ children }: Props) => {
       return Object.values(workers)
         .filter((worker) => isSameScope(worker.scope, scope))
         .sort((w1, w2) => w1.name.localeCompare(w2.name));
+    };
+
+    //return the list of workers which have a task with the status posted
+    const getPostedWorkers = () => {
+      return Object.values(workers).filter((worker) =>
+        worker.queue.some((task) => task.status === WorkerStatus.POSTED),
+      );
     };
 
     /**
@@ -143,6 +151,7 @@ export const WorkerProvider = ({ children }: Props) => {
       getTaskById,
       getWorkersByStatus,
       getStatus,
+      getPostedWorkers,
       isWorkerOrTaskRunning,
       hasResult,
       getWorkersByScope,
