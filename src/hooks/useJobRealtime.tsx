@@ -25,7 +25,9 @@ const processResult = async (worker: Worker, task: Task, result: unknown) => {
         queue: updateTaskStatus(worker.queue, task.id, WorkerStatus.COMPLETED, ''), //on ajoute un message vide pour supprimer un potentiel précédent message d'erreur
       };
       await workerRepository.patch(worker.id, {
-        status: worker.status,
+        status: worker.queue.some((t) => t.status !== WorkerStatus.COMPLETED)
+          ? WorkerStatus.INPROGRESS
+          : WorkerStatus.COMPLETED,
         statusMessage: worker.statusMessage,
         queue: worker.queue,
       });
@@ -94,12 +96,20 @@ const useJobRealtime = () => {
             }
           }
         }
+        const statusMap: Record<string, WorkerStatus> = {
+          pending: WorkerStatus.POSTED,
+          processing: WorkerStatus.INPROGRESS,
+          failed: WorkerStatus.ERROR,
+          completed: WorkerStatus.COMPLETED,
+        };
+        const taskStatus = statusMap[job.status] ?? WorkerStatus.ERROR;
+
         worker = {
           ...worker,
           queue: updateTaskStatus(
             worker.queue,
             task.id,
-            job.status === 'failed' ? WorkerStatus.ERROR : WorkerStatus.COMPLETED,
+            taskStatus,
             job.status === 'failed' ? JSON.stringify(job.error) : '',
           ),
         };
@@ -117,14 +127,19 @@ const useJobRealtime = () => {
           statusMessage: updatedWorker.statusMessage,
         });
       } else {
+        const hasSomePendingOrProcessing = worker.queue.some(
+          (t) => t.status === WorkerStatus.POSTED || t.status === WorkerStatus.INPROGRESS,
+        );
         const updatedWorker = {
           ...worker,
-          status: WorkerStatus.COMPLETED,
+          status: hasSomePendingOrProcessing ? WorkerStatus.INPROGRESS : WorkerStatus.COMPLETED,
         };
         console.log('Saving worker ', updatedWorker);
 
         await workerRepository.patch(updatedWorker.id, {
           status: updatedWorker.status,
+          statusMessage: updatedWorker.statusMessage,
+          queue: updatedWorker.queue,
         });
       }
     };
@@ -148,6 +163,10 @@ const useJobRealtime = () => {
             break;
           case 'completed':
             await processResult(worker, task, job.result);
+            break;
+          case 'processing':
+          case 'pending':
+            await processJobRows([job], worker);
             break;
           default:
             console.warn('Unknown job status:', job.status);
