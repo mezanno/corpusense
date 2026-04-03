@@ -34,9 +34,10 @@ const WorkerDataTable = ({
   const [filteredData, setFilteredData] = useState(data);
 
   useEffect(() => {
+    let isCancelled = false;
     async function applyFilter() {
       if (!filterValue) {
-        setFilteredData(data);
+        if (!isCancelled) setFilteredData(data);
         return;
       }
 
@@ -47,10 +48,15 @@ const WorkerDataTable = ({
         }),
       );
 
-      setFilteredData(result.filter((w) => w !== null));
+      if (!isCancelled) {
+        setFilteredData(result.filter((w): w is Worker => w !== null));
+      }
     }
 
     void applyFilter();
+    return () => {
+      isCancelled = true;
+    };
   }, [filterValue, data]);
 
   const table = useReactTable({
@@ -91,11 +97,11 @@ const WorkerDataTable = ({
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row, index) => (
+            table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
                 onClick={() => setSelectedWorkerId(row.getValue('id'))}
-                className={`${row.getValue('id') === selectedWorkerId ? 'bg-amber-100 hover:bg-amber-100' : ''} ${getTaskStatusColor(data[index].status)} `}
+                className={`${row.getValue('id') === selectedWorkerId ? 'bg-amber-100 hover:bg-amber-100' : ''} ${getTaskStatusColor(row.original.status)} `}
               >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className='px-2 py-1'>
