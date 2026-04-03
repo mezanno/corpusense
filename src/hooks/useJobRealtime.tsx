@@ -1,6 +1,6 @@
 import { workerPlugins } from '@/App';
 import { useWorkerContext } from '@/components/reducers/WorkerContext';
-import { Task, Worker, WorkerStatus } from '@/data/models/Worker';
+import { Worker, WorkerStatus } from '@/data/models/Worker';
 import { getWorkerRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { updateTaskStatus } from '@/data/utils/worker';
 import { JobRow, supabase } from '@/utils/config';
@@ -11,208 +11,188 @@ import {
 } from '@supabase/supabase-js';
 import { useEffect, useRef } from 'react';
 
-const processResult = async (worker: Worker, task: Task, result: unknown) => {
-  console.log('processResult for worker: ', worker);
-  const workerRepository = getWorkerRepository();
-  //process the result if status is completed or failed
-  const plugin = workerPlugins[worker.name];
-  if (plugin.processResult) {
-    const response = await plugin.processResult(result, task);
-    console.log('Processed worker result response:', response);
-    if (response.status === WorkerStatus.COMPLETED) {
-      worker = {
-        ...worker,
-        queue: updateTaskStatus(worker.queue, task.id, WorkerStatus.COMPLETED, ''), //on ajoute un message vide pour supprimer un potentiel précédent message d'erreur
-      };
-      await workerRepository.patch(worker.id, {
-        status: worker.queue.some((t) => t.status !== WorkerStatus.COMPLETED)
-          ? WorkerStatus.INPROGRESS
-          : WorkerStatus.COMPLETED,
-        statusMessage: worker.statusMessage,
-        queue: worker.queue,
-      });
-      const { data, error } = await supabase
-        .from('cs_jobs')
-        .delete()
-        .eq('task_id', task.id)
-        .eq('worker_id', worker.id);
-      if (error) {
-        console.error('Error deleting processed job from cs_jobs:', error);
-      } else {
-        console.log('Deleted processed job from cs_jobs:', data);
-      }
-    } else if (response.status === WorkerStatus.ERROR) {
-      worker = {
-        ...worker,
-        queue: updateTaskStatus(worker.queue, task.id, WorkerStatus.ERROR, response.statusMessage),
-      };
-      await workerRepository.patch(worker.id, {
-        status: worker.status,
-        statusMessage: worker.statusMessage,
-        queue: worker.queue,
-      });
-    }
-  }
-};
-
 const useJobRealtime = () => {
   const channelRef = useRef<RealtimeChannel | null>(null);
   const { getPostedWorkers } = useWorkerContext();
 
   const workersPosted = getPostedWorkers();
-  console.log('Il y a actuellemet ', workersPosted.length, ' workers posted: ', workersPosted);
-
   const workersPostedRef = useRef(workersPosted);
+
   useEffect(() => {
     workersPostedRef.current = workersPosted;
   }, [workersPosted]);
 
   useEffect(() => {
-    if (channelRef.current !== null) {
-      void supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
+    /**
+     * Processes a single task update from a Supabase JobRow.
+     * Updates the local IndexedDB and determines the overall worker status.
+     * Deletes completed jobs from Supabase.
+     */
+    const processSingleTask = async (worker: Worker, job: JobRow) => {
+      const workerRepository = getWorkerRepository();
+      const task = worker.queue.find((t) => t.id === job.task_id);
 
-    const channel = supabase.channel('job-updates');
+      if (!task) {
+        console.warn(`Task not found in worker ${worker.id} for task_id: ${job.task_id}`);
+        return worker;
+      }
 
-    const processJobRows = async (jobs: JobRow[], worker: Worker) => {
-      console.log('processJobRows :', jobs);
-      let hasError = false;
-      for (const job of jobs) {
-        const task = worker.queue.find((t) => t.id === job.task_id);
-        if (task === undefined) {
-          console.error('Task not found for worker_id:', worker.id, 'task_id:', job.task_id);
-          continue;
+      // Map Supabase job status to WorkerStatus
+      const statusMap: Record<string, WorkerStatus> = {
+        pending: WorkerStatus.POSTED,
+        processing: WorkerStatus.INPROGRESS,
+        failed: WorkerStatus.ERROR,
+        completed: WorkerStatus.COMPLETED,
+      };
+      let taskStatus = statusMap[job.status] ?? WorkerStatus.ERROR;
+      let statusMessage = '';
+
+      // Skip processing if task is already finished locally, but ensure completed jobs are deleted from Supabase
+      if (task.status === WorkerStatus.COMPLETED || task.status === WorkerStatus.ERROR) {
+        if (job.status === 'completed') {
+          await supabase.from('cs_jobs').delete().eq('task_id', task.id).eq('worker_id', worker.id);
         }
-        hasError = hasError || job.status === 'failed';
-        if (!hasError) {
-          const plugin = workerPlugins[job.plugin_name];
+        return worker;
+      }
 
-          if (job.result !== null && plugin.processResult !== undefined) {
+      // Handle successful results
+      if (job.status === 'completed') {
+        const plugin = workerPlugins[job.plugin_name];
+        if (job.result !== null && plugin?.processResult) {
+          try {
             const response = await plugin.processResult(job.result, task);
-            console.log('Processed worker result response:', response);
             if (response.status === WorkerStatus.ERROR) {
-              hasError = true;
+              taskStatus = WorkerStatus.ERROR;
+              statusMessage = response.statusMessage ?? 'Plugin processing error';
             }
+          } catch (error) {
+            console.error(`Error in processResult for plugin ${job.plugin_name}:`, error);
+            taskStatus = WorkerStatus.ERROR;
+            statusMessage = 'Result processing failed';
           }
         }
-        const statusMap: Record<string, WorkerStatus> = {
-          pending: WorkerStatus.POSTED,
-          processing: WorkerStatus.INPROGRESS,
-          failed: WorkerStatus.ERROR,
-          completed: WorkerStatus.COMPLETED,
-        };
-        const taskStatus = statusMap[job.status] ?? WorkerStatus.ERROR;
-
-        worker = {
-          ...worker,
-          queue: updateTaskStatus(
-            worker.queue,
-            task.id,
-            taskStatus,
-            job.status === 'failed' ? JSON.stringify(job.error) : '',
-          ),
-        };
+      } else if (job.status === 'failed') {
+        // Handle failures
+        statusMessage = typeof job.error === 'string' ? job.error : JSON.stringify(job.error);
       }
 
-      const workerRepository = getWorkerRepository();
+      // Update the local queue
+      const updatedQueue = updateTaskStatus(worker.queue, task.id, taskStatus, statusMessage);
 
-      if (hasError) {
-        const updatedWorker = {
-          ...worker,
-          status: WorkerStatus.ERROR,
-        };
-        await workerRepository.patch(updatedWorker.id, {
-          status: updatedWorker.status,
-          statusMessage: updatedWorker.statusMessage,
-        });
+      // Determine the overall worker status based on the entire queue
+      const allFinished = updatedQueue.every(
+        (t) => t.status === WorkerStatus.COMPLETED || t.status === WorkerStatus.ERROR,
+      );
+      const anyError = updatedQueue.some((t) => t.status === WorkerStatus.ERROR);
+
+      let overallStatus: WorkerStatus;
+      if (allFinished) {
+        overallStatus = anyError ? WorkerStatus.COMPLETED_WITH_ERRORS : WorkerStatus.COMPLETED;
       } else {
-        const hasSomePendingOrProcessing = worker.queue.some(
-          (t) => t.status === WorkerStatus.POSTED || t.status === WorkerStatus.INPROGRESS,
-        );
-        const updatedWorker = {
-          ...worker,
-          status: hasSomePendingOrProcessing ? WorkerStatus.INPROGRESS : WorkerStatus.COMPLETED,
-        };
-        console.log('Saving worker ', updatedWorker);
+        // If not all tasks are finished, it's either in progress or in progress with errors
+        overallStatus = anyError ? WorkerStatus.INPROGRESS_WITH_ERRORS : WorkerStatus.INPROGRESS;
+      }
 
-        await workerRepository.patch(updatedWorker.id, {
-          status: updatedWorker.status,
-          statusMessage: updatedWorker.statusMessage,
-          queue: updatedWorker.queue,
-        });
+      const updatedWorker = {
+        ...worker,
+        status: overallStatus,
+        queue: updatedQueue,
+      };
+
+      // Persist changes to IndexedDB
+      await workerRepository.patch(updatedWorker.id, {
+        status: updatedWorker.status,
+        queue: updatedWorker.queue,
+      });
+
+      // Remove completed job from Supabase to signal completion
+      if (job.status === 'completed') {
+        const { error } = await supabase
+          .from('cs_jobs')
+          .delete()
+          .eq('task_id', task.id)
+          .eq('worker_id', worker.id);
+
+        if (error) console.error('Error deleting processed job from Supabase:', error);
+      }
+
+      return updatedWorker;
+    };
+
+    /**
+     * Fetches updates from Supabase for all workers currently in POSTED state.
+     */
+    const fetchJobUpdates = async () => {
+      const postedWorkers = workersPostedRef.current;
+      for (const worker of postedWorkers) {
+        console.log('fetchJobUpdates ', worker.id);
+
+        const { data, error } = await supabase
+          .from('cs_jobs')
+          .select('*')
+          .eq('worker_id', worker.id);
+
+        if (error) {
+          console.error(`Error fetching updates for worker ${worker.id}:`, error);
+          continue;
+        }
+
+        if (data?.length > 0) {
+          let currentWorkerState = worker;
+          for (const job of data) {
+            currentWorkerState = await processSingleTask(currentWorkerState, job);
+          }
+        } else {
+          //delete worker if no jobs are found in supabase
+          const workerRepository = getWorkerRepository();
+          await workerRepository.deleteById(worker.id);
+        }
       }
     };
 
+    /**
+     * Handles live updates from Supabase Realtime.
+     */
     const handleJobRowUpdate = async (payload: RealtimePostgresUpdatePayload<JobRow>) => {
       const job = payload.new;
-      console.log('Change received!', job);
       const workerRepository = getWorkerRepository();
-      const worker_id = job.worker_id;
+      console.log('handleJobRowUpdate ', job);
+
       try {
-        const worker = await workerRepository.getById(worker_id);
-
-        const task = worker.queue.find((t) => t.id === job.task_id);
-        if (task === undefined) {
-          console.error('Task not found for worker_id:', worker_id, 'task_id:', job.task_id);
-          return;
-        }
-
-        switch (job.status) {
-          case 'failed':
-            break;
-          case 'completed':
-            await processResult(worker, task, job.result);
-            break;
-          case 'processing':
-          case 'pending':
-            await processJobRows([job], worker);
-            break;
-          default:
-            console.warn('Unknown job status:', job.status);
-            return;
-        }
+        const worker = await workerRepository.getById(job.worker_id);
+        await processSingleTask(worker, job);
       } catch (error) {
-        console.error('Error processing worker result:', error);
+        console.error('Error processing realtime job update:', error);
       }
     };
 
-    channel.on<JobRow>(
-      'postgres_changes',
-      { event: 'UPDATE', schema: 'public', table: 'cs_jobs' },
-      (payload) => void handleJobRowUpdate(payload),
-    );
-
-    void channel.subscribe((status) => {
-      if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
-        console.log('Subscribed to job updates');
-      }
-    });
+    // Initialize Realtime Subscription
+    const channel = supabase
+      .channel('job-updates')
+      .on<JobRow>(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'cs_jobs' },
+        (payload) => void handleJobRowUpdate(payload),
+      )
+      .subscribe((status) => {
+        if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
+          console.log('Successfully subscribed to REALTIME job updates');
+        }
+      });
 
     channelRef.current = channel;
 
+    // Trigger initial sync immediately
+    void fetchJobUpdates();
+
+    // Setup periodic polling every 20 seconds
     const interval = setInterval(() => {
-      const fetchJobUpdates = async () => {
-        for (const worker of workersPostedRef.current) {
-          const { data, error } = await supabase
-            .from('cs_jobs')
-            .select('*')
-            .eq('worker_id', worker.id);
-          console.log('fetchJobUpdates ', worker.id);
-          if (error) {
-            console.error('Error fetching job updates:', error);
-          } else {
-            await processJobRows(data, worker);
-          }
-        }
-      };
       void fetchJobUpdates();
-    }, 10000);
+    }, 20000);
 
     return () => {
       clearInterval(interval);
-
-      if (channelRef.current !== null) {
+      if (channelRef.current) {
         void supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
