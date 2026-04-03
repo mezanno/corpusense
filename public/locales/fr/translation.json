@@ -390,6 +390,7 @@
   "worker_status_unfinished": "Non terminé",
   "worker_status_unfinished_with_errors": "Non terminé (avec erreurs)",
   "worker_status_all": "Tous les statuts",
+  "worker_status_posted": "Envoyé",
   "model_field_string": "Texte",
   "model_field_number": "Nombre",
   "category_other": "Autre",

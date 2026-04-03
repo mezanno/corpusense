@@ -13,7 +13,7 @@ const WorkerLabel = ({ worker }: { worker: Worker }) => {
         {getWorkerStatusIcon(worker.status)}
       </span>
 
-      <span className='break-words'>
+      <span className='wrap-break-words'>
         {worker.name} [{t(`worker_status_${worker.status}`)}] <ScopeLabel scope={worker.scope} />
       </span>
     </div>

@@ -14,6 +14,8 @@ const getWorkerStatusIcon = (status: WorkerStatus): React.JSX.Element => {
       return <CircleCheck color='green' />;
     case WorkerStatus.ERROR:
       return <CircleAlert color='red' />;
+    case WorkerStatus.POSTED:
+      return <CalendarClock color='#1c71d8' />;
     default:
       return <OctagonPause color='#000000' />;
   }
@@ -24,6 +26,7 @@ const getTaskStatusColor = (status: WorkerStatus): string => {
     case WorkerStatus.WAITING:
       return 'text-yellow-700';
     case WorkerStatus.INPROGRESS:
+    case WorkerStatus.POSTED:
       return 'text-blue-500';
     case WorkerStatus.INPROGRESS_WITH_ERRORS:
       return 'text-orange-500';

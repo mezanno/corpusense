@@ -129,11 +129,9 @@ const WorkerDetails = ({ workerId }: { workerId: string }) => {
                 </span>
               )}
               {task.status !== WorkerStatus.WAITING && (
-                <CircleX
-                  size={20}
-                  className='cursor-pointer hover:scale-110'
-                  onClick={() => handleRemoveResult(task.id)}
-                />
+                <div className='cursor-pointer hover:scale-110' title={t('btn_delete')}>
+                  <CircleX size={20} onClick={() => handleRemoveResult(task.id)} />
+                </div>
               )}
             </li>
           ))}
