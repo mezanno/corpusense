@@ -35,7 +35,11 @@ type WorkerModule = {
   pluginConfigurationParams?: WorkerConfigurationParams;
   pluginRuntimeParameters?: z.ZodTypeAny;
 };
-export type WorkerProcessResultFunction = (result: unknown, task: Task) => Promise<WorkerResponse>;
+export type WorkerProcessResultFunction = (
+  result: unknown,
+  task: Task,
+  workerCategory?: string,
+) => Promise<WorkerResponse>;
 
 export type ImporterPlugin = { import: ImportFunction };
 export type ImportFunction = (url: string) => Promise<object>;
