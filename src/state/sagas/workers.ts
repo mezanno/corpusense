@@ -333,14 +333,22 @@ function* initWorkersStatus(): Generator<Effect, void, Worker[] | Result[]> {
       worker.status === WorkerStatus.INPROGRESS ||
       worker.status === WorkerStatus.INPROGRESS_WITH_ERRORS
     ) {
-      const newStatus =
-        worker.status === WorkerStatus.INPROGRESS
-          ? WorkerStatus.UNFINISHED
-          : WorkerStatus.UNFINISHED_WITH_ERRORS;
       const newQueue = worker.queue.map((task) => ({
         ...task,
-        status: task.status === WorkerStatus.COMPLETED ? task.status : WorkerStatus.WAITING,
+        status:
+          task.status === WorkerStatus.COMPLETED || task.status === WorkerStatus.POSTED
+            ? task.status
+            : WorkerStatus.WAITING,
       }));
+      const hasPostedTask = newQueue.some((t) => t.status === WorkerStatus.POSTED);
+      let newStatus: WorkerStatus = worker.status;
+      if (!hasPostedTask) {
+        newStatus =
+          worker.status === WorkerStatus.INPROGRESS
+            ? WorkerStatus.UNFINISHED
+            : WorkerStatus.UNFINISHED_WITH_ERRORS;
+      }
+
       yield call([workerRepository, workerRepository.patch], worker.id, {
         status: newStatus,
         queue: newQueue,
