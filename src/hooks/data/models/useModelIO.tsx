@@ -6,6 +6,7 @@ import { pushError, pushInfo } from '@/state/reducers/events';
 import { getErrorMessage } from '@/utils/utils';
 import FileSaver from 'file-saver';
 import { useMemo } from 'react';
+import { v4 as uuid } from 'uuid';
 
 export const useModelIO = () => {
   const appDispatch = useAppDispatch();
@@ -37,13 +38,16 @@ export const useModelIO = () => {
   const importModel = async (data: object, overwrite: boolean) => {
     try {
       const model = data as DataModel; //TODO: validate the model structure and display error if invalid
+      console.log(model);
+
       const existingModel = await modelRepository.getByName(model.name);
-      if (existingModel !== null && !overwrite) {
-        appDispatch(pushError(i18n.t('error_mode_name_exists', { name: model.name })));
-        return;
-      }
-      if (overwrite && existingModel) {
-        model.id = existingModel.id;
+      if (existingModel !== null) {
+        if (!overwrite) {
+          model.name = model.name + ' (imported)';
+          model.id = uuid();
+        } else {
+          model.id = existingModel.id;
+        }
         await modelRepository.update(model);
       } else {
         await modelRepository.add(model);
