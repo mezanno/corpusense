@@ -89,7 +89,12 @@ const useDialog = () => {
       title: t('btn_create_collection'),
       confirmLabel: t('btn_create'),
       renderForm: (formRef) => (
-        <NewCollectionForm formRef={formRef} setCanSubmit={setCanSubmit} {...extraProps} />
+        <NewCollectionForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          {...extraProps}
+          closeDialog={closeDialog}
+        />
       ),
     });
   };

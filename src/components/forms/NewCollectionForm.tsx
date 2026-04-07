@@ -31,6 +31,7 @@ const NewCollectionForm = ({
   setCanSubmit,
   selection,
   manifestId,
+  closeDialog,
 }: NewCollectionFormProps) => {
   const { t } = useTranslation();
   const { createCollection, createCollectionWithSelection, nameAlreadyExists } = useCollections();
@@ -74,6 +75,7 @@ const NewCollectionForm = ({
     } else {
       await createCollection(values.name);
     }
+    if (closeDialog) closeDialog();
   }
 
   return (
