@@ -50,7 +50,7 @@ const useJobRealtime = () => {
       // Skip processing if task is already finished locally, but ensure completed jobs are deleted from Supabase
       if (task.status === WorkerStatus.COMPLETED || task.status === WorkerStatus.ERROR) {
         if (job.status === 'completed') {
-          await supabase.from('cs_jobs').delete().eq('task_id', task.id).eq('worker_id', worker.id);
+          await supabase.from('cs_jobs').delete().eq('id', job.id);
         }
         return worker;
       }
@@ -58,12 +58,15 @@ const useJobRealtime = () => {
       // Handle successful results
       if (job.status === 'completed') {
         const plugin = workerPlugins[job.plugin_name];
+
         if (job.result !== null && plugin?.processResult) {
           try {
-            const response = await plugin.processResult(job.result, task);
+            const response = await plugin.processResult(job.result, task, job.worker_category);
             if (response.status === WorkerStatus.ERROR) {
               taskStatus = WorkerStatus.ERROR;
               statusMessage = response.statusMessage ?? 'Plugin processing error';
+            } else if (response.status === WorkerStatus.COMPLETED) {
+              await supabase.from('cs_jobs').delete().eq('id', job.id);
             }
           } catch (error) {
             console.error(`Error in processResult for plugin ${job.plugin_name}:`, error);
