@@ -32,6 +32,9 @@ export const pluginConfigurationParams = {
   apiKey: {
     description: 'Clé API Mistral',
   },
+  mistralModel: {
+    description: 'Modèle Mistral à utiliser (ex: mistral-medium-latest)',
+  },
 };
 
 //TODO: à déplacer dans un fichier utils
