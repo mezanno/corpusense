@@ -170,6 +170,7 @@
   "form_label_filter_collection_table": "Filtrer les noms...",
   "form_label_filter_worker_table": "Filtrer les traitements...",
   "form_label_modifierchain_overwrite": "Ecraser la version actuelle ?",
+  "form_label_overwrite_existing_model": "Ecraser le modèle existant ?",
   "form_option_distribution_all_pages": "Sur toutes les pages",
   "form_option_distribution_each2_pages": "1 page sur 2",
   "form_option_limit_before": "Seulement sur les pages précédentes",

@@ -34,15 +34,20 @@ export const useModelIO = () => {
     }
   };
 
-  const importModel = async (data: object) => {
+  const importModel = async (data: object, overwrite: boolean) => {
     try {
       const model = data as DataModel; //TODO: validate the model structure and display error if invalid
       const existingModel = await modelRepository.getByName(model.name);
-      if (existingModel !== null) {
+      if (existingModel !== null && !overwrite) {
         appDispatch(pushError(i18n.t('error_mode_name_exists', { name: model.name })));
         return;
       }
-      await modelRepository.add(model);
+      if (overwrite && existingModel) {
+        model.id = existingModel.id;
+        await modelRepository.update(model);
+      } else {
+        await modelRepository.add(model);
+      }
     } catch (error) {
       //TODO: faire une gestion des erreurs plus user friendly
       console.error('Error importing model:', error);

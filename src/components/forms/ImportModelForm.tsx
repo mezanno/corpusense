@@ -1,12 +1,13 @@
 import { useModelIO } from '@/hooks/data/models/useModelIO';
 import { useModels } from '@/hooks/data/models/useModels';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { zodResolver } from '@hookform/resolvers/zod';
 import i18n from '@/i18n';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import { Checkbox } from '../ui/checkbox';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from '../ui/form';
 import { Input } from '../ui/input';
 
@@ -17,6 +18,7 @@ const schema = z.object({
       (file) => ['application/json'].includes(file.type),
       i18n.t('error_unsupported_file_type', { types: '.json' }),
     ),
+  overwrite: z.boolean().optional(),
 });
 
 const ImportModelForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
@@ -29,7 +31,7 @@ const ImportModelForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
-    defaultValues: { file: undefined },
+    defaultValues: { file: undefined, overwrite: false },
     mode: 'onChange',
   });
 
@@ -50,7 +52,7 @@ const ImportModelForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
       const content = e.target?.result;
       if (typeof content === 'string') {
         const jsonContent = JSON.parse(content) as object;
-        await importModel(jsonContent);
+        await importModel(jsonContent, values.overwrite ?? false);
       }
     };
     setIsSubmitted(true);
@@ -81,6 +83,21 @@ const ImportModelForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
                     field.onChange(file);
                   }}
                 />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='overwrite'
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <label className='inline-flex items-center space-x-2'>
+                  <Checkbox onCheckedChange={(checked) => field.onChange(checked)} />
+                  <span>{t('form_label_overwrite_existing_model')}</span>
+                </label>
               </FormControl>
               <FormMessage />
             </FormItem>
