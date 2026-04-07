@@ -66,7 +66,7 @@ const NewModelForm = ({ formRef, setCanSubmit }: FormProps) => {
             <FormItem>
               <FormLabel id='form-name'>{t('form_label_model_name')}</FormLabel>
               <FormControl>
-                <Input {...field} aria-describedby='form-name' />
+                <Input {...field} aria-describedby='form-name' autoFocus />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -11,9 +11,9 @@ import { Input } from '@/components/ui/input';
 import { AllOrNothing } from '@/data/utils/types';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { FormProps } from '@/hooks/ui/useDialog';
+import i18n from '@/i18n';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Canvas } from '@iiif/presentation-3';
-import i18n from '@/i18n';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -95,7 +95,7 @@ const NewCollectionForm = ({
             <FormItem>
               <FormLabel id='form-label'>{t('form_label_collection_name')}</FormLabel>
               <FormControl>
-                <Input {...field} aria-describedby='form-label' />
+                <Input {...field} aria-describedby='form-label' autoFocus />
               </FormControl>
               <FormMessage />
             </FormItem>
