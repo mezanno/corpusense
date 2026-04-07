@@ -26,6 +26,11 @@ export const useModels = () => {
     [models],
   );
 
+  const nameAlreadyExists = useCallback(
+    (name: string): boolean => models.some((m) => m.name === name),
+    [models],
+  );
+
   const createModel = async (modelDTO: DataModelCreateDTO) => {
     const id = uuid();
     const { name, description, fromModelId } = modelDTO;
@@ -59,5 +64,6 @@ export const useModels = () => {
     getModelById,
     getDatafieldById,
     createModel,
+    nameAlreadyExists,
   };
 };

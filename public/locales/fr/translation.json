@@ -204,6 +204,7 @@
   "form_error_required_and_min": "Ce champ est requis et doit contenir au moins {{min}} caractères",
   "form_collection_name_already_exists": "Une collection avec ce nom existe déjà",
   "form_collection_modifierchain_already_exists": "Une chaîne avec ce nom existe déjà",
+  "form_model_name_already_exists": "Un modèle avec ce nom existe déjà",
   "title_metadata_gallica": "Métadonnées Gallica",
   "title_metadata_corpusense": "Métadonnées Corpusense",
   "title_metadata_collection": "Collection",

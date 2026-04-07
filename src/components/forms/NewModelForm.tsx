@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useModels } from '@/hooks/data/models/useModels';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { zodResolver } from '@hookform/resolvers/zod';
 import i18n from '@/i18n';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -11,18 +11,28 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
-const formSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, { message: i18n.t('form_error_required') }),
-  description: z.string().optional(),
-  fromModelId: z.string().optional(),
-});
-
 const NewModelForm = ({ formRef, setCanSubmit }: FormProps) => {
   const { t } = useTranslation();
-  const { models, createModel } = useModels();
+  const { models, createModel, nameAlreadyExists } = useModels();
+
+  const formSchema = z
+    .object({
+      name: z
+        .string()
+        .trim()
+        .min(1, { message: i18n.t('form_error_required') }),
+      description: z.string().optional(),
+      fromModelId: z.string().optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (nameAlreadyExists(data.name)) {
+        ctx.addIssue({
+          path: ['name'],
+          code: 'custom',
+          message: t('form_model_name_already_exists'),
+        });
+      }
+    });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
