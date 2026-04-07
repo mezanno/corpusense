@@ -66,6 +66,7 @@ const ConfigurationPage = () => {
         localStorage.setItem(key, value);
       }
     }
+    appDispatch(pushInfo(t('toast_configuration_saved')));
   }
 
   const onResetIndexedDB = () => {

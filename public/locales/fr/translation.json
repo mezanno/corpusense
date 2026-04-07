@@ -371,6 +371,7 @@
   "toast_collection_offline": "La collection est maintenant accessible hors ligne. Vous pouvez y accéder sans connexion internet.",
   "toast_collection_online": "La collection est uniquement accessible en ligne. Vous devez être connecté pour y accéder.",
   "toast_model_created": "Nouveau modèle de données créé",
+  "toast_configuration_saved": "Configuration enregistrée",
   "tab_manifest_url": "J'ai une URL",
   "tab_manifest_content": "J'ai le contenu du manifest",
   "tab_manifest_ark": "J'ai un identifiant ARK",
