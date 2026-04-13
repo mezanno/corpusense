@@ -6,7 +6,7 @@ import { History } from '@/data/models/History';
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Result } from '@/data/models/Result';
-import { CanvasScope, Scope } from '@/data/models/Scope';
+import { CanvasScope, CollectionScope, Scope } from '@/data/models/Scope';
 import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import { Tag } from '@/data/models/Tag';
 import { Worker } from '@/data/models/Worker';
@@ -26,7 +26,7 @@ export interface ModelLiveRepository {
 
 export interface AnnotationLiveRepository {
   getByScope(scope: Scope): () => Promise<Annotation[]>;
-  hasOcrAnnotations(scope: CanvasScope): () => Promise<boolean>;
+  hasOcrAnnotations(scope: CanvasScope | CollectionScope): () => Promise<boolean>;
   getByScopeAndType(scope: CanvasScope, type: ElementType): () => Promise<Annotation[]>;
 }
 

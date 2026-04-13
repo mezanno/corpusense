@@ -1,5 +1,11 @@
 import { Annotation, ElementType } from '@/data/models/Annotation';
-import { CanvasScope, isAnnotationScope, isCanvasScope, Scope } from '@/data/models/Scope';
+import {
+  CanvasScope,
+  CollectionScope,
+  isAnnotationScope,
+  isCanvasScope,
+  Scope,
+} from '@/data/models/Scope';
 import { db } from '../db';
 import { AnnotationLiveRepository } from './types.live';
 
@@ -23,16 +29,22 @@ export class IndexedDBAnnotationLiveRepository implements AnnotationLiveReposito
     }
   }
 
-  hasOcrAnnotations(scope: CanvasScope): () => Promise<boolean> {
+  hasOcrAnnotations(scope: CanvasScope | CollectionScope): () => Promise<boolean> {
     return () =>
       db.annotations
-        .where({
-          '[canvasId+collectionId+type]': [
-            scope.canvasId,
-            scope.collectionId,
-            ElementType.TEXT_LINE,
-          ],
-        })
+        .where(
+          isCanvasScope(scope)
+            ? {
+                '[canvasId+collectionId+type]': [
+                  scope.canvasId,
+                  scope.collectionId,
+                  ElementType.TEXT_LINE,
+                ],
+              }
+            : {
+                '[collectionId+type]': [scope.collectionId, ElementType.TEXT_LINE],
+              },
+        )
         .count()
         .then((count) => count > 0);
   }
