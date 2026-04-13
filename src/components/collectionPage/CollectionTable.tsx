@@ -10,6 +10,7 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import CollectionDataTable from './CollectionDataTable';
+import OcrStatus from './OcrStatus';
 
 const CollectionTable = () => {
   const { t } = useTranslation();
@@ -100,9 +101,12 @@ const CollectionTable = () => {
             {t('info_empty_collection')}
           </Badge>
         ) : (
-          <Badge className='text-md font-bold'>
-            {t('info_number_of_items', { number: contentSize })}
-          </Badge>
+          <div className='flex'>
+            <Badge className='text-md font-bold'>
+              {t('info_number_of_items', { number: contentSize })}
+            </Badge>
+            <OcrStatus collectionId={row.getValue('id')} />
+          </div>
         );
       },
     },
