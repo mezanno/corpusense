@@ -150,12 +150,18 @@ export async function exportResult(results: Result[], formats: string[]) {
     console.warn(`No results to export from ${pluginDisplayName} plugin`);
     return;
   }
+
+  const collectionRepository = getCollectionRepository();
+  const collectionId = results[0].scope.collectionId;
+  const collection = await collectionRepository.getById(collectionId);
+
+  const filename = `mistral_export_${collection.name ?? collectionId}_${new Date().toLocaleDateString()}`;
+
   const allTheData: unknown[] = [];
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
     const canvasId = isCanvasScope(result.scope) ? toGallicaUrl(result.scope.canvasId) : undefined;
 
-    const collectionRepository = getCollectionRepository();
     const tags: Tag[] = await collectionRepository.getTagsByCollectionId(result.scope.collectionId);
     const tagsAsColumns = tags.reduce(
       (acc, t, index) => {
@@ -211,19 +217,19 @@ export async function exportResult(results: Result[], formats: string[]) {
       new Blob([excelBuffer], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
       }),
-      'exported_data.xlsx',
+      filename + '.xlsx',
     );
   }
 
   if (formats.includes('json')) {
     FileSaver.saveAs(
       new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
-      'exported_data.json',
+      filename + '.json',
     );
   }
 
   if (formats.includes('csv')) {
     const csv = json2csv((allTheData as object[]).filter(Boolean));
-    FileSaver.saveAs(new Blob([csv], { type: 'text/plain;charset=utf-8' }), 'exported_data.csv');
+    FileSaver.saveAs(new Blob([csv], { type: 'text/plain;charset=utf-8' }), filename + '.csv');
   }
 }
