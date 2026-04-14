@@ -10,6 +10,7 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import CollectionDataTable from './CollectionDataTable';
+import LlmStatus from './LlmStatus';
 import OcrStatus from './OcrStatus';
 
 const CollectionTable = () => {
@@ -106,6 +107,7 @@ const CollectionTable = () => {
               {t('info_number_of_items', { number: contentSize })}
             </Badge>
             <OcrStatus collectionId={row.getValue('id')} />
+            <LlmStatus collectionId={row.getValue('id')} />
           </div>
         );
       },
