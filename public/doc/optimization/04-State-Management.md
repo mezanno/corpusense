@@ -15,7 +15,7 @@ C'est désormais la méthode standard pour interagir avec IndexedDB de manière 
 **État d'avancement :**
 - **Collections & Annotations** : Entièrement migré vers `useLiveQuery`.
 - **Modèles, Tags & Historique** : Entièrement migré.
-- **Workers** : Toujours sous Redux/Sagas (Prochaines étapes).
+- **Workers** : Modèle hybride via `useJobRealtime` qui s'appuie sur IndexedDB localement couplé à des souscriptions Supabase.
 
 ### 2. Données Distantes : React Query / Axios
 Utilisé pour le fetching initial des Manifestes IIIF externes.
@@ -24,7 +24,7 @@ Utilisé pour le fetching initial des Manifestes IIIF externes.
 Utilisé pour les états globaux simples (ex: configuration, sessions temporaires).
 
 ### 4. État Système : Redux Toolkit
-Redux est maintenu pour la gestion des événements (`events`), le statut des Workers et la file d'attente des Manifestes.
+Redux est maintenu pour la gestion des événements (`events`) et la file d'attente des Manifestes. L'essentiel de la logique des Workers a été extrait de Redux pour utiliser le polling/subs de `useJobRealtime`.
 
 ## Bonnes Pratiques Maintenues
 

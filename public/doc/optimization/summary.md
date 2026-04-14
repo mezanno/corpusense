@@ -1,15 +1,23 @@
 # Résumé de l'Audit et des Recommandations
 
-**Dernière mise à jour** : 27 Février 2026
+**Dernière mise à jour** : 14 Avril 2026
 **Date initiale** : 27 Novembre 2025
 **Contexte** : Audit complet du projet `corpusense-dev` pour identifier les pistes d'optimisation, les améliorations possibles et le respect des bonnes pratiques.
+
+## État d'avancement (Avril 2026)
+
+Depuis l'audit de Février, plusieurs avancées ont été réalisées, notamment sur la gestion distante et l'UX :
+
+- **Refonte des Workers & Realtime** : La gestion de l'état des Workers a subi une refonte majeure avec un hook dédié (`useJobRealtime`). L'application utilise maintenant une approche hybride (Supabase Realtime + Polling 20s) synchronisée via IndexedDB, sortant ainsi encore un peu plus de logique distante hors de Redux.
+- **Améliorations UI/UX quotidiennes** : L'ergonomie générale s'est améliorée (persistance de la taille des pages via `DataTablePagination`, ajout d'un tag visuel d'état `OcrStatus`, gestion des conflits avec overwrite à l'import). La validation des formulaires et l'autofocus ont été fluidifiés.
+- **Suite de tests toujours instable** : Les tests (actuellement à 77+) affichent toujours des instabilités, notamment un bug lié au mock du `WorkerContext` (`getPostedWorkers is not a function` dans `Layout.test.tsx`), ou aux utilitaires de Manifestes.
 
 ## État d'avancement (Février 2026)
 
 L'audit de Février révèle que l'architecture "Local-First" est bien en place, mais plusieurs chantiers restent en suspens :
 
-- **Suite de tests en erreur partielle** : Bien que des tests existent (77+ tests), l'environnement Vitest rencontre actuellement un problème d'import avec `i18n.ts` lors des tests de composants (ex: `CollectionInspectorPage`, `ManifestExplorerPage`), entraînant l'échec d'une partie de la suite. Cela doit être corrigé en priorité.
-- **Restructuration des composants pending** : Le dossier `components` n'a pas encore adopté l'approche modulaire "Feature-First".
+- **Suite de tests en erreur partielle** : Bien que des tests existent, l'environnement Vitest rencontre actuellement un problème d'import avec `i18n.ts` lors des tests de composants (ex: `CollectionInspectorPage`, `ManifestExplorerPage`).
+- **Restructuration des composants pending** : Le dossier `components` n'a pas encore totalement adopté l'approche modulaire "Feature-First".
 - **Optimisation de CanvasCard** : `React.memo` et les améliorations de rendu ne sont pas encore appliquées.
 
 ## État d'avancement (Janvier 2026)

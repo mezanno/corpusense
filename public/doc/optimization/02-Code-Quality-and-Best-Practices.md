@@ -1,27 +1,30 @@
 # Qualité du Code et Bonnes Pratiques
 
-## Analyse Actuelle
-Le code est généralement propre et typé, mais certaines pratiques peuvent être améliorées pour la maintenabilité et la robustesse.
+## Analyse Actuelle (Mise à jour Avril 2026)
+Le code est généralement propre et typé. De nouvelles pratiques ont été établies, notamment avec l'adoption croissante de modèles événementiels et de hooks personnalisés pour encapsuler les actions complexes.
 
-## Points d'Amélioration et État d'Avancement
+## Bonnes Pratiques pour la Logique Métier
 
-### 1. Nettoyage du Code (EN COURS)
-La plupart des `console.log` de débogage ont été supprimés, mais il en reste quelques-uns (ex: `CollectionMetadataForm.tsx:81`).
-- **Recommandation**: Continuer le nettoyage. Utiliser des outils d'analyse statique pour empêcher l'introduction de nouveaux logs en production.
+### 1. Séparation des Préoccupations (Separation of Concerns)
+- **Recommandation** : Extraire systématiquement la logique métier complexe (manipulation de données, interactions API multiples) hors des composants UI (React). Utiliser des **Hooks personnalisés** (ex: `useJobRealtime`) ou des **Classes de Service/Repositories** pour orchestrer ces opérations. Le composant React ne doit se charger que du rendu de l'information et de l'interception des actions utilisateurs.
 
-### 2. Typage TypeScript (EN COURS)
-L'usage de `as` a diminué avec l'introduction des hooks `useLiveQuery` mieux typés. Cependant, la prudence reste de mise lors de l'interaction avec des APIs externes ou des librairies tierces.
-- **Recommandation**: Privilégier les schémas Zod (déjà utilisés pour les formulaires) pour valider les données aux frontières de l'application.
+### 2. Synchronisation et Modèles Hybrides
+- **Recommandation** : Pour les fonctionnalités critiques nécessitant du temps réel (ex: Workers), privilégier une architecture robuste combinant **Abonnements centralisés** (Supabase Realtime) et un **Polling de secours**. Il est primordial de réconcilier ces approches au niveau du contrôleur d'état afin d'éviter la duplication des rendus, les conflits de données, et de garantir la cohérence entre le stockage local (IndexedDB) et distant.
 
-### 3. Gestion des Formulaires (FAIT)
-L'utilisation de **`react-hook-form` avec Zod** est devenue le standard pour les nouveaux formulaires et les refontes (ex: `CollectionMetadataForm`).
-- **Bénéfice** : Validation robuste, gestion simplifiée des erreurs et meilleures performances.
+### 3. Fiabilité des Processus en Arrière-plan
+- **Recommandation** : Lors d'opérations asynchrones (ex: suppression de données, traitements lourds), s'assurer que les états de transition sont entièrement gérés et de manière isolée pour permettre les cas d'erreur. Empêcher les régressions ou incohérences (existant lors de la suppression de workers) en optimisant les API calls et la mise à jour des structures de l'état global.
 
-### 4. Gestion des Effets (useEffect)
-La migration vers `useLiveQuery` et React Query a considérablement réduit le besoin de `useEffect` pour le chargement de données.
-- **État** : De nombreux composants sont maintenant plus déclaratifs.
+## Points d'Amélioration Divers
 
-### 5. Accessibilité (a11y)
-L'introduction de Radix UI via shadcn/ui a naturellement amélioré l'accessibilité de base.
-- **Reste à faire** : S'assurer que les composants interactifs complexes (comme le visualiseur de canvas) supportent pleinement la navigation au clavier.
+### 1. Nettoyage du Code
+- Continuer la suppression des `console.log` de débogage.
+
+### 2. Typage TypeScript
+- Utiliser rigoureusement les schémas **Zod** pour valider et assainir les données aux frontières de l'application. Éviter d'utiliser `as` pour forcer des types non sécurisés.
+
+### 3. Gestion des Formulaires
+- Continuer à utiliser **`react-hook-form` couplé à Zod**. Cela garantit la validation robuste, une meilleure gestion des erreurs et la performance.
+
+### 4. Accessibilité (a11y)
+- Maintenir et renforcer l'usage des bons composants natifs et bibliothèques robustes (Radix UI) afin de garantir le support complet du clavier, notamment sur les interfaces complexes.
 

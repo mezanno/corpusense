@@ -1,21 +1,26 @@
 # Améliorations UI/UX
 
-## Analyse Actuelle
-L'interface utilise Tailwind CSS et semble s'appuyer sur des composants de type shadcn/ui (Radix UI), ce qui garantit une bonne base d'accessibilité et de personnalisation.
+## Analyse Actuelle (Mise à jour Avril 2026)
+L'interface utilise Tailwind CSS et s'appuie sur des composants orientés shadcn/ui. Plusieurs améliorations ergonomiques récentes visent à rendre les expériences utilisateur plus fluides et dynamiques, par exemple grâce à un modèle d'interface adaptatif et immersif (Floating UI, mode plein écran contextuel) ainsi qu'à de meilleures validations.
 
-## Points d'Amélioration
+## Bonnes Pratiques en Conception UI/UX
 
-### 1. Feedback Utilisateur
-- **Recommandation**: S'assurer que toutes les actions asynchrones (chargement, sauvegarde) ont un feedback visuel clair (spinners, squelettes de chargement `Skeleton`, toasts de succès/erreur). `sonner` est présent dans les dépendances, assurez-vous qu'il est utilisé de manière cohérente pour les notifications.
+### 1. Interfaces Flexibles et Flottantes (Floating Windows)
+- **Recommandation** : Repenser les modales bloquantes lourdes en favorisant des fenêtres flottantes **déplaçables (draggable), redimensionnables et capables de zoom**. De telles interfaces permettent aux utilisateurs de comparer efficacement différents contextes (ex: source vs analyse) sans occulter leur espace de travail principal.
 
-### 2. Responsive Design
-Certaines valeurs de grille sont hardcodées ou gérées via JS (`handleOnResize` dans `CollectionInspectorPage`).
-- **Recommandation**: Utiliser au maximum les classes utilitaires de Tailwind (`grid-cols-1 md:grid-cols-3 lg:grid-cols-4`) pour gérer la réactivité via CSS plutôt que JS, ce qui est plus performant et plus facile à maintenir.
+### 2. Transitions Immersives et Mode Plein Écran
+- **Recommandation** : Pour des workflows spécifiques nécessitant une grande concentration ou la manipulation de médias/canevas, déclencher des expériences en **Fullscreen mode** lors des premières interactions pertinentes (ex: bascule de l'état d'Initialisation vers l'état Actif). Cela favorise une immersion optimale et sans distraction.
 
-### 3. Internationalisation (i18n)
-`i18next` est en place.
-- **Recommandation**: Vérifier que toutes les chaînes de caractères visibles sont bien extraites dans les fichiers de traduction. Utiliser un linter ou un outil d'extraction pour s'assurer qu'aucune chaîne n'est "hardcodée".
+### 3. Feedback Utilisateur et Thématiques Visuelles Premium
+- **Recommandation** : Assurer des retours immédiats clairs pour chaque interaction à travers des micro-animations et validations (via `sonner` pour la réussite/l'échec, des Squelettes pour le chargement). Viser des designs dynamiques au rendu **"premium"**, exploitant correctement les couleurs du thème (dark/light) plutôt que des choix génériques, tout en tirant parti du CSS pour les transitions (plutôt que des scripts lourds).
 
-### 4. Thèmes
-L'utilisation de `next-themes` (ou équivalent) avec Tailwind permet de gérer facilement le mode sombre.
-- **Recommandation**: S'assurer que les couleurs sont définies via des variables CSS (CSS variables) pour faciliter le changement de thème sans réécrire les classes.
+## Points d'Opérations Structurelles
+
+### 1. Responsive Design
+- Poursuivre l'effort d'intégration des comportements responsives directement au travers des utilitaires de **Tailwind CSS** (ex: grilles et dimensions adaptatives) en s'affranchissant au maximum de la gestion par événements de dimensionnement (redimensionnement via JavaScript window event).
+
+### 2. Internationalisation (i18n)
+- Vérifier continuellement l'absence de chaînes de texte codées en dur pour garantir que tout est bien supporté par **i18next** et correctement référencé dans les fichiers de langue.
+
+### 3. Architecture des Couleurs et Thèmes
+- Centraliser l'ensemble des choix colorimétriques dans des variables CSS cohérentes et partagées pour fluidifier le fonctionnement des modes sombres/clairs générés via `next-themes`.
