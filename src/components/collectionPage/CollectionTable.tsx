@@ -7,6 +7,7 @@ import useAppNavigation from '@/hooks/useAppNavigation';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, Copy, Eye, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { IconButtonWithTooltip } from '../IconButtonWithTooltip';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
@@ -140,35 +141,24 @@ const CollectionTable = () => {
         const collectionId: string = row.getValue('id');
         return (
           <div className='flex h-full w-full space-x-1'>
-            <button
-              className='soft-button'
-              onClick={(event) => {
-                event.stopPropagation();
-                void handleOpen(collectionId);
-              }}
+            <IconButtonWithTooltip
+              tooltip={t('btn_open')}
+              onClick={() => void handleOpen(collectionId)}
             >
               <Eye />
-            </button>
-            <button
-              className='soft-button'
-              onClick={(event) => {
-                event.stopPropagation();
-                void handleDuplicate(row.original);
-              }}
+            </IconButtonWithTooltip>
+            <IconButtonWithTooltip
+              tooltip={t('btn_duplicate')}
+              onClick={() => void handleDuplicate(row.original)}
             >
               <Copy />
-            </button>
-            <button
-              className='soft-button'
-              onClick={(event) => {
-                event.stopPropagation();
-                handleDelete(collectionId);
-              }}
-              title={t('btn_delete')}
-              aria-label={t('btn_delete')}
+            </IconButtonWithTooltip>
+            <IconButtonWithTooltip
+              tooltip={t('btn_delete')}
+              onClick={() => void handleDelete(collectionId)}
             >
               <Trash2 />
-            </button>
+            </IconButtonWithTooltip>
           </div>
         );
       },
