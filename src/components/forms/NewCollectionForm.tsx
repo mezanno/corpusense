@@ -48,7 +48,7 @@ const NewCollectionForm = ({
         ctx.addIssue({
           path: ['name'],
           code: 'custom',
-          message: t('form_model_name_already_exists'),
+          message: t('form_collection_name_already_exists'),
         });
       }
     });
