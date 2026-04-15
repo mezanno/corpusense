@@ -110,9 +110,7 @@ const CollectionTable = () => {
           </Badge>
         ) : (
           <div className='flex'>
-            <Badge className='text-md font-bold'>
-              {t('info_number_of_items', { number: contentSize })}
-            </Badge>
+            <Badge className='text-md'>{t('info_number_of_items', { number: contentSize })}</Badge>
             <OcrStatus collectionId={row.getValue('id')} />
             <LlmStatus collectionId={row.getValue('id')} />
           </div>
