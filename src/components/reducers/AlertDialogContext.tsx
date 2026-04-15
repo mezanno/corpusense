@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../ui/alert-dialog';
+import { ScrollArea } from '../ui/scroll-area';
 
 type DialogProps = {
   title: string;
@@ -69,16 +70,19 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
       {children}
       {dialogProps !== null && (
         <AlertDialog open={true} onOpenChange={closeDialog}>
-          <AlertDialogContent className='duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95'>
+          <AlertDialogContent className='flex max-h-[80vh] flex-col duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95'>
             <AlertDialogHeader>
               <AlertDialogTitle>{dialogProps?.title}</AlertDialogTitle>
               <AlertDialogDescription>{dialogProps?.description}</AlertDialogDescription>
             </AlertDialogHeader>
-            {dialogProps.children}
+
+            <ScrollArea className='flex-1 overflow-y-auto pr-2'>{dialogProps.children}</ScrollArea>
+
             <AlertDialogFooter>
               <button className='soft-button' onClick={onCancel}>
                 {dialogProps?.onCancel?.message ?? t('btn_cancel')}
               </button>
+
               {dialogProps?.onConfirm?.message !== undefined && (
                 <button
                   className={canSubmit === true ? 'soft-button-danger' : 'soft-button-disabled'}
