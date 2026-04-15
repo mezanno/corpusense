@@ -1,8 +1,10 @@
 import { Collection } from '@/data/models/Collection';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import useDialog from '@/hooks/ui/useDialog';
+import { Copy } from 'lucide-react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { IconButtonWithTooltip } from './IconButtonWithTooltip';
 import { useWorkerContext } from './reducers/WorkerContext';
 import Toolbar from './ToolBar';
 
@@ -12,7 +14,7 @@ const CollectionToolbar = memo(function CollectionToolbar({
   collection: Collection;
 }) {
   const { t } = useTranslation();
-  const { openRemoveAnnotationsDialog } = useDialog();
+  const { openRemoveAnnotationsDialog, openDupicateCollectionDialog } = useDialog();
   const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({ collectionId: collection.id });
 
   const { recomputeRegions } = useAnnotationActions();
@@ -36,14 +38,21 @@ const CollectionToolbar = memo(function CollectionToolbar({
     })();
   };
 
+  const handleDuplicate = () => {
+    openDupicateCollectionDialog(collection);
+  };
+
   return (
-    <div className='panel justify-between'>
+    <div className='flex gap-2'>
       <Toolbar
         title={t('title_collection_actions')}
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleRecomputeRegions={handleRecomputeRegions}
         scope={{ collectionId: collection.id }}
       />
+      <IconButtonWithTooltip tooltip={t('btn_duplicate')} onClick={() => void handleDuplicate()}>
+        <Copy />
+      </IconButtonWithTooltip>
     </div>
   );
 });
