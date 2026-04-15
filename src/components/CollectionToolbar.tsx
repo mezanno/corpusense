@@ -36,10 +36,6 @@ const CollectionToolbar = memo(function CollectionToolbar({
     })();
   };
 
-  // const handleToggleOffline = () => {
-  //   // appDispatch(toggleCollectionOfflineRequest(collection.id));
-  // };
-
   return (
     <div className='panel justify-between'>
       <Toolbar
@@ -48,18 +44,6 @@ const CollectionToolbar = memo(function CollectionToolbar({
         handleRecomputeRegions={handleRecomputeRegions}
         scope={{ collectionId: collection.id }}
       />
-      {/* <div>
-        <Toggle
-          className='soft-button'
-          size={null}
-          pressed={!collection.offline}
-          onClick={handleToggleOffline}
-          disabled={isWorkerRunning}
-          title={collection.offline ? t('button_set_online') : t('button_set_offline')}
-        >
-          <Pin size={24} />
-        </Toggle>
-      </div> */}
     </div>
   );
 });
