@@ -2,9 +2,10 @@ import { useAlertDialogContext } from '@/components/reducers/useAlertDialogConte
 import { CollectionDetails } from '@/data/models/Collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useTags } from '@/hooks/data/tags/useTags';
+import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Eye, Trash2 } from 'lucide-react';
+import { ArrowUpDown, Copy, Eye, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -17,6 +18,7 @@ const CollectionTable = () => {
   const { t } = useTranslation();
   const navigation = useAppNavigation();
   const { openDialog } = useAlertDialogContext();
+  const { openDupicateCollectionDialog } = useDialog();
   const { removeCollection } = useCollections();
   const { collections } = useCollections();
   const { getLabelById } = useTags();
@@ -34,6 +36,10 @@ const CollectionTable = () => {
 
   const handleOpen = async (id: string) => {
     await navigation.goToCollectionInspector(id);
+  };
+
+  const handleDuplicate = (collection: CollectionDetails) => {
+    openDupicateCollectionDialog(collection);
   };
 
   const columns: ColumnDef<CollectionDetails, unknown>[] = [
@@ -142,6 +148,15 @@ const CollectionTable = () => {
               }}
             >
               <Eye />
+            </button>
+            <button
+              className='soft-button'
+              onClick={(event) => {
+                event.stopPropagation();
+                void handleDuplicate(row.original);
+              }}
+            >
+              <Copy />
             </button>
             <button
               className='soft-button'

@@ -96,6 +96,15 @@ export const useCollections = () => {
     return { ...newCollection, content };
   };
 
+  const duplicateCollection = async (collectionId: string, newName: string) => {
+    try {
+      await collectionRepository.duplicate(collectionId, newName);
+      appDispatch(pushInfo(i18n.t('toast_collection_duplicated')));
+    } catch (e) {
+      appDispatch(pushError(getErrorMessage(e)));
+    }
+  };
+
   /**
    * @remarks if some canvas are already in the collection, they will not be added again (but there is no error dispatched!)
    * @param action
@@ -198,6 +207,7 @@ export const useCollections = () => {
     nameAlreadyExists,
     createCollection,
     createCollectionWithSelection,
+    duplicateCollection,
     addSelectionToCollection,
     updateCollection,
     removeElementFromCollection,

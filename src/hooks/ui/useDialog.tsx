@@ -1,6 +1,7 @@
 import { workerPlugins } from '@/App';
 import ContactForm from '@/components/forms/ContactForm';
 import ConvertPdfForm from '@/components/forms/ConvertPdfForm';
+import DuplicateCollectionForm from '@/components/forms/DuplicateCollectionForm';
 import DuplicateLayoutForm from '@/components/forms/DuplicateLayoutForm';
 import ExportCollectionForm from '@/components/forms/ExportCollectionForm';
 import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
@@ -16,6 +17,7 @@ import SaveModifierChainForm from '@/components/forms/SaveModifierChainForm';
 import StartWorkerForm from '@/components/forms/StartWorkerForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
+import { CollectionDetails } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { CanvasScope, Scope } from '@/data/models/Scope';
@@ -94,6 +96,20 @@ const useDialog = () => {
           setCanSubmit={setCanSubmit}
           {...extraProps}
           closeDialog={closeDialog}
+        />
+      ),
+    });
+  };
+
+  const openDupicateCollectionDialog = (collection: CollectionDetails) => {
+    openFormDialog({
+      title: t('title_duplicate_collection', { name: collection.name }),
+      confirmLabel: t('btn_duplicate'),
+      renderForm: (formRef) => (
+        <DuplicateCollectionForm
+          collection={collection}
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
         />
       ),
     });
@@ -289,6 +305,7 @@ const useDialog = () => {
     openSaveModifierChainDialog,
     openLoadModifierChainDialog,
     openStartWorkerDialog,
+    openDupicateCollectionDialog,
   };
 };
 
