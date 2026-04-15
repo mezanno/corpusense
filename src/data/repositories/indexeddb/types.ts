@@ -52,6 +52,7 @@ export interface CollectionRepository {
 
   create(collection: Collection): Promise<void>;
   addContentToCollection(collection: Collection): Promise<void>;
+  duplicate(collectionId: string, newName: string): Promise<void>;
 
   update(
     id: string,

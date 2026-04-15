@@ -3,6 +3,7 @@ import { AnnotationScope, CanvasScope } from '@/data/models/Scope';
 import { Tag } from '@/data/models/Tag';
 import { Canvas } from '@iiif/presentation-3';
 import { groupBy, mapValues } from 'lodash';
+import { v4 as uuid } from 'uuid';
 import { Collection, CollectionDetails } from '../../models/Collection';
 import { db } from './db';
 import {
@@ -114,6 +115,38 @@ export class IndexedDBCollectionRepository implements CollectionRepository {
         id: collection.id,
         content: content ?? [],
       });
+    });
+  }
+
+  async duplicate(collectionId: string, newName: string): Promise<void> {
+    await db.transaction('rw', db.collections, db.collectionContents, db.annotations, async () => {
+      const collection = await db.collections.get(collectionId);
+      if (collection === undefined) {
+        throw new Error(`Collection with id ${collectionId} not found`);
+      }
+      const content = await db.collectionContents.get(collectionId);
+
+      const newCollectionId = uuid();
+      await db.collections.add({
+        ...collection,
+        id: newCollectionId,
+        name: newName,
+        contentSize: content?.content.length ?? 0,
+      });
+      await db.collectionContents.add({
+        id: newCollectionId,
+        content: content?.content ?? [],
+      });
+      const annotationRepository = getAnnotationRepository();
+      const annotationsToDuplicate = await annotationRepository.getByScope({
+        collectionId,
+      });
+      const duplicatedAnnotations = annotationsToDuplicate.map((annotation) => ({
+        ...annotation,
+        id: uuid(),
+        collectionId: newCollectionId,
+      }));
+      await annotationRepository.addAll(duplicatedAnnotations);
     });
   }
 
