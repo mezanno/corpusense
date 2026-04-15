@@ -16,16 +16,19 @@ export type WorkerPluginInfo = {
 export type WorkerPlugin = {
   run: WorkerRunFunction;
   export?: WorkerExportFunction;
+  extractData?: WorkerExtractDataFunction;
   processResult?: WorkerProcessResultFunction;
   info: WorkerPluginInfo;
   runtimeParametersSchema?: z.ZodTypeAny;
 };
 
 export type WorkerRunFunction = (task: Task, worker: Worker) => Promise<WorkerResponse>; //saga or async function : if we need to call an effect (eg: call, put, select), we have to use a saga
+export type WorkerExtractDataFunction = (results: Result[]) => Promise<unknown[]>;
 export type WorkerExportFunction = (results: Result[], formats: string[]) => void;
 type WorkerModule = {
   default: WorkerRunFunction;
   exportResult?: WorkerExportFunction;
+  extractData?: WorkerExtractDataFunction;
   processResult?: WorkerProcessResultFunction;
   pluginName: string;
   pluginDisplayName?: string;
@@ -66,6 +69,7 @@ const isWorkerModule = (mod: unknown): mod is WorkerModule => {
       (Array.isArray(m.pluginExportFormats) &&
         m.pluginExportFormats.every((f) => typeof f === 'string'))) &&
     (m.exportResult === undefined || typeof m.exportResult === 'function') &&
+    (m.extractData === undefined || typeof m.extractData === 'function') &&
     (m.processResult === undefined || typeof m.processResult === 'function') &&
     (m.pluginConfigurationParams === undefined ||
       (typeof m.pluginConfigurationParams === 'object' &&
@@ -105,6 +109,7 @@ export function loadWorkerPlugins() {
             configurationParams: mod.pluginConfigurationParams,
           },
           export: mod.exportResult,
+          extractData: mod.extractData,
           processResult: mod.processResult,
           runtimeParametersSchema: mod.pluginRuntimeParameters,
         };

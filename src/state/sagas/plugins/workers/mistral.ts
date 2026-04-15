@@ -141,21 +141,13 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   }
 }
 
-/*
- * Export function to export results from the Mistral plugin saga.
- * It takes an array of Result objects, extracts the data, and saves it as JSON and CSV files.
- */
-export async function exportResult(results: Result[], formats: string[]) {
+export async function extractData(results: Result[]): Promise<unknown[]> {
   if (results.length === 0) {
     console.warn(`No results to export from ${pluginDisplayName} plugin`);
-    return;
+    return [];
   }
 
   const collectionRepository = getCollectionRepository();
-  const collectionId = results[0].scope.collectionId;
-  const collection = await collectionRepository.getById(collectionId);
-
-  const filename = `mistral_export_${collection.name ?? collectionId}_${new Date().toLocaleDateString()}`;
 
   const allTheData: unknown[] = [];
   for (let i = 0; i < results.length; i++) {
@@ -191,6 +183,27 @@ export async function exportResult(results: Result[], formats: string[]) {
       console.error('Error parsing dataInCanvas:', error);
     }
   }
+
+  return allTheData;
+}
+
+/*
+ * Export function to export results from the Mistral plugin saga.
+ * It takes an array of Result objects, extracts the data, and saves it as JSON and CSV files.
+ */
+export async function exportResult(results: Result[], formats: string[]) {
+  if (results.length === 0) {
+    console.warn(`No results to export from ${pluginDisplayName} plugin`);
+    return;
+  }
+
+  const collectionRepository = getCollectionRepository();
+  const collectionId = results[0].scope.collectionId;
+  const collection = await collectionRepository.getById(collectionId);
+
+  const filename = `mistral_export_${collection.name ?? collectionId}_${new Date().toLocaleDateString()}`;
+
+  const allTheData = await extractData(results);
 
   if (formats.includes('xlsx')) {
     const flattenedData: Record<string, unknown>[] = [];
