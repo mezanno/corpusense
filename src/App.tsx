@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AlertDialogProvider } from './components/reducers/AlertDialogContext';
 import { CollectionProvider } from './components/reducers/CollectionContext';
 import { ConnectedUserProvider } from './components/reducers/ConnectedUserContext';
+import { ManifestPageProvider } from './components/reducers/ManifestPageContext';
 import { WorkerProvider } from './components/reducers/WorkerContext';
 import { TooltipProvider } from './components/ui/tooltip';
 import { CorpusenseRoutes } from './hooks/useAppNavigation';
@@ -53,7 +54,14 @@ function App() {
                   <Routes>
                     <Route element={<Layout />}>
                       <Route index element={<Home />} />
-                      <Route path={CorpusenseRoutes.MANIFEST} element={<ManifestExplorerPage />} />
+                      <Route
+                        path={CorpusenseRoutes.MANIFEST}
+                        element={
+                          <ManifestPageProvider>
+                            <ManifestExplorerPage />
+                          </ManifestPageProvider>
+                        }
+                      />
                       <Route
                         path={CorpusenseRoutes.COLLECTIONS}
                         element={<CollectionsManagerPage />}

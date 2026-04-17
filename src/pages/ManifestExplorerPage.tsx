@@ -4,11 +4,8 @@ import ManifestNavigation from '@/components/ManifestNavigation';
 import NoManifestToShow from '@/components/NoManifestToShow';
 import NothingToShow from '@/components/NothingToShow';
 import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
+import { useManifestPageContext } from '@/components/reducers/ManifestPageContext';
 import { Toggle } from '@/components/ui/toggle';
-import useConvertedFileIO from '@/hooks/data/convertedFiles/useConvertedFileIO';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { fecthManifestRequest } from '@/state/reducers/manifests';
-import { Canvas } from '@iiif/presentation-3';
 import { ArrowLeftToLine, ArrowRightToLine } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,51 +16,26 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../compone
 
 const ManifestExplorerPage = () => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
-  const { isLoading, isLoaded, loadedData } = useAppSelector((state) => state.manifests);
-  const { loadManifest } = useConvertedFileIO();
-
   const [searchParams] = useSearchParams();
-  const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(null);
   const [metadataVisible, setMetadataVisible] = useState(true);
+  const { isLoading, manifest, setSearchParams, canvasToDisplay, setCanvasToDisplay } =
+    useManifestPageContext();
 
   useEffect(() => {
-    if (isLoading) {
-      setCanvasToDisplay(null);
-    }
-  }, [isLoading]);
-
-  useEffect(() => {
-    const id = searchParams.get('manifestId');
-    if (id != null) {
-      appDispatch(fecthManifestRequest(id));
-    } else {
-      const indexeddbId = searchParams.get('indexeddbId');
-
-      if (indexeddbId != null) {
-        try {
-          void loadManifest(indexeddbId);
-        } catch (error) {
-          console.error('Error loading manifest from IndexedDB:', error);
-        }
-      }
-    }
-    setCanvasToDisplay(null);
+    setSearchParams(searchParams);
   }, [searchParams]);
 
   if (isLoading) {
     return <Loading />;
   }
 
-  if (!isLoaded || loadedData == null) {
+  if (manifest === undefined) {
     return (
       <div className='flex h-full w-full flex-col items-center justify-center space-y-2 p-2'>
         <NoManifestToShow />
       </div>
     );
   }
-
-  const manifest = loadedData.content;
 
   return (
     <div className='flex h-full w-full'>
@@ -117,11 +89,7 @@ const ManifestExplorerPage = () => {
             ) : (
               <>
                 <CanvasViewer canvas={canvasToDisplay} />
-                <ManifestNavigation
-                  setCanvasToDisplay={setCanvasToDisplay}
-                  currentCanvasId={canvasToDisplay.id}
-                  manifest={manifest}
-                />
+                <ManifestNavigation />
               </>
             )}
           </section>

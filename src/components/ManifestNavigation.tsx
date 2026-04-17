@@ -1,37 +1,10 @@
-import { Canvas, Manifest } from '@iiif/presentation-3';
-import { findIndex } from 'lodash';
 import { StepBack, StepForward } from 'lucide-react';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useManifestPageContext } from './reducers/ManifestPageContext';
 
-const ManifestNavigation = ({
-  manifest,
-  currentCanvasId,
-  setCanvasToDisplay,
-}: {
-  manifest: Manifest;
-  currentCanvasId: string;
-  setCanvasToDisplay: (canvas: Canvas | null) => void;
-}) => {
+const ManifestNavigation = () => {
   const { t } = useTranslation();
-
-  const canvasIds = useMemo(() => manifest.items.map((canvas) => canvas.id), [manifest]);
-  const currentCanvasIndex = useMemo(
-    () => findIndex(canvasIds, (id) => id === currentCanvasId),
-    [canvasIds, currentCanvasId],
-  );
-  const hasPrevious = currentCanvasIndex > 0;
-  const hasNext = currentCanvasIndex < canvasIds.length - 1;
-
-  const handleNext = () => {
-    const nextCanvas = manifest.items[currentCanvasIndex + 1];
-    setCanvasToDisplay(nextCanvas);
-  };
-
-  const handlePrevious = () => {
-    const previousCanvas = manifest.items[currentCanvasIndex - 1];
-    setCanvasToDisplay(previousCanvas);
-  };
+  const { handlePrevious, hasPrevious, handleNext, hasNext } = useManifestPageContext();
 
   return (
     <div className='flex w-full justify-center space-x-2 p-2'>
