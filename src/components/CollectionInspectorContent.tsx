@@ -11,6 +11,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import useKeyboard from '@/hooks/ui/useKeyboard';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import 'gridstack/dist/gridstack.min.css';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
@@ -27,8 +28,14 @@ const CollectionInspectorContent = ({
   defaultCanvasId: string | null;
 }) => {
   const { t } = useTranslation();
-  const { collection, getCanvasById, setCanvasToDisplay, canvasToDisplay } =
-    useCollectionInspectorContext();
+  const {
+    collection,
+    getCanvasById,
+    setCanvasToDisplay,
+    canvasToDisplay,
+    handleNext,
+    handlePrevious,
+  } = useCollectionInspectorContext();
   const { openCollection } = useCollectionContext();
   const { setScope } = useAnnotationContext();
   const canvas = defaultCanvasId !== null ? getCanvasById(defaultCanvasId) : null;
@@ -36,6 +43,16 @@ const CollectionInspectorContent = ({
 
   const [colCount, setColCount] = useState(5);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const onKeyPressed = (key: string) => {
+    if (key === 'ArrowRight') {
+      handleNext();
+    } else if (key === 'ArrowLeft') {
+      handlePrevious();
+    }
+  };
+
+  useKeyboard({ onKeyPressed });
 
   useEffect(() => {
     return () => {
