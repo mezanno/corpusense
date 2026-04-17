@@ -1,38 +1,15 @@
-import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
-import { Canvas } from '@iiif/presentation-3';
 import { StepBack, StepForward } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useCollectionInspectorContext } from '../reducers/CollectionInspectorContext';
 
-const CollectionNavigation = ({
-  collectionId,
-  currentCanvasId,
-  setCanvasToDisplay,
-}: {
-  collectionId: string;
-  currentCanvasId: string;
-  setCanvasToDisplay: (canvas: Canvas | null) => void;
-}) => {
+const CollectionNavigation = () => {
   const { t } = useTranslation();
-  const { hasNextCanvas, hasPreviousCanvas, getNextCanvas, getPreviousCanvas } =
-    useCollectionContent(collectionId);
-
-  const handleNext = () => {
-    const nextCanvas = getNextCanvas(currentCanvasId);
-    if (nextCanvas) {
-      setCanvasToDisplay(nextCanvas);
-    }
-  };
-
-  const handlePrevious = () => {
-    const previousCanvas = getPreviousCanvas(currentCanvasId);
-    if (previousCanvas) {
-      setCanvasToDisplay(previousCanvas);
-    }
-  };
+  const { handleNext, handlePrevious, hasNextCanvas, hasPreviousCanvas } =
+    useCollectionInspectorContext();
 
   return (
     <div className='flex w-full justify-center space-x-2 p-2'>
-      {hasPreviousCanvas(currentCanvasId) && (
+      {hasPreviousCanvas() && (
         <button
           className='soft-button'
           onClick={handlePrevious}
@@ -42,7 +19,7 @@ const CollectionNavigation = ({
           <StepBack size={14} />
         </button>
       )}
-      {hasNextCanvas(currentCanvasId) && (
+      {hasNextCanvas() && (
         <button
           className='soft-button'
           onClick={handleNext}

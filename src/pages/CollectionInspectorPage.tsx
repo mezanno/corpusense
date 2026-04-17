@@ -1,5 +1,6 @@
 import CollectionInspectorContent from '@/components/CollectionInspectorContent';
 import { AnnotationContextProvider } from '@/components/reducers/AnnotationContext';
+import { CollectionInspectorProvider } from '@/components/reducers/CollectionInspectorContext';
 import 'gridstack/dist/gridstack.min.css';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +19,9 @@ const CollectionInspectorPage = () => {
     <div className='flex justify-center'>{t('error_id_collection_invalid')}</div>
   ) : (
     <AnnotationContextProvider>
-      <CollectionInspectorContent collectionId={collectionId} defaultCanvasId={canvasId} />
+      <CollectionInspectorProvider collectionId={collectionId}>
+        <CollectionInspectorContent collectionId={collectionId} defaultCanvasId={canvasId} />
+      </CollectionInspectorProvider>
     </AnnotationContextProvider>
   );
 };

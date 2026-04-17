@@ -75,13 +75,7 @@ const CanvasViewer = ({
                   hovered={hovered}
                   setHovered={setHovered}
                 />
-                {collectionId !== undefined && setCanvasToDisplay && (
-                  <CollectionNavigation
-                    collectionId={collectionId}
-                    currentCanvasId={canvas.id}
-                    setCanvasToDisplay={setCanvasToDisplay}
-                  />
-                )}
+                {collectionId !== undefined && setCanvasToDisplay && <CollectionNavigation />}
               </ResizablePanel>
               {showModifiers && collectionId !== undefined && (
                 <>

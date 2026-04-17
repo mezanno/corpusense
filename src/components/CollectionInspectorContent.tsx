@@ -11,13 +11,12 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { useCollectionContent } from '@/hooks/data/collections/useCollectionContent';
-import { Canvas } from '@iiif/presentation-3';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import 'gridstack/dist/gridstack.min.css';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import { useCollectionInspectorContext } from './reducers/CollectionInspectorContext';
 import ResultsAvailable from './ResultsAvailable';
 
 const CollectionInspectorContent = ({
@@ -28,11 +27,11 @@ const CollectionInspectorContent = ({
   defaultCanvasId: string | null;
 }) => {
   const { t } = useTranslation();
-  const { collection, getCanvasById } = useCollectionContent(collectionId);
+  const { collection, getCanvasById, setCanvasToDisplay, canvasToDisplay } =
+    useCollectionInspectorContext();
   const { openCollection } = useCollectionContext();
   const { setScope } = useAnnotationContext();
   const canvas = defaultCanvasId !== null ? getCanvasById(defaultCanvasId) : null;
-  const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(canvas);
   // const [activeTab, setActiveTab] = useState('document');
 
   const [colCount, setColCount] = useState(5);
