@@ -6,6 +6,7 @@ import NothingToShow from '@/components/NothingToShow';
 import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
 import { useManifestPageContext } from '@/components/reducers/ManifestPageContext';
 import { Toggle } from '@/components/ui/toggle';
+import useKeyboard from '@/hooks/ui/useKeyboard';
 import { ArrowLeftToLine, ArrowRightToLine } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,8 +19,24 @@ const ManifestExplorerPage = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [metadataVisible, setMetadataVisible] = useState(true);
-  const { isLoading, manifest, setSearchParams, canvasToDisplay, setCanvasToDisplay } =
-    useManifestPageContext();
+  const {
+    isLoading,
+    manifest,
+    setSearchParams,
+    canvasToDisplay,
+    setCanvasToDisplay,
+    handleNext,
+    handlePrevious,
+  } = useManifestPageContext();
+
+  const onKeyPressed = (key: string) => {
+    if (key === 'ArrowRight') {
+      handleNext();
+    } else if (key === 'ArrowLeft') {
+      handlePrevious();
+    }
+  };
+  useKeyboard({ onKeyPressed });
 
   useEffect(() => {
     setSearchParams(searchParams);
