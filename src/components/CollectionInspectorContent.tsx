@@ -119,10 +119,11 @@ const CollectionInspectorContent = ({
               >
                 <AccordionItem value='metadata'>
                   <AccordionTrigger className='mx-2'>
-                    <h2 className='flex gap-2 text-lg'>
+                    <h2 className='flex items-center gap-2 text-lg'>
                       {t('title_metadata_collection')}
                       <span className='font-bold italic'>{collection.name}</span>
-                      <span className='font-thin'>({collection.id})</span>
+                      <span className='text-sm font-thin'>({collection.id})</span>
+                      <span>- {t('info_number_of_items', { number: collection.contentSize })}</span>
                     </h2>
                   </AccordionTrigger>
                   <AccordionContent>
