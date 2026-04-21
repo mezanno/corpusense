@@ -11,12 +11,13 @@ const IIIFSourcesDashboard = () => {
   const { historyDetails } = useManifests();
 
   return (
-    <div>
-      <h1 className='flex items-center text-2xl font-bold'>
-        <Globe className='mr-2' /> {t('page_title_iiif_storage')}
+    <div className='flex h-full flex-col'>
+      <h1 className='flex items-center gap-2 text-2xl font-bold'>
+        <Globe />
+        <span>{t('page_title_iiif_storage')}</span>
       </h1>
 
-      <div className='flex space-x-2'>
+      <div className='mt-2 flex h-full flex-wrap gap-2 overflow-y-auto'>
         <Card className='card-file border-dashed' onClick={openOpenManifestDialog}>
           <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
             <Plus size={48} />
