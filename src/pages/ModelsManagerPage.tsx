@@ -12,11 +12,17 @@ const ModelsManagerPage = () => {
   const [canvasViewVisible, setCanvasViewVisible] = useState(false);
 
   return (
-    <div className='flex h-full w-full flex-col space-y-2 p-4'>
-      <h1 className='flex items-center text-2xl font-bold'>
-        <Container className='mr-2' /> {t('page_title_models_manager')}
-      </h1>
-      <ModelsDashboard setSelectedModelId={setSelectedModelId} selectedModelId={selectedModelId} />
+    <div className='flex h-full w-full space-y-2 p-4'>
+      <div className='flex flex-col'>
+        <h1 className='flex items-center text-2xl font-bold'>
+          <Container className='mr-2' />
+          <span>{t('page_title_models_manager')}</span>
+        </h1>
+        <ModelsDashboard
+          setSelectedModelId={setSelectedModelId}
+          selectedModelId={selectedModelId}
+        />
+      </div>
       <ResizablePanelGroup direction='horizontal' className='flex-1 space-x-2'>
         <ResizablePanel order={1} id='metadata-panel' className='flex flex-col' minSize={50}>
           {selectedModelId !== null && (

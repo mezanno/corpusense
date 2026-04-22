@@ -27,7 +27,6 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
   const model = useModels().getModelById(modelId);
   const { saveModel } = useModelIO();
   const [fields, setFields] = useState(model?.fields ?? []);
-  const [description, setDescription] = useState('');
   const [prompt, setPrompt] = useState('');
   const [modelName, setModelName] = useState(model?.name ?? '');
 
@@ -39,7 +38,6 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
   const onModel = useEffectEvent((dm: DataModel) => {
     setModelName(dm.name);
     setFields(dm.fields);
-    setDescription(dm.description ?? '');
     setPrompt(dm.prompt ?? '');
   });
 
@@ -70,7 +68,6 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
         ...model,
         name: modelName.trim() || model.name,
         fields: newFields,
-        description: description.trim(),
         prompt: prompt.trim(),
       };
       await saveModel(updatedModel);
@@ -143,17 +140,15 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
         </button>
       </div>
 
-      <div className='mt-2 flex space-x-2'>
-        <Textarea
-          id='description'
-          className='ml-2 w-1/3'
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder={t('form_label_model_description')}
-        />
-        <div className='flex w-2/3 flex-col justify-center space-y-2'>
+      <div className='mt-2 flex w-full justify-center'>
+        <div className='flex w-2/3 flex-col justify-center gap-2'>
           <Label htmlFor='prompt'>{t('form_label_model_prompt')}</Label>
-          <Textarea id='prompt' value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+          <Textarea
+            id='prompt'
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            className='min-h-40'
+          />
         </div>
       </div>
 

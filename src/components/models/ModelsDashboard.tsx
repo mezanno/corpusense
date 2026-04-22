@@ -18,17 +18,17 @@ const ModelsDashboard = ({
   const { models } = useModels();
 
   return (
-    <ScrollArea className='space-y-1'>
-      <div className='flex space-x-2'>
+    <ScrollArea className='h-full space-y-1'>
+      <div className='flex flex-col space-y-2'>
         <Card className='card-model border-dashed' onClick={openCreateModelDialog}>
           <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
-            <Plus size={48} />
+            <Plus size={24} />
             <span className='text-center'>{t('btn_create_model')}</span>
           </CardContent>
         </Card>
         <Card className='card-model border-dashed' onClick={openImportModelDialog}>
           <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
-            <Download size={48} />
+            <Download size={24} />
             <span className='text-center'>{t('btn_import_model')}</span>
           </CardContent>
         </Card>
@@ -42,7 +42,7 @@ const ModelsDashboard = ({
           />
         ))}
       </div>
-      <ScrollBar orientation='horizontal' />
+      <ScrollBar orientation='vertical' />
     </ScrollArea>
   );
 };

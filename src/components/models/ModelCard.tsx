@@ -51,7 +51,7 @@ export function ModelCard({
     >
       {/* <CardHeader className='overflow-hidden'>{model.name}</CardHeader> */}
       <CardContent className='flex flex-col justify-center'>
-        <h3 className='font-bold wrap-break-word' title={model.name}>
+        <h3 className='text-center font-bold wrap-break-word' title={model.name}>
           {model.name}
           {/* <ReactJsonView
             src={JSON.parse(generateSchema(model)) as object}
