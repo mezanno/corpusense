@@ -15,6 +15,6 @@ export class IndexedDBModelLiveRepository implements ModelLiveRepository {
   }
 
   getAll(): () => Promise<DataModel[]> {
-    return () => db.models.toArray();
+    return () => db.models.orderBy('name').toArray();
   }
 }
