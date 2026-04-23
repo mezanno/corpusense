@@ -338,7 +338,7 @@
   "info_dimensions": "Dimensions (L x H) : {{width}} x {{height}}",
   "info_surface": "Surface : {{surface}}",
   "info_parent": "Parent : {{parentId}}",
-  "info_results_available": "Des résultats sont disponibles !",
+  "info_results_available": "Résultats disponibles !",
   "info_ocr_available": "Des résultats OCR sont présents dans cette collection.",
   "info_lllm_available": "Des données structurées sont présentes dans cette collection.",
   "info_no_results": "Aucun résultat trouvé",

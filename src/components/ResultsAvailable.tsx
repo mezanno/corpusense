@@ -30,9 +30,9 @@ const ResultsAvailable = ({ scope }: { scope: Scope }) => {
   return (
     <div className='soft-button mr-2'>
       <DropdownMenu>
-        <DropdownMenuTrigger className='flex gap-2'>
-          <Download />
-          {t('info_results_available')}
+        <DropdownMenuTrigger className='flex items-center gap-2'>
+          <Download size={18} />
+          <span className='text-sm'>{t('info_results_available')}</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {workersWithResults
