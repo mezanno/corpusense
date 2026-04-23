@@ -17,6 +17,8 @@ import 'gridstack/dist/gridstack.min.css';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import LlmStatus from './collectionPage/LlmStatus';
+import OcrStatus from './collectionPage/OcrStatus';
 import { useCollectionInspectorContext } from './reducers/CollectionInspectorContext';
 import ResultsAvailable from './ResultsAvailable';
 
@@ -138,7 +140,11 @@ const CollectionInspectorContent = ({
               {collection.content.length > 0 && (
                 <div className='flex w-full items-center justify-between'>
                   <CollectionToolbar collection={collection} />
-                  <ResultsAvailable scope={currentCollectionScope} />
+                  <div className='flex items-center gap-2'>
+                    <OcrStatus collectionId={collectionId} />
+                    <LlmStatus collectionId={collectionId} />
+                    <ResultsAvailable scope={currentCollectionScope} />
+                  </div>
                 </div>
               )}
               <div className='panel h-full w-full overflow-hidden'>
