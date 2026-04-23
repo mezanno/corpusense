@@ -198,6 +198,7 @@ const CollectionInspectorContent = ({
                                       <GridThumb
                                         canvas={gtCanvas}
                                         collectionId={collection.id}
+                                        collectionContentIndex={index}
                                         thumbWidth={virtualColumn.size}
                                         thumbHeight={virtualRow.size}
                                         setCanvasToDisplay={setCanvasToDisplay}
