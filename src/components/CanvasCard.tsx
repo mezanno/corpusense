@@ -18,6 +18,7 @@ import { useCanvasSelection } from '@/hooks/useCanvasSelection';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import { ScrollArea } from './ui/scroll-area';
 
 interface CanvasCardProps {
   index: number;
@@ -179,14 +180,16 @@ const CanvasCard = ({
                     {t('menu_add_selection_to_collection')}
                   </ContextMenuSubTrigger>
                   <ContextMenuSubContent>
-                    {collections.map((col) => (
-                      <ContextMenuItem
-                        key={col.id}
-                        onClick={() => handleAddSelectionToCollection(col.id)}
-                      >
-                        {col.name}
-                      </ContextMenuItem>
-                    ))}
+                    <ScrollArea className='h-96'>
+                      {collections.map((col) => (
+                        <ContextMenuItem
+                          key={col.id}
+                          onClick={() => handleAddSelectionToCollection(col.id)}
+                        >
+                          {col.name}
+                        </ContextMenuItem>
+                      ))}
+                    </ScrollArea>
                   </ContextMenuSubContent>
                 </ContextMenuSub>
               )}
