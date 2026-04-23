@@ -15,7 +15,7 @@ import { getImageForThumbnail, getLabel, getObjectUrl } from '@/data/utils/canva
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import useDialog from '@/hooks/ui/useDialog';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { ScrollArea } from './ui/scroll-area';
@@ -53,6 +53,11 @@ const CanvasCard = ({
   const [thumbnail, setThumbnail] = useState<IIIFExternalWebResource[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { openNewCollectionDialog } = useDialog();
+  const [search, setSearch] = useState<string>('');
+
+  const filteredCollections = useMemo(() => {
+    return collections.filter((col) => col.name.toLowerCase().includes(search.toLowerCase()));
+  }, [collections, search]);
 
   useEffect(() => {
     const fetchThumbnail = async () => {
@@ -180,8 +185,18 @@ const CanvasCard = ({
                     {t('menu_add_selection_to_collection')}
                   </ContextMenuSubTrigger>
                   <ContextMenuSubContent>
+                    <div className='p-2'>
+                      <input
+                        type='text'
+                        placeholder={t('form_placeholder_search_collection')}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className='w-full rounded-md border px-2 py-1 text-sm'
+                        autoFocus={true}
+                      />
+                    </div>
                     <ScrollArea className='h-96'>
-                      {collections.map((col) => (
+                      {filteredCollections.map((col) => (
                         <ContextMenuItem
                           key={col.id}
                           onClick={() => handleAddSelectionToCollection(col.id)}
@@ -189,11 +204,15 @@ const CanvasCard = ({
                           {col.name}
                         </ContextMenuItem>
                       ))}
+                      {filteredCollections.length === 0 && (
+                        <div className='p-2 text-sm text-muted-foreground'>
+                          {t('info_no_results')}
+                        </div>
+                      )}
                     </ScrollArea>
                   </ContextMenuSubContent>
                 </ContextMenuSub>
               )}
-
               <ContextMenuSeparator />
             </>
           )}
