@@ -1,5 +1,6 @@
 import { CollectionDetails } from '@/data/models/Collection';
 import useDialog from '@/hooks/ui/useDialog';
+import { CheckedState } from '@radix-ui/react-checkbox';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,10 +14,13 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { DownloadIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/button';
+import { Checkbox } from '../ui/checkbox';
+import { Field } from '../ui/field';
 import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 import {
   Table,
   TableBody,
@@ -56,20 +60,61 @@ const CollectionDataTable = ({ data, columns }: CollectionDataTableProps) => {
   });
   const { openExportCollectionDialog } = useDialog();
 
+  const savedRememberFilter = localStorage.getItem('collectionTableRememberFilter') === 'true';
+  const [rememberChecked, setRememberChecked] = useState(savedRememberFilter);
+
+  useEffect(() => {
+    if (rememberChecked) {
+      const savedFilter = localStorage.getItem('collectionTableFilter') ?? '';
+      table.getColumn('name')?.setFilterValue(savedFilter);
+    }
+  }, []);
+
   const handleExport = () => {
     const selectedCollectionIds = table.getSelectedRowModel().rows.map((row) => row.original.id);
     openExportCollectionDialog(selectedCollectionIds);
   };
 
+  const handleOnRememberFilterChange = (checked: CheckedState) => {
+    setRememberChecked(checked === true);
+    const rememberFilter = checked === true;
+    if (rememberFilter) {
+      localStorage.setItem(
+        'collectionTableFilter',
+        table.getColumn('name')?.getFilterValue() as string,
+      );
+    } else {
+      localStorage.removeItem('collectionTableFilter');
+    }
+    localStorage.setItem('collectionTableRememberFilter', rememberFilter.toString());
+  };
+
+  const handleFilterValueChange = (value: string) => {
+    table.getColumn('name')?.setFilterValue(value);
+    if (rememberChecked) {
+      localStorage.setItem('collectionTableFilter', value);
+    }
+  };
+
   return (
     <div className='flex h-full min-h-0 w-full flex-col gap-2'>
       <div className='flex items-center justify-between'>
-        <Input
-          placeholder={t('form_label_filter_collection_table')}
-          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-          onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
-          className='max-w-sm'
-        />
+        <div className='flex gap-2'>
+          <Input
+            placeholder={t('form_label_filter_collection_table')}
+            value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+            onChange={(event) => handleFilterValueChange(event.target.value)}
+            className='max-w-sm'
+          />
+          <Field orientation='horizontal'>
+            <Checkbox
+              onCheckedChange={handleOnRememberFilterChange}
+              checked={rememberChecked}
+              // onCheckedChange={setRememberChecked}
+            />
+            <Label>{t('form_label_remember_filter')}</Label>
+          </Field>
+        </div>
         {table.getFilteredSelectedRowModel().rows.length > 0 && (
           <Button
             onClick={handleExport}
