@@ -7,7 +7,7 @@ import { CollectionLiveRepository } from './types.live';
 
 export class IndexedDBCollectionLiveRepository implements CollectionLiveRepository {
   getAllDetails(): () => Promise<CollectionDetails[]> {
-    return () => db.collections.toArray();
+    return () => db.collections.orderBy('name').toArray();
   }
 
   getAllDetailsByIds(ids: string[]): () => Promise<CollectionDetails[]> {
