@@ -8,15 +8,15 @@ import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { analogue } from 'simpler-color';
 import { v4 as uuid } from 'uuid';
-import { useAlertDialogContext } from './reducers/useAlertDialogContext';
-import { ColorPicker } from './textviewer/ColorPicker';
-import { Checkbox } from './ui/checkbox';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { ScrollArea } from './ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Textarea } from './ui/textarea';
+import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
+import { ColorPicker } from '../textviewer/ColorPicker';
+import { Checkbox } from '../ui/checkbox';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { ScrollArea } from '../ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { Textarea } from '../ui/textarea';
 
 const baseColor = '#a4d6f6';
 
@@ -164,6 +164,7 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
                       <TableHead className='w-1/12'>{t('table_col_title_type')}</TableHead>
                       <TableHead className='w-1/12'>{t('table_col_title_isArray')}</TableHead>
                       <TableHead className='w-1/12'>{t('table_col_title_ia')}</TableHead>
+                      <TableHead className='w-1/12'>{t('table_col_title_previousValue')}</TableHead>
                       <TableHead className='w-5/12'>{t('table_col_title_description')}</TableHead>
                       <TableHead className='w-1/12'>{t('table_col_title_color')}</TableHead>
                       <TableHead className='w-1/12'>{t('table_col_title_actions')}</TableHead>
@@ -210,6 +211,14 @@ const ModelViewer = ({ modelId }: { modelId: string }) => {
                             checked={field.generated ?? false}
                             onCheckedChange={(checked) =>
                               updateFields(index, { generated: Boolean(checked) })
+                            }
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Checkbox
+                            checked={field.getPreviousValue ?? false}
+                            onCheckedChange={(checked) =>
+                              updateFields(index, { getPreviousValue: Boolean(checked) })
                             }
                           />
                         </TableCell>
