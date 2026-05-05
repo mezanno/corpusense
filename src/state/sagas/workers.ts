@@ -164,6 +164,13 @@ function* startWorker(
           id: index,
           scope: { collectionId: collectionId, canvasId: canvas.id },
           status: WorkerStatus.WAITING,
+          previousTask:
+            index > 0
+              ? {
+                  workerId: currentWorker!.id,
+                  taskId: index - 1, //the previous task is the previous canvas in the queue
+                }
+              : undefined,
         }));
 
         yield call([workerRepository, workerRepository.patch], currentWorker.id, {

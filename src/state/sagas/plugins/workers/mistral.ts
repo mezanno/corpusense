@@ -6,12 +6,13 @@ import {
   getCollectionRepository,
   getModelRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
+import { IndexedDBResultRepository } from '@/data/repositories/indexeddb/results';
 import { toGallicaUrl } from '@/data/utils/canvas';
 import {
   generateNumberedTextForCollection,
   generateNumberedTextFromCanvas,
 } from '@/data/utils/export';
-import { generateSchema } from '@/data/utils/model';
+import { generateSchema, hasPreviousValueField } from '@/data/utils/model';
 import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
@@ -93,7 +94,25 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
   }
 
-  const prompt = model.prompt.replace('{{schema}}', generateSchema(model));
+  const modelHasPreviousValueField = hasPreviousValueField(model);
+  let lastValue = undefined;
+  if (modelHasPreviousValueField && task.previousTask !== undefined) {
+    //fetch the last result for this worker to get the previous value for fields that have getPreviousValue set to true
+    const resultRepository = new IndexedDBResultRepository();
+    const result = await resultRepository.getResultByWorkerIdAndTaskId(
+      task.previousTask.workerId,
+      task.previousTask.taskId,
+    );
+    const previousResult = JSON.parse(result.value as string) as unknown;
+    if (Array.isArray(previousResult)) {
+      lastValue = previousResult[previousResult.length - 1] as unknown; //on prend la dernière entrée si le résultat est un tableau
+    } else {
+      lastValue = previousResult;
+    }
+  }
+  console.log('previousResult: ', lastValue);
+
+  const prompt = model.prompt.replace('{{schema}}', generateSchema(model, lastValue));
   const mistralModel = localStorage.getItem('mistralModel') ?? 'mistral-medium-latest';
   console.log('prompt: ', prompt);
 
