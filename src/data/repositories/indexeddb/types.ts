@@ -120,6 +120,7 @@ export interface ResultRepository {
   // getAllByWorkerName(workerName: string): Promise<Result[]>;
   getAllByWorkerId(workerId: string): Promise<Result[]>;
   getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result>;
+  getResultByWorkerIdAndTaskId(workerId: string, taskId: number): Promise<Result>;
 
   add(result: ResultCreateDTO): Promise<Result>;
   addAll(results: Result[]): Promise<void>;

@@ -18,6 +18,10 @@ export interface Task {
   scope: Scope;
   status: WorkerStatus;
   statusMessage?: string; //optional message to display in the UI
+  previousTask?: {
+    workerId: string;
+    taskId: number;
+  };
 }
 
 export interface Worker {

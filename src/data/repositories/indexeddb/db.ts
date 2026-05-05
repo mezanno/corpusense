@@ -49,7 +49,7 @@ db.version(1).stores({
   annotationsTemp:
     '&id, canvasId, collectionId, [canvasId+collectionId], order, [canvasId+collectionId+type]',
   namedEntities: '&id, *annotationIds, type.id',
-  results: '++id, workerName, workerId, [scopeKey+workerName], taskId',
+  results: '++id, workerName, workerId, [scopeKey+workerName], taskId, [workerId+taskId]',
   workers: '&id, name, status, [scopeKey+name]',
   handles: '&id',
   convertedFiles: '&id, folderName',
