@@ -1,6 +1,5 @@
 import { isCollectionScope, Scope } from '@/data/models/Scope';
 import { Worker, WorkerCreateDTO, WorkerStatus } from '@/data/models/Worker';
-import { v4 as uuid } from 'uuid';
 import { db } from './db';
 import { WorkerRepository } from './types';
 import { computeScopeKey } from './utils';
@@ -35,7 +34,6 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
   async add(worker: WorkerCreateDTO): Promise<Worker> {
     const newWorker: Worker = {
       ...worker,
-      id: uuid(),
       scopeKey: computeScopeKey(worker.scope),
       status: WorkerStatus.INPROGRESS,
       createdAt: new Date().toISOString(),

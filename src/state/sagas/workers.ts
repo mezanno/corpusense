@@ -31,6 +31,7 @@ import {
   take,
   takeEvery,
 } from 'redux-saga/effects';
+import { v4 as uuid } from 'uuid';
 import { pushError, pushInfo } from '../reducers/events';
 import {
   recoverWorkerRequest,
@@ -53,6 +54,7 @@ function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPaylo
 
   //when starting a new worker, we create a new WorkerCreateDTO
   const worker = {
+    id: uuid(),
     name: workerName,
     scope,
     params,
@@ -64,8 +66,21 @@ function* handleRecoverWorker(action: PayloadAction<Worker>) {
   const worker = action.payload;
   yield call(forkStartWorker, worker);
 }
-
 type WorkerForkRaceResult = { stopped?: unknown; completed?: unknown };
+
+const isStopWorkerAction = (action: unknown): action is PayloadAction<Worker> => {
+  return (
+    typeof action === 'object' &&
+    action !== null &&
+    'type' in action &&
+    action.type === stopWorkerProcessRequest.type &&
+    'payload' in action &&
+    typeof action.payload === 'object' &&
+    action.payload !== null &&
+    'id' in action.payload &&
+    typeof action.payload.id === 'string'
+  );
+};
 /**
  * This function is used to fork the startWorker saga.
  * It is used to start a worker process in the background.
@@ -76,8 +91,9 @@ function* forkStartWorker(worker: Worker | WorkerCreateDTO): Generator<Effect, v
   console.log(`Starting worker: ${worker.name} with scope: ${toString(worker.scope)}`);
   const task: TaskSaga = (yield fork(startWorker, worker)) as TaskSaga;
   const result = (yield race({
-    stopped: take(stopWorkerProcessRequest.type),
-    // completed: take(processSuccess.type),
+    stopped: take(
+      (action: unknown) => isStopWorkerAction(action) && action.payload.id === worker.id,
+    ),
   })) as WorkerForkRaceResult;
   console.log(`Worker ${worker.name} finished with result:`, result);
   if ('stopped' in result) {

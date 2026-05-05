@@ -45,6 +45,7 @@ export interface WorkerResponse {
 }
 
 export interface WorkerCreateDTO {
+  id: string;
   name: string;
   scope: Scope;
   params: unknown;
