@@ -392,7 +392,7 @@
   "oups": "Oups !",
   "attention": "Attention !",
   "ia_generated": ". Générée par IA.",
-  "previous_value_description": "Si aucune valeur n'est indiquée pour ce champ, tu utiliseras la valeur précédente : {{previousValue}}.",
+  "previous_value_description": "Si aucune nouvelle valeur n'est indiquée au début du texte envoyé, tu appliqueras obligatoirement la valeur suivante : {{previousValue}}.",
   "worker_status_waiting": "En attente",
   "worker_status_inprogress": "En cours",
   "worker_status_inprogress_with_errors": "En cours (avec erreurs)",
