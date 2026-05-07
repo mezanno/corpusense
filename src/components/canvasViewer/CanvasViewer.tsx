@@ -29,6 +29,7 @@ const CanvasViewer = ({
   const [showText, setShowText] = useState(false);
   const [showModifiers, setShowModifiers] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null); // ID of hovered annotation (in text view)
+  const [annotationScale, setAnnotationScale] = useState(1);
 
   const toggleAnnotations = () => {
     setShowAnnotations(!showAnnotations);
@@ -57,6 +58,8 @@ const CanvasViewer = ({
             showText={showText}
             showModifiers={showModifiers}
             toggleMoidifiers={toggleModifiers}
+            annotationScale={annotationScale}
+            setAnnotationScale={setAnnotationScale}
           />
         )}
         <div className='flex min-h-0 flex-1'>
@@ -93,6 +96,7 @@ const CanvasViewer = ({
                 collectionId={collectionId}
                 showAnnotations={showAnnotations}
                 setMode={setMode}
+                annotationScale={annotationScale}
               />
             )}
           </div>

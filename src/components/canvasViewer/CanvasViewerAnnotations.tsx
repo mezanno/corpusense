@@ -1,4 +1,5 @@
 import { Annotation, getAnnotationType, isAnnotation } from '@/data/models/Annotation';
+import { scale, scaleAnnotation } from '@/data/utils/annotations';
 import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import {
   AnnotoriousOpenSeadragonAnnotator,
@@ -18,11 +19,13 @@ const CanvasViewerAnnotations = ({
   collectionId,
   showAnnotations,
   setMode,
+  annotationScale,
 }: {
   canvas: Canvas;
   collectionId: string;
   showAnnotations: boolean;
   setMode: (mode: CanvasViewerMode) => void;
+  annotationScale: number;
 }) => {
   const { selected } = useSelection(); //the annotation(s) selected in the annotorious viewer
   const anno = useAnnotator<AnnotoriousOpenSeadragonAnnotator>(); //useRef perd la référence lors des opérations de suppression...
@@ -34,6 +37,8 @@ const CanvasViewerAnnotations = ({
 
   useEffect(() => {
     if (anno !== null) {
+      console.log('new canvas');
+
       anno.clearAnnotations();
       isNewCanvas.current = true;
     }
@@ -47,10 +52,14 @@ const CanvasViewerAnnotations = ({
         try {
           //if the annotation is already in annotorious, update it
           if (existing) {
+            console.log('updating ', annotation);
+
             anno.updateAnnotation(annotation);
           } else {
             //if the annotation is not already in annotorious, add it
-            anno.addAnnotation(annotation);
+            const scaledAnnotation = scaleAnnotation(annotation, annotationScale);
+            anno.addAnnotation(scaledAnnotation);
+            // anno.addAnnotation(annotation);
           }
         } catch (e) {
           console.error(`Error ${existing ? 'updating' : 'adding'} annotation`, e);
@@ -107,7 +116,9 @@ const CanvasViewerAnnotations = ({
 
     if (isNewCanvas.current && annotationsInStore !== undefined) {
       //initializing Annototious with the annotations in the store
-      anno.setAnnotations(annotationsInStore);
+      const scaledAnnotations = scale(annotationsInStore, annotationScale);
+      anno.setAnnotations(scaledAnnotations);
+      // anno.setAnnotations(annotationsInStore);
       isNewCanvas.current = false;
     }
 
