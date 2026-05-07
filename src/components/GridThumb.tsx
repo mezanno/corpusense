@@ -137,7 +137,9 @@ const GridThumb = ({
         )
       )}
       <div className='flex w-full justify-between p-1 text-xs'>
-        {canvas.label !== undefined && canvas.label !== null && <span>{getLabel(canvas)}</span>}
+        {canvas.label !== undefined && canvas.label !== null && (
+          <span className='truncate'>{getLabel(canvas)}</span>
+        )}
         <span className='text-dark-slate-gray-300 italic'>{canvasItemId}</span>
       </div>
       <WorkerStatusIcon scope={scope} />
