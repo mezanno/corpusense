@@ -15,6 +15,7 @@ import { getImageForThumbnail, getLabel, getObjectUrl } from '@/data/utils/canva
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import useDialog from '@/hooks/ui/useDialog';
 import { useCanvasSelection } from '@/hooks/useCanvasSelection';
+import { truncateMiddle } from '@/utils/utils';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutoSizer from 'react-virtualized-auto-sizer';
@@ -165,7 +166,7 @@ const CanvasCard = ({
               )}
               <div className='flex w-full justify-between p-1 text-xs'>
                 {canvas.label !== undefined && canvas.label !== null && (
-                  <span>{getLabel(canvas)}</span>
+                  <span>{truncateMiddle(getLabel(canvas))}</span>
                 )}
                 <span className='text-dark-slate-gray-300 italic'>{canvasItemId}</span>
               </div>
