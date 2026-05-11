@@ -1,8 +1,8 @@
 import { Input } from '@/components/ui/input';
 import { useCollectionIO } from '@/hooks/data/collections/useCollectionIO';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { zodResolver } from '@hookform/resolvers/zod';
 import i18n from '@/i18n';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -82,7 +82,7 @@ const ImportCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
               <FormControl>
                 <Input
                   type='file'
-                  accept='application/json, application/zip'
+                  accept='.json,.zip,application/json,application/zip'
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     field.onChange(file);
