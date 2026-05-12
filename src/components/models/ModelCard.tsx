@@ -3,7 +3,7 @@ import { useModelIO } from '@/hooks/data/models/useModelIO';
 import { Download, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAlertDialogContext } from '../reducers/useAlertDialogContext';
-import { Card, CardContent, CardFooter } from '../ui/card';
+import { Card, CardContent } from '../ui/card';
 // import ReactJsonView from '@microlink/react-json-view';
 
 export function ModelCard({
@@ -45,39 +45,33 @@ export function ModelCard({
 
   return (
     <Card
-      className={`card-model flex flex-col justify-evenly overflow-hidden ${model.id === selectedModelId ? 'bg-white' : 'bg-white/50'} `}
+      className={`card-model flex w-full max-w-[300px] flex-col justify-evenly overflow-hidden p-2 ${model.id === selectedModelId ? 'bg-white' : 'bg-white/50'} `}
       onClick={() => setSelectedModelId(model.id)}
       style={{ cursor: 'pointer' }}
     >
-      {/* <CardHeader className='overflow-hidden'>{model.name}</CardHeader> */}
-      <CardContent className='flex flex-col justify-center'>
-        <h3 className='text-center font-bold wrap-break-word' title={model.name}>
+      <CardContent className='flex w-full justify-between gap-1'>
+        <h3 className='truncate text-left text-sm font-bold' title={model.name}>
           {model.name}
-          {/* <ReactJsonView
-            src={JSON.parse(generateSchema(model)) as object}
-            collapsed={1}
-            enableClipboard={false}
-          /> */}
         </h3>
+        <div className='flex gap-x-1'>
+          <div
+            onClick={handleRemoveConvertedFile}
+            title={t('btn_delete')}
+            aria-label={t('btn_delete')}
+            className='cursor-pointer text-red-400 hover:text-red-600'
+          >
+            <Trash2 size={20} />
+          </div>
+          <div
+            onClick={handleDownloadModel}
+            title={t('btn_download_model')}
+            aria-label={t('btn_download_model')}
+            className='cursor-pointer text-black/50 hover:text-black'
+          >
+            <Download size={20} />
+          </div>
+        </div>
       </CardContent>
-      <CardFooter className='flex justify-end space-x-2'>
-        <div
-          onClick={handleRemoveConvertedFile}
-          title={t('btn_delete')}
-          aria-label={t('btn_delete')}
-          className='cursor-pointer text-red-400 hover:text-red-600'
-        >
-          <Trash2 size={20} />
-        </div>
-        <div
-          onClick={handleDownloadModel}
-          title={t('btn_download_model')}
-          aria-label={t('btn_download_model')}
-          className='cursor-pointer text-black/50 hover:text-black'
-        >
-          <Download size={20} />
-        </div>
-      </CardFooter>
     </Card>
   );
 }

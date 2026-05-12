@@ -18,20 +18,22 @@ const ModelsDashboard = ({
   const { models } = useModels();
 
   return (
-    <ScrollArea className='h-full space-y-1'>
-      <div className='flex flex-col space-y-2'>
-        <Card className='card-model border-dashed' onClick={openCreateModelDialog}>
-          <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
-            <Plus size={24} />
-            <span className='text-center'>{t('btn_create_model')}</span>
-          </CardContent>
-        </Card>
-        <Card className='card-model border-dashed' onClick={openImportModelDialog}>
-          <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
-            <Download size={24} />
-            <span className='text-center'>{t('btn_import_model')}</span>
-          </CardContent>
-        </Card>
+    <ScrollArea className='h-full w-full pr-3'>
+      <div className='flex w-full flex-col space-y-2'>
+        <div className='flex gap-1'>
+          <Card className='card-model w-1/2 border-dashed p-1' onClick={openCreateModelDialog}>
+            <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
+              <Plus size={20} />
+              <span className='text-center text-sm'>{t('btn_create_model')}</span>
+            </CardContent>
+          </Card>
+          <Card className='card-model w-1/2 border-dashed' onClick={openImportModelDialog}>
+            <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
+              <Download size={20} />
+              <span className='text-center text-sm'>{t('btn_import_model')}</span>
+            </CardContent>
+          </Card>
+        </div>
 
         {models.map((m) => (
           <ModelCard
