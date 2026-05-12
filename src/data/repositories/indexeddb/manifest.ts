@@ -4,9 +4,9 @@ import {
   extractCanvasesByIds,
   extractManifestDetails,
 } from '@/data/utils/manifest';
+import i18n from '@/i18n';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas, Manifest } from '@iiif/presentation-3';
-import i18next from 'i18next';
 import { db } from './db';
 import { ManifestRepository } from './types';
 
@@ -20,7 +20,7 @@ export class IndexedDBManifestRepository implements ManifestRepository {
       const manifest = await this.getById(manifestId);
       return extractCanvasById(manifest, canvasId);
     } catch (error) {
-      // throw new Error(i18next.t('error_canvas_not_found'));
+      // throw new Error(i18n.t('error_canvas_not_found'));
       throw new Error(getErrorMessage(error));
     }
   }
@@ -28,26 +28,21 @@ export class IndexedDBManifestRepository implements ManifestRepository {
   async getCanvasesByIds(manifestId: string, canvasIds: string[]): Promise<Canvas[]> {
     try {
       const manifest = await this.getById(manifestId);
-      const canvases = extractCanvasesByIds(manifest, canvasIds);
-      if (canvases?.length > 0) {
-        return canvases;
-      }
+      return extractCanvasesByIds(manifest, canvasIds);
     } catch (error) {
-      // throw new Error(i18next.t('error_canvas_not_found'));
       throw new Error(getErrorMessage(error));
     }
-    throw new Error(i18next.t('error_canvas_not_found'));
   }
 
   async getById(manifestId: string): Promise<Manifest> {
     try {
       const manifestContent = await db.storedManifestContents.get(manifestId);
       if (!manifestContent) {
-        throw new Error(i18next.t('error_manifest_not_found_storage'));
+        throw new Error(i18n.t('error_manifest_not_found_storage'));
       }
       return manifestContent.content;
     } catch (error) {
-      // throw new Error(i18next.t('error_manifest_not_found'));
+      // throw new Error(i18n.t('error_manifest_not_found'));
       throw new Error(getErrorMessage(error));
     }
   }

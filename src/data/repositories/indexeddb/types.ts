@@ -1,9 +1,12 @@
 import { Annotation, AnnotationDTO, ElementType } from '@/data/models/Annotation';
 import { Collection, CollectionDetails } from '@/data/models/Collection';
 import { CollectionElement } from '@/data/models/CollectionElement';
+import { ConvertedFile } from '@/data/models/ConvertedFile';
 import { DataModel } from '@/data/models/DataModel';
+import { FSHandle } from '@/data/models/FSHandle';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
+import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
 import { NamedEntity } from '@/data/models/NamedEntity';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { AnnotationScope, CanvasScope, Scope } from '@/data/models/Scope';
@@ -17,16 +20,24 @@ export interface AnnotationRepository {
   getByScope(scope: Scope): Promise<Annotation[]>;
   getByScopeAndTypes(scope: Scope, types: ElementType[]): Promise<Annotation[]>;
   getNextOrderByScopeAndType(scope: Scope, type: ElementType): Promise<number>;
+  getParent(annotation: Annotation): Promise<Annotation | null>;
 
   addAll(annotations: AnnotationDTO[]): Promise<Annotation[]>;
 
   deleteById(id: string): Promise<void>;
   deleteByIds(ids: string[]): Promise<string[]>;
   deleteByScope(scope: Scope): Promise<string[]>;
-  deleteByScopeAndType(scope: Scope, types: ElementType[]): Promise<string[]>;
+  deleteByScopeAndType(scope: Scope, types: ElementType[], isTemp: boolean): Promise<string[]>;
 
   update(annotation: Annotation): Promise<Annotation[]>;
   updateOrder(annotationId: string, order: number): Promise<Annotation[]>;
+}
+
+export interface AnnotationTempRepository {
+  getAll(): Promise<Annotation[]>;
+  getByCanvas(scope: CanvasScope): Promise<Annotation[]>;
+  addAll(annotations: AnnotationDTO[]): Promise<Annotation[]>;
+  deleteByCollection(collectionId: string): Promise<void>;
 }
 
 export interface CollectionRepository {
@@ -41,6 +52,7 @@ export interface CollectionRepository {
 
   create(collection: Collection): Promise<void>;
   addContentToCollection(collection: Collection): Promise<void>;
+  duplicate(collectionId: string, newName: string): Promise<void>;
 
   update(
     id: string,
@@ -108,6 +120,7 @@ export interface ResultRepository {
   // getAllByWorkerName(workerName: string): Promise<Result[]>;
   getAllByWorkerId(workerId: string): Promise<Result[]>;
   getByScopeAndWorkerName(scope: Scope, workerName: string): Promise<Result>;
+  getResultByWorkerIdAndTaskId(workerId: string, taskId: number): Promise<Result>;
 
   add(result: ResultCreateDTO): Promise<Result>;
   addAll(results: Result[]): Promise<void>;
@@ -117,6 +130,7 @@ export interface ResultRepository {
 
 export interface WorkerRepository {
   getAll(): Promise<Worker[]>;
+  getById(id: string): Promise<Worker>;
   getByScope(scope: Scope, subScope: boolean): Promise<Worker[]>;
   getByNameAndScope(workerName: string, scope: Scope): Promise<Worker | undefined>;
 
@@ -129,4 +143,30 @@ export interface WorkerRepository {
   deleteById(workerId: string): Promise<void>;
   deleteByScope(scope: Scope): Promise<string[]>;
   deleteResultById(workerId: string, taskId: number): Promise<void>;
+}
+
+export interface FSHandleRepository {
+  getAll(): Promise<FSHandle[]>;
+  put(handle: FSHandle): Promise<void>;
+}
+
+export interface ConvertedFileRepository {
+  getById(id: string): Promise<ConvertedFile>;
+  getByFolderName(folderName: string): Promise<ConvertedFile>;
+
+  add(file: ConvertedFile): Promise<void>;
+
+  delete(id: string): Promise<void>;
+}
+
+export interface ModifierChainRepository {
+  getAll(): Promise<ModifierChainDTO[]>;
+  getById(id: string): Promise<ModifierChainDTO>;
+  getByName(name: string): Promise<ModifierChainDTO | undefined>;
+
+  add(chain: ModifierChainDTO): Promise<void>;
+
+  put(chain: ModifierChainDTO): Promise<void>;
+
+  delete(id: string): Promise<void>;
 }

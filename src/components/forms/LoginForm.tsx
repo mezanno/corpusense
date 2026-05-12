@@ -1,12 +1,10 @@
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { loginRequest } from '@/state/reducers/auth';
-import { selectAuthStatus } from '@/state/selectors/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import { useConnectedUserContext } from '../reducers/ConnectedUserContext';
 import {
   Form,
   FormControl,
@@ -25,8 +23,7 @@ const formSchema = z.object({
 
 const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
-  const authStatus = useAppSelector(selectAuthStatus);
+  const { status, login } = useConnectedUserContext();
   const newlyOpened = useRef(true);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -39,13 +36,13 @@ const LoginForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
   }, [form.formState]);
 
   useEffect(() => {
-    if (!newlyOpened.current && closeDialog && authStatus === 'authenticated') {
+    if (!newlyOpened.current && closeDialog && status === 'authenticated') {
       closeDialog();
     }
-  }, [authStatus]);
+  }, [status]);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    appDispatch(loginRequest({ email: values.email, password: values.password }));
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    await login(values.email, values.password);
     newlyOpened.current = false;
   }
 

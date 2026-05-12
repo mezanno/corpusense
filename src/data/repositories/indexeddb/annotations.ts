@@ -1,5 +1,7 @@
 import { isAnnotationScope, isCanvasScope, Scope } from '@/data/models/Scope';
-import i18next from 'i18next';
+import { containsAtLeast2Corners, getSurface } from '@/data/utils/annotations';
+import i18n from '@/i18n';
+import { ShapeType } from '@annotorious/annotorious';
 import { Annotation, AnnotationDTO, ElementType, getAnnotationType } from '../../models/Annotation';
 import { db } from './db';
 import { AnnotationRepository } from './types';
@@ -8,7 +10,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
   async getById(id: string): Promise<Annotation> {
     const annotation = await db.annotations.get(id);
     if (annotation === undefined) {
-      throw new Error(i18next.t('error_annotation_not_found'));
+      throw new Error(i18n.t('error_annotation_not_found'));
     }
     return annotation;
   }
@@ -45,6 +47,39 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
     return annotations[annotations.length - 1].order + 1;
   }
 
+  /*
+   * This function is used to get the parent annotation of a text line annotation. The parent annotation is the annotation that has the same canvasId and collectionId, and contains at least 2 corners of the given annotation. If there are multiple annotations that satisfy this condition, we return the one that has the smallest area. If there is no annotation that satisfies this condition, we throw an error.
+   */
+  async getParent(annotation: Annotation): Promise<Annotation | null> {
+    if (
+      getAnnotationType(annotation) !== ElementType.TEXT_LINE &&
+      getAnnotationType(annotation) !== ElementType.TEMP
+    ) {
+      throw new Error(i18n.t('error_annotation_not_of_type_text_line'));
+    }
+    const regionAnnotations = await this.getByScopeAndTypes(
+      { collectionId: annotation.collectionId, canvasId: annotation.canvasId },
+      [ElementType.TEXT_REGION],
+    );
+
+    const parent = regionAnnotations.reduce(
+      (closest, current) => {
+        if (containsAtLeast2Corners(current, annotation)) {
+          const currentArea = getSurface(current);
+          const closestArea = closest ? getSurface(closest) : Number.POSITIVE_INFINITY;
+          if (currentArea < closestArea) {
+            return current;
+          }
+        }
+        return closest;
+      },
+      null as Annotation | null,
+    );
+
+    return parent;
+  }
+
+  //TODO! il faut ordonner les annotations par collection et canvas sinon l'ordre sera faux
   async addAll(annotations: AnnotationDTO[]) {
     /* set the order for each annotation. We get the last order for the scope and type, and increment it for each new annotation.
     To optimize it, we order annotations by type and then we loop on each type */
@@ -117,7 +152,7 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
   async updateOrder(annotationId: string, order: number) {
     const annotationToUpdate = await db.annotations.get(annotationId);
     if (annotationToUpdate === undefined) {
-      throw new Error(i18next.t('error_annotation_not_found'));
+      throw new Error(i18n.t('error_annotation_not_found'));
     }
     const actualOrder = annotationToUpdate.order;
     const { canvasId, collectionId } = annotationToUpdate;
@@ -142,6 +177,87 @@ export class IndexedDBAnnotationRepository implements AnnotationRepository {
       await db.annotations.update(annotationId, { order });
     }
     return updatedAnnotations;
+  }
+
+  async mergeAnnotations(annotations: Annotation[]): Promise<void> {
+    if (annotations.length === 0) {
+      return;
+    }
+    //annotations have to be in the same scope
+    const { canvasId } = annotations[0];
+    annotations.forEach((annotation) => {
+      if (annotation.canvasId !== canvasId) {
+        throw new Error(i18n.t('error_annotations_not_in_same_scope'));
+      }
+    });
+
+    //annotations have to be of type TEMP
+    annotations.forEach((annotation) => {
+      if (getAnnotationType(annotation) !== ElementType.TEMP) {
+        throw new Error(i18n.t('error_annotations_not_of_type_temp'));
+      }
+    });
+
+    //create the new annotation
+    //compute the new target by merging the bounds of the annotations
+    const mergedTarget = annotations.reduce(
+      (acc, a) => {
+        const selector = a.target.selector;
+        if (selector.type === ShapeType.RECTANGLE) {
+          const geometry = selector.geometry;
+          acc = {
+            bounds: {
+              minX: Math.min(acc.bounds.minX, geometry.bounds.minX),
+              minY: Math.min(acc.bounds.minY, geometry.bounds.minY),
+              maxX: Math.max(acc.bounds.maxX, geometry.bounds.maxX),
+              maxY: Math.max(acc.bounds.maxY, geometry.bounds.maxY),
+            },
+            h:
+              Math.max(acc.bounds.maxY, geometry.bounds.maxY) -
+              Math.min(acc.bounds.minY, geometry.bounds.minY),
+            w:
+              Math.max(acc.bounds.maxX, geometry.bounds.maxX) -
+              Math.min(acc.bounds.minX, geometry.bounds.minX),
+            x: Math.min(acc.bounds.minX, geometry.bounds.minX),
+            y: Math.min(acc.bounds.minY, geometry.bounds.minY),
+          };
+        }
+
+        return acc;
+      },
+      {
+        bounds: {
+          minX: Number.POSITIVE_INFINITY,
+          minY: Number.POSITIVE_INFINITY,
+          maxX: Number.NEGATIVE_INFINITY,
+          maxY: Number.NEGATIVE_INFINITY,
+        },
+        h: 0,
+        w: 0,
+        x: 0,
+        y: 0,
+      },
+    );
+
+    const newAnnotation: Annotation = {
+      ...annotations[0],
+      id: annotations[0].id,
+      order: Math.min(...annotations.map((annotation) => annotation.order)),
+      target: {
+        ...annotations[0].target,
+        selector: {
+          ...annotations[0].target.selector,
+          geometry: mergedTarget,
+        },
+      },
+    };
+
+    //delete the old annotations and add the new one
+    await db.transaction('rw', db.annotations, async () => {
+      const idsToDelete = annotations.map((annotation) => annotation.id);
+      await db.annotations.bulkDelete(idsToDelete);
+      await db.annotations.add(newAnnotation);
+    });
   }
 
   async deleteByIds(ids: string[]): Promise<string[]> {

@@ -1,12 +1,19 @@
 import { isCollectionScope, Scope } from '@/data/models/Scope';
 import { Worker, WorkerCreateDTO, WorkerStatus } from '@/data/models/Worker';
-import { v4 as uuid } from 'uuid';
 import { db } from './db';
 import { WorkerRepository } from './types';
 import { computeScopeKey } from './utils';
 export class IndexedDBWorkerRepository implements WorkerRepository {
   async getAll(): Promise<Worker[]> {
     return await db.workers.toArray();
+  }
+
+  async getById(id: string): Promise<Worker> {
+    const worker = await db.workers.get(id);
+    if (!worker) {
+      throw new Error(`Worker with id ${id} not found`);
+    }
+    return worker;
   }
 
   async getByScope(scope: Scope, subScope: boolean): Promise<Worker[]> {
@@ -27,7 +34,6 @@ export class IndexedDBWorkerRepository implements WorkerRepository {
   async add(worker: WorkerCreateDTO): Promise<Worker> {
     const newWorker: Worker = {
       ...worker,
-      id: uuid(),
       scopeKey: computeScopeKey(worker.scope),
       status: WorkerStatus.INPROGRESS,
       createdAt: new Date().toISOString(),

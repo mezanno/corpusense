@@ -1,13 +1,13 @@
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useModelIO } from '@/hooks/data/models/useModelIO';
+import { useModels } from '@/hooks/data/models/useModels';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { importModelRequest } from '@/state/reducers/models';
-import { selectModels } from '@/state/selectors/models';
+import i18n from '@/i18n';
 import { zodResolver } from '@hookform/resolvers/zod';
-import i18next from 'i18next';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import { Checkbox } from '../ui/checkbox';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from '../ui/form';
 import { Input } from '../ui/input';
 
@@ -16,21 +16,22 @@ const schema = z.object({
     .instanceof(File)
     .refine(
       (file) => ['application/json'].includes(file.type),
-      i18next.t('error_unsupported_file_type', { types: '.json' }),
+      i18n.t('error_unsupported_file_type', { types: '.json' }),
     ),
+  overwrite: z.boolean().optional(),
 });
 
 const ImportModelForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
+  const { importModel } = useModelIO();
 
   //models and isSubmitted are used to close the dialog when the model is successfully imported
-  const models = useAppSelector(selectModels);
+  const { models } = useModels();
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
-    defaultValues: { file: undefined },
+    defaultValues: { file: undefined, overwrite: false },
     mode: 'onChange',
   });
 
@@ -47,11 +48,11 @@ const ImportModelForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
 
   function onSubmit(values: z.infer<typeof schema>) {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const content = e.target?.result;
       if (typeof content === 'string') {
         const jsonContent = JSON.parse(content) as object;
-        appDispatch(importModelRequest(jsonContent));
+        await importModel(jsonContent, values.overwrite ?? false);
       }
     };
     setIsSubmitted(true);
@@ -82,6 +83,21 @@ const ImportModelForm = ({ formRef, setCanSubmit, closeDialog }: FormProps) => {
                     field.onChange(file);
                   }}
                 />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='overwrite'
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <label className='inline-flex items-center space-x-2'>
+                  <Checkbox onCheckedChange={(checked) => field.onChange(checked)} />
+                  <span>{t('form_label_overwrite_existing_model')}</span>
+                </label>
               </FormControl>
               <FormMessage />
             </FormItem>

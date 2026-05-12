@@ -1,5 +1,5 @@
 import { AnnotationPage, Canvas, Manifest } from '@iiif/presentation-3';
-import i18next from 'i18next';
+import i18n from '@/i18n';
 import {
   Annotation,
   ElementType,
@@ -24,7 +24,7 @@ const generateManifestFromCollection = async (id: string): Promise<ManifestExpor
     const collection = await getCollectionRepository().getById(id);
 
     if (collection.content.length === 0) {
-      throw new Error(i18next.t('error_export_collection_empty', { name: collection.name }));
+      throw new Error(i18n.t('error_export_collection_empty', { name: collection.name }));
     }
 
     const manifestId = 'https://1.rp.mezanno.xyz/toto.json'; //TODO: to be changed
@@ -54,7 +54,7 @@ const generateManifestFromCollection = async (id: string): Promise<ManifestExpor
   } catch (error) {
     //TODO: revoir le type d'erreur
     console.log('error', error);
-    throw new Error(i18next.t('error_export_collection_not_found'));
+    throw new Error(i18n.t('error_export_collection_not_found'));
   }
 };
 
@@ -148,31 +148,78 @@ const generateTextFromCanvas = async (canvasId: string, collectionId: string) =>
   return text;
 };
 
-const generateNumberedTextFromCanvas = async (canvasId: string, collectionId: string) => {
+export type TextWithAnnotationId = { text: string; annotationId: string }[];
+
+const generateTextWithAnnotationIdFromCanvas = async (canvasId: string, collectionId: string) => {
   const annotations = await getAnnotationRepository().getByScope({
     canvasId,
     collectionId,
   });
   if (annotations === undefined || annotations.length === 0) {
     console.log(`No annotations found in canvas ${canvasId}`);
-    return '';
+    return [];
   }
-  let text = '';
+  const text: TextWithAnnotationId = [];
   for (let i = 0; i < annotations.length; i++) {
-    const t = getAnnotationText(annotations[i]);
-    console.log(i, ' : ', t, annotations[i].order);
-
-    if (t !== undefined && t.length > 0) {
-      text = text.concat(`{{${i}}}`).concat(t).concat('\n');
-    }
+    text.push({ text: getAnnotationText(annotations[i]), annotationId: annotations[i].id });
   }
   return text;
+};
+
+const generateNumberedTextFromCanvas = async (
+  canvasId: string,
+  collectionId: string,
+  startTo?: number,
+) => {
+  const annotations = await getAnnotationRepository().getByScope({
+    canvasId,
+    collectionId,
+  });
+  if (annotations === undefined || annotations.length === 0) {
+    console.log(`No annotations found in canvas ${canvasId}`);
+    return { text: '', numLines: 0 };
+  }
+  let text = '';
+  let lineNumber = startTo !== undefined ? startTo : 0;
+  for (let i = 0; i < annotations.length; i++) {
+    const t = getAnnotationText(annotations[i]);
+    console.log(lineNumber, ' : ', t, annotations[i].order);
+
+    if (t !== undefined && t.length > 0) {
+      text = text.concat(`{{${lineNumber}}}`).concat(t).concat('\n');
+      lineNumber++;
+    }
+  }
+  return { text, numLines: lineNumber };
+};
+
+const generateNumberedTextForCollection = async (collectionId: string) => {
+  const canvases = await getCollectionRepository().getCanvasesByCollectionId(collectionId);
+  if (canvases === undefined || canvases.length === 0) {
+    throw new Error(i18n.t('error_export_collection_empty'));
+  }
+
+  let allTheText = '';
+  let lineCount = 0;
+  for (let i = 0; i < canvases.length; i++) {
+    const { text, numLines } = await generateNumberedTextFromCanvas(
+      canvases[i].id,
+      collectionId,
+      lineCount,
+    );
+    lineCount = numLines;
+    if (text !== undefined && text.length > 0) {
+      allTheText = allTheText.concat(text);
+    }
+  }
+
+  return allTheText;
 };
 
 const generateTextForCollection = async (collectionId: string) => {
   const canvases = await getCollectionRepository().getCanvasesByCollectionId(collectionId);
   if (canvases === undefined || canvases.length === 0) {
-    throw new Error(i18next.t('error_export_collection_empty'));
+    throw new Error(i18n.t('error_export_collection_empty'));
   }
 
   let allTheText = '';
@@ -190,8 +237,10 @@ export {
   generateAnnotationPage,
   generateCanvas,
   generateManifestFromCollection,
+  generateNumberedTextForCollection,
   generateNumberedTextFromCanvas,
   generateTextForAnnotation,
   generateTextForCollection,
   generateTextFromCanvas,
+  generateTextWithAnnotationIdFromCanvas,
 };

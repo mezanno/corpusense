@@ -5,6 +5,7 @@ export interface DataField {
   description?: string;
   generated?: boolean;
   isArray?: boolean;
+  getPreviousValue?: boolean;
   color: string;
 }
 

@@ -1,10 +1,10 @@
-import { PluginParams } from '@/state/reducers/workers';
-import { AnnotationScope, CanvasScope, Scope } from './Scope';
+import { Scope } from './Scope';
 
 export enum WorkerStatus {
   ALL = 'all', // Special status to represent all workers
   WAITING = 'waiting', // Worker is waiting to be processed
   INPROGRESS = 'inprogress', // Worker is currently being processed
+  POSTED = 'posted', // Worker has been posted to an external service
   INPROGRESS_WITH_ERRORS = 'inprogress_with_errors', // Worker is being processed but encountered errors
   UNFINISHED = 'unfinished', // Worker has been processed but not completed
   UNFINISHED_WITH_ERRORS = 'unfinished_with_errors', // Worker has been processed but not completed and encountered errors
@@ -15,9 +15,13 @@ export enum WorkerStatus {
 
 export interface Task {
   id: number;
-  scope: CanvasScope | AnnotationScope;
+  scope: Scope;
   status: WorkerStatus;
   statusMessage?: string; //optional message to display in the UI
+  previousTask?: {
+    workerId: string;
+    taskId: number;
+  };
 }
 
 export interface Worker {
@@ -30,7 +34,7 @@ export interface Worker {
   statusMessage?: string; //optional message to display in the UI
   createdAt: string; // ISO date string
   estimatedDuration: number; // ms
-  params: PluginParams;
+  params: unknown;
   queue: Task[];
 }
 
@@ -41,9 +45,10 @@ export interface WorkerResponse {
 }
 
 export interface WorkerCreateDTO {
+  id: string;
   name: string;
   scope: Scope;
-  params: PluginParams;
+  params: unknown;
 }
 
 /*

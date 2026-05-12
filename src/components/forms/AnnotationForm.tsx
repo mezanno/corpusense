@@ -5,23 +5,23 @@ import {
   getAnnotationType,
   getBodies,
 } from '@/data/models/Annotation';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { useModifyAnnotation } from '@/hooks/useSaveAnnotation';
-import { removeAnnotationsInsideRequest } from '@/state/reducers/annotations';
-import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
+import { getDimensions } from '@/data/utils/annotations';
+import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, Trash2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import AnnotationOrderPanel from '../AnnotationOrderPanel';
 import Entities from '../Entities';
+import { useWorkerContext } from '../reducers/WorkerContext';
 import Toolbar from '../ToolBar';
 import { Button } from '../ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Separator } from '../ui/separator';
 import { Textarea } from '../ui/textarea';
 
 const annotationFormSchema = z.object({
@@ -31,17 +31,20 @@ const annotationFormSchema = z.object({
 
 const AnnotationForm = ({
   annotation,
-  handleDelete,
+  lastOrder,
 }: {
   annotation: Annotation;
-  handleDelete: () => void;
+  lastOrder: number;
 }) => {
-  const appDispatch = useAppDispatch();
-  const modifyAnnotation = useModifyAnnotation();
   const { t } = useTranslation();
-  const isWorkerRunning = useAppSelector((state) =>
-    selectIsWorkerOrTaskRunning(state, { collectionId: annotation.collectionId }),
-  );
+  const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({
+    collectionId: annotation.collectionId,
+  });
+  const [parent, setParent] = useState<Annotation | null>(null);
+  const { updateAnnotation, removeAnnotationsByIds, removeAnnotationsInside, getParentAnnotation } =
+    useAnnotationActions();
+
+  const dimensions = getDimensions(annotation);
 
   const form = useForm<z.infer<typeof annotationFormSchema>>({
     resolver: zodResolver(annotationFormSchema),
@@ -51,31 +54,63 @@ const AnnotationForm = ({
     },
   });
 
-  function onSubmit(values: z.infer<typeof annotationFormSchema>) {
-    modifyAnnotation(annotation, values.type, values.value ?? '');
+  async function onSubmit(values: z.infer<typeof annotationFormSchema>) {
+    await updateAnnotation(annotation, values.type, values.value ?? '');
   }
 
   useEffect(() => {
     const { type, value } = getBodies(annotation);
     form.setValue('type', type);
     form.setValue('value', value);
+
+    async function fetchParent() {
+      const p = await getParentAnnotation(annotation);
+      setParent(p);
+    }
+    void fetchParent();
   }, [annotation]);
 
   const handleRemoveAllAnnotationsInside = () => {
-    appDispatch(removeAnnotationsInsideRequest(annotation));
+    void (async () => {
+      await removeAnnotationsInside(annotation);
+    })();
   };
 
   const handleDeleteButton: React.MouseEventHandler<HTMLButtonElement> = (event) => {
     event.preventDefault(); //pour éviter de soumettre le formulaire
-    handleDelete();
+    void (async () => {
+      await removeAnnotationsByIds([annotation.id]); //we don't need to remove the annotation from annotorious (anno.removeAnnotation(id)), it will be removed automatically (when sync with the store)
+    })();
   };
 
   return (
     <section
-      className='panel h-full w-full flex-col shadow-[-8px_0_10px_-8px_rgba(0,0,0,0.3)]'
+      className='panel h-full w-full flex-col space-y-1 shadow-[-8px_0_10px_-8px_rgba(0,0,0,0.3)]'
       aria-label='annotation form'
     >
-      <div className='w-full text-right text-sm font-light'>{annotation.id}</div>
+      <div className='flex w-full flex-col text-right text-sm font-light'>
+        <span>{annotation.id}</span>
+        <span>
+          {t('info_dimensions', {
+            width: dimensions.width.toFixed(),
+            height: dimensions.height.toFixed(),
+          })}
+        </span>
+        <span>
+          {t('info_surface', {
+            surface: (dimensions.width * dimensions.height).toFixed(),
+          })}
+        </span>
+        {parent && (
+          <span>
+            {t('info_parent', {
+              parentId: parent.id.substring(0, 8),
+            })}
+          </span>
+        )}
+      </div>
+
+      <Separator />
       {isWorkerRunning ? (
         <div>
           <strong>{t('info_worker_running')}</strong>
@@ -102,7 +137,7 @@ const AnnotationForm = ({
       )}
       <div className='flex items-center space-x-2 text-sm'>
         {t('form_label_order')}
-        <AnnotationOrderPanel annotation={annotation} />
+        <AnnotationOrderPanel annotation={annotation} lastOrder={lastOrder} />
       </div>
       <Form {...form}>
         <form

@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import ConfigurationPage from '../ConfigurationPage';
+import { renderWithProviders } from '../../__tests__/utils';
 
 const user = userEvent.setup();
 
@@ -17,13 +18,16 @@ describe('ConfigurationPage', () => {
         setItem: vi.fn((key: string, value: string) => {
           localStorageMock[key] = value;
         }),
+        removeItem: vi.fn((key: string) => {
+          delete localStorageMock[key];
+        }),
       },
       writable: true,
     });
   });
 
   it('renders the configuration page with form', () => {
-    render(<ConfigurationPage />);
+    renderWithProviders(<ConfigurationPage />);
 
     expect(screen.getByText('page_title_configuration')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'form_label_mistral_api_key' })).toBeInTheDocument();
@@ -31,7 +35,7 @@ describe('ConfigurationPage', () => {
   });
 
   it('allows entering Mistral API key', async () => {
-    render(<ConfigurationPage />);
+    renderWithProviders(<ConfigurationPage />);
 
     const input = screen.getByRole('textbox', { name: 'form_label_mistral_api_key' });
     await user.type(input, 'test-api-key');
@@ -40,7 +44,7 @@ describe('ConfigurationPage', () => {
   });
 
   it('saves API key to localStorage on form submission', async () => {
-    render(<ConfigurationPage />);
+    renderWithProviders(<ConfigurationPage />);
 
     const input = screen.getByRole('textbox', { name: 'form_label_mistral_api_key' });
     await user.type(input, 'test-api-key');

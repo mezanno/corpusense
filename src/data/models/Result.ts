@@ -1,4 +1,3 @@
-import { PluginParams } from '@/state/reducers/workers';
 import { Scope } from './Scope';
 
 export interface Result {
@@ -9,7 +8,7 @@ export interface Result {
   workerId: string;
   taskId: number;
   value: unknown;
-  params: PluginParams;
+  params: unknown;
 }
 
 export interface ResultCreateDTO {
@@ -18,5 +17,5 @@ export interface ResultCreateDTO {
   workerId: string;
   taskId: number;
   value: unknown;
-  params: PluginParams;
+  params: unknown;
 }

@@ -5,19 +5,27 @@ export const CorpusenseRoutes = {
   COLLECTIONS: 'collections',
   CONFIGURATION: 'configuration',
   MODELS: 'models',
-  STORAGE: 'storage',
+  MODIFIERCHAIN: 'modifier-chain',
+  LOCAL_SOURCES: 'localSources',
+  IIIF_SOURCES: 'iiifSources',
   WORKERS: 'workers',
   DOCUMENTATION: 'doc',
 };
 
+type ManifestParams =
+  | { manifestId: string; indexeddbId?: never }
+  | { indexeddbId: string; manifestId?: never };
+
 const useAppNavigation = () => {
   const navigate = useNavigate();
 
-  const goToManifestExplorer = async (manifestId?: string) => {
-    if (manifestId === undefined) {
-      await navigate(`${CorpusenseRoutes.MANIFEST}`);
+  const goToManifestExplorer = async (manifest?: ManifestParams) => {
+    if (manifest === undefined) {
+      await navigate(`/${CorpusenseRoutes.MANIFEST}`);
+    } else if (manifest.indexeddbId === undefined) {
+      await navigate(`/${CorpusenseRoutes.MANIFEST}?manifestId=${manifest.manifestId}`);
     } else {
-      await navigate(`${CorpusenseRoutes.MANIFEST}?manifestId=${manifestId}`);
+      await navigate(`/${CorpusenseRoutes.MANIFEST}?indexeddbId=${manifest.indexeddbId}`);
     }
   };
   const goToCollectionsManager = async () => {
@@ -32,8 +40,11 @@ const useAppNavigation = () => {
   const goToModelsManager = async () => {
     await navigate(`/${CorpusenseRoutes.MODELS}`);
   };
-  const goToStorage = async () => {
-    await navigate(`/${CorpusenseRoutes.STORAGE}`);
+  const goToModifierChainManager = async () => {
+    await navigate(`/${CorpusenseRoutes.MODIFIERCHAIN}`);
+  };
+  const goToLocalSources = async () => {
+    await navigate(`/${CorpusenseRoutes.LOCAL_SOURCES}`);
   };
   const goToWorkersManager = async () => {
     await navigate(`/${CorpusenseRoutes.WORKERS}`);
@@ -48,7 +59,8 @@ const useAppNavigation = () => {
     goToCollectionInspector,
     goToConfiguration,
     goToModelsManager,
-    goToStorage,
+    goToModifierChainManager,
+    goToLocalSources,
     goToWorkersManager,
     goToDocumentation,
   };

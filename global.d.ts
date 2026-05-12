@@ -1,18 +1,47 @@
 // global.d.ts
-declare global {
-  interface MatchMedia {
-    matches: boolean;
-    addEventListener: (type: string, listener: EventListener) => void;
-    removeEventListener: (type: string, listener: EventListener) => void;
-  }
+// Use this file to extend the global scope if needed.
+// Avoid redefining globalThis as it can conflict with built-in types.
 
-  // Déclarez une signature d'index pour globalThis
-  interface Global {
-    [key: string]: any; // Permet d'ajouter dynamiquement des propriétés
-    matchMedia?: (query: string) => MatchMedia;
-  }
-
-  var globalThis: Global;
+interface FileSystemHandlePermissionDescriptor {
+  mode?: 'read' | 'readwrite';
 }
 
-export {};
+interface FileSystemHandle {
+  queryPermission(descriptor?: FileSystemHandlePermissionDescriptor): Promise<PermissionState>;
+
+  requestPermission(descriptor?: FileSystemHandlePermissionDescriptor): Promise<PermissionState>;
+}
+
+// global.d.ts
+
+interface FilePickerAcceptType {
+  description?: string;
+  accept: Record<string, string[]>;
+}
+
+interface OpenFilePickerOptions {
+  multiple?: boolean;
+  types?: FilePickerAcceptType[];
+  excludeAcceptAllOption?: boolean;
+}
+
+type StartInDirectory =
+  | 'desktop'
+  | 'documents'
+  | 'downloads'
+  | 'music'
+  | 'pictures'
+  | 'videos'
+  | FileSystemHandle;
+
+interface DirectoryPickerOptions {
+  id?: string;
+  mode?: 'read' | 'readwrite';
+  startIn?: StartInDirectory;
+}
+
+interface Window {
+  showOpenFilePicker(options?: OpenFilePickerOptions): Promise<FileSystemFileHandle[]>;
+
+  showDirectoryPicker(options?: DirectoryPickerOptions): Promise<FileSystemDirectoryHandle>;
+}

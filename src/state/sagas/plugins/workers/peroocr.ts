@@ -2,26 +2,43 @@ import { ElementType, getAnnotationType } from '@/data/models/Annotation';
 import { convertPeroTranscriptionsToAnnotations } from '@/data/models/converters/peroConverter';
 import { peroResultError, peroResultSchema } from '@/data/models/converters/peroSchema';
 import { Result } from '@/data/models/Result';
-import { isAnnotationScope, toString } from '@/data/models/Scope';
+import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/Scope';
 import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getImage } from '@/data/utils/canvas';
+import { applyModifierChainToAnnotations } from '@/data/utils/modifierChain';
+import { getValueForPluginParam } from '@/data/utils/plugins';
+import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { getErrorMessage } from '@/utils/utils';
 import { Client } from '@gradio/client';
 import FileSaver from 'file-saver';
+import { WorkerCategory } from './WorkerCategory';
 
-export const pluginName = 'peroocr';
-export const pluginDisplayName = 'Pero OCR';
-export const pluginDescription = 'Reconnaissance de texte';
-export const pluginCategory = 'OCR';
-export const pluginExportFormats = ['txt'];
+export const pluginName = 'peroocr'; //name of the plugin, used to register the plugin inside Corpusense
+export const pluginDisplayName = 'Pero OCR'; //display name of the plugin, used in the UI
+export const pluginDescription = 'Reconnaissance de texte'; //description of the plugin, used in the UI
+export const pluginCategory = WorkerCategory.OCR;
+export const pluginExportFormats = ['txt']; //available export formats for this plugin (must match the formats handled in exportResult function)
+/*
+  Configuration parameters for this plugin
+  Each parameter must have a description and can have a default value
+*/
+export const pluginConfigurationParams = {
+  apiUrl: { description: "URL de l'API Pero OCR", defaultValue: 'https://api.mezanno.xyz/ocr/' },
+};
 
 export default async function run(task: Task, _params: PluginParams): Promise<WorkerResponse> {
   console.log(`Processing task for scope ${toString(task.scope)}`);
+  if (!isCanvasScope(task.scope)) {
+    return {
+      status: WorkerStatus.ERROR,
+      statusMessage: i18n.t('error_task_invalid_scope'),
+    };
+  }
   const annotationRepository = getAnnotationRepository();
   try {
     const collectionRepository = getCollectionRepository();
@@ -68,7 +85,15 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       }
     }
 
-    const client = await Client.connect('https://api.mezanno.xyz/ocr/');
+    const peroUrl = getValueForPluginParam(pluginName, 'apiUrl');
+    if (peroUrl === null) {
+      return {
+        status: WorkerStatus.ERROR,
+        statusMessage: 'Pero OCR API URL is not configured',
+      };
+    }
+
+    const client = await Client.connect(peroUrl);
     /* We change the image to size to match the maximum size. We do this to avoir lower sizes used in image ids.
      */
     const gradioResult = await client.predict('/transcribe', {
@@ -78,15 +103,31 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     console.log(gradioResult.data);
     try {
       const peroResult = peroResultSchema.parse(gradioResult.data);
-      const annotations = convertPeroTranscriptionsToAnnotations(
+      const newAnnotations = convertPeroTranscriptionsToAnnotations(
         peroResult,
         task.scope.canvasId,
         task.scope.collectionId,
       );
-      const newAnnotations = await annotationRepository.addAll(annotations);
+
+      //if a post-processing function is defined for the collection, apply it to the new annotations before saving them
+      const collection = await collectionRepository.getById(task.scope.collectionId);
+      let savedAnnotations;
+      if (
+        collection.postOcrModifierChainId !== undefined &&
+        collection.postOcrModifierChainId.trim() !== ''
+      ) {
+        const updatedAnnotations = await applyModifierChainToAnnotations(
+          collection.postOcrModifierChainId,
+          newAnnotations.map((a) => ({ ...a, order: 0 })), //we have to set the order to transofrm AnnotationDTO into Annotation for the modifier chain function, but it will be reset when saving the annotations
+        );
+        savedAnnotations = await annotationRepository.addAll(updatedAnnotations);
+      } else {
+        savedAnnotations = await annotationRepository.addAll(newAnnotations);
+      }
+
       return {
         status: WorkerStatus.COMPLETED,
-        content: newAnnotations,
+        content: savedAnnotations,
       };
     } catch (error) {
       try {
@@ -116,7 +157,7 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
 
 export function exportResult(results: Result[], formats: string[]) {
   if (results.length === 0) {
-    console.warn('No results to export from Mistral plugin');
+    console.warn(`No results to export from ${pluginDisplayName} plugin`);
     return;
   }
 

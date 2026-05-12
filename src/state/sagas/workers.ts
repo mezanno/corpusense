@@ -1,5 +1,4 @@
 import { getAnnotationText, isAnnotationArray } from '@/data/models/Annotation';
-import { Collection } from '@/data/models/Collection';
 import { Result, ResultCreateDTO } from '@/data/models/Result';
 import { isAnnotationScope, isCanvasScope, isCollectionScope, toString } from '@/data/models/Scope';
 import {
@@ -15,6 +14,7 @@ import {
   getResultRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
+import { updateTaskStatus } from '@/data/utils/worker';
 import i18n from '@/i18n';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
@@ -31,30 +31,18 @@ import {
   take,
   takeEvery,
 } from 'redux-saga/effects';
-import { addAnnotationsSuccess } from '../reducers/annotations';
-import { updateOcrStatus } from '../reducers/collections';
+import { v4 as uuid } from 'uuid';
 import { pushError, pushInfo } from '../reducers/events';
 import {
-  addResult,
-  ExportWorkerPayload,
-  exportWorkerResultRequest,
-  processSuccess,
   recoverWorkerRequest,
-  removeResultRequest,
-  removeResultSuccess,
-  removeWorkerRequest,
-  removeWorkerSuccess,
   setPlugins,
-  setResults,
-  setWorkers,
   StartWorkerProcessPayload,
   startWorkerProcessRequest,
   stopWorkerProcessRequest,
-  updateWorker,
 } from '../reducers/workers';
 import { loadWorkerPlugins, WorkerPlugin } from './plugins/loader';
 
-const workerPlugins: Record<string, WorkerPlugin> = loadWorkerPlugins();
+export const workerPlugins: Record<string, WorkerPlugin> = loadWorkerPlugins();
 
 function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPayload>) {
   const { workerName, params, scope } = action.payload;
@@ -66,6 +54,7 @@ function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPaylo
 
   //when starting a new worker, we create a new WorkerCreateDTO
   const worker = {
+    id: uuid(),
     name: workerName,
     scope,
     params,
@@ -77,8 +66,21 @@ function* handleRecoverWorker(action: PayloadAction<Worker>) {
   const worker = action.payload;
   yield call(forkStartWorker, worker);
 }
-
 type WorkerForkRaceResult = { stopped?: unknown; completed?: unknown };
+
+const isStopWorkerAction = (action: unknown): action is PayloadAction<Worker> => {
+  return (
+    typeof action === 'object' &&
+    action !== null &&
+    'type' in action &&
+    action.type === stopWorkerProcessRequest.type &&
+    'payload' in action &&
+    typeof action.payload === 'object' &&
+    action.payload !== null &&
+    'id' in action.payload &&
+    typeof action.payload.id === 'string'
+  );
+};
 /**
  * This function is used to fork the startWorker saga.
  * It is used to start a worker process in the background.
@@ -89,8 +91,9 @@ function* forkStartWorker(worker: Worker | WorkerCreateDTO): Generator<Effect, v
   console.log(`Starting worker: ${worker.name} with scope: ${toString(worker.scope)}`);
   const task: TaskSaga = (yield fork(startWorker, worker)) as TaskSaga;
   const result = (yield race({
-    stopped: take(stopWorkerProcessRequest.type),
-    completed: take(processSuccess.type),
+    stopped: take(
+      (action: unknown) => isStopWorkerAction(action) && action.payload.id === worker.id,
+    ),
   })) as WorkerForkRaceResult;
   console.log(`Worker ${worker.name} finished with result:`, result);
   if ('stopped' in result) {
@@ -102,7 +105,7 @@ function* forkStartWorker(worker: Worker | WorkerCreateDTO): Generator<Effect, v
 
 /**
  *
- * @param worker Worker or WorkerCreateDTO
+ * @param worker Worker or WorkerCreateDTOr'
  */
 function* startWorker(
   worker: Worker | WorkerCreateDTO,
@@ -141,7 +144,7 @@ function* startWorker(
         worker.scope,
       )) as Worker | undefined;
       if (existingWorker !== undefined) {
-        yield call(handleRemoveWorker, { payload: existingWorker.id, type: 'REMOVE_WORKER' });
+        yield call([workerRepository, workerRepository.deleteById], existingWorker.id);
       }
       //then, create a new worker
       currentWorker = (yield call([workerRepository, workerRepository.add], worker)) as Worker;
@@ -170,7 +173,6 @@ function* startWorker(
             status: WorkerStatus.ERROR,
           });
           yield put(pushError(i18n.t('info_empty_collection')));
-          yield put(updateWorker(currentWorker));
           return;
         }
         //else, we add the canvases to the worker queue
@@ -178,14 +180,20 @@ function* startWorker(
           id: index,
           scope: { collectionId: collectionId, canvasId: canvas.id },
           status: WorkerStatus.WAITING,
+          previousTask:
+            index > 0
+              ? {
+                  workerId: currentWorker!.id,
+                  taskId: index - 1, //the previous task is the previous canvas in the queue
+                }
+              : undefined,
         }));
+
         yield call([workerRepository, workerRepository.patch], currentWorker.id, {
           queue: currentWorker.queue,
         });
       }
     }
-    //update the store
-    yield put(updateWorker(currentWorker));
 
     //start the saga for each task in the queue
     const resultRepository = getResultRepository();
@@ -208,11 +216,10 @@ function* startWorker(
       yield call([workerRepository, workerRepository.patch], currentWorker.id, {
         queue: currentWorker.queue,
       });
-      yield put(updateWorker(currentWorker));
 
       //start the saga for the task
       try {
-        const taskResult = (yield call(saga.run, task, worker.params)) as WorkerResponse;
+        const taskResult = (yield call(saga.run, task, currentWorker)) as WorkerResponse;
         switch (taskResult.status) {
           case WorkerStatus.COMPLETED:
             {
@@ -237,20 +244,18 @@ function* startWorker(
                 params: worker.params,
               };
 
-              const newResult = (yield call(
-                [resultRepository, resultRepository.add],
-                result,
-              )) as Result;
+              yield call([resultRepository, resultRepository.add], result);
               currentWorker = {
                 ...currentWorker,
                 queue: updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.COMPLETED, ''), //on ajoute un message vide pour supprimer un potentiel précédent message d'erreur
               };
-              if (taskResult.content !== undefined && isAnnotationArray(taskResult.content)) {
-                yield put(addAnnotationsSuccess(taskResult.content));
-                yield put(updateOcrStatus(taskResult.content));
-              }
-              yield put(addResult(newResult));
             }
+            break;
+          case WorkerStatus.POSTED:
+            currentWorker = {
+              ...currentWorker,
+              queue: updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.POSTED, ''),
+            };
             break;
           case WorkerStatus.ERROR:
             console.error(
@@ -295,20 +300,24 @@ function* startWorker(
         statusMessage: currentWorker.statusMessage,
         queue: currentWorker.queue,
       });
-      yield put(updateWorker(currentWorker));
     } //end while loop
 
     if (hasError) {
       currentWorker = { ...currentWorker, status: WorkerStatus.COMPLETED_WITH_ERRORS };
       yield put(pushError(i18n.t('info_worker_completed_with_error')));
     } else {
-      currentWorker = { ...currentWorker, status: WorkerStatus.COMPLETED };
-      yield put(pushInfo(i18n.t('info_worker_completed')));
+      const hasTaskPosted = currentWorker.queue.some((t) => t.status === WorkerStatus.POSTED);
+      if (hasTaskPosted) {
+        currentWorker = { ...currentWorker, status: WorkerStatus.POSTED };
+        yield put(pushInfo(i18n.t('info_worker_all_tasks_posted')));
+      } else {
+        currentWorker = { ...currentWorker, status: WorkerStatus.COMPLETED };
+        yield put(pushInfo(i18n.t('info_worker_completed')));
+      }
     }
     yield call([workerRepository, workerRepository.patch], currentWorker.id, {
       status: currentWorker.status,
     });
-    yield put(updateWorker(currentWorker));
   } finally {
     if (yield cancelled()) {
       //if the saga is cancelled, we set the worker status to UNFINISHED or UNFINISHED_WITH_ERRORS
@@ -327,53 +336,8 @@ function* startWorker(
         yield call([workerRepository, workerRepository.patch], currentWorker.id, {
           status: currentWorker.status,
         });
-        yield put(updateWorker(currentWorker));
       }
     }
-  }
-}
-
-function updateTaskStatus(
-  queue: Task[],
-  index: number,
-  status: WorkerStatus,
-  statusMessage?: string,
-): Task[] {
-  if (statusMessage === undefined) {
-    return queue.map((task, i) => (i === index ? { ...task, status } : task));
-  } else {
-    return queue.map((task, i) => (i === index ? { ...task, status, statusMessage } : task));
-  }
-}
-
-function* handleExportWorkerResult(
-  action: PayloadAction<ExportWorkerPayload>,
-): Generator<Effect, void, Result[] | Collection> {
-  const { worker, formats } = action.payload;
-  const saga = workerPlugins[worker.name];
-
-  //get the results for the worker
-  const resultRepository = getResultRepository();
-  const results = (yield call(
-    [resultRepository, resultRepository.getAllByWorkerId],
-    worker.id,
-  )) as Result[];
-
-  try {
-    if (saga !== undefined && saga !== null && saga.export) {
-      if (results.length === 0) {
-        //TODO! afficher message d'erreur dans l'UI
-        console.warn(`No results found for worker ${worker.id}`);
-        return;
-      }
-
-      yield call(saga.export, results, formats);
-    }
-  } catch (error) {
-    console.error(`Error in export plugin saga for ${worker.name}:`, error);
-    yield put(
-      pushError(`Error in export plugin saga for ${worker.name}: ${getErrorMessage(error)}`),
-    );
   }
 }
 
@@ -381,7 +345,8 @@ function* handleExportWorkerResult(
  * Fetch all workers and their results from the IndexedDB.
  * This function is called when the application starts to load the workers and their results into the Redux store.
  */
-function* fetchWorkers(): Generator<Effect, void, Worker[] | Result[]> {
+//TODO! à conserver pour permettre la mise à jour des workers au démarrage de l'application
+function* initWorkersStatus(): Generator<Effect, void, Worker[] | Result[]> {
   const workerRepository = getWorkerRepository();
   const workers = (yield call([workerRepository, workerRepository.getAll])) as Worker[];
 
@@ -391,14 +356,22 @@ function* fetchWorkers(): Generator<Effect, void, Worker[] | Result[]> {
       worker.status === WorkerStatus.INPROGRESS ||
       worker.status === WorkerStatus.INPROGRESS_WITH_ERRORS
     ) {
-      const newStatus =
-        worker.status === WorkerStatus.INPROGRESS
-          ? WorkerStatus.UNFINISHED
-          : WorkerStatus.UNFINISHED_WITH_ERRORS;
       const newQueue = worker.queue.map((task) => ({
         ...task,
-        status: task.status === WorkerStatus.COMPLETED ? task.status : WorkerStatus.WAITING,
+        status:
+          task.status === WorkerStatus.COMPLETED || task.status === WorkerStatus.POSTED
+            ? task.status
+            : WorkerStatus.WAITING,
       }));
+      const hasPostedTask = newQueue.some((t) => t.status === WorkerStatus.POSTED);
+      let newStatus: WorkerStatus = worker.status;
+      if (!hasPostedTask) {
+        newStatus =
+          worker.status === WorkerStatus.INPROGRESS
+            ? WorkerStatus.UNFINISHED
+            : WorkerStatus.UNFINISHED_WITH_ERRORS;
+      }
+
       yield call([workerRepository, workerRepository.patch], worker.id, {
         status: newStatus,
         queue: newQueue,
@@ -407,27 +380,6 @@ function* fetchWorkers(): Generator<Effect, void, Worker[] | Result[]> {
       worker.queue = newQueue;
     }
   }
-
-  yield put(setWorkers(workers));
-
-  //!Est-qu'on en a besoin ?
-  const resultRepository = getResultRepository();
-  const results = (yield call([resultRepository, resultRepository.getAll])) as Result[];
-  yield put(setResults(results));
-}
-
-function* handleRemoveWorker(action: PayloadAction<string>) {
-  const workerId = action.payload;
-  const workerRepository = getWorkerRepository();
-  yield call([workerRepository, workerRepository.deleteById], workerId);
-  yield put(removeWorkerSuccess(workerId));
-}
-
-function* handleRemoveResult(action: PayloadAction<{ workerId: string; taskId: number }>) {
-  const { workerId, taskId } = action.payload;
-  const workerRepository = getWorkerRepository();
-  yield call([workerRepository, workerRepository.deleteResultById], workerId, taskId);
-  yield put(removeResultSuccess({ workerId, taskId }));
 }
 
 function* loadWorkerPluginsInfo(): Generator<Effect, void, { name: string; hasExport: boolean }[]> {
@@ -438,16 +390,14 @@ function* loadWorkerPluginsInfo(): Generator<Effect, void, { name: string; hasEx
     description: workerPlugins[name].info.description,
     category: workerPlugins[name].info.category,
     exportFormats: workerPlugins[name].info.exportFormats,
+    configurationParams: workerPlugins[name].info.configurationParams,
   }));
   yield put(setPlugins(pluginsInfo));
 }
 
 export default function* workerSaga() {
   yield takeEvery(startWorkerProcessRequest, handleStartWorkerProcess);
-  yield takeEvery(exportWorkerResultRequest, handleExportWorkerResult);
   yield takeEvery(recoverWorkerRequest, handleRecoverWorker);
-  yield takeEvery(removeWorkerRequest, handleRemoveWorker);
-  yield takeEvery(removeResultRequest, handleRemoveResult);
 }
 
-export { fetchWorkers, loadWorkerPluginsInfo };
+export { initWorkersStatus, loadWorkerPluginsInfo };

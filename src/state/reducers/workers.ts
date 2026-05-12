@@ -1,12 +1,8 @@
-import { Result } from '@/data/models/Result';
-import { isSameScope, Scope } from '@/data/models/Scope';
-import { Worker, WorkerStatus } from '@/data/models/Worker';
+import { Scope } from '@/data/models/Scope';
+import { Worker } from '@/data/models/Worker';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { remove } from 'lodash';
+import { WorkerConfigurationParams } from '../sagas/plugins/loader';
 export interface WorkerState {
-  workers: Worker[];
-  results: Result[];
-  status: { scope: Scope; status: WorkerStatus }[];
   workerPluginsInfo: {
     name: string;
     hasExport: boolean;
@@ -14,13 +10,11 @@ export interface WorkerState {
     description?: string;
     category?: string;
     exportFormats?: string[];
+    configurationParams?: WorkerConfigurationParams;
   }[];
 }
 
 export const workerInitialState: WorkerState = {
-  workers: [],
-  results: [],
-  status: [],
   workerPluginsInfo: [],
 };
 
@@ -35,67 +29,12 @@ export interface StartWorkerProcessPayload {
   params: PluginParams;
 }
 
-export interface ExportWorkerPayload {
-  worker: Worker;
-  formats: string[];
-}
-
 export const workerSlice = createSlice({
   name: 'worker',
   initialState: workerInitialState,
   reducers: {
-    processSuccess: (state, action: PayloadAction<Scope>) => {
-      //when the process if finish with success, remove it
-      const scope = action.payload;
-      state.status = state.status.filter((s) => !isSameScope(s.scope, scope));
-    },
     startWorkerProcessRequest: (_state, _action: PayloadAction<StartWorkerProcessPayload>) => {},
     stopWorkerProcessRequest: (_state, _action: PayloadAction<Worker>) => {},
-    updateWorker: (state, action: PayloadAction<Worker>) => {
-      if (state.workers.find((w) => w.id === action.payload.id)) {
-        // If the worker already exists, update it
-        const index = state.workers.findIndex((w) => w.id === action.payload.id);
-        state.workers[index] = action.payload;
-      } else {
-        // If the worker does not exist, add it
-        state.workers.push(action.payload);
-      }
-    },
-    addWorkersSuccess: (state, action: PayloadAction<Worker[]>) => {
-      state.workers = [...state.workers, ...action.payload];
-    },
-    addResult: (state, action: PayloadAction<Result>) => {
-      const result = action.payload;
-      // Check if the result already exists
-      const existingResult = state.results.find(
-        (r) =>
-          r.id === result.id &&
-          r.workerId === result.workerId &&
-          isSameScope(r.scope, result.scope),
-      );
-      if (existingResult) {
-        // If it exists, update the existing result
-        const index = state.results.findIndex(
-          (r) =>
-            r.id === result.id &&
-            r.workerId === result.workerId &&
-            isSameScope(r.scope, result.scope),
-        );
-        state.results[index] = result;
-      } else {
-        // If it does not exist, add the new result
-        state.results.push(result);
-      }
-    },
-    addResultsSuccess: (state, action: PayloadAction<Result[]>) => {
-      state.results = [...state.results, ...action.payload];
-    },
-    setWorkers: (state, action: PayloadAction<Worker[]>) => {
-      state.workers = action.payload;
-    },
-    setResults: (state, action: PayloadAction<Result[]>) => {
-      state.results = action.payload;
-    },
     setPlugins(
       state,
       action: PayloadAction<
@@ -106,64 +45,20 @@ export const workerSlice = createSlice({
           description?: string;
           category?: string;
           exportFormats?: string[];
+          configurationParams?: WorkerConfigurationParams;
         }[]
       >,
     ) {
       state.workerPluginsInfo = action.payload;
     },
-    removeWorkerRequest: (_state, _action: PayloadAction<string>) => {
-      //payload is workerId
-    },
-    removeWorkerSuccess: (state, action: PayloadAction<string>) => {
-      //payload is workerId
-      state.workers = state.workers.filter((worker) => worker.id !== action.payload);
-      state.results = state.results.filter((result) => result.workerId !== action.payload);
-    },
-    removeWorkersSuccess: (state, action: PayloadAction<string[]>) => {
-      //payload is workerId
-      state.workers = state.workers.filter((worker) => action.payload.includes(worker.id));
-      state.results = state.results.filter((result) => action.payload.includes(result.workerId));
-    },
-    removeResultRequest: (_state, _action: PayloadAction<{ workerId: string; taskId: number }>) => {
-      // action.payload is { workerId, taskId }
-    },
-    removeResultSuccess: (state, action: PayloadAction<{ workerId: string; taskId: number }>) => {
-      const { workerId, taskId } = action.payload;
-      remove(state.results, (result) => result.workerId === workerId && result.id === taskId);
-      state.workers = state.workers.map((worker) => {
-        if (worker.id === workerId) {
-          return {
-            ...worker,
-            queue: worker.queue.map((task) =>
-              task.id !== taskId ? task : { ...task, status: WorkerStatus.WAITING },
-            ),
-          };
-        }
-        return worker;
-      });
-    },
-    exportWorkerResultRequest: (_state, _action: PayloadAction<ExportWorkerPayload>) => {}, // action.payload is a workerId
     recoverWorkerRequest: (_state, _action: PayloadAction<Worker>) => {}, // action.payload is a workerId
   },
 });
 
 export const {
-  processSuccess,
   startWorkerProcessRequest,
   stopWorkerProcessRequest,
-  updateWorker,
-  addResult,
-  addResultsSuccess,
-  addWorkersSuccess,
-  setWorkers,
-  setResults,
   setPlugins,
-  removeWorkerRequest,
-  removeWorkerSuccess,
-  removeWorkersSuccess,
-  removeResultRequest,
-  removeResultSuccess,
-  exportWorkerResultRequest,
   recoverWorkerRequest,
 } = workerSlice.actions;
 export default workerSlice.reducer;

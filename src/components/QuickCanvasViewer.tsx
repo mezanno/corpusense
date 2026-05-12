@@ -12,14 +12,13 @@ import {
   getCollectionRepository,
   getManifestRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { useAppSelector } from '@/hooks/hooks';
-import { selectCollections } from '@/state/selectors/collections';
+import { useCollections } from '@/hooks/data/collections/useCollections';
 import { Canvas } from '@iiif/presentation-3';
 import { useEffect, useState } from 'react';
-import CanvasViewer from './CanvasViewer';
+import CanvasViewer from './canvasViewer/CanvasViewer';
 
 const QuickCanvasViewer = () => {
-  const collections = useAppSelector(selectCollections);
+  const { collections } = useCollections();
   const [selectedCollectionId, setSelectedCollectionId] = useState<string>(
     collections[0]?.id || '',
   );

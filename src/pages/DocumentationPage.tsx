@@ -35,6 +35,12 @@ const DocumentationPage = () => {
 
   const contentRef = useRef<HTMLDivElement | null>(null);
 
+  useEffect(() => {
+    return () => {
+      contentRef.current = null;
+    };
+  }, []);
+
   // Gérer la détection du titre actif selon le scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
