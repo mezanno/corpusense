@@ -128,7 +128,14 @@ const CanvasViewerAnnotations = ({
       // viewer.removeAllHandlers('tile-load-failed');
       viewer.removeAllHandlers('open-failed');
     };
-  }, [anno, annotationsInStore]);
+  }, [anno, annotationsInStore, annotationScale]);
+
+  useEffect(() => {
+    if (anno !== null) {
+      const scaledAnnotations = scale(annotationsInStore, annotationScale);
+      anno.setAnnotations(scaledAnnotations);
+    }
+  }, [anno, annotationsInStore, annotationScale]);
 
   useEffect(() => {
     if (anno !== null) {
