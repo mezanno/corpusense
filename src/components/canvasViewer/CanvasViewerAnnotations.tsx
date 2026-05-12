@@ -37,8 +37,6 @@ const CanvasViewerAnnotations = ({
 
   useEffect(() => {
     if (anno !== null) {
-      console.log('new canvas');
-
       anno.clearAnnotations();
       isNewCanvas.current = true;
     }
@@ -94,7 +92,6 @@ const CanvasViewerAnnotations = ({
 
     const onCreate = (annotation: ImageAnnotation) => {
       if (collectionId !== undefined) {
-        console.log('Creating annotation ', annotation);
         void (async () => {
           await saveAnnotation(annotation, canvas.id, collectionId);
         })();
