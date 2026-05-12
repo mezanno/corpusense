@@ -84,8 +84,6 @@ export const useAnnotationActions = () => {
     type?: ElementType,
     value?: string,
   ) => {
-    console.log('updateAnnotation - ', annotationToSave);
-
     if (type !== undefined && value !== undefined) {
       annotationToSave = {
         ...annotationToSave,
