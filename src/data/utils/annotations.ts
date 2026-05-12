@@ -271,7 +271,7 @@ export const scale = (annotations: Annotation[], annotationScale: number): Annot
   return annotations.map((annotation) => scaleAnnotation(annotation, annotationScale));
 };
 
-export const scaleAnnotation = (annotation: Annotation, annotationScale: number): Annotation => {
+export const scaleAnnotation = (annotation: Annotation, annotationScale: number) => {
   const minX = annotation.target.selector.geometry.bounds.minX * annotationScale;
   const minY = annotation.target.selector.geometry.bounds.minY * annotationScale;
   const maxX = annotation.target.selector.geometry.bounds.maxX * annotationScale;
@@ -282,9 +282,8 @@ export const scaleAnnotation = (annotation: Annotation, annotationScale: number)
     target: {
       ...annotation.target,
       selector: {
-        ...annotation.target.selector,
+        type: ShapeType.RECTANGLE,
         geometry: {
-          ...annotation.target.selector.geometry,
           bounds: {
             minX,
             minY,
