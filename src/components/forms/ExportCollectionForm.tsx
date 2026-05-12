@@ -1,7 +1,6 @@
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useCollectionIO } from '@/hooks/data/collections/useCollectionIO';
+import { useCollections } from '@/hooks/data/collections/useCollections';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { exportCollectionsRequest } from '@/state/reducers/collections';
-import { selectCollectionsByIds } from '@/state/selectors/collections';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -22,11 +21,10 @@ const schema = z.object({
 
 const ExportCollectionForm = ({ collectionIds, formRef }: ExportCollectionFormProps) => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
+  const { exportCollections } = useCollectionIO();
 
-  const selectedCollections = useAppSelector((state) =>
-    selectCollectionsByIds(state, collectionIds),
-  );
+  const { collections } = useCollections();
+  const selectedCollections = collections.filter((c) => collectionIds.includes(c.id));
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -38,8 +36,8 @@ const ExportCollectionForm = ({ collectionIds, formRef }: ExportCollectionFormPr
     },
   });
 
-  function onSubmit(values: z.infer<typeof schema>) {
-    appDispatch(exportCollectionsRequest({ collectionIds, options: values }));
+  async function onSubmit(values: z.infer<typeof schema>) {
+    await exportCollections(collectionIds, values);
   }
 
   return (

@@ -1,32 +1,48 @@
 import { Result } from '@/data/models/Result';
-import { Task, WorkerResponse } from '@/data/models/Worker';
+import { Task, Worker, WorkerResponse } from '@/data/models/Worker';
 import { getIsExperimentalFeaturesActivated } from '@/hooks/useExperimental';
+import z from 'zod';
 
+export type WorkerConfigurationParams = {
+  [key: string]: { description: string; defaultValue?: string };
+};
 export type WorkerPluginInfo = {
   displayName?: string;
   description?: string;
   category?: string;
   exportFormats?: string[];
+  configurationParams?: WorkerConfigurationParams;
 };
 export type WorkerPlugin = {
   run: WorkerRunFunction;
   export?: WorkerExportFunction;
+  extractData?: WorkerExtractDataFunction;
+  processResult?: WorkerProcessResultFunction;
   info: WorkerPluginInfo;
+  runtimeParametersSchema?: z.ZodTypeAny;
 };
-export type WorkerRunFunction = (
-  task: Task,
-  params?: Record<string, unknown>,
-) => Promise<WorkerResponse>; //saga or async function : if we need to call an effect (eg: call, put, select), we have to use a saga
+
+export type WorkerRunFunction = (task: Task, worker: Worker) => Promise<WorkerResponse>; //saga or async function : if we need to call an effect (eg: call, put, select), we have to use a saga
+export type WorkerExtractDataFunction = (results: Result[]) => Promise<unknown[]>;
 export type WorkerExportFunction = (results: Result[], formats: string[]) => void;
 type WorkerModule = {
   default: WorkerRunFunction;
+  exportResult?: WorkerExportFunction;
+  extractData?: WorkerExtractDataFunction;
+  processResult?: WorkerProcessResultFunction;
   pluginName: string;
   pluginDisplayName?: string;
   pluginDescription?: string;
   pluginCategory?: string;
   pluginExportFormats?: string[];
-  exportResult?: WorkerExportFunction;
+  pluginConfigurationParams?: WorkerConfigurationParams;
+  pluginRuntimeParameters?: z.ZodTypeAny;
 };
+export type WorkerProcessResultFunction = (
+  result: unknown,
+  task: Task,
+  workerCategory?: string,
+) => Promise<WorkerResponse>;
 
 export type ImporterPlugin = { import: ImportFunction };
 export type ImportFunction = (url: string) => Promise<object>;
@@ -41,6 +57,7 @@ const isWorkerModule = (mod: unknown): mod is WorkerModule => {
 
   const m = mod as Partial<WorkerModule>;
 
+  //TODO : il faut valider les types des paramètres de default
   return (
     typeof m.default === 'function' &&
     typeof m.pluginName === 'string' &&
@@ -51,7 +68,19 @@ const isWorkerModule = (mod: unknown): mod is WorkerModule => {
     (m.pluginExportFormats === undefined ||
       (Array.isArray(m.pluginExportFormats) &&
         m.pluginExportFormats.every((f) => typeof f === 'string'))) &&
-    (m.exportResult === undefined || typeof m.exportResult === 'function')
+    (m.exportResult === undefined || typeof m.exportResult === 'function') &&
+    (m.extractData === undefined || typeof m.extractData === 'function') &&
+    (m.processResult === undefined || typeof m.processResult === 'function') &&
+    (m.pluginConfigurationParams === undefined ||
+      (typeof m.pluginConfigurationParams === 'object' &&
+        m.pluginConfigurationParams !== null &&
+        Object.values(m.pluginConfigurationParams).every(
+          (v) =>
+            typeof v === 'object' &&
+            v !== null &&
+            'description' in v &&
+            typeof v.description === 'string',
+        )))
   );
 };
 
@@ -77,8 +106,12 @@ export function loadWorkerPlugins() {
             description: mod.pluginDescription,
             category: mod.pluginCategory,
             exportFormats: mod.pluginExportFormats,
+            configurationParams: mod.pluginConfigurationParams,
           },
           export: mod.exportResult,
+          extractData: mod.extractData,
+          processResult: mod.processResult,
+          runtimeParametersSchema: mod.pluginRuntimeParameters,
         };
 
         console.info(`Plugin saga ${mod.pluginName} loaded successfully`);
@@ -96,8 +129,6 @@ export function loadImporterPlugins() {
   for (const path in modules) {
     //TODO : check if it is a valid plugin saga
     const mod = modules[path] as ImporterModule;
-    console.log('mod: ', mod);
-
     if (typeof mod.default === 'function') {
       importerPlugins[mod.pluginName] = { import: mod.default };
       console.info(`Plugin saga ${mod.pluginName} loaded successfully`);

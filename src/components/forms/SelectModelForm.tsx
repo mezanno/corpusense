@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { DataModel } from '@/data/models/DataModel';
-import { useAppSelector } from '@/hooks/hooks';
-import { selectModelIdOfCollection } from '@/state/selectors/collections';
-import { selectModels } from '@/state/selectors/models';
+import { useModels } from '@/hooks/data/models/useModels';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -17,16 +15,13 @@ const formSchema = z.object({
 
 const SelectModelForm = ({
   close,
-  collectionId,
+  modelIdOfCollection,
 }: {
   close: (model: DataModel) => void;
-  collectionId: string;
+  modelIdOfCollection: string;
 }) => {
   const { t } = useTranslation();
-  const models = useAppSelector(selectModels);
-  const modelIdOfCollection = useAppSelector((state) =>
-    selectModelIdOfCollection(state, collectionId),
-  );
+  const { models } = useModels();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

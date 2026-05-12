@@ -1,7 +1,6 @@
 import { importerPlugins } from '@/App';
 import { History } from '@/data/models/History';
 import { ItemMetadata, ItemMetadataAttribute } from '@/data/models/Metadata';
-import { StoredManifestDetails } from '@/data/models/StoredManifest';
 import {
   getItemMetadataRepository,
   getManifestRepository,
@@ -16,12 +15,9 @@ import {
   fecthManifestRequest,
   fetchManifestError,
   fetchManifestSuccess,
-  removeFromHistoryRequest,
-  removeFromHistorySuccess,
   SaveMetadataPayload,
   saveMetadataRequest,
   saveMetadataSuccess,
-  setHistory,
 } from '../reducers/manifests';
 
 /**
@@ -64,8 +60,6 @@ function* fetchManifestFromURL(url: string): Generator<Effect, Manifest, Manifes
 function* handleFetchManifest(action: {
   payload: string;
 }): Generator<Effect, void, Manifest | History> {
-  console.log('handleFetchManifest ', action.payload);
-
   try {
     const manifestInput = action.payload;
 
@@ -101,11 +95,29 @@ function* handleFetchManifest(action: {
       }
     } else {
       // yield call(fetchManifest, { fetchFunction: () => JSON.parse(manifestInput) as object });
-      yield put(
-        fetchManifestError(
-          i18n.t('error_loading_manifest', { error: i18n.t('error_invalid_manifest_input') }),
-        ),
-      );
+      try {
+        const manifest = convertJsonToManifest(JSON.parse(manifestInput) as object);
+        try {
+          const manifestRepository = getManifestRepository();
+          yield call([manifestRepository, manifestRepository.add], manifest);
+        } catch (error) {
+          console.warn('Error saving manifest to indexedDB: ', error);
+        }
+
+        yield put(
+          fetchManifestSuccess({
+            content: manifest,
+            metadata: [],
+          }),
+        );
+        yield put(pushInfo(i18n.t('info_manifest_loaded')));
+      } catch (error) {
+        yield put(
+          fetchManifestError(
+            i18n.t('error_loading_manifest', { error: i18n.t('error_invalid_manifest_input') }),
+          ),
+        );
+      }
     }
   } catch (error) {
     const msg = i18n.t('error_loading_manifest', { error: getErrorMessage(error) });
@@ -147,42 +159,6 @@ function* fetchManifest({
 }
 
 /**
- * Side effect to remove a manifest from the history. It deletes the manifest from IndexedDB.
- * @param action The action containing the URL of the manifest to remove from history.
- */
-function* handleRemoveFromHistory(action: { payload: string }) {
-  const url = action.payload;
-  try {
-    const manifestRepository = getManifestRepository();
-    yield call([manifestRepository, manifestRepository.deleteFromHistory], url);
-    yield put(removeFromHistorySuccess(url));
-  } catch (error) {
-    console.warn('Error removing url from indexedDB history: ', error);
-  }
-}
-
-/**
- * Side effect to load the history from IndexedDB. It fetches all the history items
- * and dispatches an action to set the history in the state.
- */
-function* loadHistorySaga(): Generator<Effect, void, History[] | StoredManifestDetails[]> {
-  try {
-    const manifestRepository = getManifestRepository();
-    const history = (yield call([
-      manifestRepository,
-      manifestRepository.getHistoryEntries,
-    ])) as History[];
-    const manifestDetails = (yield call(
-      [manifestRepository, manifestRepository.getDetailsByManifestIds],
-      history.map((item) => item.url),
-    )) as StoredManifestDetails[];
-    yield put(setHistory({ history, manifestDetails }));
-  } catch (e) {
-    console.warn('Error loading history from indexedDB', e);
-  }
-}
-
-/**
  * Side effect to save metadata for a manifest. It takes the metadata attributes
  * and saves them to IndexedDB. It also dispatches an action to update the state.
  * @remarks The manifest ID is obtained from the state. If the manifest ID is null,
@@ -210,13 +186,6 @@ function* handleSaveMetadata({
 export default function* viewerSaga() {
   yield takeLatest(fecthManifestRequest, handleFetchManifest);
   yield takeEvery(saveMetadataRequest, handleSaveMetadata);
-  yield takeEvery(removeFromHistoryRequest, handleRemoveFromHistory);
 }
 
-export {
-  fetchManifestFromURL,
-  handleFetchManifest,
-  handleRemoveFromHistory,
-  handleSaveMetadata,
-  loadHistorySaga,
-};
+export { fetchManifestFromURL, handleFetchManifest, handleSaveMetadata };

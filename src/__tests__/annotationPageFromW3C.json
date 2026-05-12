@@ -7,7 +7,7 @@
       "body": {
         "format": "text/plain",
         "type": "TextualBody",
-        "value": "LINE"
+        "value": "UNKNOWN"
       },
       "id": "canvasId/annotationpage/corpusense/799caa82-346a-475f-8689-2d6ba8ef3b65/class",
       "motivation": "classifying",
@@ -31,7 +31,7 @@
       "body": {
         "format": "text/plain",
         "type": "TextualBody",
-        "value": "LINE"
+        "value": "UNKNOWN"
       },
       "id": "canvasId/annotationpage/corpusense/799caa82-346a-475f-8689-2d6ba8ef3b65/class",
       "motivation": "classifying",

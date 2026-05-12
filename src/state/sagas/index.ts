@@ -1,13 +1,6 @@
 import { all, call, fork, spawn } from 'redux-saga/effects';
-import annotationsSaga from './annotations';
-import authSaga, { loadConnectedUser } from './auth';
-import collectionsSaga, { fetchAllCollections } from './collections';
-import exportSaga from './export';
-import manifestsSaga, { loadHistorySaga } from './manifests';
-import modelsSaga, { fetchModels } from './models';
-import namedEntitiesSaga from './namedEntities';
-import tagsSaga, { fetchAllTags } from './tags';
-import workerSaga, { fetchWorkers, loadWorkerPluginsInfo } from './workers';
+import manifestsSaga from './manifests';
+import workerSaga, { initWorkersStatus, loadWorkerPluginsInfo } from './workers';
 
 function* launchSaga(saga: () => Generator) {
   while (true) {
@@ -22,26 +15,11 @@ function* launchSaga(saga: () => Generator) {
 
 function getRootSaga() {
   return function* rootSaga() {
-    const coreSagas = [
-      manifestsSaga,
-      collectionsSaga,
-      tagsSaga,
-      exportSaga,
-      annotationsSaga,
-      workerSaga,
-      modelsSaga,
-      namedEntitiesSaga,
-      authSaga,
-    ];
+    const coreSagas = [manifestsSaga, workerSaga];
 
     yield all(coreSagas.map((saga) => spawn(launchSaga, saga)));
-    yield fork(fetchAllCollections); //load collections at startup
-    yield fork(loadHistorySaga); //load history at startup
-    yield fork(fetchAllTags); //load types list at startup
-    yield fork(fetchModels); //load models at startup
-    yield fork(fetchWorkers); //load workers at startup
+    yield fork(initWorkersStatus); //load workers at startup
     yield fork(loadWorkerPluginsInfo);
-    yield fork(loadConnectedUser); //load connected user at startup
   };
 }
 

@@ -1,26 +1,36 @@
+import { workerPlugins } from '@/App';
 import ContactForm from '@/components/forms/ContactForm';
+import ConvertPdfForm from '@/components/forms/ConvertPdfForm';
+import DuplicateCollectionForm from '@/components/forms/DuplicateCollectionForm';
 import DuplicateLayoutForm from '@/components/forms/DuplicateLayoutForm';
 import ExportCollectionForm from '@/components/forms/ExportCollectionForm';
 import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
 import ImportCollectionForm from '@/components/forms/ImportCollectionForm';
 import ImportModelForm from '@/components/forms/ImportModelForm';
+import LoadModifierChainForm from '@/components/forms/LoadModifierChainForm';
 import LoginForm from '@/components/forms/LoginForm';
-import NewCollectionForm from '@/components/forms/NewCollectionForm';
+import NewCollectionForm, { NewCollectionFormParams } from '@/components/forms/NewCollectionForm';
 import NewModelForm from '@/components/forms/NewModelForm';
 import OpenManifestForm from '@/components/forms/OpenManifestForm';
 import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
+import SaveModifierChainForm from '@/components/forms/SaveModifierChainForm';
+import StartWorkerForm from '@/components/forms/StartWorkerForm';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
 import ModelPreview from '@/components/textviewer/ModelPreview';
+import { CollectionDetails } from '@/data/models/Collection';
 import { DataModel } from '@/data/models/DataModel';
+import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { CanvasScope, Scope } from '@/data/models/Scope';
 import { Worker } from '@/data/models/Worker';
+import { ModifierChainData } from '@/data/utils/modifierChain';
 import { ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export type FormProps = {
+export type FormProps<TResult = unknown> = {
   formRef: RefObject<HTMLFormElement | null>;
   setCanSubmit: (can: boolean) => void;
   closeDialog?: () => void;
+  onResult?: (result: TResult) => void;
 };
 
 type FormDialogOptions = {
@@ -69,11 +79,39 @@ const useDialog = () => {
     });
   };
 
-  const openNewCollectionDialog = () => {
+  const openNewCollectionDialog = (params?: NewCollectionFormParams) => {
+    const extraProps =
+      params?.selection !== undefined && params.manifestId !== undefined
+        ? {
+            selection: params.selection,
+            manifestId: params.manifestId,
+          }
+        : {};
     openFormDialog({
       title: t('btn_create_collection'),
       confirmLabel: t('btn_create'),
-      renderForm: (formRef) => <NewCollectionForm formRef={formRef} setCanSubmit={setCanSubmit} />,
+      renderForm: (formRef) => (
+        <NewCollectionForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          {...extraProps}
+          closeDialog={closeDialog}
+        />
+      ),
+    });
+  };
+
+  const openDupicateCollectionDialog = (collection: CollectionDetails) => {
+    openFormDialog({
+      title: t('title_duplicate_collection', { name: collection.name }),
+      confirmLabel: t('btn_duplicate'),
+      renderForm: (formRef) => (
+        <DuplicateCollectionForm
+          collection={collection}
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+        />
+      ),
     });
   };
 
@@ -186,6 +224,70 @@ const useDialog = () => {
     });
   };
 
+  const openConvertPdfDialog = () => {
+    openDialog({
+      title: t('title_import_pdf'),
+      description: t('description_select_pdf'),
+      children: <ConvertPdfForm />,
+    });
+  };
+
+  const openSaveModifierChainDialog = (
+    modifiers: AnyModifier[],
+    modifiersValues: Record<string, unknown>,
+    name?: string,
+  ) => {
+    openFormDialog({
+      title: t('btn_save_modifierchain'),
+      confirmLabel: t('btn_save'),
+      renderForm: (formRef) => (
+        <SaveModifierChainForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          modifiers={modifiers}
+          modifierValues={modifiersValues}
+          name={name}
+        />
+      ),
+    });
+  };
+
+  const openLoadModifierChainDialog = (onResult: (result: ModifierChainData) => void) => {
+    openFormDialog({
+      title: t('btn_load_modifiers'),
+      confirmLabel: t('btn_open'),
+      renderForm: (formRef) => (
+        <LoadModifierChainForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          closeDialog={closeDialog}
+          onResult={onResult}
+        />
+      ),
+    });
+  };
+
+  const openStartWorkerDialog = (workerName: string, scope: Scope) => {
+    const plugin = workerPlugins[workerName];
+    if (plugin.runtimeParametersSchema === undefined) {
+      console.error(`Plugin ${workerName} does not have a runtime parameters schema`);
+      return;
+    }
+
+    openFormDialog({
+      title: `${t('btn_start_analysis')} - ${plugin.info.displayName}`,
+      confirmLabel: t('btn_start'),
+      renderForm: (formRef) => (
+        <StartWorkerForm
+          formRef={formRef}
+          scope={scope}
+          workerName={workerName}
+          setCanSubmit={setCanSubmit}
+        />
+      ),
+    });
+  };
+
   return {
     openOpenManifestDialog,
     openImportCollectionDialog,
@@ -199,6 +301,11 @@ const useDialog = () => {
     openDuplicateLayoutDialog,
     openRemoveAnnotationsDialog,
     openExportCollectionDialog,
+    openConvertPdfForm: openConvertPdfDialog,
+    openSaveModifierChainDialog,
+    openLoadModifierChainDialog,
+    openStartWorkerDialog,
+    openDupicateCollectionDialog,
   };
 };
 

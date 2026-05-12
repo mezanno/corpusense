@@ -1,5 +1,4 @@
-import { useAppSelector } from '@/hooks/hooks';
-import { selectDatafieldById } from '@/state/selectors/models';
+import { useModels } from '@/hooks/data/models/useModels';
 import { Group, Line, Rect } from 'react-konva';
 import { useMarkupContext } from '../reducers/MarkupContext';
 
@@ -19,9 +18,7 @@ const WordLabelBackground = ({
   const { state } = useMarkupContext();
   const isSelected = state.selected.includes(index);
   const dataFieldId = state.wordRects[index].dataFieldId;
-  const dataField = useAppSelector((s) =>
-    dataFieldId !== undefined ? selectDatafieldById(s, dataFieldId) : null,
-  );
+  const dataField = useModels().getDatafieldById(dataFieldId ?? '');
 
   //compute which border to show
   const showTop = dataField !== null;

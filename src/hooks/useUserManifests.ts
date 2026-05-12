@@ -3,14 +3,6 @@ import { AuthError, PostgrestError } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 
 //TODO : il est possible de générer les types à partir de supabase : npx supabase gen types typescript --project-id <project-id> > supabase-types.ts
-type UserFile = {
-  id: string;
-  name: string;
-  bucket_id: string;
-  owner: string;
-  created_at: string;
-  updated_at: string;
-};
 
 export function useUserManifests() {
   const [existingManifests, setExistingManifests] = useState<string[]>([]);
@@ -31,10 +23,7 @@ export function useUserManifests() {
           setLoading(false);
           return;
         }
-        const {
-          data: userFiles,
-          error: userFilesError,
-        }: { data: UserFile[] | null; error: PostgrestError | null } = await supabase
+        const { data: userFiles, error: userFilesError } = await supabase
           .from('user_files')
           .select()
           .eq('bucket_id', 'corpusense')
@@ -44,10 +33,13 @@ export function useUserManifests() {
         if (userFilesError) {
           setError(userFilesError);
         } else if (userFiles !== null && userFiles.length > 0) {
-          const urls = userFiles.map((file) => {
-            const { data } = supabase.storage.from('corpusense').getPublicUrl(file.name);
-            return data.publicUrl;
-          });
+          const urls = userFiles
+            .map((file) => {
+              if (file.name === null) return '';
+              const { data } = supabase.storage.from('corpusense').getPublicUrl(file.name);
+              return data.publicUrl;
+            })
+            .filter((url) => !!url);
           setExistingManifests(urls);
         } else {
           setExistingManifests([]);

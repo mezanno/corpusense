@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 @plugin 'tailwindcss-animate';
-@plugin "@tailwindcss/typography";
+@plugin '@tailwindcss/typography';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -73,7 +73,8 @@
 
 :root {
   /* Couleurs principales */
-  --background: var(--color-saffron-600); /* ok */
+  /* --background: var(--color-saffron-600); ok */
+  --background: var(--color-saffron-800); /* ok */
   --foreground: var(--color-dark-slate-gray-100); /* ok */
   --foreground-secondary: var(--color-dark-slate-gray-100);
   --foreground-button: var(--color-eggshell-500);
@@ -228,7 +229,7 @@
 
 @layer components {
   .soft-button {
-    @apply flex cursor-pointer items-center justify-center gap-2 space-x-2 rounded-lg border border-[var(--border)] bg-[var(--primary)] p-2 font-semibold text-[var(--primary-foreground)] transition-colors duration-300 hover:border-[var(--primary)] hover:bg-[var(--card-hover)] hover:shadow-md focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:outline-none;
+    @apply flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--primary)] p-2 font-semibold text-[var(--primary-foreground)] shadow-md transition-all duration-100 hover:bg-[var(--card-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 active:translate-y-[3px] active:shadow;
   }
   .soft-button-danger {
     @apply flex cursor-pointer items-center justify-center gap-2 space-x-2 rounded-lg border border-[var(--border)] bg-[var(--primary-foreground)] p-2 font-semibold text-[var(--foreground-button)] transition-colors duration-300 hover:border-[var(--primary)] hover:bg-dark-slate-gray-600 hover:shadow-md focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:outline-none;
@@ -244,6 +245,14 @@
       var(--foreground-button) 10px,
       var(--foreground-button) 20px
     );
+  }
+
+  .card-file {
+    @apply h-60 max-w-[180px] cursor-pointer border-2 border-secondary bg-card-foreground transition duration-150 ease-linear hover:-translate-y-0.5 hover:border-primary hover:bg-card;
+  }
+
+  .card-model {
+    @apply cursor-pointer border-2 border-secondary bg-card-foreground transition duration-150 ease-linear hover:-translate-y-0.5 hover:border-primary hover:bg-card;
   }
 }
 

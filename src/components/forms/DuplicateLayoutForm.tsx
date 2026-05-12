@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { CanvasScope } from '@/data/models/Scope';
-import { useAppDispatch } from '@/hooks/hooks';
-import { FormProps } from '@/hooks/ui/useDialog';
 import {
   DuplicateDistribution,
   DuplicateLimit,
-  duplicateRegionsRequest,
-} from '@/state/reducers/annotations';
+  useAnnotationActions,
+} from '@/hooks/data/annotations/useAnnotationActions';
+import { FormProps } from '@/hooks/ui/useDialog';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +24,7 @@ const contactFormSchema = z.object({
 
 const DuplicateLayoutForm = ({ formRef, closeDialog, scope }: DuplicateLayoutFormProps) => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
+  const { duplicateRegions } = useAnnotationActions();
 
   const form = useForm<z.infer<typeof contactFormSchema>>({
     resolver: zodResolver(contactFormSchema),
@@ -36,14 +35,13 @@ const DuplicateLayoutForm = ({ formRef, closeDialog, scope }: DuplicateLayoutFor
     mode: 'onChange',
   });
 
-  function onSubmit(values: z.infer<typeof contactFormSchema>) {
-    appDispatch(
-      duplicateRegionsRequest({
-        scope,
-        distribution: values.distribution as DuplicateDistribution,
-        limit: values.limit as DuplicateLimit,
-      }),
-    );
+  async function onSubmit(values: z.infer<typeof contactFormSchema>) {
+    await duplicateRegions({
+      scope,
+      distribution: values.distribution as DuplicateDistribution,
+      limit: values.limit as DuplicateLimit,
+    });
+
     closeDialog?.();
   }
 

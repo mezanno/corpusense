@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { ElementType } from '@/data/models/Annotation';
 import { Scope } from '@/data/models/Scope';
-import { useAppDispatch } from '@/hooks/hooks';
+import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { removeAnnotationsByScopeRequest } from '@/state/reducers/annotations';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -32,7 +31,7 @@ const schema = z.object(checkbox);
 
 const RemoveAnnotationsForm = ({ scope, formRef }: RemoveAnnotationsFormProps) => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
+  const { removeAnnotationsByScope } = useAnnotationActions();
 
   const form = useForm<Record<string, boolean | undefined>>({
     resolver: zodResolver(schema),
@@ -40,13 +39,13 @@ const RemoveAnnotationsForm = ({ scope, formRef }: RemoveAnnotationsFormProps) =
     mode: 'onChange',
   });
 
-  const onSubmit = (values: z.infer<typeof schema>) => {
+  const onSubmit = async (values: z.infer<typeof schema>) => {
     if (values !== undefined) {
       const types = Object.entries(values)
         .filter(([_, selected]) => selected ?? false)
         .map(([type, _]) => type as ElementType);
 
-      appDispatch(removeAnnotationsByScopeRequest({ scope, types }));
+      await removeAnnotationsByScope(scope, types);
     }
   };
 

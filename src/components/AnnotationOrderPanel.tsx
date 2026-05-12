@@ -1,32 +1,27 @@
-import { Annotation, getAnnotationType } from '@/data/models/Annotation';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { updateAnnotationOrderRequest } from '@/state/reducers/annotations';
-import { selectLastOrderByType } from '@/state/selectors/annotations';
+import { Annotation } from '@/data/models/Annotation';
+import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import '@annotorious/openseadragon/annotorious-openseadragon.css';
 import { Button } from './ui/button';
 
-const AnnotationOrderPanel = ({ annotation }: { annotation: Annotation }) => {
-  const appDispatch = useAppDispatch();
-  const lastOrder = useAppSelector((state) =>
-    selectLastOrderByType(state, getAnnotationType(annotation)),
-  );
+const AnnotationOrderPanel = ({
+  annotation,
+  lastOrder,
+}: {
+  annotation: Annotation;
+  lastOrder: number;
+}) => {
+  const { updateAnnotationOrder } = useAnnotationActions();
 
   const handlePlus = () => {
-    appDispatch(
-      updateAnnotationOrderRequest({
-        annotationId: annotation.id,
-        value: (annotation.order ?? 0) + 1,
-      }),
-    );
+    void (async () => {
+      await updateAnnotationOrder(annotation.id, (annotation.order ?? 0) + 1);
+    })();
   };
 
   const handleMinus = () => {
-    appDispatch(
-      updateAnnotationOrderRequest({
-        annotationId: annotation.id,
-        value: (annotation.order ?? 0) - 1,
-      }),
-    );
+    void (async () => {
+      await updateAnnotationOrder(annotation.id, (annotation.order ?? 0) - 1);
+    })();
   };
 
   return (

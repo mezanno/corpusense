@@ -1,0 +1,36 @@
+import { useManifests } from '@/hooks/data/manifests/useManifests';
+import useDialog from '@/hooks/ui/useDialog';
+import { Globe, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent } from '../ui/card';
+import { ManifestCard } from './ManifestCard';
+
+const IIIFSourcesDashboard = () => {
+  const { t } = useTranslation();
+  const { openOpenManifestDialog } = useDialog();
+  const { historyDetails } = useManifests();
+
+  return (
+    <div className='flex h-full flex-col'>
+      <h1 className='flex items-center gap-2 text-2xl font-bold'>
+        <Globe />
+        <span>{t('page_title_iiif_storage')}</span>
+      </h1>
+
+      <div className='mt-2 flex h-full flex-wrap gap-2 overflow-y-auto'>
+        <Card className='card-file border-dashed' onClick={openOpenManifestDialog}>
+          <CardContent className='flex h-full w-full flex-col items-center justify-center text-secondary hover:text-primary'>
+            <Plus size={48} />
+            <span className='text-center'>{t('btn_add_pdf')}</span>
+          </CardContent>
+        </Card>
+
+        {historyDetails.map((details) => (
+          <ManifestCard key={details.id} details={details} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default IIIFSourcesDashboard;

@@ -1,9 +1,8 @@
 import { NamedEntity } from '@/data/models/NamedEntity';
-import { useAppSelector } from '@/hooks/hooks';
-import { selectDatafieldById } from '@/state/selectors/models';
+import { useModels } from '@/hooks/data/models/useModels';
 
 const EntityViewer = ({ entity }: { entity: NamedEntity }) => {
-  const datafield = useAppSelector((state) => selectDatafieldById(state, entity.dataFieldId));
+  const datafield = useModels().getDatafieldById(entity.dataFieldId);
   return (
     <div>
       {datafield?.name}

@@ -1,29 +1,23 @@
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { Collection } from '@/data/models/Collection';
+import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
 import useDialog from '@/hooks/ui/useDialog';
-import { recomputeRegionsRequest } from '@/state/reducers/annotations';
-import { toggleCollectionOfflineRequest } from '@/state/reducers/collections';
-import { selectIsCollectionOffline } from '@/state/selectors/collections';
-import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
-import { Pin } from 'lucide-react';
+import { Copy } from 'lucide-react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { IconButtonWithTooltip } from './IconButtonWithTooltip';
+import { useWorkerContext } from './reducers/WorkerContext';
 import Toolbar from './ToolBar';
-import { Toggle } from './ui/toggle';
 
 const CollectionToolbar = memo(function CollectionToolbar({
-  collectionId,
+  collection,
 }: {
-  collectionId: string;
+  collection: Collection;
 }) {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
-  const { openRemoveAnnotationsDialog } = useDialog();
-  const isWorkerRunning = useAppSelector((state) =>
-    selectIsWorkerOrTaskRunning(state, { collectionId }),
-  );
-  const isCollectionOffline = useAppSelector((state) =>
-    selectIsCollectionOffline(state, collectionId),
-  );
+  const { openRemoveAnnotationsDialog, openDupicateCollectionDialog } = useDialog();
+  const isWorkerRunning = useWorkerContext().isWorkerOrTaskRunning({ collectionId: collection.id });
+
+  const { recomputeRegions } = useAnnotationActions();
   // const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
 
   if (isWorkerRunning) {
@@ -35,68 +29,30 @@ const CollectionToolbar = memo(function CollectionToolbar({
   }
 
   const handleDeleteAllAnnotations = () => {
-    openRemoveAnnotationsDialog({ collectionId });
+    openRemoveAnnotationsDialog({ collectionId: collection.id });
   };
 
   const handleRecomputeRegions = () => {
-    appDispatch(recomputeRegionsRequest(collectionId));
+    void (async () => {
+      await recomputeRegions(collection.id);
+    })();
   };
 
-  //TODO! voir comment transmettre des params dynamiques
-  // const handleExtractData = () => {
-  //   setAnalysisDialogOpen(true);
-  // };
-
-  const handleToggleOffline = () => {
-    appDispatch(toggleCollectionOfflineRequest(collectionId));
+  const handleDuplicate = () => {
+    openDupicateCollectionDialog(collection);
   };
-
-  // const closeAnalysisDialog = (model: DataModel) => {
-  //   setAnalysisDialogOpen(false);
-
-  //   if (collectionId !== undefined) {
-  //     appDispatch(
-  //       startWorkerProcess({
-  //         workerName: 'mistral',
-  //         params: {
-  //           model,
-  //           workerName: 'mistral',
-  //         },
-  //         scope: { collectionId },
-  //       }),
-  //     );
-  //   }
-  // };
 
   return (
-    <div className='panel justify-between'>
+    <div className='flex gap-2'>
       <Toolbar
         title={t('title_collection_actions')}
         handleDeleteAllAnnotations={handleDeleteAllAnnotations}
         handleRecomputeRegions={handleRecomputeRegions}
-        scope={{ collectionId }}
+        scope={{ collectionId: collection.id }}
       />
-      <div>
-        <Toggle
-          className='soft-button'
-          size={null}
-          pressed={isCollectionOffline}
-          onClick={handleToggleOffline}
-          disabled={isWorkerRunning}
-          title={isCollectionOffline ? t('button_set_offline') : t('button_set_online')}
-        >
-          <Pin size={24} />
-        </Toggle>
-      </div>
-      {/* <Dialog open={analysisDialogOpen} onOpenChange={setAnalysisDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('title_generate_data')}</DialogTitle>
-            <DialogDescription>{t('description_select_model')}</DialogDescription>
-          </DialogHeader>
-          <SelectModelForm close={closeAnalysisDialog} collectionId={collectionId} />
-        </DialogContent>
-      </Dialog> */}
+      <IconButtonWithTooltip tooltip={t('btn_duplicate')} onClick={() => void handleDuplicate()}>
+        <Copy />
+      </IconButtonWithTooltip>
     </div>
   );
 });

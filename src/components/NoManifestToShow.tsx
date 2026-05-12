@@ -1,17 +1,16 @@
-import { useAppSelector } from '@/hooks/hooks';
-import { selectHistory } from '@/state/selectors/manifests';
+import { useManifests } from '@/hooks/data/manifests/useManifests';
 import { useTranslation } from 'react-i18next';
 import HistoryNav from './HistoryNav';
 import NothingToShow from './NothingToShow';
 import Welcome from './Welcome';
 
 const NoManifestToShow = () => {
-  const history = useAppSelector(selectHistory);
+  const { historyDetails } = useManifests();
   const { t } = useTranslation();
 
   return (
     <div className='text-mezanno-4 m-2 flex h-full w-full max-w-[800px] flex-col justify-center p-2'>
-      {history.length > 0 ? (
+      {historyDetails.length > 0 ? (
         <>
           <NothingToShow />
 

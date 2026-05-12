@@ -1,30 +1,23 @@
-import { getPreloadedState } from '@/__tests__/preloadedState';
+import manifest from '@/__tests__/manifest.json';
 import { renderWithProviders } from '@/__tests__/utils';
-import { RootState } from '@/state/store';
+import { Manifest } from '@iiif/presentation-3';
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import ManifestDetails from '../ManifestDetails';
 
 describe('ManifestDetails', () => {
-  it('should display loading if manifest is loading', () => {
-    const preloadedState: RootState = {
-      ...getPreloadedState(),
-      manifests: {
-        ...getPreloadedState().manifests,
-        isLoading: true,
-      },
-    };
-    if (preloadedState.manifests.loadedData?.content) {
-      renderWithProviders(
-        <ManifestDetails manifest={preloadedState.manifests.loadedData?.content} />,
-        { preloadedState },
-      );
-    }
+  const mockManifest = manifest as unknown as Manifest;
 
-    expect(screen.getByRole('status')).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true');
+  it('should render manifest details', () => {
+    renderWithProviders(<ManifestDetails manifest={mockManifest} />);
 
-    expect(screen.queryByRole('region', { name: 'manifest details' })).not.toBeInTheDocument();
-    // screen.getByRole('toto');
+    expect(screen.getByRole('region', { name: 'manifest details' })).toBeInTheDocument();
+    expect(screen.getByTestId('clover-label')).toBeInTheDocument();
+    expect(screen.getByTestId('clover-summary')).toBeInTheDocument();
+  });
+
+  it('should render metadata from manifest', () => {
+    renderWithProviders(<ManifestDetails manifest={mockManifest} />);
+    expect(screen.getByTestId('clover-metadata')).toBeInTheDocument();
   });
 });

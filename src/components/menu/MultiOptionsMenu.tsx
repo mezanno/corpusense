@@ -1,9 +1,8 @@
 import { Scope } from '@/data/models/Scope';
-import { useAppSelector } from '@/hooks/hooks';
-import { selectIsWorkerOrTaskRunning } from '@/state/selectors/workers';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClockLoader } from 'react-spinners';
+import { useWorkerContext } from '../reducers/WorkerContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,7 +43,7 @@ const MultiOptionsMenu = ({
   color?: string;
 }) => {
   const { t } = useTranslation();
-  const isRunning = useAppSelector((state) => selectIsWorkerOrTaskRunning(state, scope));
+  const isRunning = useWorkerContext().isWorkerOrTaskRunning(scope);
 
   const generateDropdownMenuItems = (items: MultiOptionsMenuItem[]) => {
     return items.map((item) => (
@@ -82,7 +81,7 @@ const MultiOptionsMenu = ({
         )}
       </DropdownMenuGroup>
     ));
-  }, [params.items, isRunning]);
+  }, [params.items, isRunning, t, generateDropdownMenuItems]);
 
   //if no action is provided, the menu will not be shown
   if (params.items.every((item) => item.action === undefined)) {

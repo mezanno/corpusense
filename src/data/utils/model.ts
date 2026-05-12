@@ -1,4 +1,4 @@
-import i18next from 'i18next';
+import i18n from '@/i18n';
 import { DataField, DataModel } from '../models/DataModel';
 
 const generatePreview = (model: DataModel) => {
@@ -8,7 +8,7 @@ const generatePreview = (model: DataModel) => {
     preview = preview.concat(`"${field.name}":{`);
     preview = preview.concat(`"type":"${field.type}",`);
     preview = preview.concat(
-      `"description":"${field.description}.${field?.generated === true ? i18next.t('ia_generated') : ''}"`,
+      `"description":"${field.description}.${field?.generated === true ? i18n.t('ia_generated') : ''}"`,
     );
     preview = preview.concat(`}`);
     if (i !== model.fields.length - 1) {
@@ -19,8 +19,8 @@ const generatePreview = (model: DataModel) => {
   return preview;
 };
 
-const generateSchema = (model: DataModel) => {
-  const modelWithConfidfidence = {
+const generateSchema = (model: DataModel, lastEntryFound?: unknown) => {
+  const modelWithNumberedLines = {
     ...model,
     fields: [
       ...model.fields,
@@ -41,9 +41,12 @@ const generateSchema = (model: DataModel) => {
   const schema = {
     type: 'object',
     properties: {
-      ...modelWithConfidfidence.fields.reduce(
+      ...modelWithNumberedLines.fields.reduce(
         (acc, field) => {
-          acc[field.name] = generateField(field);
+          acc[field.name] = generateField(
+            field,
+            getValueForFieldInObject<string>(lastEntryFound, field.name),
+          );
           return acc;
         },
         {} as Record<string, { type: string; description: string }>,
@@ -53,25 +56,78 @@ const generateSchema = (model: DataModel) => {
   return JSON.stringify(schema, null, 2);
 };
 
-const generateField = (field: DataField) => {
+/*
+Cette fonction permet de récupérer la valeur d'un champ dans un objet, même si ce champ est imbriqué profondément. 
+Elle utilise une approche récursive pour parcourir l'objet et ses sous-objets à la recherche du champ spécifié. 
+La fonction prend également en compte les références circulaires pour éviter les boucles infinies.
+*/
+const getValueForFieldInObject = <T = unknown>(
+  obj: unknown,
+  fieldName: string,
+  visited = new Set<unknown>(), //pour éviter les références circulaires (boucles infinies)
+): T | undefined => {
+  if (typeof obj !== 'object' || obj === null) return undefined;
+  if (visited.has(obj)) return undefined;
+
+  visited.add(obj);
+
+  if (fieldName in obj) {
+    return (obj as Record<string, unknown>)[fieldName] as T;
+  }
+
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      const result = getValueForFieldInObject<T>(item, fieldName, visited);
+      if (result !== undefined) return result;
+    }
+  } else {
+    for (const key in obj) {
+      const result = getValueForFieldInObject<T>(
+        (obj as Record<string, unknown>)[key],
+        fieldName,
+        visited,
+      );
+      if (result !== undefined) return result;
+    }
+  }
+
+  return undefined;
+};
+
+const generateField = (field: DataField, lastValueFound?: string) => {
   if (field.isArray === true) {
     return {
       type: 'array',
       description: (field.description ?? '').concat(
-        field?.generated === true ? i18next.t('ia_generated') : '',
+        field?.generated === true ? i18n.t('ia_generated') : '',
       ),
       items: {
         type: field.type,
       },
     };
   } else {
-    return {
-      type: field.type,
-      description: (field.description ?? '').concat(
-        field.generated === true ? i18next.t('ia_generated') : '',
-      ),
-    };
+    if (field.getPreviousValue === true && lastValueFound !== undefined) {
+      return {
+        type: field.type,
+        description: (field.description ?? '').concat(
+          field.generated === true ? i18n.t('ia_generated') : '',
+          ' ',
+          i18n.t('previous_value_description', { previousValue: lastValueFound }),
+        ),
+      };
+    } else {
+      return {
+        type: field.type,
+        description: (field.description ?? '').concat(
+          field.generated === true ? i18n.t('ia_generated') : '',
+        ),
+      };
+    }
   }
 };
 
-export { generatePreview, generateSchema };
+const hasPreviousValueField = (model: DataModel): boolean => {
+  return model.fields.some((field) => field.getPreviousValue === true);
+};
+
+export { generatePreview, generateSchema, hasPreviousValueField };

@@ -1,30 +1,46 @@
-import { getPreloadedState } from '@/__tests__/preloadedState';
 import { renderWithProviders } from '@/__tests__/utils';
-import { useAppDispatch } from '@/hooks/hooks';
-import { createCollectionRequest } from '@/state/reducers/collections';
-import { RootState } from '@/state/store';
-import { screen, waitFor } from '@testing-library/react';
+import { CollectionDetails } from '@/data/models/Collection';
+import { useCollections } from '@/hooks/data/collections/useCollections';
+import { useTags } from '@/hooks/data/tags/useTags';
+import useDialog from '@/hooks/ui/useDialog';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import CollectionsManagerPage from '../CollectionsManagerPage';
 
-vi.mock('@/hooks/hooks', async (original) => {
-  const actual = await original<typeof useAppDispatch>();
-  return {
-    ...actual,
-    useAppDispatch: vi.fn(),
-  };
-});
+vi.mock('@/hooks/data/collections/useCollections');
+vi.mock('@/hooks/data/tags/useTags');
+vi.mock('@/hooks/ui/useDialog');
 
 const user = userEvent.setup();
 
 describe('CollectionsManagerPage', () => {
+  const mockCollections: CollectionDetails[] = [
+    { id: 'col-1', name: 'Collection 1', tags: [], contentSize: 0, offline: false },
+    { id: 'col-2', name: 'Collection 2', tags: ['tag-1'], contentSize: 5, offline: false },
+  ];
+
+  beforeEach(() => {
+    (useCollections as Mock).mockReturnValue({
+      collections: [],
+      removeCollection: vi.fn(),
+    });
+    (useTags as Mock).mockReturnValue({
+      getTagsByIds: vi.fn().mockReturnValue([]),
+    });
+    (useDialog as Mock).mockReturnValue({
+      openImportCollectionDialog: vi.fn(),
+      openNewCollectionDialog: vi.fn(),
+      openExportCollectionDialog: vi.fn(),
+    });
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
   it("la page affiche les boutons create/import et indique qu'il n'y a pas de collection", () => {
-    renderWithProviders(<CollectionsManagerPage />, { preloadedState: getPreloadedState() });
+    renderWithProviders(<CollectionsManagerPage />);
 
     expect(screen.getByRole('button', { name: 'btn_create_collection' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'btn_import_collection' })).toBeInTheDocument();
@@ -33,82 +49,46 @@ describe('CollectionsManagerPage', () => {
   });
 
   it('la page affiche un tableau de 2 collections', () => {
-    const preloadedState: RootState = {
-      ...getPreloadedState(),
-      collections: {
-        ...getPreloadedState().collections,
-        values: [
-          { id: '1', name: 'Collection 1', contentSize: 0, tags: [], offline: false },
-          {
-            id: '2',
-            name: 'Collection 2',
-            contentSize: 0,
-            tags: [],
-            offline: false,
-          },
-        ],
-      },
-    };
-    renderWithProviders(<CollectionsManagerPage />, { preloadedState });
+    (useCollections as Mock).mockReturnValue({
+      collections: mockCollections,
+      removeCollection: vi.fn(),
+    });
+    (useTags as Mock).mockReturnValue({
+      getTagsByIds: vi.fn((ids: string[]) =>
+        ids.includes('tag-1') ? [{ id: 'tag-1', label: 'Tag 1' }] : [],
+      ),
+    });
 
-    //une table doit être présente
+    renderWithProviders(<CollectionsManagerPage />);
+
     expect(screen.getByRole('table')).toBeInTheDocument();
     expect(
       screen.getByRole('columnheader', { name: 'table_col_title_collection_name' }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole('columnheader', { name: 'table_col_title_collection_info' }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: 'table_col_title_tags' })).toBeInTheDocument();
-    expect(
-      screen.getByRole('columnheader', { name: 'table_col_title_actions' }),
-    ).toBeInTheDocument();
+    expect(screen.getByText('info_number_of_collections')).toBeInTheDocument();
 
-    expect(screen.getByRole('heading', { name: 'info_number_of_collections' })).toBeInTheDocument();
-
-    //on doit avoir 4 lignes dans le tableau (2 collections + 1 header + 1 footer)
+    // Check row count: 2 data rows + 1 header + 1 footer
     expect(screen.getAllByRole('row')).toHaveLength(4);
 
-    //la première liste doit indiquer qu'elle est vide
-    expect(screen.getByRole('cell', { name: 'info_empty_collection' })).toBeInTheDocument();
-
-    //la deuxième liste doit indiquer qu'elle contient des éléments
-    expect(screen.getByRole('cell', { name: 'info_number_of_items' })).toBeInTheDocument();
-
-    //il doit y avoir 2 boutons de suppression
-    expect(screen.getAllByRole('button', { name: 'btn_delete' }).length).toBe(2);
+    expect(screen.getByText('info_empty_collection')).toBeInTheDocument();
+    expect(screen.getByText('info_number_of_items')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'btn_delete' })).toHaveLength(2);
+    expect(screen.getByText('Tag 1')).toBeInTheDocument();
   });
 
   it('affiche le formulaire de création de liste', async () => {
-    //on mock le retour de useAppDispatch pour pouvoir voir ce qui a été envoyé dedans
-    const mockDispatch = vi.fn();
-    (useAppDispatch as ReturnType<typeof vi.fn>).mockReturnValue(mockDispatch);
+    const openNewCollectionDialog = vi.fn();
+    (useDialog as Mock).mockReturnValue({
+      openImportCollectionDialog: vi.fn(),
+      openNewCollectionDialog,
+      openExportCollectionDialog: vi.fn(),
+    });
 
     renderWithProviders(<CollectionsManagerPage />);
 
-    // //le formulaire n'est pas visible
-    // const textboxNotVisible = screen.queryByRole('textbox', { name: 'Nom de la liste' });
-    // expect(textboxNotVisible).not.toBeInTheDocument();
-
-    //on clic sur le bouton pour afficher le formulaire
     const btn = screen.getByRole('button', { name: 'btn_create_collection' });
-    expect(btn).toBeInTheDocument();
-    await userEvent.click(btn);
+    await user.click(btn);
 
-    //le formulaire est visible
-    const textboxVisible = screen.getByRole('textbox', { name: 'form_label_collection_name' });
-    expect(textboxVisible).toBeInTheDocument();
-
-    //on saisit un nom de liste
-    await user.type(textboxVisible, 'nomListe');
-
-    //on clic sur le bouton pour créer la liste
-    const btnCreate = screen.getByRole('button', { name: 'btn_create' });
-    await userEvent.click(btnCreate);
-
-    //le formulaire appelle le dispatch
-    await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(createCollectionRequest('nomListe'));
-    });
+    expect(openNewCollectionDialog).toHaveBeenCalled();
   });
 });

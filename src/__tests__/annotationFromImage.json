@@ -4,7 +4,7 @@
       "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
       "id": "799caa82-346a-475f-8689-2d6ba8ef3b65/class",
       "purpose": "classifying",
-      "value": "REGION"
+      "value": "TEXT_REGION"
     },
     {
       "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
@@ -15,9 +15,8 @@
   ],
   "canvasId": "https://gallica.bnf.fr/iiif/ark:/12148/bpt6k2012653g/canvas/f15",
   "collectionId": "collectionId",
-
   "id": "799caa82-346a-475f-8689-2d6ba8ef3b65",
-  "order": 0,
+  "type": "TEXT_REGION",
   "target": {
     "annotation": "799caa82-346a-475f-8689-2d6ba8ef3b65",
     "selector": {

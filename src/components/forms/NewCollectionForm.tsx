@@ -8,27 +8,50 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { AllOrNothing } from '@/data/utils/types';
+import { useCollections } from '@/hooks/data/collections/useCollections';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { createCollectionRequest } from '@/state/reducers/collections';
-import { selectCollectionNameExists } from '@/state/selectors/collections';
+import i18n from '@/i18n';
 import { zodResolver } from '@hookform/resolvers/zod';
-import i18next from 'i18next';
+import { Canvas } from '@iiif/presentation-3';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
-const formSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, { message: i18next.t('form_error_required') }),
-});
+export type NewCollectionFormParams = AllOrNothing<{
+  selection: Canvas[];
+  manifestId: string;
+}>;
 
-const NewCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
+type NewCollectionFormProps = FormProps & NewCollectionFormParams;
+
+const NewCollectionForm = ({
+  formRef,
+  setCanSubmit,
+  selection,
+  manifestId,
+  closeDialog,
+}: NewCollectionFormProps) => {
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
+  const { createCollection, createCollectionWithSelection, nameAlreadyExists } = useCollections();
+
+  const formSchema = z
+    .object({
+      name: z
+        .string()
+        .trim()
+        .min(2, { message: i18n.t('form_error_required') }),
+    })
+    .superRefine((data, ctx) => {
+      if (nameAlreadyExists(data.name)) {
+        ctx.addIssue({
+          path: ['name'],
+          code: 'custom',
+          message: t('form_collection_name_already_exists'),
+        });
+      }
+    });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -38,31 +61,21 @@ const NewCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
     mode: 'onChange',
   });
 
-  const name = form.watch('name'); //permet de redéclencher un render à chaque modif du champ name
-  const collectionNameExists = useAppSelector((state) => selectCollectionNameExists(state, name));
-  const canSubmit = form.formState.isDirty && form.formState.isValid && !collectionNameExists;
-
   useEffect(() => {
-    if (collectionNameExists) {
-      form.setError('name', {
-        type: 'manual',
-        message: t('form_collection_name_already_exists'),
-      });
-      setCanSubmit(false);
-    } else if (!form.formState.isValid) {
-      form.setError('name', {
-        type: 'manual',
-        message: t('form_error_required'),
-      });
-      setCanSubmit(false);
-    } else {
-      form.clearErrors('name');
-      setCanSubmit(form.formState.isDirty && form.formState.isValid);
-    }
-  }, [canSubmit]);
+    setCanSubmit(form.formState.isDirty && form.formState.isValid);
+  }, [form.formState]);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    dispatch(createCollectionRequest(values.name));
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (selection && selection.length > 0 && manifestId !== undefined) {
+      await createCollectionWithSelection({
+        selection,
+        name: values.name,
+        manifestId,
+      });
+    } else {
+      await createCollection(values.name);
+    }
+    if (closeDialog) closeDialog();
   }
 
   return (
@@ -75,21 +88,12 @@ const NewCollectionForm = ({ formRef, setCanSubmit }: FormProps) => {
             <FormItem>
               <FormLabel id='form-label'>{t('form_label_collection_name')}</FormLabel>
               <FormControl>
-                <Input {...field} aria-describedby='form-label' />
+                <Input {...field} aria-describedby='form-label' autoFocus />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        {/* <button
-          className={`${canSubmit ? 'soft-button' : 'soft-button-diabled'}`}
-          type='submit'
-          title={t('btn_create')}
-          disabled={!canSubmit}
-        >
-          {t('btn_create')}
-        </button> */}
       </form>
     </Form>
   );

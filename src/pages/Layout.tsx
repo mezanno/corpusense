@@ -1,11 +1,12 @@
-import HistoryDrawer from '@/components/drawers/HistoryDrawer';
+import LanguageFlag from '@/components/LanguageFlag';
 import { Toaster } from '@/components/ui/sonner';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
+import useJobRealtime from '@/hooks/useJobRealtime';
 import { resetLastEvent } from '@/state/reducers/events';
 import { selectLastErrorEvent, selectLastInfoEvent } from '@/state/selectors/events';
-import { FolderOpen } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Mail } from 'lucide-react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -15,11 +16,10 @@ import LayoutSideBar from './LayoutSidebar';
 const Layout = () => {
   const { t } = useTranslation();
   const appDispatch = useAppDispatch();
-  const { openOpenManifestDialog, openContactUsDialog } = useDialog();
+  const { openContactUsDialog } = useDialog();
   const lastInfo = useAppSelector(selectLastInfoEvent);
   const lastError = useAppSelector(selectLastErrorEvent);
-  const [selectedWorkerId, setSelectedWorkerId] = useState<string>('');
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  useJobRealtime();
 
   useEffect(() => {
     if (lastInfo !== undefined) {
@@ -35,44 +35,25 @@ const Layout = () => {
     }
   }, [lastError]);
 
-  useEffect(() => {
-    if (selectedWorkerId !== '') {
-      setIsOpen(true);
-    }
-  }, [selectedWorkerId]);
-
-  // Reset selected worker when drawer closes (if not, the drawer will not reopen)
-  useEffect(() => {
-    if (!isOpen) {
-      setSelectedWorkerId('');
-    }
-  }, [isOpen]);
-
   return (
     <SidebarProvider>
-      <LayoutSideBar setSelectedWorkerId={setSelectedWorkerId} />
+      <LayoutSideBar />
       <SidebarInset className='flex h-screen min-w-0 flex-col'>
         <div className='flex h-full w-full flex-col p-2'>
-          <header className='flex shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
-            <div className='flex items-center space-x-2'>
+          <header className='flex shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12'>
+            <div className='flex w-full items-center justify-between space-x-2'>
               <SidebarTrigger />
-              <button
-                className='soft-button'
-                aria-label={t('btn_open_manifest')}
-                onClick={openOpenManifestDialog}
-              >
-                <FolderOpen size={16} />
-                {t('btn_open_manifest')}
-              </button>
-              <HistoryDrawer />
-              <button
-                className='soft-button'
-                aria-label={t('btn_open_contact')}
-                onClick={openContactUsDialog}
-              >
-                <FolderOpen size={16} />
-                {t('btn_open_contact')}
-              </button>
+              <div className='flex gap-2'>
+                <LanguageFlag />
+                <button
+                  className='soft-button'
+                  aria-label={t('btn_open_contact')}
+                  onClick={openContactUsDialog}
+                >
+                  <Mail size={16} />
+                  {t('btn_open_contact')}
+                </button>
+              </div>
             </div>
           </header>
           <main className='min-h-0 flex-1 pt-2'>

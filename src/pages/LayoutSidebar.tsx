@@ -1,3 +1,6 @@
+import { useCollectionContext } from '@/components/reducers/CollectionContext';
+import { useConnectedUserContext } from '@/components/reducers/ConnectedUserContext';
+import { useWorkerContext } from '@/components/reducers/WorkerContext';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -6,17 +9,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import WorkerLabel from '@/components/WorkerLabel';
+import WorkerLabel from '@/components/workers/WorkerLabel';
 import { WorkerStatus } from '@/data/models/Worker';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useCollections } from '@/hooks/data/collections/useCollections';
 import useDialog from '@/hooks/ui/useDialog';
 import useAppNavigation, { CorpusenseRoutes } from '@/hooks/useAppNavigation';
 import useExperimental from '@/hooks/useExperimental';
-import { logoutRequest } from '@/state/reducers/auth';
-import { removeFromOpenedCollections } from '@/state/reducers/collections';
-import { selectConnectedUser } from '@/state/selectors/auth';
-import { selectCollections, selectOpenedCollections } from '@/state/selectors/collections';
-import { selectWorkersByStatus } from '@/state/selectors/workers';
 import {
   Archive,
   Bolt,
@@ -25,7 +23,7 @@ import {
   Container,
   CornerDownRight,
   Database,
-  FolderSearch2,
+  Globe,
   List,
   MoreHorizontal,
   PocketKnife,
@@ -51,15 +49,12 @@ import {
   SidebarMenuSubItem,
 } from '../components/ui/sidebar';
 
-const WorkersSideBarGroup = ({
-  setSelectedWorkerId,
-}: {
-  setSelectedWorkerId: (id: string) => void;
-}) => {
+const WorkersSideBarGroup = () => {
   const { t } = useTranslation();
-  const workers = useAppSelector((state) =>
-    selectWorkersByStatus(state, [WorkerStatus.INPROGRESS, WorkerStatus.INPROGRESS_WITH_ERRORS]),
-  );
+  const workers = useWorkerContext().getWorkersByStatus([
+    WorkerStatus.INPROGRESS,
+    WorkerStatus.INPROGRESS_WITH_ERRORS,
+  ]);
 
   if (workers.length === 0) {
     return null; // No active workers, nothing to display
@@ -72,11 +67,7 @@ const WorkersSideBarGroup = ({
       <SidebarGroupContent>
         <SidebarMenu>
           {workers.map((worker) => (
-            <SidebarMenuItem
-              key={worker.id}
-              className='cursor-pointer overflow-hidden'
-              onClick={() => setSelectedWorkerId(worker.id)}
-            >
+            <SidebarMenuItem key={worker.id} className='cursor-pointer overflow-hidden'>
               <SidebarMenuButton asChild>
                 <Link
                   to={`/${CorpusenseRoutes.WORKERS}/${worker.id}`}
@@ -96,9 +87,8 @@ const WorkersSideBarGroup = ({
 
 const CollectionsSideBarGroup = () => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
   const navigation = useAppNavigation();
-  const openedCollections = useAppSelector(selectOpenedCollections);
+  const { openedCollections, removeFromOpenedCollections } = useCollectionContext();
 
   if (openedCollections.length === 0) {
     return null; // No collections opened, nothing to display
@@ -106,7 +96,7 @@ const CollectionsSideBarGroup = () => {
 
   const handleOnClose = async (collectionId: string) => {
     await navigation.goToManifestExplorer();
-    appDispatch(removeFromOpenedCollections(collectionId));
+    removeFromOpenedCollections(collectionId);
   };
 
   return (
@@ -165,22 +155,19 @@ const CollectionsSideBarGroup = () => {
 
 const SourcesSideBarGroup = () => {
   const { t } = useTranslation();
-  const { experimentalFeaturesActivated } = useExperimental();
 
   const menus = [
     {
-      title: t('page_title_manifexplorer'),
-      url: CorpusenseRoutes.MANIFEST,
-      icon: FolderSearch2,
+      title: t('page_title_iiif_storage'),
+      url: CorpusenseRoutes.IIIF_SOURCES,
+      icon: Globe,
+    },
+    {
+      title: t('page_title_local_storage'),
+      url: CorpusenseRoutes.LOCAL_SOURCES,
+      icon: Archive,
     },
   ];
-  if (experimentalFeaturesActivated) {
-    menus.push({
-      title: t('page_title_storage'),
-      url: CorpusenseRoutes.STORAGE,
-      icon: Archive,
-    });
-  }
 
   return (
     <SidebarGroup id='collections'>
@@ -215,16 +202,17 @@ const SourcesSideBarGroup = () => {
   );
 };
 
-const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: string) => void }) => {
+const LayoutSideBar = () => {
   const { t } = useTranslation();
-  const appDispatch = useAppDispatch();
-  const user = useAppSelector(selectConnectedUser);
-  const collections = useAppSelector(selectCollections);
+  const { logout, user } = useConnectedUserContext();
+  const { collections } = useCollections();
   const { openLoginDialog } = useDialog();
   const { experimentalFeaturesActivated } = useExperimental();
 
   const handleLogout = () => {
-    appDispatch(logoutRequest());
+    void (async () => {
+      await logout();
+    })();
   };
 
   return (
@@ -287,6 +275,14 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
+                <Link to={CorpusenseRoutes.MODIFIERCHAIN}>
+                  <Container />
+                  <span>{t('page_title_modifierchain_manager')}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
                 <Link to={CorpusenseRoutes.WORKERS}>
                   <PocketKnife />
                   <span>{t('page_title_workers_manager')}</span>
@@ -295,7 +291,7 @@ const LayoutSideBar = ({ setSelectedWorkerId }: { setSelectedWorkerId: (id: stri
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
-        <WorkersSideBarGroup setSelectedWorkerId={setSelectedWorkerId} />
+        <WorkersSideBarGroup />
       </SidebarContent>
 
       <SidebarFooter>

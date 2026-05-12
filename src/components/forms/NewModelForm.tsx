@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useModels } from '@/hooks/data/models/useModels';
 import { FormProps } from '@/hooks/ui/useDialog';
-import { createModelRequest } from '@/state/reducers/models';
-import { selectModels } from '@/state/selectors/models';
+import i18n from '@/i18n';
 import { zodResolver } from '@hookform/resolvers/zod';
-import i18next from 'i18next';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -13,19 +11,28 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
-const formSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, { message: i18next.t('form_error_required') }),
-  description: z.string().optional(),
-  fromModelId: z.string().optional(),
-});
-
 const NewModelForm = ({ formRef, setCanSubmit }: FormProps) => {
-  const appDispatch = useAppDispatch();
   const { t } = useTranslation();
-  const models = useAppSelector(selectModels);
+  const { models, createModel, nameAlreadyExists } = useModels();
+
+  const formSchema = z
+    .object({
+      name: z
+        .string()
+        .trim()
+        .min(1, { message: i18n.t('form_error_required') }),
+      description: z.string().optional(),
+      fromModelId: z.string().optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (nameAlreadyExists(data.name)) {
+        ctx.addIssue({
+          path: ['name'],
+          code: 'custom',
+          message: t('form_model_name_already_exists'),
+        });
+      }
+    });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,14 +47,12 @@ const NewModelForm = ({ formRef, setCanSubmit }: FormProps) => {
     setCanSubmit(form.formState.isDirty && form.formState.isValid);
   }, [form.formState]);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    appDispatch(
-      createModelRequest({
-        name: values.name,
-        description: values.description,
-        fromModelId: values.fromModelId,
-      }),
-    );
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    await createModel({
+      name: values.name,
+      description: values.description,
+      fromModelId: values.fromModelId,
+    });
     close();
   }
 
@@ -61,7 +66,7 @@ const NewModelForm = ({ formRef, setCanSubmit }: FormProps) => {
             <FormItem>
               <FormLabel id='form-name'>{t('form_label_model_name')}</FormLabel>
               <FormControl>
-                <Input {...field} aria-describedby='form-name' />
+                <Input {...field} aria-describedby='form-name' autoFocus />
               </FormControl>
               <FormMessage />
             </FormItem>

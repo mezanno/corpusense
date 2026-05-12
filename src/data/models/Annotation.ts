@@ -21,12 +21,14 @@ export enum ElementType {
   UNKNOWN = 'UNKNOWN',
   TEXT_LINE = 'TEXT_LINE',
   TEXT_REGION = 'TEXT_REGION',
+  TEMP = 'TEMP',
 }
 
 export interface Annotation extends ImageAnnotation {
   canvasId: string;
   collectionId: string;
   order: number;
+  type: ElementType;
   partOf?: string;
   previous?: string;
   next?: string;
@@ -35,6 +37,7 @@ export interface Annotation extends ImageAnnotation {
 export interface AnnotationDTO extends ImageAnnotation {
   canvasId: string;
   collectionId: string;
+  type: ElementType;
 }
 
 export interface AnnotationCreateDTO {
@@ -76,6 +79,7 @@ export function isAnnotation(obj: unknown): obj is Annotation {
     typeof a.canvasId === 'string' &&
     typeof a.collectionId === 'string' &&
     typeof a.order === 'number';
+  // typeof a.type === 'string';
 
   return isImageAnnotation && hasRequiredFields;
 }
@@ -105,7 +109,7 @@ export function getAnnotationType(annotation: Annotation | AnnotationDTO) {
   return type === undefined ? ElementType.UNKNOWN : convertToElementTypeEnum(type);
 }
 
-function getAnnotationValue(annotation: Annotation) {
+export function getAnnotationValue(annotation: Annotation) {
   const value = getValueForMotivation(annotation, W3CMotivationEnum.Tagging);
   return value === undefined ? '' : getValueForMotivation(annotation, W3CMotivationEnum.Tagging);
 }
@@ -131,6 +135,7 @@ export function createAnnotation<T extends AnnotationCreateDTO | AnnotationWithI
     id: annotationId,
     canvasId,
     collectionId,
+    type,
     target: {
       annotation: annotationId,
       selector: {
@@ -186,6 +191,7 @@ export const createAnnotationFromAnnotorious = ({
     ...annotation,
     collectionId,
     canvasId,
+    type,
     bodies: createBodies(type, value, annotation.id),
   };
 };
@@ -202,6 +208,14 @@ export const duplicateAnnotation = (annotation: Annotation, canvasId?: string): 
       getAnnotationValue(annotation) ?? '',
       newId,
     ),
+  };
+};
+
+export const changeType = (annotation: Annotation, newType: ElementType): Annotation => {
+  return {
+    ...annotation,
+    type: newType,
+    bodies: createBodies(newType, getAnnotationValue(annotation) ?? '', annotation.id),
   };
 };
 
