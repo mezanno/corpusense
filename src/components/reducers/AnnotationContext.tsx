@@ -38,7 +38,6 @@ export const AnnotationContextProvider = ({ children }: Props) => {
     () => (tempAnnotations.length > 0 ? tempAnnotations : annotations),
     [annotations, tempAnnotations],
   );
-  console.log('scopeAnnotations: ', scopeAnnotations);
 
   const value = useMemo<AnnotationContextValue>(() => {
     const byType = new Map<string, Annotation[]>();

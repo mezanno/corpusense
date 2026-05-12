@@ -8,6 +8,8 @@ import { useAnnotationContext } from '../reducers/AnnotationContext';
 import { useWorkerContext } from '../reducers/WorkerContext';
 import ResultsAvailable from '../ResultsAvailable';
 import Toolbar from '../ToolBar';
+import { Label } from '../ui/label';
+import { Slider } from '../ui/slider';
 import { Toggle } from '../ui/toggle';
 import { CanvasViewerMode } from './CanvasViewer';
 
@@ -22,6 +24,8 @@ export const CanvasViewerToolbar = ({
   showText,
   toggleMoidifiers,
   showModifiers,
+  annotationScale,
+  setAnnotationScale,
 }: {
   collectionId: string;
   canvas: Canvas;
@@ -33,6 +37,8 @@ export const CanvasViewerToolbar = ({
   showText: boolean;
   toggleMoidifiers: () => void;
   showModifiers: boolean;
+  annotationScale: number;
+  setAnnotationScale: (scale: number) => void;
 }) => {
   const { t } = useTranslation();
   const { openDuplicateLayoutDialog, openRemoveAnnotationsDialog } = useDialog();
@@ -120,6 +126,15 @@ export const CanvasViewerToolbar = ({
             >
               {showModifiers ? <Wrench size={24} /> : <Wrench />}
             </Toggle>
+            <Slider
+              max={2}
+              min={0}
+              step={0.01}
+              value={[annotationScale]}
+              className='w-40'
+              onValueChange={(value) => setAnnotationScale(value[0])}
+            />
+            <Label className='text-sm'>{annotationScale}</Label>
           </div>
           <ResultsAvailable scope={currentCanvasScope} />
         </div>

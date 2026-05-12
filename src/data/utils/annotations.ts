@@ -266,3 +266,36 @@ export const mergeTwoAnnotations = (a1: Annotation, a2: Annotation) => {
     },
   };
 };
+
+export const scale = (annotations: Annotation[], annotationScale: number): Annotation[] => {
+  return annotations.map((annotation) => scaleAnnotation(annotation, annotationScale));
+};
+
+export const scaleAnnotation = (annotation: Annotation, annotationScale: number) => {
+  const minX = annotation.target.selector.geometry.bounds.minX * annotationScale;
+  const minY = annotation.target.selector.geometry.bounds.minY * annotationScale;
+  const maxX = annotation.target.selector.geometry.bounds.maxX * annotationScale;
+  const maxY = annotation.target.selector.geometry.bounds.maxY * annotationScale;
+
+  return {
+    ...annotation,
+    target: {
+      ...annotation.target,
+      selector: {
+        type: ShapeType.RECTANGLE,
+        geometry: {
+          bounds: {
+            minX,
+            minY,
+            maxX,
+            maxY,
+          },
+          x: minX,
+          y: minY,
+          h: maxY - minY,
+          w: maxX - minX,
+        },
+      },
+    },
+  };
+};
