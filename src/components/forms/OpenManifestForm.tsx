@@ -2,10 +2,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { FormProps } from '@/hooks/ui/useDialog';
 import useAppNavigation from '@/hooks/useAppNavigation';
+import i18n from '@/i18n';
 import { fecthManifestRequest } from '@/state/reducers/manifests';
 import { selectManifestURL } from '@/state/selectors/manifests';
 import { zodResolver } from '@hookform/resolvers/zod';
-import i18n from '@/i18n';
 import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +13,7 @@ import { z } from 'zod';
 import Loading from '../Loading';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from '../ui/form';
 
-const contentFormSchema = z.object({
+const loadManifestFormSchema = z.object({
   manifestInput: z.string().nonempty({ message: i18n.t('form_error_required') }),
 });
 
@@ -26,8 +26,8 @@ const OpenManifestForm = ({ formRef, closeDialog, setCanSubmit }: FormProps) => 
 
   const firstTime = useRef(true); //nécessaire si on veut ouvrir le formulaire et qu'un manifest est déjà chargé
 
-  const form = useForm<z.infer<typeof contentFormSchema>>({
-    resolver: zodResolver(contentFormSchema),
+  const form = useForm<z.infer<typeof loadManifestFormSchema>>({
+    resolver: zodResolver(loadManifestFormSchema),
     defaultValues: {
       manifestInput: currentManifestId,
     },
@@ -53,7 +53,7 @@ const OpenManifestForm = ({ formRef, closeDialog, setCanSubmit }: FormProps) => 
     return <Loading />;
   }
 
-  function onSubmit(values: z.infer<typeof contentFormSchema>) {
+  function onSubmit(values: z.infer<typeof loadManifestFormSchema>) {
     dispatch(fecthManifestRequest(values.manifestInput));
     firstTime.current = false;
   }
