@@ -34,25 +34,40 @@ const CanvasViewerAnnotations = ({
   const { saveAnnotation, updateAnnotation } = useAnnotationActions();
 
   const isNewCanvas = useRef(true); //to check if the canvas is new (to avoid syncing the annotations when the canvas is the same)
+  const annotationsInAnnotoriousRef = useRef(annotationsInAnnotorious);
+  const prevScale = useRef(annotationScale);
+
+  useEffect(() => {
+    annotationsInAnnotoriousRef.current = annotationsInAnnotorious;
+  }, [annotationsInAnnotorious]);
 
   useEffect(() => {
     if (anno !== null) {
       anno.clearAnnotations();
       isNewCanvas.current = true;
     }
-  }, [canvas]);
+  }, [canvas, anno]);
 
+  // Synchronise les annotations du store avec celles d'Annotorious après le chargement initial du canvas
   useEffect(() => {
+    if (anno === null || anno === undefined) return;
+
     if (isNewCanvas.current === false) {
+      const currentAnnotorious = annotationsInAnnotoriousRef.current;
+
       //sync the annotations in the store with the annotations in annotorious
       annotationsInStore.forEach((annotation) => {
-        const existing = annotationsInAnnotorious.find((a) => a.id === annotation.id);
+        const existing = currentAnnotorious.find((a) => a.id === annotation.id);
         try {
           //if the annotation is already in annotorious, update it
           if (existing) {
             console.log('updating ', annotation);
-
-            anno.updateAnnotation(annotation);
+            if (annotationScale !== 1) {
+              const scaledAnnotation = scaleAnnotation(annotation, annotationScale);
+              anno.updateAnnotation(scaledAnnotation);
+            } else {
+              anno.updateAnnotation(annotation);
+            }
           } else {
             //if the annotation is not already in annotorious, add it
             if (annotationScale !== 1) {
@@ -68,7 +83,7 @@ const CanvasViewerAnnotations = ({
       });
 
       //sync annotations in annotorious with annotations in the store (remove the ones that are not in the store)
-      annotationsInAnnotorious.forEach((annotation) => {
+      currentAnnotorious.forEach((annotation) => {
         //if the annotation is not in the store, remove it
         if (!annotationsInStore.some((a) => a.id === annotation.id)) {
           try {
@@ -79,9 +94,9 @@ const CanvasViewerAnnotations = ({
         }
       });
     }
-  }, [annotationsInStore]);
+  }, [annotationsInStore, anno, annotationScale]);
 
-  //initialize the Annotorious
+  //initialize the Annotorious event listeners
   useEffect(() => {
     if (anno === null || anno === undefined) return;
 
@@ -114,31 +129,25 @@ const CanvasViewerAnnotations = ({
     anno.on('createAnnotation', onCreate);
     anno.on('updateAnnotation', onUpdate);
 
-    if (isNewCanvas.current && annotationsInStore !== undefined) {
-      //initializing Annototious with the annotations in the store
-      if (annotationScale !== 1) {
-        const scaledAnnotations = scale(annotationsInStore, annotationScale);
-        anno.setAnnotations(scaledAnnotations);
-      } else {
-        anno.setAnnotations(annotationsInStore);
-      }
-      isNewCanvas.current = false;
-    }
-
     return () => {
       anno.off('createAnnotation', onCreate);
       anno.off('updateAnnotation', onUpdate);
       // viewer.removeAllHandlers('tile-load-failed');
       viewer.removeAllHandlers('open-failed');
     };
-  }, [anno, annotationsInStore, annotationScale]);
+  }, [anno, canvas.id, collectionId, saveAnnotation, updateAnnotation, setMode]);
 
-  //ce useEffect utilise les mêmes dépendances que le précédent
+  // Initialise les annotations ou recalculer leur échelle lorsque celle-ci change
   useEffect(() => {
-    //si annotationScale !== 1, scale les annotations dans annotorious mais provoque un bug dans la sélection des annotations
-    if (anno !== null && annotationScale !== 1 && annotationsInStore !== undefined) {
-      const scaledAnnotations = scale(annotationsInStore, annotationScale);
+    if (anno === null || anno === undefined || annotationsInStore === undefined) return;
+
+    if (isNewCanvas.current || annotationScale !== prevScale.current) {
+      const scaledAnnotations = annotationScale !== 1
+        ? scale(annotationsInStore, annotationScale)
+        : annotationsInStore;
       anno.setAnnotations(scaledAnnotations);
+      isNewCanvas.current = false;
+      prevScale.current = annotationScale;
     }
   }, [anno, annotationsInStore, annotationScale]);
 
@@ -146,7 +155,7 @@ const CanvasViewerAnnotations = ({
     if (anno !== null) {
       anno.setVisible(showAnnotations);
     }
-  }, [showAnnotations]);
+  }, [showAnnotations, anno]);
 
   if (selected.length === 0 || selected.length > 1) {
     return null;
