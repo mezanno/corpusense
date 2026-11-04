@@ -1,76 +1,81 @@
-# DECISIONS (candidate ADRs)
+# DECISIONS
 
-Format: Decision / Context / Problem / Options / Chosen / Rationale / Consequences / Tech dependency / Transferability.
+Les ADR du source (`docs/DECISIONS.md`) méritent d'être rejoués pour un nouveau projet. Format demandé : Decision / Context / Problem / Options / Chosen approach / Rationale / Consequences / Technology dependency / Transferability.
 
----
+## D-A — Local-First : la persistance locale est la source de vérité (source : D-001)
 
-## D1 — Local database as the single source of truth
+- **Contexte** : app de travail utilisée dans un navigateur, sans backend applicatif ; la donnée doit survivre au offline et rester la propriété de l'utilisateur.
+- **Problem** : où vit la donnée métier sans créer de cache désynchronisable ?
+- **Options** : store global + sync distante (classique) / cache serveur + base locale / base locale réactive seule.
+- **Chosen approach** : base locale réactive unique ; store global réduit au statut d'exécution et aux notifications ; services distants optionnels et pontés.
+- **Rationale** : supprime tout code de resynchronisation ; rend l'app utilisable sans réseau.
+- **Consequences** : toute nouvelle donnée métier va dans la base + un abonnement ; le store global reste « volontairement vide ».
+- **Technology dependency** : IndexedDB/Dexie = implémentation ; le choix du moteur est un point à trancher pour la cible.
+- **Transferability** : **UNIVERSAL** (principe) / ECOSYSTEM (moteur).
 
-- **Context:** personal research tool handling user-owned corpora, used offline, no budget for a server.
-- **Problem:** where durable state lives, and what happens when the network doesn't.
-- **Options:** server DB; server cache + local mirror; local DB authoritative + SaaS bridges.
-- **Chosen:** IndexedDB via Dexie authoritative; Supabase only as a job bridge; bulk data exportable.
-- **Rationale:** data ownership, offline-first, zero server ops; the app's whole reason to exist.
-- **Consequences:** browser-storage ceilings, blob/metadata split needed, no multi-device sync (accepted), every view must subscribe to the DB.
-- **Tech dependency:** none in principle; Dexie/IndexedDB is one implementation.
-- **Transferability:** UNIVERSAL.
+## D-B — Result Pattern + discipline d'erreurs complète (source : D-002)
 
-## D2 — Errors crossing the data boundary are values
+- **Contexte** : ~60 sites de `throw` audités ; erreurs métier noyées dans des `try/catch`.
+- **Problem** : traiter les échecs attendus sans perdre le typage ni noyer le contexte.
+- **Options** : exceptions typées seules / Result seul / hybride ruled.
+- **Chosen approach** : hybride réglé par 7 règles (Result aux frontières ; absence = valeur ; exceptions = irrécupérable capturé une fois au boundary ; `cause` préservée ; erreurs nomment le job ; helpers throwing = erreurs typées ; **garde-fou lint** à liste blanche = verdicts documentés).
+- **Rationale** : la règle seule ne tient pas sans verrou mécanique ; la liste blanche transforme chaque exception en décision traçable.
+- **Consequences** : `new Error` nu est une faute de lint ; `patch()` des aggregates exclut les champs gardés.
+- **Technology dependency** : le type union discriminé (ou équivalent) ; le sélecteur AST du lint est écosystémique, le principe est transposable dans tout lint à règles personnalisées.
+- **Transferability** : **UNIVERSAL**.
 
-- **Problem:** silent `undefined`, swallowed throws, untyped failure paths.
-- **Options:** exceptions; result types; sentinel values.
-- **Chosen:** `FunctionResult<T, BaseError>` returned by every repository method; typed `BaseError` hierarchy with JSON context.
-- **Rationale:** failure is expected at IO boundaries; ~200 call sites proved it survives contact with a real app.
-- **Consequences:** combinator discipline (`map/flatMap/match`); a throwing `unwrap()` must be added for catch-style sites; slightly noisier happy path.
-- **Transferability:** UNIVERSAL (native idiom per target: `Result` in Rust, wrapper in Go/Java…).
-- **Amended (2026-10-08):** "every repository method" overstates the rule actually followed (and followed _well_) in the code. The operative rule is semantic: **every failure mode that is expected _and_ handleable at the call site crosses the boundary as a typed `FunctionResult`; everything else throws.** Concretely: identity lookups whose entity may legitimately be missing return `FunctionResult<T, EntityNotFoundError>`; collection queries represent absence as the empty set (`[]`), not as an error; commands whose only failure mode is an unrecoverable IO incident return plain promises and let the exception reach the saga supervisor / UI boundary, where it is reported once. Uniform `FunctionResult` everywhere would fabricate unreachable `err` branches, push `unwrapOr`-style swallowing into call sites, and erase the type-level signal that marks _designed_ failure modes.
+## D-C — Pas de conteneur IoC ; factories de module + escalade documentée (source : D-003)
 
-## D3 — Side-effect orchestration exclusively in saga coroutines
+- **Problem** : point d'injection stable pour les repositories (testabilité).
+- **Options** : conteneur Awilix / factory de module + imports directs / contexte UI + injection dans l'orchestrateur.
+- **Chosen** : factories de module ; **l'escalade est écrite** (contexte UI, `context` de saga) avant toute dépendance externe.
+- **Rationale** : coût/bénéfice disproportionné en projet solo ; friction avec la réactivité et l'orchestrateur.
+- **Consequences** : la testabilité vient du vrai stack sous test (D-004), pas de la mockabilité.
+- **Transferability** : **ECOSYSTEM** (la réponse dépend des idiomes d'injection de la cible) ; le réflexe « consigner l'escalade plutôt que fermer la porte » est UNIVERSAL.
 
-- **Context:** long-lived queues (workers), retries, external-job bridging, inside a SPA.
-- **Options:** thunks; async handlers in components; service-worker tasks; saga coroutines.
-- **Chosen:** redux-saga, thunk **disabled** in the store, sagas supervised by a restart loop, UI dispatches commands only.
-- **Rationale:** testable deterministic coroutines; crashed worker can't kill orchestration; one place to read all choreography.
-- **Consequences:** two read/write mental models; Redux kept tiny (2 slices); framework lock-in.
-- **Transferability:** the _role_ is UNIVERSAL, the tool is FRAMEWORK — replace with the target's supervisor/actor/task-queue facility.
+## D-D — Proportionnalité : corriger le symptôme, refuser l'abstraction speculative (source : D-004 + D-005)
 
-## D4 — DI by plain factory functions, no container
+- **Problem** : contrats non tenus, duplications, accesseurs contournables.
+- **Options** : refonte structurelle (interface Table/Provider/Descriptor, design-it-twice, 3 options) / correctifs directs proportionnés.
+- **Chosen** : correctifs directs + tests sur le vrai stack + « small-repo collapse » (profiter d'un commit réel pour réduire la couche, jamais de big-bang). L'interface étudiée a été **abandonnée puis consignée comme abandon définitif**.
+- **Rationale** : ~80 % de la valeur d'une refonte pour 20 % du coût ; la complexité ajoutée dépassait le problème pour un projet de cette taille.
+- **Consequences** : une abstraction refusée reste documentée avec son motif d'abandon — un nouveau projet doit **commencer avec cette retenue**, pas la découvrir.
+- **Transferability** : **UNIVERSAL** (méthode), la forme du correctif est PROJECT_SPECIFIC.
 
-- **Options:** container; manual singletons; factories-per-store.
-- **Chosen:** `getXRepository()` factories as the substitution seam.
-- **Rationale:** container evaluated and rejected — no second adapter to justify it; explicit, greppable, zero magic.
-- **Consequences:** one factory per store (naming drift observed); reactivation trigger: second storage adapter → introduce table/interface pair (`docs/plan-table-seam.md` is banked for exactly this).
-- **Transferability:** UNIVERSAL (YAGNI applied to architecture).
+## D-E — Loi de statut : un seul foyer, module pur, alphabets clos (source : D-008)
 
-## D5 — Plugins as glob-discovered, typeguard-validated modules
+- **Problem** : loi de transition implémentée 4 fois, divergences réelles (mappings d'icônes distincts, sweeper fabriquant des faux succès).
+- **Options** : garder la duplication / centraliser dans un service / centraliser dans un module pur.
+- **Chosen** : module pur sans import technique ; événements pilotent les transitions ; statut dérivé de la file ; tables de présentation totales côté UI ; valeurs persistées inconnues = erreur typée migrée.
+- **Rationale** : seul un module sans dépendance est testable sans harness et réutilisable par la persistance, l'orchestrateur et l'UI.
+- **Consequences** : condition préalable du moteur de file headless (D-F) ; les plugins émettent des événements, jamais des statuts.
+- **Transferability** : **UNIVERSAL**.
 
-- **Chosen:** `import.meta.glob('./workers/*.ts', { eager: true })` + runtime contract check + Zod schema per plugin's runtime params + experimental-flag gating.
-- **Rationale:** zero central registration; adding a worker = adding a file.
-- **Consequences:** eager bundling (no lazy plugins); registry must be _the only_ holder (source violated this — see D-linked critique); the loader duplicated discovery per plugin kind.
-- **Transferability:** principle UNIVERSAL; mechanism ECOSYSTEM.
+## D-F — Redux-Saga en retraite par l'aval, vers un moteur de file à ports (source : D-006)
 
-## D6 — External jobs bridged by a persisted status law
+- **Problem** : la saga monolithique contient loi+file+reprise+mapping : la retirer d'un coup = réécriture non testable.
+- **Chosen** : ordre imposé — d'abord la loi pure (fait), puis `queueEngine.run(worker, plugin, ports)`, puis adaptation de la saga/bridge en coquilles vides ; corrections intégrées au passage (annulation de l'attente au stop).
+- **Leçon transférable** : pour sortir d'un monolithe d'orchestration, **extraire les lois avant de changer le mécanisme** ; jamais l'inverse.
+- **Transferability** : la méthode est **UNIVERSAL** ; Redux-Saga lui-même est FRAMEWORK et ne doit pas être reproduit.
 
-- **Chosen:** `POSTING`/`POSTED` intermediate statuses persisted with the task; one written-down state law (`docs/plan-worker-status-law.md`).
-- **Rationale:** the client can't hold a remote call open; crash-safe handoff needs durable intermediate states.
-- **Consequences:** state-machine drift is the main hazard — four divergent implementations already observed; the law document is the cure and the reusable artifact.
-- **Transferability:** UNIVERSAL pattern; the specific law is DOMAIN.
+## D-G — Plugins par auto-découverte + drapeau expérimental (source : D-007)
 
-## D7 — Toolchain minimalism & config consolidation
+- **Chosen** : un fichier = un plugin, découvert au build ; flag runtime pour l'expérimental ; erreurs typées nommant le job.
+- **Consequences (négatives assumées)** : le glob ne descend pas dans les sous-dossiers → zone morte archivée ; deux registries ont divergé (dette Q6) → l'unicité du registry est le vrai invariant, la découverte n'en est qu'un moyen.
+- **Transferability** : **FRAMEWORK** ; remplacer par le mécanisme de la cible ou un registry explicite unique.
 
-- **Chosen:** one config file for build+test; deterministic formatting via a 3-plugin Prettier pipeline; type-aware lint as baseline; declaration-only TS emit into `node_modules/.tmp`; periodic dependency pruning (−40 deps in one pass).
-- **Rationale:** fewer files that can disagree; formatting arguments settled forever; typecheck never dirties the tree.
-- **Consequences:** the single config file grew console noise (see debt); pruning must be recurring, not heroic.
-- **Transferability:** ECOSYSTEM (verbatim if the target is the JS/TS world).
+## D-H — Feature-first opportuniste, sans barrels (source : D-009)
 
-## D8 — Static hosting on GitHub Pages, PWA auto-update
+- **Chosen** : frontières `ui/common/layout/features/<domaine>`, migration par tranches cohérentes liées à un changement fonctionnel ; pas de barrel/wrapper pour masquer les frontières ; pas de règle de lint dédiée tant que les frontières ne sont pas éprouvées.
+- **Rationale** : éviter le grand déplacement sans valeur ; laisser les frontières se prouver par l'usage.
+- **Transferability** : **UNIVERSAL** (méthode de restructuration).
 
-- **Chosen:** SPA behind Pages, `VITE_BASE_PATH` as the single deployment knob, workbox `autoUpdate`, dev-mode SW testable.
-- **Consequences:** updates are push-automatically (no staged rollout); base-path must thread through router/assets/manifest/i18n — worth centralising in the validated config (see debt).
-- **Transferability:** ECOSYSTEM. `[choice: any static host]`
+## D-I — Politique de tests pyramide + harnais explicite (source : D-010)
 
-## D9 — Explicit vocabulary governance
+- Voir TESTING.md ; l'ADR ajoute la dimension « le harnais est un actif documenté » (stubs requis et leur raison, mock i18n = contrat complet, règle des 10 runs E2E).
+- **Transferability** : **UNIVERSAL**.
 
-- **Chosen:** `CONTEXT.md` glossary with `_Avoid_` forbidden-synonym lists and a _"banked, not shipped"_ marker for deferred designs.
-- **Rationale:** one vocabulary for humans and agents; deferred designs stay visible without becoming dead code.
-- **Transferability:** UNIVERSAL. Reuse the format verbatim.
+## D-J — Mono-utilisateur assumé, risque accepté avec déclencheur (source : D-011)
+
+- **Chosen** : pas de garde de routes ; clés API en stockage local ; **condition de réexamen écrite** dans l'ADR et le registre de sécurité.
+- **Transferability** : **PROJECT_SPECIFIC** (la décision ne se transpose pas ; **le format « risque accepté + déclencheur de réouverture » se transpose toujours**).

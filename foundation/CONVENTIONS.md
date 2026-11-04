@@ -1,41 +1,45 @@
 # CONVENTIONS
 
-## Observed (in the source project)
+Tout ce qui est marqué OBSERVED est réellement pratiqué dans le dépôt source (vérifié via docs + code) ; INFERRED et RECOMMENDED sont à distinguer des pratiques du source.
 
-### Code
+## Structure et nommage (OBSERVED)
 
-- TypeScript `strict: true` plus opt-ins: `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`, `noUncheckedSideEffectImports`, bundler resolution, `isolatedModules`.
-- Type-aware linting is the baseline (`recommendedTypeChecked`), `no-explicit-any: error`, `strict-boolean-expressions: error`, `no-shadow: error`.
-- Path alias `@/* → src/*`, mirrored in both tsconfig and bundler config (single source rule: keep the two in sync).
-- `@ts-ignore` forbidden in practice; bleeding-edge DOM types are declared centrally in one `global.d.ts` file.
-- Domain entities described as Zod schemas with `.strict()`, types inferred from schemas (`z.infer`) — schema is the source of truth, not the type.
-- Errors that cross the repository boundary are `FunctionResult`, never thrown (with `fromPromise` as the exception-capturing adapter). Scope of the rule (see DECISIONS D2, amended): _expected, call-site-handled_ failure modes are Results; absence for collection queries is the empty set; unexpected IO incidents stay thrown and are reported at the boundary (saga supervisor / UI).
+- Alias racine obligatoire pour les imports internes (`@/…`) — jamais de chemins relatifs profonds.
+- Composants en PascalCase ; kebab-case toléré uniquement dans le dossier des primitives régénérées par un générateur externe (shadcn).
+- Tests unitaires/composants **co-localisés** dans `__tests__/` à côté de la source ; tests E2E **jamais** co-localisés (répertoire `e2e/` dédié, la co-localisation est réservée au runner unitaire).
+- Découpage des composants par responsabilité : primitives sans logique métier / transversaux / shell+navigation / `features/<domaine>/` avec styles et tests co-localisés.
+- Feature-first appliqué **opportunément** : on déplace un composant quand un changement fonctionnel le justifie, jamais par migration mécanique (D-009).
+- Un mot = un sens, imposé par le glossaire (`CONTEXT.md`) avec section `_Avoid_` par terme : « Plugin » pas « provider/connector », « Task » pas « job », « Seam » pas « boundary ». Les termes interdits sont aussi précis que les termes retenus.
 
-### Naming
+## Conventions de code (OBSERVED)
 
-- Repositories: `IndexedDBXRepository` class + `getXRepository()` factory.
-- Live variants: `XLiveRepository` in a `liveQuery/` sibling folder, `.live` filename suffix.
-- Folders by _responsibility kind_ (`pages/ components/ hooks/ state/ data/ utils/ lib/`), feature subfolders inside `components/`, aggregate subfolders inside `data/models/`.
-- A domain glossary (`CONTEXT.md`) defines each term with an explicit `_Avoid_: <forbidden synonyms>` list.
+- Toute entité persistée complexe a un **schéma de validation** (Zod `.strict()` là où c'est établi) ; le type en découle (`z.infer`).
+- Frontières de commande : retour `FunctionResult` typé ; pas de `try/catch` dispersés ; jamais `new Error` hors hiérarchie `BaseError` (interdit par lint, liste blanche au fichier commentée d'un verdict).
+- Erreur courante nommée : `NotFoundError` (l'alias déprécié a un chemin de migration, pas de coexistence prolongée).
+- Les chaînes UI passent par des **clés i18n** ; les tests assertent sur les clés (le mock de test les renvoie à l'identique) — la traduction n'est jamais un sujet de test.
+- Aucune URL absolue codée en dur : base path de déploiement injectée par la configuration.
+- Les helpers volontairement levants doivent lever une erreur typée avec contexte, jamais une erreur nue.
 
-### Git
+## Conventions de commits & Git (OBSERVED / INFERRED)
 
-- Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`, `test:`, `docs:`) with emoji markers (`feat: ✨`, `fix: 🐛`, `chore: ✂️`).
-- Semver tags (`v1.5.1`).
-- Fork → upstream flow; `develop` as long-lived integration branch; deploy triggers on push to integration branch only; `gh-pages` as artifact branch.
+- INFERRED : commits petits, « un commit par port/famille » ; le reformatage n'est pas mélangé aux déplacements structurels (explicité dans la roadmap R7).
+- OBSERVED : branche `develop` intégrée par PR, `main` = stable, branche `gh-pages` pour le site publié ; fourche de développement séparée pour garder un canal stable + un canal de test publics.
+- OBSERVED : une PR décrit le besoin et le changement, captures d'écran pour l'UI, lint/tests verts exigés.
+- RECOMMENDED : compléter par des conventions de message de commit conventionnalisées (le source ne les formalise pas) et protection de branches rendant le CI bloquant (roadmap Q3, encore à faire dans le source).
 
-### Docs
+## Politique de documentation (OBSERVED — l'une des meilleures pratiques du projet)
 
-- README holds onboarding + PR policy prose.
-- `docs/` holds dated review/inconsistency-scan reports and plan docs (`plan-*.md`) — decisions-in-progress live as documents, not comments.
-- Every heavyweight config file keeps its reference URL as a header comment.
+| Foyer | Public | Règle |
+|---|---|---|
+| `docs/` | contributeurs | spec de référence **datée d'une vérification contre le code** ; rien d'obsolète — une note consolidée se supprime, ses décisions survivent dans l'ADR |
+| `docs/DECISIONS.md` | contributeurs | une entrée = une décision, avec contexte, statut, conséquences, déclencheurs de réouverture |
+| `docs/roadmap.md` | contributeurs | chantiers avec **critères de sortie** vérifiables ; « comment reprendre un chantier » en tête de chapitre |
+| `public/doc/` | utilisateurs | manuel utilisateur servi par l'app ; **rien de technique/interne** |
+| `CONTEXT.md` racine | contributeurs | glossaire unique du domaine + vocabulaire d'architecture |
+| `src/state/states.md` | contributeurs | l'état réel : « ce qui vit dans le store doit matcher le code ; sinon on corrige le doc » |
 
-## Recommended (for the new project)
+Autres pratiques documentées observées :
 
-- Keep all of the above — they are UNIVERSAL practices — **except**:
-  - **[correction]** Do not put deferred design as empty scaffold directories; park it as an ADR/plan doc (the source violated its own convention).
-  - **[correction]** Any lint rule turned off gets an in-file rationale comment. (Source turned off `exhaustive-deps` silently and grew stale-closure bugs.)
-  - **[correction]** One source of truth per version number (toolchain version lives in exactly one manifest field consumed by both README and CI).
-  - **[correction]** Config files stay side-effect-free: no `console.log` at config load; tool artifacts (bundle stats) are emitted under a gitignored tmp dir.
-- Deterministic formatting on every commit via pre-commit hook (add; absent in source).
-- Every dependency must survive a periodic dead-dependency prune (source ran one: −40 deps — make it a recurring practice, not a rescue).
+- Guide développeur avec « carte de navigation » (*où chercher quand…*) et section **pièges connus** — chaque piège est une décision implicite rendue explicite.
+- Guides d'extension pas-à-pas (« ajouter une route », « ajouter un worker », « ajouter un modèle métier ») qui encodent l'architecture en procédure.
+- Règle de proportionnalité érigée en convention : pas de nouvelle abstraction sans besoin au call site (D-004).

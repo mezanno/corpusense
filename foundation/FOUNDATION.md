@@ -1,112 +1,137 @@
-# FOUNDATION — Corpusense (`corpusense-dev` @ `c7ea5ca`)
+# FOUNDATION — CorpuSense
 
-Extraction produced by the `/foundations` skill, 2026-09-30. Companion documents live in this folder.
+Extraction des fondations réutilisables du projet **CorpuSense** en vue de démarrer un nouveau projet, potentiellement dans une autre technologie. **Aucune stack cible n'a été fixée** : ce document reste au niveau conceptuel et signale les points nécessitant un choix technologique.
 
-Question answered: _which knowledge, decisions, conventions, patterns and practices of this project deserve to be kept as the foundation of a new project, possibly built with a different technology?_
+> Ce n'est pas une documentation de CorpuSense. La documentation de référence du projet source reste `docs/architecture.md`, `docs/DECISIONS.md`, `docs/developpement.md`. Ce répertoire répond à une seule question : *qu quoi, dans ce projet, mérite d'être conservé comme fondation d'un nouveau projet ?*
 
-No target stack was provided, so recommendations stay conceptual; every place where a concrete choice is deferred is marked `[choice needed]`.
+## Le projet source en une phrase
 
----
+Application web **Local-First** d'ingénierie documentaire (React 19 / TypeScript / Vite / IndexedDB-Dexie) : collection de documents IIIF, annotation vectorielle W3C, traitements asynchrones (OCR/LLM) orchestrés par plugins, export de données structurées.
 
-## 1. What the source project is
+## Grille de lecture
 
-**Observed.** A private, client-only single-page application (no server code of its own). React 19 + TypeScript 5.9 (strict) SPA built by Vite 7, shipped as static files to GitHub Pages, installable as a PWA. All durable state lives in the browser (IndexedDB via Dexie); third-party SaaS (Supabase for a job queue bridge, EmailJS, external image servers) is reached directly from the client. Background orchestration runs in redux-saga coroutines inside the same process; heavy processing runs in browser Web Workers and in-process "plugins".
+Chaque document de ce dossier distingue systématiquement :
 
-**Inferred.** The shape — "offline-first local-first SPA that processes documents with pluggable background workers" — drove nearly every architectural decision: the local database as single source of truth, the plugin registry, the external-job status bridge, the saga supervisor.
+- **OBSERVED** — présent explicitement dans le projet source ;
+- **INFERRED** — déduit de plusieurs éléments du projet ;
+- **RECOMMENDED** — recommandation pour un nouveau projet, pas nécessairement présente dans le source.
 
-**Domain:** a research-corpus manager for IIIF image/document collections with OCR/LLM extraction workers. The domain itself is **not** reusable here; see `TECHNICAL-DEBT.md` for residue.
+Et classe la réutilisabilité : `UNIVERSAL` · `ECOSYSTEM` · `FRAMEWORK` · `DOMAIN` · `PROJECT_SPECIFIC`.
 
-## 2. What proved itself (reusability levels)
+## Cartographie des six catégories
 
-| Level            | Meaning                                                       |
-| ---------------- | ------------------------------------------------------------- |
-| UNIVERSAL        | transfers to any language/framework                           |
-| ECOSYSTEM        | transfers within a language/tooling ecosystem                 |
-| FRAMEWORK        | tied to React/Redux/Vite etc.; replace with target equivalent |
-| DOMAIN           | business-specific; discard                                    |
-| PROJECT_SPECIFIC | too particular to extract                                     |
+### 1. Indépendant de la technologie (UNIVERSAL)
 
-Summaries of the durable items (details in `PATTERNS.md`, `DECISIONS.md`):
+- Séparation stricte **lecture réactive / écriture par commande** (CQRS-like implicite).
+- **Result Pattern typé** aux frontières de commande + hiérarchie d'erreurs avec contexte JSON structuré (D-002).
+- **Loi d'état dans un module pur** sans dépendance framework (D-008) — testable isolément.
+- Chaque mécanisme d'état a un **rôle exclusif** documenté ; l'absence d'une donnée est une valeur, pas une erreur.
+- Pyramide de tests + tests sur le **vrai stack de persistance** (pas de mock de la base) (D-004, D-010).
+- **Ratchet qualité** : baseline consignée qui ne peut que baisser.
+- Pipeline CI où le déploiement est **conditionné** par la validation ; permissions minimales ; actions épinglées par SHA.
+- Documentation en quatre foyers : spécification vivante vérifiée contre le code, ADR datés avec statut, registre de sécurité vivant, roadmap avec critères de sortie.
+- Glossaire du domaine à la racine (`CONTEXT.md`) avec termes à éviter (`_Avoid_`).
 
-- Result-values-over-exceptions at the data boundary — **UNIVERSAL**
-- Local database as the single source of truth, UI subscribed to it — **UNIVERSAL** (technology: ECOSYSTEM)
-- Repositories per store behind plain factory functions — **UNIVERSAL** (shape), ECOSYSTEM (no DI container)
-- Glob-discovered plugin registry behind one accessor — **ECOSYSTEM** (mechanism), UNIVERSAL (principle)
-- Self-restarting saga supervisor — **UNIVERSAL** (principle: supervisors), FRAMEWORK (redux-saga)
-- SHA-pinned CI actions, default-deny permissions, concurrency cancel — **UNIVERSAL** (GitHub-Actions syntax: ECOSYSTEM)
-- Type-aware linting as the baseline, deterministic formatting on commit — **UNIVERSAL** (tools: ECOSYSTEM)
-- TS project references + declaration-only emit into `node_modules/.tmp` — **ECOSYSTEM**
-- Build-provenance stamping (git hash + date into a gitignored env file) — **UNIVERSAL**
-- Test-mode alias swap for heavy side-effecting packages — **ECOSYSTEM**
-- jsdom stub checklist (matchMedia, ResizeObserver, FileSystem handles, WebGL) — **FRAMEWORK** (web platform), reusable verbatim in any web target
-- Conventional Commits + domain glossary (`CONTEXT.md`) — **UNIVERSAL**
-- Redux for ≤2 slices of system-UI state, saga-only orchestration, Zustand for transient UI state — **FRAMEWORK**
+### 2. Dépendant de l'écosystème (ECOSYSTEM)
 
-## 3. Separation of concerns observed in the source
+- Persistance dans le navigateur via IndexedDB (Local-First) — le *principe* est universel, l'*implémentation* est web.
+- Configuration par variables `VITE_*` lues via `import.meta.env` ; build statique déployable sous sous-répertoire.
+- i18n par clés avec mock de test renvoyant les clés à l'identique.
+- Alias d'import `@/`, tests co-localisés `__tests__/`, PascalCase composants.
 
-Concept → pattern → implementation, the discipline this extraction applies to everything:
+### 3. Dépendant du framework (FRAMEWORK)
 
-- _Concept:_ reads should react to data changes. _Pattern:_ live-query subscriptions at the repository seam. _Implementation:_ `dexie-observable` + repository methods returning closures consumed by `useLiveQuery`.
-- _Concept:_ errors crossing a boundary are data. _Pattern:_ Result type. _Implementation:_ `FunctionResult<T, BaseError>` + `BaseError` hierarchy.
+- `useLiveQuery` (dexie-react-hooks), hooks React de données, Context providers, Redux-Saga, plugin discovery par `import.meta.glob`, shadcn/Radix. Ces mécanismes **ne se transfèrent pas tels quels** ; leurs principes oui (voir `PATTERNS.md`).
 
-## 4. Transferability matrix
+### 4. Domaine métier (DOMAIN — ne pas transposer sans raison)
 
-| Element                                                        | Source                                          | Level                                     | Reusable              | Adaptation | Target                                      |
-| -------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------- | --------------------- | ---------- | ------------------------------------------- |
-| Client-only static SPA shape                                   | repo shape                                      | Universal                                 | Yes                   | Low        | any                                         |
-| Local-first DB as source of truth                              | `data/repositories/indexeddb/`                  | Universal                                 | Yes                   | Low        | any local-store capable target              |
-| Dependency layer rule (UI→orchestration→data)                  | implicit + violated                             | Universal                                 | Yes (as rule)         | Medium     | any                                         |
-| Result type + BaseError                                        | `utils/functionResult.ts`, `utils/BaseError.ts` | Universal (concept) / Ecosystem (TS impl) | Yes                   | Medium     | native error/result idiom of target         |
-| Repository-per-store + factory seam                            | `dbFactory.ts`                                  | Universal                                 | Partial               | Medium     | reassess at 2nd storage adapter             |
-| Saga orchestration with supervisor                             | `state/sagas/index.ts`                          | Framework                                 | Partial               | High       | target background-task/coroutine facility   |
-| Redux + Zustand split                                          | `state/store.ts`, `state/zustand/`              | Framework                                 | No                    | High       | target state tool, keep the _why_           |
-| Plugin registry via glob discovery                             | `state/sagas/plugins/loader.ts`                 | Ecosystem                                 | Yes                   | Medium     | target build-time glob or explicit manifest |
-| Status-law external-job bridge                                 | workers/Supabase `POSTING`/`POSTED`             | Universal (pattern) / Domain (instances)  | Yes as pattern        | High       | any remote queue                            |
-| Vite/Vitest/ESLint-9/Prettier trio configs                     | config files                                    | Ecosystem                                 | Verbatim              | Low        | if target is JS/TS                          |
-| TS project-references skeleton                                 | `tsconfig*.json`                                | Ecosystem                                 | Verbatim              | Low        | if target is TS                             |
-| CI workflow shape (pinned, least-privilege)                    | `.github/workflows/gh-pages.yml`                | Universal                                 | Verbatim (GH Actions) | Low        | any CI with equivalents                     |
-| jsdom/browser-API stub checklist                               | `vitest.setup.ts`                               | Framework (web)                           | Verbatim              | Low        | web targets only                            |
-| i18n wiring (lazy namespaces over HTTP)                        | `src/i18n.ts`                                   | Framework                                 | Partial               | Medium     | target i18n library                         |
-| `cn()` + shadcn-style ui folder                                | `lib/utils.ts`, `components.json`               | Framework                                 | Partial               | Medium     | any component-kit approach                  |
-| Manual vendor chunks for heavy view libs                       | `vite.config.ts`                                | Framework                                 | Partial               | Medium     | only with a heavy separable lib             |
-| CONTEXT.md glossary format with `_Avoid_`                      | `CONTEXT.md`                                    | Universal                                 | Verbatim              | None       | any                                         |
-| IIIF/canvas/annotation model, OCR/LLM workers, Supabase bridge | `data/models/**`, sagas                         | Domain                                    | No                    | —          | —                                           |
-| Dexie schema _file_                                            | `db.ts`                                         | Domain (content) / Universal (shape)      | Shape only            | Medium     | new schema, same file discipline            |
+- Vocabulaire : Worker, Task, Job, Plugin, Result, Scope, Collection, Canvas, Source, Modifier Chain.
+- IIIF/W3C Annotation, Supabase `cs_jobs`, formats d'export. Utiles seulement si le nouveau projet traite le même domaine.
 
-## 5. Final synthesis
+### 5. Dette technique (à ne pas reproduire)
 
-### À conserver (keep)
+Voir `TECHNICAL-DEBT.md` : saga-monolithe ~420 lignes, duplication des plugins LLM, double registry de plugins, trois niveaux « utils », `xlsx` vulnérable, ~59 `console.log`, etc.
 
-- Local-first data spine: single DB schema declaration file, Zod-validated models, repository-per-store, factory DI seam, live reactive reads.
-- Errors-as-values at the data boundary (`FunctionResult` + `BaseError` with cause/context).
-- One plugin registry module, one accessor; plugins as same-shaped modules validated by a runtime typeguard.
-- Supervised long-lived background flows (restart-on-crash, never silent death).
-- CI hygiene: SHA-pinned actions, `permissions: {}` default-deny, per-job least privilege, concurrency `cancel-in-progress`, `ubuntu-24.04`, pinned Node, `npm ci`.
-- Type-aware linting baseline + fully deterministic formatting (organize-imports / organize-attributes / class-sorter).
-- TS project references, strict, declaration-only emit into `node_modules/.tmp` (tooling output never pollutes the tree).
-- Single config file for build _and_ tests; test-mode alias swap for heavy packages.
-- Build-provenance stamping consumed by an in-app version display.
-- CONTEXT.md glossary + Conventional Commits; every dependency must justify itself (repo pruned 40 dead deps).
+### 6. Manquant (à ajouter au nouveau projet)
 
-### À adapter (adapt)
+Voir `TECHNICAL-DEBT.md` § Éléments manquants : guards d'architecture par lint, protection de branches, CSP, logging structuré, seuil de couverture, etc.
 
-- Redux/saga/Zustand tripartition → express as _roles_ (rare system state / orchestration side-effects / ephemeral view state) and pick target-native tools.
-- `import.meta.glob` registry → any build-time discovery mechanism, or an explicit manifest if the target has none.
-- Dexie/IndexedDB → any embedded local store keeping the same _seam_ (schema file, repositories, live reads).
-- Live-query closure pattern → target's reactivity primitive.
-- i18next HTTP-backend lazy namespaces → target i18n with lazy loading.
+## Index des documents
 
-### À abandonner (discard)
+| Document | Contenu |
+|---|---|
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Architecture réelle, règle de dépendances, architecture cible abstraite |
+| [CONVENTIONS.md](./CONVENTIONS.md) | Conventions de code, nommage, documentation, Git |
+| [PATTERNS.md](./PATTERNS.md) | Patterns réels avec leur version abstraite |
+| [DATA.md](./DATA.md) | Modèle de données, validation, migrations, persistance |
+| [TESTING.md](./TESTING.md) | Stratégie de tests observée + stratégie générique |
+| [CI-CD.md](./CI-CD.md) | Pipeline observée + pipeline de référence |
+| [OBSERVABILITY.md](./OBSERVABILITY.md) | Logging, métriques, Build-info — principe / implémentation / techno |
+| [SECURITY.md](./SECURITY.md) | Registre de sécurité transposable |
+| [DECISIONS.md](./DECISIONS.md) | ADR source avec transferability |
+| [TECHNICAL-DEBT.md](./TECHNICAL-DEBT.md) | Dette + éléments manquants |
+| [STARTER.md](./STARTER.md) | Spécification du starter (conceptuelle) |
+| [BOOTSTRAP-CHECKLIST.md](./BOOTSTRAP-CHECKLIST.md) | Checklist ordonnée de bootstrap |
 
-- Mutable plugin exports from the app root (two divergent registries in practice).
-- Data-layer imports of the React root / UI store (layering violations).
-- Ad-hoc `import.meta.env.VITE_*` reads at ~16 call sites (no validation).
-- `react-hooks/exhaustive-deps` switched off without rationale.
-- Three sources of truth for the package-manager version (`packageManager`, README, CI global install).
-- Duplicated byte-identical provenance scripts; config-file `console.log`s; hardcoded `debug: true` i18n; `stats.html` emitted at repo root.
-- Empty scaffold directories for deferred designs (defer as docs/ADRs instead).
-- The whole IIIF/worker/job domain model and its integrations.
+> Variante avec cible **React/TypeScript** : [`../foundation-react/`](../foundation-react/FOUNDATION.md).
 
-### À ajouter (missing in source, required for the starter)
+## Matrice de transférabilité
 
-See `BOOTSTRAP-CHECKLIST.md`. Headline: PR quality-gate workflow, pre-commit hooks, mechanically enforced architecture boundaries, validated env module, pre-registered error-reporting seam, one E2E smoke test, CONTRIBUTING + PR template, dependency audit in CI.
+| Élément | Source | Niveau | Réutilisable | Adaptation | Cible |
+|---|---|---|---|---|---|
+| Séparation lecture réactive / écriture commande | Flux 1 & 2, D-001 | UNIVERSAL | Oui | Faible | Tout projet avec état persistant |
+| Result Pattern + BaseError + garde-fou lint | `functionResult.ts`, D-002 | UNIVERSAL (traduction typée par langage) | Oui | Moyenne | Toute frontière de commande |
+| Loi d'état en module pur | `workerStatusLaw.ts`, D-008 | UNIVERSAL | Oui | Faible | Tout système à cycles de vie |
+| Rôles exclusifs des mécanismes d'état | D-001, `states.md` | UNIVERSAL | Oui | Faible | Toute app à état multiple |
+| Docs : spec + ADR + registre sécurité + roadmap | `docs/` | UNIVERSAL | Oui | Faible | Tout projet |
+| Glossaire domaine (`CONTEXT.md`) | racine | UNIVERSAL | Oui | Faible | Tout projet |
+| Ratchet ESLint + baseline | `scripts/eslint-ratchet.mjs` | ECOSYSTEM (le principe est UNIVERSAL) | Oui | Moyenne | Tout CLI de lint machine-readable |
+| Pyramide de tests + faux moteur de persistance | D-004, D-010 | UNIVERSAL | Oui | Moyenne | Tout projet avec stockage |
+| E2E sans réseau externe (fixtures interceptées) | `e2e/` | ECOSYSTEM | Oui | Moyenne | Tout E2E avec service web |
+| CI réutilisable + deploy conditionné | `ci.yml`/`deploy.yml` | ECOSYSTEM (GitHub Actions) | Oui | Moyenne | Tout système de CI |
+| Plugins découverts dynamiquement | D-007 | FRAMEWORK (Vite glob) | Le principe : Oui | Forte | Registry explicite ailleurs |
+| `useLiveQuery` / sagas / Context | D-001, D-006 | FRAMEWORK | Non (tels quels) | Forte | Voir version abstraite dans PATTERNS.md |
+| IndexedDB/Dexie v32, schéma stores | `db.ts` | ECOSYSTEM+DOMAIN | Non | Forte | Moteur local-first équivalent ou serveur |
+| Vocabulaire Worker/Task/Job/Scope… | `CONTEXT.md` | DOMAIN | Si même domaine | — | — |
+| IIIF / W3C / Supabase cs_jobs | plugins, hooks | DOMAIN | Si même domaine | — | — |
+| Saga `workers.ts` (~420 l.) | code | PROJECT_SPECIFIC | Non — à remplacer par queueEngine (D-006) | — | — |
+| Clés API en localStorage | D-011, S-04 | PROJECT_SPECIFIC (contexte mono-utilisateur) | Partiel | À reconsidérer si multi-utilisateur | — |
+
+## Synthèse finale
+
+### À conserver (bonnes fondations)
+
+1. **Architecture en couches avec deux flux distincts** : lecture réactive via repositories, écriture par commandes orchestrées ; UI jamais en contact direct avec la persistance.
+2. **Discipline d'erreurs complète** (D-002) : Result typé, erreurs avec contexte, exceptions uniquement pour l'irrécupérable capturées une seule fois au boundary, interdiction mécanique du `new Error` hors liste blanche documentée.
+3. **Loi d'état centralisée dans un module pur** avec alphabets clos, mappings totaux, refus = erreur typée (D-008).
+4. **Un rôle exclusif par mécanisme d'état**, acté par ADR et vérifié par un doc dédié (`states.md`).
+5. **Politique de documentation** : spec datée « vérifiée contre le code », ADR avec statut et déclencheurs de réouverture, registre de sécurité avec critiques et actions, roadmap avec critères de sortie — et la règle « rien d'obsolète dans docs/ ».
+6. **Pyramide de tests** avec tests sur le vrai stack de persistance, harnais documenté (stubs requis et pourquoi), E2E déterministes sans réseau externe.
+7. **Ratchet qualité** : la dette héritée est consignée et ne peut qu'augmenter la barre jamais le contraire.
+8. **CI minimaliste mais rigoureuse** : permissions vides par défaut, actions épinglées par SHA, concurrency avec cancel, validation réutilisable avant deploy, variables manquantes = échec explicite.
+9. **Proportionnalité** (D-004/D-005) : corriger les symptômes sans ajouter d'abstraction speculative ; oser abandonner une abstraction étudiée et consignée.
+10. **Glossaire du domaine versionné** avec termes interdits.
+
+### À adapter (utiles mais dépendants du contexte)
+
+1. Local-First IndexedDB → transposer le principe « la donnée de travail appartient à l'utilisateur, offline d'abord » vers le moteur/localité que choisira la cible.
+2. Découverte de plugins par glob → remplacer par un registry explicite ou du plugin-loading natif de la cible.
+3. Redux-Saga → ne pas le reproduire ; viser directement l'objectif D-006 : un moteur de file headless avec ports injectés.
+4. Variables `VITE_*` + sous-répertoire → adapté au web statique ; garder le principe « configuration build-time explicitement vérifiée au CI ».
+5. Kés API en localStorage → valable uniquement si la frontière de confiance reste la machine de l'utilisateur (D-011).
+
+### À abandonner
+
+1. La saga `workers.ts` monolithique (loi + file + reprise + mapping mêlés).
+2. La duplication des plugins LLM (Mistral/OpenAI, ~200 lignes) et la triplication des exports.
+3. Le double registry de plugins (`App.tsx` vs `sagas/workers.ts`).
+4. Les trois niveaux « utils » (`lib/`, `utils/`, `data/utils/`) et les alias dépréciés.
+5. `xlsx` non maintenu, dépendances non épinglées (`cozy-iiif` sur GitHub sans tag), `stats.html` versionné (1,9 Mo).
+6. `console.log` en production et debug de l'ORM activé.
+7. `.env` versionné historiquement (secrets publics par design, mais le réflexe est à corriger).
+
+### À ajouter (absents du source, recommandés au nouveau projet)
+
+1. **OBLIGATOIRE** : règles de lint d'architecture (frontières de couches) dès le départ ; protection de branches rendant le CI bloquant ; validation des entrées d'import (schéma) ; logging structuré via un module unique.
+2. **RECOMMANDÉ** : CSP + en-têtes de sécurité ; sanitisation systématique du contenu rendu (markdown/HTML) ; seuil de couverture sur le cœur métier ; health/version endpoint ; artefact de version injecté proprement au build.
+3. **OPTIONNEL** : métriques d'usage anonymes, feature-flag system au-delà du drapeau `experimental`, snapshots E2E.

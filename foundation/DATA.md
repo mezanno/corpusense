@@ -1,42 +1,46 @@
 # DATA
 
-## 1. The four layers observed
+## Modèle de données observé (OBSERVED)
 
+Cinq couches distinctes, toutes présentes dans le source :
+
+```text
+Concept métier   →  Vocabulaire versionné (CONTEXT.md) : Collection, Canvas, Source, Worker, Task…
+Modèle applicatif→  Types + schémas de validation (Zod, .strict() sur les entités complexes)
+Représentation   →  DTO d'entrée (*CreateDTO) ; séparation *Details (léger) / *Content (payload lourd)
+Persistence      →  Stores indexés (Dexie v32, 20 stores), migrations versionnées .upgrade()
 ```
-Concept (glossary, CONTEXT.md)      "Source", "Canvas", "Collection", "Worker"…
-      ↓
-Application model (Zod schemas)     z.object().strict() → z.infer type; schema IS the model
-      ↓
-Technical representation            DTO variants, converters to external formats (IIIF…)
-      ↓
-Persistence                         ONE Dexie schema file; store keys + index expressions
-```
 
-- **Observed.** Entities are declared as Zod schemas with `.strict()` (unknown keys are a bug, not a pass); TypeScript types are _inferred from_ schemas, never written by hand. The whole IndexedDB schema — ~20 stores, index expressions including compound indexes (`'[canvasId+collectionId+type]'`) — lives in a single versioned declaration file (`db.ts`, `db.version(30)`). Migrations are Dexie `upgrade` blocks attached to version bumps.
-- **Inferred.** Single-file schema + version counter makes migrations reviewable as one diff — the strongest habit to transplant, independent of the storage technology.
-- **Observed.** Blobs (images, PDFs) are first-class stored entities separated from metadata (content/id split) so metadata queries stay cheap and exports are self-contained.
+Points saillants transférables :
 
-## 2. Access pattern
+1. **Séparation Details/Content** : les métadonnées légères s'affichent en liste, le payload lourd (blobs, contenu) se charge à la demande. Ce découpage est un **pattern de modèle**, indépendant de l'ORM.
+2. **DTO d'écriture dédiés** (`*CreateDTO`) : la frontière d'entrée d'un repository n'est jamais l'entité complète ; le repository fabrique l'entité (id, dates, invariants).
+3. **Schéma = validation = type** : l'entité persistée complexe est définie par son schéma de validation ; le type en découle. L'import de données externes (backup JSON) devrait passer par le même schéma (lacune reconnue S-08).
+4. **Migrations versionnées et conservatrices** : schéma versionné (`db.version(N)` avec liste complète des stores+index), montée par `.upgrade()` ; les valeurs persistées hors alphabet sont **rejetées explicitement** par la migration (v31→v32), pas tolérées silencieusement. Migration structurelle auto ≠ migration de contenu : la migration lourde (`storedManifests → sources`) est déclenchée depuis l'UI — compromis assumé et documenté comme piège ; toute suppression de champ indexé ordonné se prépare, se consigne, se vérifie.
+5. **Invariants inter-stores dans les repositories d'agrégat** seulement (Sources, Collections, Annotations, Workers) ; le CRUD monoclore reste une couche mince. (Vocabulaire « Table/Provider » bancassé puis abandonné — D-005 : une abstraction de plus étudiée et **refusée proportionnément**, ce qui est en soi une fondation méthodologique.)
+6. **Annotations au format standard du domaine** (W3C Web Annotation Data Model, motivations `classifying`+`tagging`) : préférer un standard du domaine à un format maison — transférable à n'importe quel domaine qui a un standard.
+7. **Historique et suppression douce observés** : store `history` (URLs), `annotationsTemp` pour le travail non consolidé ; nettoyage des tables legacy commenté → **dette reconnue** (données dupliquées persistent après migration, S-10).
 
-| Concern               | Observed mechanism                                                     | Abstract role                          |
-| --------------------- | ---------------------------------------------------------------------- | -------------------------------------- |
-| Write path            | repository class per store, methods return `FunctionResult`            | command side                           |
-| Read path             | `liveQuery/` repositories returning thunks, consumed by `useLiveQuery` | reactive read side                     |
-| Substitution seam     | `getXRepository()` factories; no DI container                          | testability / future adapter swap      |
-| Cross-store invariant | aggregate repositories (Sources, Collections, Annotations, Workers)    | the only places allowed to span stores |
-| Export/portability    | `dexie-export-import` dump + per-plugin exporters                      | data ownership stays with the user     |
+## Persistance (OBSERVED)
 
-## 3. Data-related decisions worth keeping
+- Choix : IndexedDB local-first (D-001). **Le principe transférable** n'est pas « IndexedDB » mais : la donnée de travail appartient à l'utilisateur, survit au offline, et l'application reste fonctionnelle sans service distant (les jobs distants sont optionnels et pontés).
+- Abonnement réactif aux tables = mechanism de rafraîchissement de l'UI ; aucune invalidation manuelle de cache à écrire pour la donnée métier.
+- Transactions : les opérations multi-écritures (transition de statut + file + statut dérivé) se font **dans une transaction unique** du repository.
+- Export/import de la base entière (portabilité) : backup restaurable, mais import sans validation de schéma → lacune S-08 à corriger dès un nouveau projet.
 
-1. **Local store is the source of truth**; remote services are caches/bridges, never authorities. This is what makes the app offline-first and its tests deterministic.
-2. **Schema declared once, versioned once.** `[RECOMMENDED]` even generate the schema file from the descriptors (the deferred "Descriptor" design in the glossary — banked, not shipped — points this way; don't build it before a second storage adapter needs it).
-3. **Not-found is a typed error value** (`EntityNotFoundError`), never `undefined` leaking upward.
-4. **Validation at the boundary**, not at construction everywhere: parse on ingest (importers, external responses); trusted internal writes may skip re-parsing for performance.
+## Cache et données externes (OBSERVED)
 
-## 4. For the new project (technology-agnostic)
+- Données externes ponctuelles (manifestes, conversions) via une couche de fetch avec cache/invalidation (React Query) ; jamais recopiées dans la base locale.
+- Miniatures et blobs : stockés comme pièces jointes séparées ; **lacune reconnue** (R5) : le concept « blob + sa forme base64 » est dupliqué dans ~15 fichiers sans module — leçon : dès qu'un format de representation se duplique, nommer et extraire le module (`put/get/remove/asBase64/fromBase64`).
 
-- Keep the four layers explicit; name the persistence module after the _role_, not the product (`persistence/`, not `indexeddb/`). `[correction to source naming]`
-- One schema declaration file, monotonically increasing version, migration per bump, migration covered by one test per bump. `[RECOMMENDED — source had none]`
-- Factory-function DI seam until a second adapter justifies a table/interface abstraction. `[OBSERVED, right-sized]`
-- Separate content (blobs) from metadata as the source does.
-- Everything durable must be exportable — budget for a dump/import facility from day one.
+## Configuration des données (INFERRED)
+
+- Ordres de tri figés avant suppression d'un champ de tri (leçon de la migration v31) : **toute suppression de champ indexé ordonné se prépare**, se consigne, se vérifie.
+
+## Recommandations pour un nouveau projet (RECOMMENDED)
+
+1. Reprendre la séparation Details/Content + DTO d'écriture dès le premier modèle.
+2. Schéma de validation unique par entité persistée, utilisé aussi pour valider tout import.
+3. Migrations versionnées testables sur le vrai moteur (ou un faux moteur fidèle — voir TESTING.md).
+4. Migration de données = alphabets clos : valeur inconnue ⇒ rejet typé.
+5. Si l'architecture n'a pas encore plusieurs adaptateurs de persistance réels, **ne pas introduce une couche « Table/Provider » speculative** (leçon D-005, appliquée par le source lui-même).

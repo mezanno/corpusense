@@ -1,79 +1,52 @@
 # TECHNICAL-DEBT
 
-Format per item: Problem / Impact / Why it probably exists / Recommendation / Priority.
+Deux volets : ce qui **existe** et ne doit pas être reproduit (§1), ce qui **manque** et devrait exister dès le nouveau projet (§2).
 
----
+## 1. Dette du projet source (OBSERVED) — à ne pas transposer
 
-## T1. Two divergent plugin registries — **Priority: HIGH**
+| Problème | Impact | Pourquoi il existe probablement | Recommandation pour le nouveau projet | Priorité* |
+|---|---|---|---|---|
+| Saga d'orchestration ~420 lignes : loi + file + reprise + mapping mêlés | Non testable, point chaud de modification | Croissance historique de l'orchestration avant l'existence de la loi pure | Démarrer directement avec un moteur de file à ports (P6) ; la loi dans un module pur dès le départ | Haute |
+| Duplication des plugins LLM (~200 lignes quasi identiques, triplication des exports) | Divergences (fichiers `mistral_export_*` produits par le plugin OpenAI) | Copier-coller d'un premier adaptateur réussi | Un seul worker paramétré par adaptateur de client ; flux d'export écrit une fois | Haute |
+| Double registry de plugins (UI vs exécution) | Deux vues divergentes des plugins disponibles | Deux points de chargement apparus à des époques différentes | Un registry unique, même manuel | Haute |
+| Trois niveaux « utils » (`lib/`, `utils/`, `data/utils/`) + doublons d'helpers | Navigabilité, import hasardeux | Absence de destination par défaut pour « petit helper » | Une destination nommée par famille de helpers ; un utils partagé = un module nommé | Moyenne |
+| Violations de couches (`data/**` → UI/App, 2 cas) | La règle de dépendances n'est pas tenue mécaniquement | Pas de lint d'architecture (Q4) | Règle de lint de frontières **au premier commit** | Haute (prévention) |
+| ~59 `console.log` dont payloads externes | Fuite d'info, bruit, S-09 | Développement sans module de logging | Module de logging + lint anti-console | Moyenne |
+| Dépendances : `xlsx` vulnérable sans fix, `cozy-iiif` non épinglé, `tesseract` mort au manifest | Supply chain (S-05), audit non bloquant | Choix historiques + absence de politique | Politique épinglage SHA + revue trimestrielle + audit bloquant | Haute |
+| `stats.html` 1,9 Mo et `.env` commités par le passé | Pollue l'historique, leurre de sécurité | `gitignore` ajouté après coup | Hook pré-commit + `.gitignore` au premier commit | Basse (dans un projet neuf : prévention) |
+| Tables legacy commentées non purgées après migration | Données dupliquées persistantes (S-10) | Peur de casser une migration non validée | Migration = test + purge dans la même version, validée par test | Moyenne |
+| `useDialog` : 447 lignes, 23 wrappers, ~43 sites d'import | Point chaud, couplage fort UI↔formulaires | Dialogues empilés sans abstraction de formulaire | Cible du source : registre de formulaires + `openForm()` — à reprendre comme **conception initiale**, pas comme dette | Moyenne |
+| Concept blob/base64 dupliqué (~15 fichiers, ~40 lignes) | Cinq adaptateurs sans foyer | Pas de module « pièce jointe » | Module d'attachments nommé dès les premiers modèles | Moyenne |
 
-- **Problem:** `App.tsx` exports mutable `workerPlugins`/`importerPlugins`; the saga layer calls `loadWorkerPlugins()` separately. UI and orchestrator can read different copies.
-- **Impact:** command/execution mismatch class of bugs; the app's core loop is the affected surface.
-- **Why:** the registry grew out of the UI before the loader existed; no boundary rule stopped the second copy.
-- **Recommendation:** one registry module, one accessor, no mutable exports from the app root (already the pattern the loader provides).
+\* Priorité dans l'optique du **nouveau projet** (prévention), pas du source.
 
-## T2. Layering violations data → React root / UI store — **HIGH**
+Le source lui-même classe et priorise sa dette (roadmap Q1-Q9, registre S-01..S-11) — **cette discipline de registre est la fondation à prendre, l'inventaire ci-dessus n'est que l'application au cas présent.**
 
-- `src/data/utils/plugins.ts:1`, `data/models/worker/worker.utils.ts:1` import from `@/App`; `data/utils/canvas.ts:2` reaches into a Zustand store.
-- **Impact:** the data layer can't be tested or reused outside the component tree — the promise of the whole architecture leaks exactly here.
-- **Why:** nothing mechanically enforced the intended rule.
-- **Recommendation:** boundary lint rule on day one of the new project; fix here before any reuse.
+## 2. Éléments manquants au source, à ajouter au nouveau projet
 
-## T3. Env vars read ad hoc (~16 call sites) — **HIGH**
+### OBLIGATOIRE
 
-- Raw `import.meta.env.VITE_*` with casts; `VITE_BASE_PATH` concatenation repeated by hand.
-- **Impact:** no validation, silent `undefined` at runtime, deploy-time misconfiguration fails late.
-- **Why:** accessor module was created (for Supabase) but the pattern never spread.
-- **Recommendation:** one Zod-validated config module, fail-fast at startup, everything imports it.
+1. **Garde d'architecture mécanique** : règles de lint par frontières de couches (le source le prévoit en Q4, ne l'a pas fait) ; sans lui, la règle de dépendances est une tradition orale.
+2. **Protection de branches** rendant le pipeline de validation bloquant à la fusion (Q3 inachevé côté réglages de dépôt).
+3. **Validation par schéma de toute entrée non contrôlée** : imports de données, slugs, contenu distant (S-06/S-08 ferment en même temps).
+4. **Sanitisation du rendu** de tout contenu markdown/HTML produit hors de l'app (S-07).
+5. **Module de logging unique** avec niveaux et politique de production (S-09).
+6. **Hook anti-secrets + `.gitignore` + épinglage des dépendances** au premier commit (S-05/S-11) : ces trois-là coûtent zéro sur un projet neuf.
 
-## T4. No quality-gate CI despite documented policy — **HIGH**
+### RECOMMANDÉ
 
-- Deploy workflow exists; lint/format/typecheck/test never run in CI; the 46-error lint backlog is the direct evidence.
-- **Recommendation:** PR-blocking `ci.yml` mirroring the deploy workflow's hygiene (pinned, least privilege, concurrency).
+7. **CSP `default-src 'self'` + `connect-src` borné** dès le squelette (S-03).
+8. **Seuil de couverture** ciblé sur les modules de loi et les adaptateurs (pas un % global).
+9. **Feedback UI des erreurs de démarrage des traitements** (le source avale les erreurs de démarrage de worker, roadmap Q8).
+10. **Métadonnées de version** exposées (cf. OBSERVABILITY.md) et canal stable/test explicite.
+11. **SBOM ou revue de dépendances outillée** si la cible a un registre de paquets.
 
-## T5. No pre-commit hooks — **MEDIUM**
+### OPTIONNEL
 
-- Nothing between a developer and an unformatted/unlinted commit.
-- **Recommendation:** husky + lint-staged (Prettier) + targeted `tsc -b` at init time.
+12. Métriques/traces si un service central existe (sinon inutile — cohérent avec le local-first).
+13. Système de feature-flags au-delà d'un drapeau unique `experimental`.
+14. Snapshots visuels E2E.
 
-## T6. `exhaustive-deps` disabled without rationale — **MEDIUM**
+## 3. Avertissement méthodologique (RECOMMENDED)
 
-- Stale-closure bugs silently welcomed; the React-hooks backlog persists.
-- **Recommendation:** rule on; per-line disables only, each with an in-file comment.
-
-## T7. Package-manager version: three sources of truth — **MEDIUM**
-
-- `packageManager: npm@11.6.4` vs README "npm 10+" vs a CI global-install step.
-- **Recommendation:** `packageManager` + Corepack as the single truth; CI calls `corepack enable`.
-
-## T8. Duplicated provenance scripts — **LOW**
-
-- `scripts/generate-env.js` and `scripts/build-info.js` are byte-identical; first edit diverges them.
-- **Recommendation:** keep one (`build-info.js`).
-
-## T9. Config-file side effects / stray output — **LOW**
-
-- `console.log` in `vite.config.ts:10,19-20` and `vitest.setup.ts:83`; i18n `debug: true` hardcoded (spams production console); visualizer writes `stats.html` to the repo root on every build.
-- **Recommendation:** gate debug output on mode; emit stats under `node_modules/.tmp`; configs side-effect-free.
-
-## T10. Empty scaffold directories — **LOW**
-
-- `src/data/tables/{adapters,contracts}` hold a deferred design as dead structure, misleading newcomers and agents.
-- **Recommendation:** deferred designs live as ADRs/plan docs; delete the folders.
-
-## T11. Supply-chain surface — **MEDIUM**
-
-- `xlsx` (public-registry-only distribution oddities, known advisories) + `github:jonathan-epita/cozy-iiif` (no registry provenance).
-- **Recommendation:** replace/replace-with-ADR + CI audit step on prod deps.
-
-## T12. Untested seams — **HIGH**
-
-- No repository/migration/E2E tests; the local-first loop itself is unverified (see `TESTING.md`).
-- **Recommendation:** seam-tier tests + one Playwright smoke test.
-
-### Categorisation
-
-Coupling: T1, T2 · Duplication: T8 · Missing enforcement: T4, T5, T6, T12 · Accidental complexity: T9, T10 · Config hygiene: T3, T7 · Supply chain: T11.
-
-### Domain residue (not debt, just not transplantable)
-
-IIIF/canvas/collection/annotation model and converters; worker/task/job plugin set (OCR, LLM, importers); tile-viewer stack; Supabase jobs bridge and _its_ status law; image-server/email integrations; locales content and branding; the Dexie schema stores themselves (the schema _file_ is residue; its _shape_ is a foundation).
+Le source a refusé une abstraction étudiée sérieusement (D-005) et l'a consignée comme refus définitif. Un nouveau projet héritant de ces fondations **ne doit pas la réintroduire par réflexes architecturaux** (« il faut une couche repository/adapter ») : la règle est « une abstraction par besoin observé au call site ». Ne pas transformer non plus chaque écart à une architecture idéale en dette : le source assume cinq mécanismes d'état parce que chacun est justifié par écrit.

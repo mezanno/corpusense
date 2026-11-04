@@ -1,25 +1,37 @@
 # SECURITY
 
-## Observed practices (client-only threat model)
+## Périmètre de confiance observé (OBSERVED)
 
-- **No server, no first-party secrets.** Third-party API keys are typed by the user at runtime in an in-app configuration page and persisted locally — never baked into the bundle. The Supabase pair used is the _anon_ key (public by design), typed through a generated `Database` type so query shape is compiler-checked. This tiering (build-time non-secret config / runtime user-provided keys) is the project's best security decision.
-- **CI least privilege:** default-deny permissions, per-job grants, SHA-pinned actions, `npm ci` from a committed lockfile, OIDC for deployment identity (no stored long-lived token).
-- **XSS posture:** i18n escaping delegated to React's own escaping (`escapeValue: false` is correct _because_ React escapes — the reasoning is documented in-file, which is what makes it safe to keep).
-- **Local-first data:** durable user data stays in the browser; export is first-class (data ownership without server dependency).
-- **Dev HTTPS with local mkcert-style certs** — secure-context APIs (File System Access) exercised under real conditions.
+La décision fondatrice est **D-011** : application mono-utilisateur locale, la machine de l'utilisateur **est** sa frontière de confiance ; pas de multi-locataire, pas de gardes de routes, pages publiques assumées. Cette décision est **conditionnelle** : elle a un déclencheur de réouverture écrit (accès distant ou multi-utilisateur réel).
 
-## Gaps (Observed absences — flagged, not assumed useless)
+Transposable tel quel : **nommer la frontière de confiance dans un ADR avant d'écrire la sécurité**, plutôt que d'appliquer des garde-fous par réflexe. C'est ce qui permet au source d'accepter des risques (clés API en stockage local) de façon documentée et réversible.
 
-- **Supply-chain surface:** `xlsx` (SheetJS, known advisories, published outside the registry historically) and a `github:` dependency (`cozy-iiif`) bypass registry provenance/2FA. No audit step in CI.
-- **No PR quality gate** → any review/enforcement gap above is aspirational.
-- Supabase RLS policies live server-side, invisible from this repo — `UNKNOWN`, must be verified before reuse of that pattern.
-- No CSP meta/header configuration found — a static SPA loading third-party origins should set one. `[RECOMMENDED]`
-- Runtime-entered keys are persisted in browser storage unencrypted at rest — acceptable for the stated personal-tool model, but must be a _written_ decision (ADR), not an accident.
+## Surfaces réellement exposées (OBSERVED — registre `securite.md`)
 
-## Baseline for the new project (language-independent)
+(a) la chaîne d'approvisionnement logicielle ; (b) le stockage des clés API tierces ; (c) les services connectés et leurs règles d'accès ; (d) tout script tiers exécuté sur l'origine. La classification du source est juste pour toute app « locale avec services connectés » : **quand il n'y a pas de backend, la supply chain et les services connectés deviennent la surface d'attaque principale.**
 
-1. Keep the config tiering: build-time = non-secret + schema-validated; runtime = user-held; nothing sensitive ships in the artifact.
-2. CI: least-privilege + pinned + audit step (`npm audit --omit=dev` or target equivalent) + lockfile integrity.
-3. One CSP, applied at the static host.
-4. Dependencies from registry-with-provenance only; `github:`/URL deps require a written ADR and a vendored-commit pin.
-5. Input validation at every external boundary (importers, remote responses) via the same schema layer the models use.
+## Pratiques observées à conserver
+
+1. **Registre de sécurité vivant** : points numérotés S-xx avec criticité, référence OWASP, constat **re-vérifié contre le code à date fixe**, action, points fermés gardés « pour mémoire ». Le registre dit ce qui est *assumé*, pas seulement ce qui est ouvert.
+2. **Preuves négatives vérifiées** : « zéro `innerHTML`/`eval` dans `src/` », « le proxy open-relay de dev a été supprimé et ne doit pas être réintroduit sans liste blanche ». Consigner l'absence d'un sink est aussi utile que consigner sa présence.
+3. **Audit OWASP périodique re-vérifié**, consolidation des audits dans un seul registre (pas une pile de rapports datés).
+4. **Secrets publics ≠ secrets** : les variables de build sont publiques *par design* et le doc le dit ; les secrets utilisateur (clés API) ne passent jamais par le dépôt ni par la CI, ils sont saisis dans l'app et leur risque est accepté avec mesure d'atténuation (portée minimale du PAT).
+5. Erreurs : la discipline D-002 (relayer/enrober avec `cause`, jamais remplacer par un générique) est explicitement listée comme **correctif de sécurité** (fuite d'information vs diagnostic).
+
+## Lacunes assumées à ne pas reproduire telles quelles (OBSERVED)
+
+| ID | Constat | Leçon pour un nouveau projet |
+|---|---|---|
+| S-03 | Aucune CSP / en-têtes de sécurité | Prévoir CSP `default-src 'self'` + `connect-src` borné **dès le starter**, pas en dette |
+| S-05 | Dépendance vulnérable sans correctif amont (`xlsx`) ; dépendance git **non épinglée** (tag/SHA) ; dépendance morte restée au manifest | Politique : dépendance git = SHA épinglé ; toute dépendance a un propriétaire qui l'utilise |
+| S-06/S-07 | Slug de page non assaini ; rendu markdown de contenu distant non sanitisé | Sanitiser tout contenu non contrôlé par défaut, pas par correctif |
+| S-08 | Import de backup JSON sans validation de schéma | Tout import = passe par le schéma de validation + résumé avant application |
+| S-09 | ~59 `console.log` en prod dont payloads externes | Module de logging unique (voir OBSERVABILITY.md) |
+| S-11 | `.env` commité avant son gitignore (contenu public par design, mais historique lisible) | Hook anti-secrets + `.gitignore` au premier commit |
+
+## Recommandations cible (RECOMMENDED)
+
+1. Reprendre le **format** du registre (ID, criticité, référence cadre, constat daté, action, points fermés) — c'est la pratique la plus transférable du volet sécurité.
+2. Si l'app reste locale : formaliser la frontière de confiance (D-011) et ses **déclencheurs de réexamen**.
+3. Si l'app est multi-utilisateur ou exposée : les guards de routes du source sont à réexaminer (note S-01), l'authentification existante ne protégeant qu'une feature.
+4. Validation des entrées (schéma) + sanitisation du rendu + CSP : trio absent du source, à poser au démarrage — coût quasi nul sur projet neuf, coût élevé en dette (le source le paie maintenant).

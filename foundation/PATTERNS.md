@@ -1,77 +1,72 @@
 # PATTERNS
 
-Each pattern: problem → principle → **abstract version** (framework-free) → source implementation (one particularisation).
+Patterns réellement présents dans le projet source. Pour chacun : la version abstraite prime — l'implémentation source n'est qu'un exemple.
 
 ---
 
-## P1. Result-values at the boundary
+## P1 — Result Pattern typé aux frontières
 
-- **Category:** error handling · **Level:** UNIVERSAL (impl ECOSYSTEM)
-- **Problem:** thrown errors across the data boundary are invisible to the type system, caught too late or not at all; `undefined` leaks as failure signalling.
-- **Principle:** at seams where failure is _expected_, return a discriminated result value instead of throwing; keep throwing for programmer errors only.
-- **Abstract:** a sum type `Result<T, E>` with constructors and combinators (`map`, `flatMap`, `unwrapOr`, `match`, `fromPromise`), plus an `unwrap()` that throws for the few call sites that genuinely want exceptions.
-- **Source:** `FunctionResult<T, E = BaseError>` (~200 call sites — proven in production). Gap: no `unwrap()`; `AsyncFunctionResult = Promise<FunctionResult>` appears by convention.
+- **Catégorie** : gestion des erreurs · **Réutilisabilité** : UNIVERSAL (expressible dans tout langage typé)
+- **Problème** : les erreurs attendues (entité absente, refus de transition, erreur de stockage) disparaissent dans des `try/catch` dispersés ou des retours non typés.
+- **Principe** : une fonction faillible dont l'échec est *normal* retourne `{ ok: true, value } | { ok: false, error }` ; les erreurs sont une hiérarchie nommée portant un contexte JSON sérialisable et une `cause` préservée.
+- **Implémentation actuelle** : `FunctionResult<T,E>` + `BaseError` (D-002), assortie d'un **garde-fou lint** (`no-restricted-syntax` sur la création d'erreurs nues, liste blanche au fichier, chaque ligne = un verdict documenté).
+- **Version abstraite** : aux frontières de commande uniquement, retourner un somme discriminé succès/échec ; l'échec porte un type nommé + contexte. Les langages sans union discriminée l'expriment par exceptions typées + conventions de capture au boundary.
+- **Quand l'utiliser** : toute frontière traversable par plusieurs appelants. **Quand ne pas l'utiliser** : les abonnements réactifs (un Result à deux états ne peut pas exprimer `loading|missing|found` — l'absence y est une valeur).
 
-## P2. Typed error hierarchy with structured context
+## P2 — Deux flux : lecture réactive / écriture commandée
 
-- **UNIVERSAL.** One `BaseError extends Error` carrying `cause` and a JSON-serialisable `context` payload; `name` derived from the constructor; domain subclasses (`NotFoundError`, DB error, status errors). Structured context makes errors loggable/exportable without string parsing.
+- **Catégorie** : architecture · **Réutilisabilité** : UNIVERSAL
+- **Problème** : dupliquer la donnée métier dans un store applicatif crée la désynchronisation.
+- **Principe** : la lecture se fait par **abonnement** à la source de vérité (aucun état miroir) ; l'écriture se fait par **intention nommée** (commande) traitée par un orchestrateur ; l'UI ne connaît ni l'ORM ni la file.
+- **Implémentation actuelle** : `useLiveQuery` via hooks de données + actions dispatchées vers une saga. **Version abstraite** : flux de changement côté lecture, bus de commandes ou appels de cas d'usage côté écriture ; l'essentiel est l'**asymétrie** (la lecture ne passe jamais par l'écriture et réciproquement).
+- **Avantage** : suppression de tout code de resynchronisation. **Inconvénient** : suppose un moteur de persistance observable ou un bus d'événements.
 
-## P3. Repository-per-store behind a factory seam (DI without a container)
+## P3 — Loi d'état en module pur
 
-- **UNIVERSAL / right-sized.** One class per entity store, factories (`getXRepository()`) as the only injection seam; no DI container (evaluated and rejected). Reassess when a _second storage adapter_ appears — that's the trigger for an interface + adapter pair, not earlier.
-- Test substitution today happens by mocking at module level; the seam stays honest as long as no consumer imports the class directly.
+- **Catégorie** : domain modeling · **Réutilisabilité** : UNIVERSAL
+- **Problème** : la loi de transition des statuts était implémentée **quatre fois** et divergeait déjà (D-008).
+- **Principe** : les statuts sont des **alphabets clos** ; la loi (transitions autorisées, prédicats, fonctions de dérivation) vit dans un module sans AUCUNE import technique (ni framework, ni ORM, ni SDK) ; refus = erreur typée ; les mappings vers l'UI sont des **tables totales** indexées par l'enum, sans branche `default` runtime — l'exhaustivité est garantie par le typage.
+- **Version abstraite** : machine à états fonctionnelle (`transition(state, event) -> Result<state>`, `derive(queue) -> state`) testable sans harness d'environnement ; la persistance et l'UI ne font qu'appeler la loi.
+- **Règle corollaire observée** : les plugins émettent des **événements**, jamais des statuts bruts ; le champ statut n'est modifiable que par la transaction qui applique la loi (`patch()` l'exclut par le typage).
 
-## P4. Reactive reads beside command writes (local-first spine)
+## P4 — Rôles exclusifs des mécanismes d'état
 
-- **UNIVERSAL (pattern) / FRAMEWORK (impl).** The database is authoritative; every view subscribes to it directly; only orchestration writes, imperatively. Cost observed: two mental models (reactive read vs. command write) and constant temptation to route reads through the store. Mitigation: a _live-read_ repository variant returning thunks/closures so the subscription mechanism is swappable.
-- **Abstract:** "query + change-feed" read model; the UI layer never owns a copy of durable data.
+- **Catégorie** : state management · **Réutilisabilité** : UNIVERSAL
+- **Principe** : si plusieurs mécanismes d'état coexistent, chacun a un **rôle exclusif écrit dans un ADR** et un doc d'inventaire (« ce qui vit hors du store »). La règle d'or observée : *toute nouvelle donnée métier va dans la persistance + un hook d'abonnement, jamais dans le store global*.
+- **Anti-pattern combattu** : l'accumulation par défaut (« on met ça dans Redux pour l'instant »).
 
-## P5. Glob-discovered plugin registry behind a single accessor
+## P5 — Plugins découverts, registry assumé
 
-- **Level:** ECOSYSTEM (mechanism), UNIVERSAL (principle).
-- **Principle:** for a stable set of same-shaped extension modules, discovery replaces registration: the build system enumerates the folder, each module is validated at load by a runtime typeguard, parameter schemas are validated at the boundary.
-- **Abstract:** one registry module, one `getPlugins()` accessor; **no mutable plugin export from the app root** (the source had two divergent registries — UI vs orchestrator — the top architectural flaw found in the review).
-- Costs: eager bundling, no lazy loading. Don't use if plugins must be fetched at runtime.
+- **Catégorie** : extensibilité · **Réutilisabilité** : FRAMEWORK (le mécanisme) / UNIVERSAL (le principe)
+- **Principe** : un traitement = un fichier autonome exposant un contrat (`run(task)` + export de ses résultats) ; l'ajout d'un traitement ne modifie aucun fichier de registry ; un drapeau runtime filtre les plugins expérimentaux ; les erreurs de plugin nomment le job fautif.
+- **Implémentation actuelle** : glob de modules au build (`import.meta.glob`, eager) — D-007. **Version abstraite** : auto-découverte là où l'écosystème la permet ; sinon **registry explicite monotone** (un seul endroit qui liste les plugins — le source a en dette un double registry, ce qui prouve le besoin d'unicité).
+- **Inconvénient observé** : la découverte par glob ne descend pas dans les sous-répertoires → code mort accumulé ; la découverte implicite complète l'auditabilité.
 
-## P6. Supervised long-lived flows
+## P6 — Ports injectés pour l'asynchrone (cible D-006)
 
-- **UNIVERSAL principle, FRAMEWORK mechanism.** Root "daemons" run under a supervisor loop (`while(true) try call(saga)`), detached from component lifetimes, with a structured log line on each restart. Any target with coroutines/actors/threads can express it; silent death of background orchestration is the failure it prevents.
+- **Catégorie** : architecture asynchrone · **Réutilisabilité** : UNIVERSAL
+- **Principe** : moteur de file headless `run(worker, plugin, ports)` où ports = repository + horloge injectée + notifieur ; orchestrateur, passerelle temps réel et récupération au démarrage ne sont que des **adaptateurs fins**. Testable sans framework : horloge fausse = timeouts déterministes.
+- **Contexte** : état de l'art visé du source (la saga actuelle est le contre-exemple : loi+file+reprise+mapping mêlés dans ~420 lignes non testables).
 
-## P7. Status-law bridging of external jobs
+## P7 — Factory de module sans conteneur d'injection
 
-- **UNIVERSAL pattern, DOMAIN instances.** When work is handed to a remote queue the client cannot hold open, persist an intermediate status _pair_ ("posted", "acknowledged") as the single written-down law of that lifecycle; poll/webhook back into the local state machine. The reusable part is the **fix-plan format** (`docs/plan-worker-status-law.md`): one canonical state diagram + a migration table, enforced by code review. Four divergent implementations of the same law is the documented failure mode.
+- **Catégorie** : composition root · **Réutilisabilité** : ECOSYSTEM
+- **Principe** : une factory de module-scope centralise la création des repositories ; refus explicite d'un conteneur IoC (D-003) pour un projet solo, avec **escalade documentée** (contexte UI + injection de dépendances dans l'orchestrateur avant toute librairie).
+- **Leçon transférable** : la testabilité sans IoC passe par le **vrai stack sous test** (voir P8) plutôt que par des mocks de factories.
 
-## P8. Test-mode alias swap
+## P8 — Ratchet qualité
 
-- **ECOSYSTEM.** Heavy/global side-effecting packages (i18n runtime) are aliased to local no-op shims in test mode, so tests neither pay their cost nor need their setup. Generic across bundlers; keep shims beside tests so they can't leak into production builds.
+- **Catégorie** : outillage · **Réutilisabilité** : UNIVERSAL (le principe), ECOSYSTEM (l'outil)
+- **Problème** : une base de code avec dette héritée ne peut pas adopter « zéro erreur lint » du jour au lendemain, et sans barrière la dette remonte.
+- **Principe** : baseline consignée dans un fichier versionné ; le CI compare le compteur courant à la baseline et **échoue si ça dépasse** ; l'encourage la baisse par un warning quand le chiffre baisse. Chaque écart restant est traçable.
+- **Implémentation actuelle** : script Node appelant le lint en JSON et comparant à `.eslint-ratchet.json`.
 
-## P9. jsdom capability checklist (what a DOM emulator never gives you)
+## P9 — Boundary de capture unique
 
-- **FRAMEWORK (web targets).** The setup file's stubs are the checklist: `matchMedia`, `ResizeObserver`, WebGL/canvas context, File System Access handles, plus jest-dom matchers and auto-cleanup. Reuse the file, not the comments around it.
+- **Catégorie** : fiabilité · **Réutilisabilité** : UNIVERSAL
+- **Principe** : les exceptions irrécupérables remontent jusqu'à un boundary désigné (superviseur de l'orchestrateur, boundary d'UI, passerelle réseau) et y sont capturées **une seule fois**, relaiées ou englobées avec `cause` — jamais remplacées par un message générique (le source a fait l'inverse par le passé, et le documente comme point fermé du registre de sécurité).
 
-## P10. Build-provenance stamping
+## P10 — Tables de présentation totales
 
-- **UNIVERSAL.** 12 lines of pre-build code: git hash + ISO date → gitignored env file → build-time constants → an in-app version display. One script only (the source had two byte-identical copies — drift guaranteed).
-
-## P11. Validated-config-by-accessor
-
-- **UNIVERSAL (principle), currently RECOMMENDED (source failed at it).** Every build-time setting is read **once**, validated (schema parse of the env object), and exported from a single accessor module. Components import the accessor, never raw env. Fail fast at startup on invalid config. The source read `import.meta.env.VITE_*` ad hoc at ~16 call sites with `as string` casts — silent `undefined` at runtime is the failure mode.
-
-## P12. Manual chunk extraction for heavy view libraries
-
-- **FRAMEWORK.** Three lines of build config keep the app shell interactive when the app embeds one very heavy, separable viewer library. Only worth it under that condition.
-
-## P13. `cn()` classname composition
-
-- **FRAMEWORK.** A single helper composing conditional classnames and resolving conflicts (clsx + tailwind-merge); the companion seam of a copy-in component kit (`components.json` keeps the kit CLI working out of the box). In other ecosystems: the equivalent of "one styling composition helper, everywhere".
-
-## P14. i18n over HTTP with lazy namespaces
-
-- **FRAMEWORK.** Translation files shipped as static assets, namespaces fetched on first use, language detected + cached in localStorage, escaping delegated to the view layer (React already escapes). Reusable structure; library is swappable. `[choice: i18n facility of the target]`
-
-## Anti-patterns observed (do not transplant)
-
-- Mutable module-level registries exported from the UI root (P5 correction).
-- Lint rules disabled repo-wide instead of per-line with rationale.
-- Empty directories as design placeholders.
-- Side effects (console output, file writes) inside build-tool config modules.
+- **Catégorie** : présentation · **Réutilisabilité** : ECOSYSTEM (typage statique requis)
+- **Principe** : toute correspondance enum → UI (icône, libellé, classe) est une table indexée par l'enum complet, **sans branche par défaut** ; une valeur inconnue persistée est une **erreur typée au chargement**, pas un rendu silencieux. La migration de données rejette explicitement les valeurs hors alphabet.

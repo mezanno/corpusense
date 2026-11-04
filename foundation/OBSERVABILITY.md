@@ -1,25 +1,29 @@
-# OBSERVABILITY
+# OBSERVABILITÉ
 
-## Observed
+Le point le plus faible du projet source : l'observabilité est **réduite à l'état**, mais l'état existant est déjà structuré en principe/implémentation/technologie. À reproduire : le peu qui marche ; à corriger : le reste.
 
-- The only instrumentation is the browser console (`console.info/warn/error`) used deliberately at lifecycle points: plugin load, i18n init, saga restart. No structured logging, no metrics, no traces.
-- The OTel **API** package is a declared dependency with no usage found — an intention, not an implementation.
-- User-facing failure surfacing exists via toast notifications and an events Redux slice (in-app event log) — the closest thing to an operational surface.
-- Error objects were designed for observability (`BaseError` carries JSON-serialisable `context`, `cause` chains) but nothing consumes them structurally.
-- Debug noise is a known debt: config files log at load, i18n `debug: true` hardcoded — the anti-lesson.
+## Ce qui existe (OBSERVED)
 
-## Principle / implementation / technology separation
+| Principe | Implémentation | Technologie |
+|---|---|---|
+| Identifier chaque build publié | version+git hash+date injectés au build dans un fichier env généré (jamais commité) | script de build + variables de build |
+| Signaler les événements système à l'utilisateur | file d'événements INFO/ERROR avec `lastEvent` consommé puis réinitialisé | store global minimal (slice `events`) + toasts |
+| Journaliser les cycles de vie longs (workers) | statuts persistés + historique de tâches consultable dans l'UI (c'est la « log » métier) | base locale + écrans de suivi |
+| Corréler une erreur à son job | erreurs de plugin nommant plugin/tâche/URL dans message et `context` JSON | hiérarchie `BaseError` (D-002) |
+| Éviter le bruit en production | suppression du debug inconditionnel de l'ORM (registre S-02 clos) | défauts constructeur de l'ORM |
+| Preuve de test déterministe | rapport E2E + traces téléversés au 1er échec, rétention 7 j | artefacts CI |
 
-```
-Principle:      failures crossing boundaries must be structured and exportable
-Implementation: error context payloads + one logging facade
-Technology:     console adapter (dev) · remote telemetry adapter (prod)
-```
+## Lacunes (OBSERVED, consignées dans le registre de sécurité/roadmap)
 
-## Recommended for the new project
+- ~59 `console.log` en production, dont des payloads de services externes (S-09).
+- Aucun module de logging unique, aucun niveau, pas de corrélation inter-opérations.
+- Pas de métriques, pas de traces, pas de health/version endpoint exposable.
 
-1. **One logging facade module**, never raw console. Two adapters: pretty console in dev, structured JSON in prod. Gated by validated config, never hardcoded flags.
-2. **Error-reporting seam wired on day one** even if the remote adapter is a no-op stub: `reportError(BaseError)` → serialise `context` → adapter. `[choice needed: remote sink]` The source proves the value is in the _seam_ — the OTel API was added but never used because wiring wasn't part of the bootstrap.
-3. **Correlation:** carry a task/job id in every error context and log line where a unit of work is involved (the status-law records already provide the ids).
-4. **Daemon heartbeat:** the supervisor logs each restart with the crashed saga's identity — structured, not `console.log(e)`.
-5. Keep an in-app diagnostics surface (the events slice idea): a client-only app can only diagnose what the user can paste back to you.
+## Recommandations pour un nouveau projet (RECOMMENDED)
+
+1. **OBLIGATOIRE** : un seul module de logging, avec niveaux, activé par configuration ; suppression des logs en production de build (`drop`/niveau minimal). La transposition du ratchet s'applique : interdire par lint l'usage direct des primitives de console hors ce module.
+2. **OBLIGATOIRE** : les erreurs structurées sont le premier canal d'observabilité — le `context` JSON des erreurs typées (P1) est déjà un mini-log corrélé : le conserver et le sérialiser au boundary.
+3. **RECOMMANDÉ** : journal d'événements système en base locale (l'UI de journalisation du source est un bon modèle : l'utilisateur final peut voir ce qui a échoué sans outil de dev).
+4. **RECOMMANDÉ** : métadonnées de build (version, hash, date) exposées dans l'UI À propos et dans un endpoint/fichier servi, pour dater un comportement constaté.
+5. **RECOMMENDED** : si un service central existe, traces/métriques par l'API standard de l'écosystème (OpenTelemetry côté serveur) avec identifiant de corrélation propagé ; sinon, s'en tenir à 1-4 — le source démontre qu'une app locale n'a pas besoin de APM pour être opérable.
+6. **OPTIONNEL** : comptage d'usage anonymisé, sous réserve d'un choix explicite de consentement (absent du source).

@@ -1,95 +1,120 @@
 # ARCHITECTURE
 
-## 1. Real architecture of the source (Observed)
+## 1. Architecture réelle observée (OBSERVED)
 
-The project is a **client-only, offline-first SPA with an event-orchestration layer over a local database**. There is no backend of its own; external services are client-side adapters.
+CorpuSense n'est **pas** une architecture en couches classique « UI → Use Cases → Domain → Infrastructure ». C'est une architecture **local-first à deux flux** :
 
-```
-                    ┌───────────────────────────────────────────┐
- route (pages) ───▶ │ UI: pages → components → hooks(data)      │  React, live reads
-                    └─────────────────┬─────────────────────────┘
-                                      │ commands (actions)
-                    ┌─────────────────▼─────────────────────────┐
-                    │ Orchestration: redux-sagas                │  queues, retries,
-                    │  (root saga + self-restarting supervisor, │  external-job bridge
-                    │   plugin registry loaded by glob)         │
-                    └─────────────────┬─────────────────────────┘
-                                      │ function calls returning FunctionResult
-                    ┌─────────────────▼─────────────────────────┐
-                    │ Data: repositories (one per store),       │
-                    │  factory seam (getXRepository()),          │
-                    │  Zod models, one Dexie schema file        │
-                    └─────────────────┬─────────────────────────┘
-                                      ▼
-                    IndexedDB (single source of truth)  +  client adapters
-                                                         (Supabase, EmailJS,
-                                                          IIIF servers, LLM APIs)
+```text
+FLUX DE LECTURE (réactif, dominant)
+  Composant → hook de données → repository (via factory module) → moteur de persistance
+      ↑ re-rendu automatique à toute écriture (abonnement aux tables)
+
+FLUX D'ÉCRITURE (commandé, orchestré)
+  Composant → action de commande → orchestrateur asynchrone (saga) → plugin → services externes
+                                                            ↘ résultat persisté via repository
+                                                                  ↻ le flux de lecture fait le reste
 ```
 
-Three state compartments, by role (Observed):
+Points structurants :
 
-| Role                                          | Tool                                     | Size                            | Rule                                                         |
-| --------------------------------------------- | ---------------------------------------- | ------------------------------- | ------------------------------------------------------------ |
-| System UI state (events log, worker statuses) | Redux Toolkit                            | 2 slices, thunk **disabled**    | async side-effects forbidden in reducers/thunks — sagas only |
-| Background orchestration state                | sagas (in-process)                       | queues, retries                 | long-lived, supervised                                       |
-| Ephemeral UI state                            | React state / 1 Zustand store / Contexts | small                           | never persisted, never authoritative                         |
-| Durable domain data                           | IndexedDB via live queries               | everything that survives reload | the _only_ source of truth                                   |
+1. **La persistance est la source de vérité**, pas un cache. L'UI s'y abonne ; aucun store applicatif ne duplique la donnée métier.
+2. **Redux (ou tout store global) est volontairement vidé de la donnée métier** : il ne porte que le statut d'exécution des traitements et les notifications.
+3. **Les traitements lourds sont des plugins autonomes**, découverts dynamiquement, qui émettent des *événements* et jamais des statuts bruts.
+4. **La loi des statuts est un module pur**, sans import framework, seul endroit où les transitions sont décidées.
+5. L'asynchrone distribué (jobs externes) est une **passerelle** : la file locale reste la référence, le service distant est mappé vers les statuts locaux, avec repli périodique si le canal temps réel tombe.
 
-Data flow: **reactive reads, imperative writes.** UI subscribes to the DB directly (`useLiveQuery` over `dexie-observable`); mutations are issued as commands consumed by sagas; sagas call repositories; repositories return `FunctionResult`.
+Représentation conceptuelle fidèle :
 
-## 2. Dependency rule (the rule the project _meant_ to have)
-
-```
-pages → components → hooks(data) → sagas → repositories → models
-                          ▲                        ▲
-             plugin registry (its own module) ─────┘  (plugins depend inward only)
-config accessor ← (everyone, via one module only)
-```
-
-Observed violations (see `TECHNICAL-DEBT.md`): `data/utils/plugins.ts` and `data/models/worker/worker.utils.ts` import from `@/App` (the React root); `data/utils/canvas.ts` imports a Zustand store. The rule was intended but never mechanically enforced.
-
-**Recommended rule for a new project (universal, language-agnostic):**
-
-```
-Interface → Application → Domain ← Infrastructure
+```text
+        ┌───────────── Interface (pages, composants) ─────────────┐
+        │  abonnement réactif ↑              commandes ↓           │
+   Hooks de lecture      dispatch commandes          tables de présentation
+        │                        │                            ↑
+        ↓                        ↓                            │
+   Repositories            Orchestrateur                 Loi d'état (pure)
+        │                        │                       (aucune dépendance)
+        ↓                        ↓
+   Moteur de persistance     Plugins ──── Services externes
+        (local-first)                 (OCR, LLM, jobs distants)
 ```
 
-- The data/domain layer must never import UI, framework entrypoints, or view-state stores.
-- One accessor per shared mutable concern (plugin registry, config).
-- Enforce mechanically on day one with an architecture lint rule (boundary rules in the linter, or a dependency-graph checker) — linters alone don't protect seams. `[choice: tool depends on target ecosystem]`
+## 2. Règle de dépendances (OBSERVED + INFERRED)
 
-## 3. Conceptual architecture (framework-erased)
+Compréhensible indépendamment du langage :
 
-```
-Interface        presentation, routing, i18n, accessibility
-   ↓ commands / ↑ reactive reads
-Application      use-case orchestration, queues, retries, external-job bridging,
-                 plugin dispatch — the only place with side-effect choreography
-   ↓ FunctionResult<T, E>
-Domain           entities, invariants, status laws, value types
-   ↓
-Persistence      one embedded local store; schema in ONE declaration; repositories
-                 per aggregate/store; factory functions as the substitution seam
-External systems adapters (remote queue, HTTP APIs), each behind its own adapter module
+```text
+Interface → (hooks/abonnements | commandes) → Repositories → Persistance
+Interface → Orchestrateur → Plugins → Services externes
+Loi d'état  ←  tout le monde peut l'importer ; elle n'importe rien
+INTERDIT : Interface → Persistance directe
+INTERDIT : Persistance/Modèles → Interface (imports inverses ; 2 violations connues, roadmap R3.6/Q4)
 ```
 
-Responsibilities and forbidden dependencies:
+- Toute accès données passe par une **factory de module** retournant des repositories ; pas de conteneur d'injection (D-003, décision assumée pour un projet solo).
+- Les modules de domaine pur (loi de statut, convertisseurs) ne doivent importer ni framework UI, ni ORM, ni SDK de service.
 
-| Component   | Responsibility           | May import                               | Forbidden                               |
-| ----------- | ------------------------ | ---------------------------------------- | --------------------------------------- |
-| Interface   | render, route, translate | Application                              | Persistence, external adapters directly |
-| Application | orchestrate              | Domain, Persistence (via seam), adapters | UI frameworks' internals, view state    |
-| Domain      | invariants               | itself                                   | everything upward                       |
-| Persistence | durable IO, transactions | Domain models                            | Application, Interface                  |
-| Adapters    | protocol translation     | Domain                                   | everything upward                       |
+**Transposition** : dans n'importe quel langage, cette règle s'exprime comme « l'interface et l'infrastructure sont deux extrémités qui pointent vers un cœur de règles pures ; le cœur ne connaît ni l'une ni l'autre ». Elle se vérifie par outil d'analyse de dépendances propre à chaque écosystème (imports checkers, plugins de lint à frontières, etc.).
 
-## 4. Async model (Observed → abstracted)
+## 3. Découpage physique (OBSERVED)
 
-- Long-lived background flows are **coroutines supervised by a restart loop** (`launchSaga`: `while(true) try call(saga)`) — one crashed worker cannot silently kill orchestration. Universal principle: every daemon needs a supervisor + a structured log line on restart.
-- Unit-of-work dispatch goes through a **plugin seam**: tasks carry a plugin name; the registry maps name → capability; each plugin validates its runtime parameters against a schema (Zod) at the boundary.
-- Work handed to a remote service the client can't hold open is tracked with a **persisted intermediate status pair** ("handed off" / "acknowledged") polled back — a _status law_ that must be written down exactly once (source repo has its own fix-plan doc precisely because four implementations diverged).
+- `pages/` (écrans routés) · `components/{ui,common,layout,features/<domaine>}` (feature-first, migration opportuniste D-009, sans barrels) · `hooks/` (abonnements + UI) · `state/` (orchestrateur, loi, stores minimes) · `data/{models,repositories}` · `utils/`.
+- Règle d'atterrissage : tout nouveau composant métier va directement dans sa feature ; les primitives génériques dans `ui/` ; pas de composant « commun » prématuré.
 
-## 5. Module design notes (Observed, praised)
+## 4. État et données — qui possède quoi (OBSERVED, D-001)
 
-- The plugin loader and the DB factory are **deep modules**: small surface (`loadWorkerPlugins()`, `getXRepository()`), large absorbed behaviour.
-- The deferred "table seam" design (`docs/plan-table-seam.md`, glossary marked _"banked, not shipped"_) is the right way to park an idea: as a written plan, **not** as empty directories on disk.
+| Type d'état | Propriétaire | Justification |
+|---|---|---|
+| Métier persistant | Base locale réactive | survit au offline, source de vérité unique |
+| Statut d'exécution des traitements | store global minimal | transitoire, multi-vues, ne se persiste pas tel quel (dérivé de la file) |
+| Notifications/toasts | store global minimal | éphémère |
+| Session/sélection/contexte de page | contexte UI local | lié au cycle de vie d'un écran |
+| Handle d'API système (filesystem) | store minimal dédié | objet non sérialisable, global |
+| Config utilisateur & clés | stockage persistant du navigateur | choix explicite, risque documenté |
+| Données externes ponctuelles | couche de fetch avec cache | pas métier, invalidable |
+
+Principe transférable : **chaque mécanisme a un rôle exclusif écrit quelque part** ; la dérive vient toujours d'un état qui n'a pas de propriétaire nommé. Le projet source recommande explicitement de ne pas généraliser : cinq mécanismes coexistent parce que chacun a une raison nommée dans un ADR, pas par accumulation.
+
+## 5. Traitements asynchrones (OBSERVED)
+
+- File de tâches par worker, portée par un **scope** (projet/collection/canvas) identifié par clé dérivée.
+- Statuts = alphabets clos (`TaskStatus` ≠ `WorkerStatus`), transitions validées par la loi, statut du worker **dérivé** de la file, jamais stocké en dur sans derivation.
+- Reprise après arrêt inopiné au démarrage ; interruption = rejeu des tâches `WAITING` ; timeout sur les statuts d'attente externe → `COMPLETED_WITH_ERRORS` (ne jamais fabriquer de succès).
+- Jobs distants : écriture dans une file externe, statuts intermédiaires `POSTING/POSTED`, retour temps réel **avec repli en sondage périodique** (20 s).
+- Cible explicite du projet (D-006) : **moteur de file headless** `run(worker, plugin, ports)` où ports = repository + horloge + notifieur, l'orchestrateur actuel et la passerelle temps réel n'étant que des adaptateurs fins. C'est la forme à retenir pour un nouveau projet.
+
+## 6. Configuration (OBSERVED)
+
+- Deux classes : **build-time** (variables publiques injectées au build : base path, URLs de services, version/hash/date) et **runtime utilisateur** (clés API saisies dans l'app, persistées côté client, jamais dans le dépôt).
+- Le CI **échoue explicitement** si une variable de build requise manque.
+- Transposable : séparer systématiquement configuration de déploiement (publique, vérifiée) et configuration utilisateur (saisie, persistée, documentée comme risque).
+
+## 7. Gestion des erreurs — philosophie (OBSERVED, D-002)
+
+1. Échec attendu et traitable à l'appel → **Result typé** à la frontière.
+2. **Absence = valeur** (`undefined`, `[]`), jamais une erreur — notamment pour les abonnements réactifs.
+3. Incident irrécupérable → exception, capturée **une seule fois** au boundary (superviseur d'orchestrateur, UI, passerelle temps réel).
+4. Un boundary **relaie ou enrobe avec `cause`**, ne remplace jamais.
+5. Erreur de plugin = nomme le job fautif (plugin, tâche, URL) dans message et contexte.
+6. Garde-fou **mécanique** : la création d'exceptions nues est interdite par lint, avec liste blanche au fichier où chaque ligne est un verdict documenté.
+
+## 8. Architecture cible abstraite pour un nouveau projet (RECOMMENDED)
+
+Sans cible technologique fixée, la forme à reprendre telle quelle :
+
+```text
+Interface            (UI, CLI, API… — ne touche jamais la persistance directement)
+    ↓ commandes          ↑ abonnements/flux
+Application          (moteur de file headless avec ports ; orchestration des plugins)
+    ↓
+Domaine              (entités, DTO, validation, LOIS PURES : statuts, invariants)
+    ↑
+Infrastructure       (adapteurs : persistance, services externes, plugins, notifications)
+```
+
+- **Interface** : dépend des hooks de lecture et du dispatch de commandes ; ignore le moteur de stockage.
+- **Application** : moteur de file + registre de plugins ; dépend du domaine, reçoit ses ports en injection (repository, horloge, notifieur).
+- **Domaine** : zéro import technique ; contient les lois d'état et la validation des schémas.
+- **Infrastructure** : implémente les ports ; un adaptateur de test (fausse persistance ou persistance in-process) doit exister dès le premier jour.
+- Frontière non négociable héritée du source : **la loi d'état et la dérivation des statuts n'existent qu'à un seul endroit**.
+
+Choix technologiques à trancher avant démarrage : moteur de persistance (local-first navigateur vs base embarquée vs serveur), framework d'interface, mécanisme d'orchestration asynchrone, format des plugins (voir `STARTER.md`).

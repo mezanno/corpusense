@@ -1,47 +1,48 @@
-# CI / CD
+# CI-CD
 
-## 1. Observed pipeline
+## Pipeline observée (OBSERVED)
 
-One workflow (`gh-pages.yml`), deploy-only, triggered on push to the integration branch:
+Deux workflows GitHub Actions, pensés comme un système unique :
 
-- `permissions: {}` at top level; each job requests exactly `pages: read`+`contents: read` (build) or `pages: write`+`id-token: write` (deploy) — textbook least privilege.
-- All third-party actions **pinned to full commit SHAs with a version comment**.
-- `concurrency: group pages, cancel-in-progress: true` — no deployment race conditions.
-- Pinned runner `ubuntu-24.04`, Node 22, `npm ci` (not `npm install`), cache npm.
-- Jobs split `build → needs → deploy`, artifact upload between them; `environment:` block records the deployment URL.
-
-This workflow is small and exemplary — reuse verbatim (adapting commands to the target).
-
-**Critical gap (Observed as absence):** the documented policy says PRs must pass lint+tests, but no workflow enforces any of it; quality gates run only on developers' machines, and a 46-error lint backlog accrued exactly as predicted. There is also a redundant _fourth_ source of truth for npm (a global `npm install -g npm@11.6.4` step contradicting `packageManager` and README).
-
-## 2. Reference pipeline, language-independent (Recommended)
-
-```
-Validate   lint --max-warnings 0 · format --check · typecheck/architecture-check
-   ↓
-Build      deterministic, provenance-stamped (git hash + date injected)
-   ↓
-Test       unit+seam suites · E2E smoke · (coverage reported; gated on data layers)
-   ↓
-Package    static artifact / container / binary — one artifact, checksummed
-   ↓
-Audit      dependency vulnerabilities (prod scope) + lockfile integrity
-   ↓
-Publish    on main/integration branch only
-   ↓
-Deploy     separate job, `needs: build`, least privilege, environment with URL
+```text
+ci.yml   (workflow réutilisable : PR + appel)
+  validate : tsc -b → vitest → prettier --check → eslint ratchet (baseline) → npm audit (non bloquant)
+  e2e      : Playwright chromium, PR uniquement, rapport téléversé au 1er échec seulement
+deploy.yml (push develop)
+  validate (utilise ci.yml) → build (variables vérifiées AVANT build) → publish (Pages)
 ```
 
-Rules that survive any CI product (UNIVERSAL):
+Pratiques observées, toutes transférables à n'importe quel système de CI :
 
-- default-deny permissions; per-job grants only;
-- third-party actions pinned by digest/SHA;
-- concurrency cancellation per deploy group;
-- one version manager truth (Corepack or equivalent) consumed by both local and CI;
-- Validate runs on every PR and blocks merge (branch protection); Publish/Deploy never on PRs.
+1. **Le déploiement est conditionné par la validation** : `deploy.yml` appelle `ci.yml` en job réutilisable — une seule source de vérité, pas de double exécution, pas de push non validé publiable.
+2. **`permissions: {}` par défaut**, chaque job demande exactement ses droits (`contents: read`, `pages: write`, `id-token: write`).
+3. **Actions épinglées par SHA** avec commentaire de version — protection supply-chain de base.
+4. **Concurrency avec `cancel-in-progress`** : les validations obsolètes s'annulent d'elles-mêmes.
+5. **Cache de dépendances et de binaires de test** indexés sur le lockfile.
+6. **Vérification des variables de build avant le build** : une variable manquante fait échouer tôt avec un message d'erreur actionnable (les variables sont des *variables de dépôt*, publiques par design, pas des secrets).
+7. **Audit de dépendances présent mais non bloquant**, assorti d'une décision documentée (dette connue, à résorber) — un check bloquant ignoré par `continue-on-error` sans trace serait pire.
+8. **Ratchet de lint comme gate** : la dette héritée est chiffrée dans un fichier versionné ; la CI compare et bloque la dérive (voir PATTERNS P8).
+9. **E2E bloquant sur PR mais sauté dans l'appel réutilisable du deploy** : on distingue « bloquer la fusion » et « ne pas ralentir la publication ».
+10. **Runtime épinglé** (Node 22) **et package manager épinglé** (`packageManager` dans le manifest + installation explicite du npm attendu dans la CI) — l'écart lockfile/runner est traité comme une cause d'échec connue, pas comme un hasard.
+11. Artefacts téléversés **au premier échec seulement**, rétention courte (7 jours).
 
-## 3. Starter workflows (for a GitHub-hosted target)
+Lacune observée (roadmap Q3) : la protection de branches rendant ces checks bloquants à la fusion est un réglage de dépôt non encore appliqué — à faire dès le premier jour dans un nouveau projet.
 
-- `ci.yml` — PR + push: Validate, Build, Test, Audit (matrix-free, one job; keep it boring).
-- `deploy.yml` — source repo's workflow verbatim with commands swapped per target.
-- Release: semver tag → CI builds annotated release artifact (the source tags manually; `[RECOMMENDED]` automate after v1).
+## Pipeline de référence indépendante du langage (RECOMMENDED)
+
+Étapes conceptuelles, commandes propres à la cible :
+
+```text
+Validate   typecheck/analyse statique → tests unitaires+intégration → format → lint (ratchet) → audit deps
+Build      génération des métadonnées de version → compilation/bundle
+Security   (si exposé) vérif variables obligatoires → audit/scan → SBOM optionnel
+Package    artefact unique versionné (version+hash+date injectés au build, jamais commités)
+Publish    publication statique ou registre, sous condition d'artefact de Validate
+```
+
+Règles transversales à reprendre telles quelles :
+
+- Valider avant de builder ; builder avant de publier ; chaque étape ne demande que ses permissions.
+- Un job de qualité qui échoue doit pointer une ligne exploitable (le ratchet affiche `N erreurs / baseline M`).
+- Environnement de test déterministe : faux moteurs, fixtures locales, zéro appel réseau sortant dans les tests (la CI ne doit pas dépendre d'un service tiers).
+- Deux canaux de publication (stable / test) via branches ou environments séparés — le source le fait avec `main`/`develop` + fourche, transposable à tout hôte Git.
