@@ -1,6 +1,7 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
+import 'fake-indexeddb/auto';
 import React from 'react';
 import { afterEach, expect, vi } from 'vitest';
 
@@ -28,13 +29,24 @@ vi.stubGlobal(
   })),
 );
 
-//Nécessaire pour faire fonctionner Annotorious
-/* tslint:disable-next-line */
-// global.ResizeObserver = class {
-//   observe() {}
-//   unobserve() {}
-//   disconnect() {}
-// };
+// Stubs pour FileSystem API (browser-only)
+class BaseFileSystemHandle {}
+vi.stubGlobal('FileSystemHandle', BaseFileSystemHandle);
+vi.stubGlobal(
+  'FileSystemDirectoryHandle',
+  class FileSystemDirectoryHandle extends BaseFileSystemHandle {},
+);
+vi.stubGlobal('FileSystemFileHandle', class FileSystemFileHandle extends BaseFileSystemHandle {});
+
+// Nécessaire pour Annotorious et @dnd-kit (browser-only)
+vi.stubGlobal(
+  'ResizeObserver',
+  class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  },
+);
 
 vi.mock('@/utils/config', () => ({
   supabase: {

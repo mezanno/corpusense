@@ -1,4 +1,4 @@
-import { Worker } from '@/data/models/Worker';
+import { Worker } from '@/data/models/worker/worker';
 import { getResultRepository, getWorkerRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useAppDispatch } from '@/hooks/hooks';
 import { pushError } from '@/state/reducers/events';

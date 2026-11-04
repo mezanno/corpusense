@@ -1,5 +1,5 @@
 import i18n from '@/i18n';
-import { DataField, DataModel } from '../models/DataModel';
+import { DataField, DataModel } from '../models/dataModel/dataModel';
 
 const generatePreview = (model: DataModel) => {
   let preview = '{';

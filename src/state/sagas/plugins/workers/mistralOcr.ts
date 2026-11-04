@@ -1,18 +1,14 @@
-// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// // @ts-nocheck
-import {
-  AnnotationDTO,
-  createAnnotation,
-  ElementType,
-  getAnnotationType,
-} from '@/data/models/Annotation';
-import { Result } from '@/data/models/Result';
-import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/Scope';
-import { Tag } from '@/data/models/Tag';
-import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
+import { ElementType } from '@/data/models/annotations/annotation';
+import { AnnotationDTO } from '@/data/models/annotations/annotation.dto';
+import { createAnnotation } from '@/data/models/annotations/annotation.factory';
+import { getAnnotationType } from '@/data/models/annotations/annotation.utils';
+import { Result } from '@/data/models/result/result';
+import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/scope/scope.utils';
+import { Task, WorkerEvent, WorkerResponse } from '@/data/models/worker/worker';
 import {
   getAnnotationRepository,
   getCollectionRepository,
+  getSourceRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { getFile, getImage, toGallicaUrl } from '@/data/utils/canvas';
 import { getValueForPluginParam } from '@/data/utils/plugins';
@@ -20,10 +16,11 @@ import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
 import { canvasToBase64, cropImage } from '@/utils/images';
 import { getErrorMessage } from '@/utils/utils';
-import { Mistral } from '@mistralai/mistralai';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
 import * as XLSX from 'xlsx';
+import z from 'zod';
+import { PluginApiError, PluginResponseValidationError } from '../errors';
 import { WorkerCategory } from './WorkerCategory';
 
 export const pluginName = 'mistralocr';
@@ -37,30 +34,24 @@ export const pluginConfigurationParams = {
   },
 };
 
-// const BBoxItemSchema = z
-//   .object({
-//     text: z.string().describe('The text content of the element.'),
-//     top_left_x: z.number(),
-//     top_left_y: z.number(),
-//     bottom_right_x: z.number(),
-//     bottom_right_y: z.number(),
-//   })
-//   .describe('A bounding box representing an element of text.');
+const BlockElementSchema = z.object({
+  content: z.string(),
+  type: z.string(),
+  top_left_x: z.number(),
+  top_left_y: z.number(),
+  bottom_right_x: z.number(),
+  bottom_right_y: z.number(),
+});
 
-// const SizeSchema = z.object({
-//   width: z.number().describe('The width of the image in pixels.'),
-//   height: z.number().describe('The height of the image in pixels.'),
-// });
+export const MistralResponseSchema = z.object({
+  pages: z.array(
+    z.object({
+      markdown: z.string(),
+      blocks: z.array(BlockElementSchema),
+    }),
+  ),
+});
 
-// export const DocumentSchemaZOD = z.object({
-//   bbox: z
-//     .array(BBoxItemSchema)
-//     .describe(
-//       'List of bounding boxes detected in the image. Each bounding box contains an element of text and its coordinates in pixels based on the dimensions of the document sent. 0,0 is the top-left corner of the document.',
-//     ),
-//   image: SizeSchema.describe('The dimensions of the processed image.'),
-//   origin: SizeSchema.describe('The dimensions of the received image.'),
-// });
 type Region = {
   xtl: number;
   ytl: number;
@@ -77,35 +68,45 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   console.log(`Processing task for scope ${toString(task.scope)}`);
   if (!isCanvasScope(task.scope)) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: i18n.t('error_task_invalid_scope'),
+      event: WorkerEvent.RESULT_ERR,
+      message: i18n.t('error_task_invalid_scope'),
     };
   }
   const annotationRepository = getAnnotationRepository();
   try {
     const collectionRepository = getCollectionRepository();
-    const canvas = await collectionRepository.getCanvasByScope(task.scope);
-    const image = getImage(canvas);
+    const canvasWithSourceIdResult = await collectionRepository.getCanvasByScope(task.scope);
+    if (!canvasWithSourceIdResult.ok) {
+      return {
+        event: WorkerEvent.RESULT_ERR,
+        message: i18n.t('error_canvas_not_found'),
+      };
+    }
+    const canvasWithSourceId = canvasWithSourceIdResult.value;
+    const image = getImage(canvasWithSourceId.canvas);
     if (image.id === undefined) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: 'Image ID is undefined',
+        event: WorkerEvent.RESULT_ERR,
+        message: 'Image ID is undefined',
       };
     }
     let regions: Region[] = [];
     if (isAnnotationScope(task.scope)) {
-      const annotation = await annotationRepository.getById(task.scope.annotationId);
-      regions = [
-        {
-          xtl: annotation.target.selector.geometry.bounds.minX,
-          ytl: annotation.target.selector.geometry.bounds.minY,
-          xbr: annotation.target.selector.geometry.bounds.maxX,
-          ybr: annotation.target.selector.geometry.bounds.maxY,
-        },
-      ];
+      const result = await annotationRepository.getById(task.scope.annotationId);
+      if (result.ok) {
+        const annotation = result.value;
+        regions = [
+          {
+            xtl: annotation.target.selector.geometry.bounds.minX,
+            ytl: annotation.target.selector.geometry.bounds.minY,
+            xbr: annotation.target.selector.geometry.bounds.maxX,
+            ybr: annotation.target.selector.geometry.bounds.maxY,
+          },
+        ];
+      }
     } else {
       const annotations = await annotationRepository.getByScope({
-        canvasId: canvas.id,
+        canvasId: canvasWithSourceId.canvas.id,
         collectionId: task.scope.collectionId,
       });
       const annotationRegions = annotations.filter(
@@ -140,31 +141,24 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     //return an error if no API key is found
     if (apiKey === null || apiKey === '') {
       console.log('No Mistral API key found');
-      return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
+      return { event: WorkerEvent.RESULT_ERR, message: i18n.t('error_no_mistral_key') };
     }
 
+    const sourceRepository = getSourceRepository();
+    const sourceContentResult = await sourceRepository.getContentById(canvasWithSourceId.sourceId);
+
+    //TODO: peut mieux faire
     let imageToProcess: string | File = image.id;
-    if (imageToProcess !== null && imageToProcess.startsWith('http') === false) {
+    if (sourceContentResult.ok && sourceContentResult.value.type === 'local') {
       try {
-        imageToProcess = await getFile(image.id);
+        imageToProcess = await getFile(
+          image.id,
+          sourceContentResult.value.localFile.outputDirectoryHandle,
+        );
       } catch (err) {
         console.error('Failed to get file for thumbnail:', err);
       }
     }
-
-    const client = new Mistral({
-      apiKey,
-      retryConfig: {
-        strategy: 'backoff',
-        backoff: {
-          initialInterval: 500, // intervalle initial en millisecondes
-          maxInterval: 10000, // intervalle maximal en millisecondes entre tentatives
-          exponent: 1.5, // facteur exponentiel
-          maxElapsedTime: 60000, // durée max (en millisecondes) totale pour toutes les tentatives
-        },
-        retryConnectionErrors: true, // réessayer en cas d'erreurs de connexion
-      },
-    });
 
     const annotations: AnnotationDTO[] = [];
     for (const region of regions) {
@@ -176,30 +170,57 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       };
       const croppedCanvas = await cropImage(imageToProcess, cropSize);
       const imageUrlBase64 = await canvasToBase64(croppedCanvas, 'image/jpeg', 0.7);
-      const response = await client.ocr.process({
-        model: 'mistral-ocr-latest',
-        document: {
-          type: 'image_url',
-          imageUrl: imageUrlBase64,
+
+      //Here, mistral client is not used because it is not working properly with the OCR endpoint (probably not updated). So we use fetch instead.
+      const response = await fetch('https://api.mistral.ai/v1/ocr', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
         },
-        // documentAnnotationFormat: responseFormatFromZodObject(DocumentSchemaZOD),
+        body: JSON.stringify({
+          model: 'mistral-ocr-latest',
+          document: {
+            type: 'image_url',
+            image_url: imageUrlBase64,
+          },
+          include_blocks: true,
+        }),
       });
 
-      console.log('Response from Mistral:', response);
-      if (response.pages !== null && response.pages[0] !== undefined) {
-        const markdown = response.pages[0].markdown;
-        const lines = markdown.split('|');
-        for (const line of lines) {
+      if (!response.ok) {
+        throw new PluginApiError({
+          plugin: pluginName,
+          status: response.status,
+          statusText: response.statusText,
+          body: await response.text(),
+        });
+      }
+
+      const result = z.safeParse(MistralResponseSchema, await response.json());
+      if (!result.success) {
+        // console.log(z.treeifyError(result.error));
+
+        throw new PluginResponseValidationError({
+          plugin: pluginName,
+          details: JSON.stringify(z.treeifyError(result.error)),
+        });
+      }
+      const responseData = result.data;
+      console.log('Response from Mistral:', responseData);
+      if (responseData.pages.length > 0) {
+        const blocks = responseData.pages[0].blocks;
+        for (const block of blocks) {
           annotations.push(
             createAnnotation({
               canvasId: task.scope.canvasId,
               collectionId: task.scope.collectionId,
-              minX: region.xtl,
-              minY: region.ytl,
-              maxX: region.xbr,
-              maxY: region.ybr,
+              minX: block.top_left_x,
+              minY: block.top_left_y,
+              maxX: block.bottom_right_x,
+              maxY: block.bottom_right_y,
               type: ElementType.TEXT_LINE,
-              value: line.trim(),
+              value: block.content,
             }),
           );
         }
@@ -207,13 +228,13 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
     }
     const newAnnotations = await annotationRepository.addAll(annotations);
     return {
-      status: WorkerStatus.COMPLETED,
+      event: WorkerEvent.RESULT_OK,
       content: newAnnotations,
     };
   } catch (error) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(error),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(error),
     };
   }
 }
@@ -233,14 +254,19 @@ export async function exportResult(results: Result[], formats: string[]) {
     const canvasId = isCanvasScope(result.scope) ? toGallicaUrl(result.scope.canvasId) : undefined;
 
     const collectionRepository = getCollectionRepository();
-    const tags: Tag[] = await collectionRepository.getTagsByCollectionId(result.scope.collectionId);
-    const tagsAsColumns = tags.reduce(
-      (acc, t, index) => {
-        acc[`tag${index + 1}`] = t.label;
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
+    const tagsResult = await collectionRepository.getTagsByCollectionId(result.scope.collectionId);
+
+    let tagsAsColumns: Record<string, string> = {};
+    if (tagsResult.ok) {
+      const tags = tagsResult.value;
+      tagsAsColumns = tags.reduce(
+        (acc, t, index) => {
+          acc[`tag${index + 1}`] = t.label;
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
+    }
 
     try {
       const dataParsed = JSON.parse(result.value as string) as unknown;

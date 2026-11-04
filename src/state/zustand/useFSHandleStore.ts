@@ -20,8 +20,6 @@ export const useFSHandleStore = create<FSHandleState>((set, get) => ({
   },
   getDirectoryHandle: (directoryName: string) => {
     const { directoryHandles } = get();
-    console.log('getDirectoryHandle in ', directoryHandles);
-
     return directoryHandles.find((handle) => handle.name === directoryName);
   },
   loadDirectoryHandles: async () => {

@@ -1,4 +1,4 @@
-import { Tag } from '@/data/models/Tag';
+import { Tag } from '@/data/models/tag';
 import { getTagLiveRepository, getTagRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useMemo } from 'react';

@@ -1,4 +1,4 @@
-import { NamedEntity } from '@/data/models/NamedEntity';
+import { NamedEntity } from '@/data/models/namedEntity';
 import { db } from '../db';
 import { NamedEntityLiveRepository } from './types.live';
 

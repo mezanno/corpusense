@@ -1,24 +1,24 @@
-import { Collection } from '@/data/models/Collection';
-import { getCollectonLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
-import { Canvas } from '@iiif/presentation-3';
+import { Collection } from '@/data/models/collection/collection';
+import { getCollectionLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { CanvasWithSourceId } from '@/hooks/data/collections/useCollectionContent';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 type CollectionInspectorContextValue = {
   collection: Collection | undefined;
-  canvases: Canvas[] | undefined;
-  getCanvasById: (canvasId: string) => Canvas | null;
-  setCanvasToDisplay: (canvas: Canvas | null) => void;
-  canvasToDisplay: Canvas | null;
+  canvases: CanvasWithSourceId[];
+  getCanvasById: (canvasId: string) => CanvasWithSourceId | null;
+  setCanvasToDisplay: (canvas: CanvasWithSourceId | null) => void;
+  canvasToDisplay: CanvasWithSourceId | null;
   hasNextCanvas: () => boolean;
   hasPreviousCanvas: () => boolean;
   handleNext: () => void;
   handlePrevious: () => void;
 };
 
-export const CollectionInspectorContext = createContext<
-  CollectionInspectorContextValue | undefined
->(undefined);
+const CollectionInspectorContext = createContext<CollectionInspectorContextValue | undefined>(
+  undefined,
+);
 
 type Props = {
   children: React.ReactNode;
@@ -26,9 +26,10 @@ type Props = {
 };
 
 export const CollectionInspectorProvider = ({ children, collectionId }: Props) => {
-  const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(null);
+  const [canvasToDisplay, setCanvasToDisplay] = useState<CanvasWithSourceId | null>(null);
+  const currentCanvasId = canvasToDisplay ? canvasToDisplay.canvas.id : -1;
 
-  const collectionRepository = useMemo(() => getCollectonLiveRepository(), []);
+  const collectionRepository = useMemo(() => getCollectionLiveRepository(), []);
 
   const getCollectionByIdQuery = useMemo(
     () => collectionRepository.getById(collectionId),
@@ -42,39 +43,37 @@ export const CollectionInspectorProvider = ({ children, collectionId }: Props) =
     [collectionRepository, collectionId],
   );
 
-  const canvases = useLiveQuery(getCanvasesByCollectionIdQuery, [collectionId]);
-
-  const currentCanvasId = canvasToDisplay ? canvasToDisplay.id : -1;
+  const canvases = useLiveQuery(
+    getCanvasesByCollectionIdQuery,
+    [collectionId],
+    [] as CanvasWithSourceId[],
+  );
 
   const getCanvasById = useCallback(
     (canvasId: string) => {
-      return canvases?.find((canvas) => canvas.id === canvasId) || null;
+      return canvases?.find((canvas) => canvas.canvas.id === canvasId) || null;
     },
     [canvases],
   );
 
   const hasNextCanvas = useCallback(() => {
-    if (!canvases) return false;
-    const currentIndex = canvases.findIndex((canvas) => canvas.id === currentCanvasId);
+    const currentIndex = canvases.findIndex((canvas) => canvas.canvas.id === currentCanvasId);
     return currentIndex !== -1 && currentIndex < canvases.length - 1;
   }, [canvases, currentCanvasId]);
 
   const hasPreviousCanvas = useCallback(() => {
-    if (!canvases) return false;
-    const currentIndex = canvases.findIndex((canvas) => canvas.id === currentCanvasId);
+    const currentIndex = canvases.findIndex((canvas) => canvas.canvas.id === currentCanvasId);
     return currentIndex > 0;
   }, [canvases, currentCanvasId]);
 
   const getNextCanvas = useCallback(() => {
-    if (!canvases) return null;
-    const currentIndex = canvases.findIndex((canvas) => canvas.id === currentCanvasId);
+    const currentIndex = canvases.findIndex((canvas) => canvas.canvas.id === currentCanvasId);
     if (currentIndex === -1 || currentIndex === canvases.length - 1) return null;
     return canvases[currentIndex + 1];
   }, [canvases, currentCanvasId]);
 
   const getPreviousCanvas = useCallback(() => {
-    if (!canvases) return null;
-    const currentIndex = canvases.findIndex((canvas) => canvas.id === currentCanvasId);
+    const currentIndex = canvases.findIndex((canvas) => canvas.canvas.id === currentCanvasId);
     if (currentIndex <= 0) return null;
     return canvases[currentIndex - 1];
   }, [canvases, currentCanvasId]);

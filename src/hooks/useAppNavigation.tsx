@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const CorpusenseRoutes = {
   MANIFEST: 'manifest',
+  PROJECT: 'project',
   COLLECTIONS: 'collections',
   CONFIGURATION: 'configuration',
   MODELS: 'models',
@@ -10,22 +11,17 @@ export const CorpusenseRoutes = {
   IIIF_SOURCES: 'iiifSources',
   WORKERS: 'workers',
   DOCUMENTATION: 'doc',
+  EXPERT: 'expert',
 };
-
-type ManifestParams =
-  | { manifestId: string; indexeddbId?: never }
-  | { indexeddbId: string; manifestId?: never };
 
 const useAppNavigation = () => {
   const navigate = useNavigate();
 
-  const goToManifestExplorer = async (manifest?: ManifestParams) => {
-    if (manifest === undefined) {
+  const goToManifestExplorer = async (sourceId?: string) => {
+    if (sourceId === undefined) {
       await navigate(`/${CorpusenseRoutes.MANIFEST}`);
-    } else if (manifest.indexeddbId === undefined) {
-      await navigate(`/${CorpusenseRoutes.MANIFEST}?manifestId=${manifest.manifestId}`);
     } else {
-      await navigate(`/${CorpusenseRoutes.MANIFEST}?indexeddbId=${manifest.indexeddbId}`);
+      await navigate(`/${CorpusenseRoutes.MANIFEST}?manifestId=${sourceId}`);
     }
   };
   const goToCollectionsManager = async () => {
@@ -52,6 +48,12 @@ const useAppNavigation = () => {
   const goToDocumentation = async () => {
     await navigate(`/${CorpusenseRoutes.DOCUMENTATION}`);
   };
+  const goToProjectPage = async () => {
+    await navigate(`/${CorpusenseRoutes.PROJECT}`);
+  };
+  const goToExpertPage = async () => {
+    await navigate(`/${CorpusenseRoutes.EXPERT}`);
+  };
 
   return {
     goToManifestExplorer,
@@ -63,6 +65,8 @@ const useAppNavigation = () => {
     goToLocalSources,
     goToWorkersManager,
     goToDocumentation,
+    goToProjectPage,
+    goToExpertPage,
   };
 };
 

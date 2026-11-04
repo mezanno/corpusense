@@ -1,5 +1,5 @@
 import { convertPresentation2 } from '@iiif/parser/presentation-2';
-import { describe, expect, it, Mock, vi } from 'vitest';
+import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { convertJsonToManifest } from '../manifest';
 
 vi.mock('@iiif/parser/presentation-2', () => ({

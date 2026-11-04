@@ -1,0 +1,64 @@
+import { workerPlugins } from '@/App';
+import MultiOptionsMenu from '@/components/common/menu/MultiOptionsMenu';
+import { Scope } from '@/data/models/scope/scope';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import useDialog from '@/hooks/ui/useDialog';
+import { startWorkerProcessRequest } from '@/state/reducers/workers';
+import { selectWorkerPluginsInfo } from '@/state/selectors/workers';
+import { PocketKnife, ScanText } from 'lucide-react';
+
+const WorkersMenu = ({ scope }: { scope: Scope }) => {
+  const appDispatch = useAppDispatch();
+  const pluginsInfo = useAppSelector(selectWorkerPluginsInfo);
+  const { openStartWorkerDialog, openSelectLLMDialog } = useDialog();
+
+  const params = {
+    name: 'btn_start_analysis',
+    icon: <PocketKnife />,
+    info: 'info_start_analysis',
+    items: pluginsInfo.map((plugin) => {
+      return {
+        name: plugin.displayName ?? plugin.name,
+        description: plugin.description,
+        icon: <ScanText />,
+        action: () => {
+          const workerPlugin = workerPlugins[plugin.name];
+          //TODO: affiche une popup
+          if (workerPlugin === undefined || workerPlugin === null) {
+            console.error(`Plugin ${plugin.name} not found`);
+            return;
+          }
+
+          if (workerPlugin.runtimeParametersSchema !== undefined) {
+            openStartWorkerDialog(plugin.name, scope);
+          } else {
+            if (plugin.category === 'llm' && plugin.name !== 'mistral') {
+              openSelectLLMDialog((profileId) => {
+                appDispatch(
+                  startWorkerProcessRequest({
+                    workerName: plugin.name,
+                    params: { profileId },
+                    scope,
+                  }),
+                );
+              });
+            } else {
+              appDispatch(
+                startWorkerProcessRequest({
+                  workerName: plugin.name,
+                  params: {},
+                  scope,
+                }),
+              );
+            }
+          }
+        },
+        category: plugin.category,
+      };
+    }),
+  };
+
+  return <MultiOptionsMenu params={params} scope={scope} />;
+};
+
+export default WorkersMenu;

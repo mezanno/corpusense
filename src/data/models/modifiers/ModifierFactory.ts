@@ -5,6 +5,7 @@ import { ReOrderModifier } from './ReOrderModifier';
 
 export type ModifierFactory = () => AnyModifier;
 
+// label contient une clé de traduction, résolue à l'affichage via t()
 export const modifierRegistry: Record<
   string,
   {
@@ -13,15 +14,15 @@ export const modifierRegistry: Record<
   }
 > = {
   MergeModifier: {
-    label: 'Merge Modifier',
+    label: 'modifier_label_merge',
     create: () => new MergeModifier(100, 100), // seuils max par défaut
   },
   FilterModifier: {
-    label: 'Filter Modifier',
+    label: 'modifier_label_filter',
     create: () => new FilterModifier(10000), // seuil max par défaut
   },
   ReOrderModifier: {
-    label: 'Reorder Modifier',
+    label: 'modifier_label_reorder',
     create: () => new ReOrderModifier(),
   },
 };

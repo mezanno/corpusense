@@ -2,13 +2,13 @@ import { getDimensions } from '@/data/utils/annotations';
 import i18n from '@/i18n';
 import { v4 as uuid } from 'uuid';
 import z from 'zod';
-import { Annotation } from '../Annotation';
+import { Annotation } from '../annotations/annotation';
 import { Modifier } from './Modifier';
 
 const hpSchema = z.object({
   filterType: z.enum(['HP', 'LP']).default('HP'),
   threshold: z.number().min(0).default(0),
-  dimension: z.enum(['area', 'width', 'height']).default('area'),
+  dimension: z.enum(['width', 'height', 'area']).default('width'),
 });
 
 export class FilterModifier extends Modifier<typeof hpSchema> {
@@ -36,7 +36,7 @@ export class FilterModifier extends Modifier<typeof hpSchema> {
         dimension: {
           label: i18n.t('form_label_modifier_filter_dimension'),
           description: i18n.t('form_description_modifier_filter_dimension'),
-          options: ['area', 'width', 'height'],
+          options: ['width', 'height', 'area'],
         },
       },
       i18n.t('form_description_modifier_filter'),
@@ -45,7 +45,6 @@ export class FilterModifier extends Modifier<typeof hpSchema> {
   }
 
   apply = (data: Annotation[], values: z.infer<typeof hpSchema>) => {
-    console.log('Applying FilterModifier with values: ', values, ' on data: ', data);
     if (data.length > 1) {
       const sizeThreshold = values.threshold ?? 0;
       const criterion = values.dimension ?? hpSchema.shape.dimension.def.defaultValue;

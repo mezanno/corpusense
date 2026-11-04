@@ -48,7 +48,7 @@ export const AlertDialogProvider = ({ children }: { children: React.ReactNode })
   const onConfirm = () => {
     /*
       Exécute l'action de confirmation si définie, puis ferme le dialog si closeOnAction est true (par défaut)
-      Cetete fonction est appelée lorsque l'utilisateur clique sur le bouton de confirmation
+      Cette fonction est appelée lorsque l'utilisateur clique sur le bouton de confirmation
     */
     if (dialogProps?.onConfirm) {
       dialogProps.onConfirm.action();

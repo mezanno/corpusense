@@ -4,6 +4,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { loadEnv, PluginOption } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vitest/config'; //au lieu de { defineConfig } from 'vitest/config' pour pouvoir configurer test
 
 console.log('process.env.NODE_ENV', process.env.REACT_APP_BASE);
@@ -14,6 +15,7 @@ const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
+  const basePath = (env.VITE_BASE_PATH || '/').replace(/\/?$/, '/');
   console.log('mode: ', mode);
   console.log('NODE_ENV: ', process.env.NODE_ENV);
 
@@ -33,8 +35,42 @@ export default defineConfig(({ mode }) => {
 
   return {
     assetsInclude: ['**/*.md'],
-    plugins: [react(), tailwindcss(), visualizer() as PluginOption],
-    base: env.VITE_BASE_PATH || '/',
+    plugins: [
+      react(),
+      tailwindcss(),
+      visualizer() as PluginOption,
+      VitePWA({
+        registerType: 'autoUpdate',
+        base: basePath,
+        devOptions: {
+          // Q9 : en mode e2e, pas de service worker — il court-circuiterait
+          // l'interception réseau déterministe des tests Playwright.
+          enabled: mode !== 'e2e',
+        },
+        manifest: {
+          name: 'CorpuSense',
+          short_name: 'CorpuSense',
+          description: 'CorpuSense Application',
+          theme_color: '#ffffff',
+          icons: [
+            {
+              src: `${basePath.replace(/\/$/, '')}/images/logo.png`,
+              sizes: '192x192',
+              type: 'image/png',
+            },
+            {
+              src: `${basePath.replace(/\/$/, '')}/images/logo.png`,
+              sizes: '512x512',
+              type: 'image/png',
+            },
+          ],
+        },
+        workbox: {
+          maximumFileSizeToCacheInBytes: 6000000,
+        },
+      }),
+    ],
+    base: basePath,
     define: {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version),
@@ -65,35 +101,34 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true, // Activer les fonctions globales comme 'describe', 'it', etc.
       environment: 'jsdom', // Utiliser jsdom pour simuler un environnement de navigateur
+      // Les specs Playwright (e2e/**/*.spec.ts) sont collectées par playwright, jamais par vitest.
+      exclude: ['**/node_modules/**', '**/dist/**', '**/dev-dist/**', 'e2e/**', 'archive/**'],
+      server: {
+        deps: {
+          // openseadragon est un module CJS importé avec des exports nommés par
+          // @annotorious/openseadragon (@annotorious/react aussi en transitif).
+          // Externalisé, Node ne résout pas les exports nommés ('Point'); on force
+          // l'inline pour que Vite applique son interop CJS.
+          inline: [/@annotorious\//, 'openseadragon'],
+        },
+      },
       setupFiles: process.env.NODE_ENV === 'test' ? ['./vitest.setup.ts'] : [], // Ne charge le fichier de configuration que pour les tests
       coverage: {
         provider: 'v8',
         reporter: ['text', 'json', 'html', 'lcov'],
       },
     },
-    server: {
-      // proxy: {
-      //   '/gallica': {
-      //     //url vers laquelle les requêtes sont envoyées
-      //     target: 'http://localhost/', //cible de la redirection
-      //     changeOrigin: true,
-      //     // secure: false,
-      //     rewrite(url) {
-      //       console.log('url', url);
-      //       return url.replace('native', 'default');
-      //     },
-      //   },
-      // },
-      proxy: {
-        '/gradio': {
-          target: 'https://api.mezanno.xyz/ocr/gradio_api', // cible de la redirection
-          changeOrigin: true,
-          rewrite: (url) => url.replace(/^\/gradio/, ''), // réécrit l'URL pour supprimer le préfixe /gradio
-          selfHandleResponse: false, // permet de gérer la réponse nous-même
-          ws: true,
-        },
-      },
-    },
+    server:
+      // Q9 : le serveur e2e sert toujours en HTTP simple (pas de certs en CI ;
+      // les certs locaux `certs/` sont désindexés). Le mode dev habituel est inchangé.
+      process.env.NODE_ENV === 'development' && mode !== 'e2e'
+        ? {
+            https: {
+              key: readFileSync('./certs/localhost+2-key.pem'),
+              cert: readFileSync('./certs/localhost+2.pem'),
+            },
+          }
+        : undefined,
   };
 });
 

@@ -1,30 +1,24 @@
-import { Collection, CollectionDetails } from '@/data/models/Collection';
+import { Collection, CollectionDetails } from '@/data/models/collection/collection';
 import {
   getAnnotationRepository,
+  getCollectionLiveRepository,
   getCollectionRepository,
-  getCollectonLiveRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { generateFirstAnnotation } from '@/data/utils/annotations';
 import { generateCollectionContent } from '@/data/utils/collections';
 import i18n from '@/i18n';
 import { pushError, pushInfo } from '@/state/reducers/events';
+import { BaseError } from '@/utils/BaseError';
+import { FunctionResult } from '@/utils/functionResult';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useMemo } from 'react';
-import { v4 as uuid } from 'uuid';
 import { useAppDispatch } from '../../hooks';
-
-export interface CreateCollectionWithSelectionPayload {
-  selection: Canvas[];
-  name: string;
-  id?: string;
-  manifestId: string;
-}
 
 export const useCollections = () => {
   const appDispatch = useAppDispatch();
-  const collectionLiveRepository = useMemo(() => getCollectonLiveRepository(), []);
+  const collectionLiveRepository = useMemo(() => getCollectionLiveRepository(), []);
   const collectionRepository = useMemo(() => getCollectionRepository(), []);
 
   const collections = useLiveQuery(
@@ -32,6 +26,10 @@ export const useCollections = () => {
     [],
     [] as CollectionDetails[],
   );
+
+  const collectionCount = useMemo(() => {
+    return collections.length;
+  }, [collections]);
 
   const getCollectionById = useCallback(
     (id: string) => collections.find((c) => c.id === id),
@@ -48,12 +46,10 @@ export const useCollections = () => {
   const createCollection = async (name: string) => {
     try {
       await collectionRepository.create({
-        id: uuid(),
         name,
         tags: [],
-        contentSize: 0,
         content: [],
-        offline: false,
+        contentSize: 0,
       });
       appDispatch(pushInfo(i18n.t('toast_collection_created')));
     } catch (e) {
@@ -61,47 +57,42 @@ export const useCollections = () => {
     }
   };
 
-  const createCollectionWithSelection = async (action: CreateCollectionWithSelectionPayload) => {
-    const { id, name, selection, manifestId } = action;
-    const collectionId = id ?? uuid();
-    const newCollection: CollectionDetails = {
-      id: collectionId,
+  const createCollectionWithSelection = async (
+    selection: Canvas[],
+    name: string,
+    sourceId: string,
+  ): Promise<FunctionResult<CollectionDetails, BaseError>> => {
+    const newCollection = {
       name,
       tags: [],
       contentSize: selection.length,
-      offline: false,
     };
     const content = generateCollectionContent(
-      0,
       selection.map((c) => c.id),
-      manifestId,
+      sourceId,
     );
 
-    try {
-      await collectionRepository.create({
-        ...newCollection,
-        content,
-      });
-      if (id === undefined) {
-        //if an id was provided, it means it is an import, so we don't need to create the first annotations
-        const firstAnnotations = generateFirstAnnotation(selection, collectionId);
-        const annotationRepository = getAnnotationRepository();
-        await annotationRepository.addAll(firstAnnotations);
-      }
+    const createResult = await collectionRepository.create({
+      ...newCollection,
+      content,
+    });
+    if (createResult.ok) {
       appDispatch(pushInfo(i18n.t('toast_collection_created')));
-    } catch (e) {
-      appDispatch(pushError(getErrorMessage(e)));
+      // const firstAnnotations = generateFirstAnnotation(selection, collection.id);
+      // const annotationRepository = getAnnotationRepository();
+      // await annotationRepository.addAll(firstAnnotations);
+    } else {
+      appDispatch(pushError(getErrorMessage(createResult.error)));
     }
-
-    return { ...newCollection, content };
+    return createResult;
   };
 
   const duplicateCollection = async (collectionId: string, newName: string) => {
-    try {
-      await collectionRepository.duplicate(collectionId, newName);
+    const result = await collectionRepository.duplicate(collectionId, newName);
+    if (result.ok) {
       appDispatch(pushInfo(i18n.t('toast_collection_duplicated')));
-    } catch (e) {
-      appDispatch(pushError(getErrorMessage(e)));
+    } else {
+      appDispatch(pushError(getErrorMessage(result.error)));
     }
   };
 
@@ -113,19 +104,23 @@ export const useCollections = () => {
   const addSelectionToCollection = async (action: {
     selection: Canvas[];
     collectionId: string;
-    manifestId: string;
+    sourceId: string;
   }) => {
-    const { selection, collectionId, manifestId } = action;
-    try {
-      const collection = await collectionRepository.getById(collectionId);
+    const { selection, collectionId, sourceId } = action;
 
+    const collectionResult = await collectionRepository.getById(collectionId);
+    if (!collectionResult.ok) {
+      appDispatch(pushError(getErrorMessage(collectionResult.error)));
+      return;
+    }
+    const collection = collectionResult.value;
+    try {
       //we check the existing content of the collection and add only the new canvases
       const existingContent = collection.content ?? [];
       const existingCanvasIds = existingContent.map((elt) => elt.canvasId);
       const newContent = generateCollectionContent(
-        existingContent.length - 1,
         selection.map((canvas) => canvas.id),
-        manifestId,
+        sourceId,
         existingCanvasIds,
       );
       const updatedCollection = {
@@ -156,13 +151,11 @@ export const useCollections = () => {
       tags,
       content,
       modelId,
-      offline,
       postLayoutModifierChainId,
       postOcrModifierChainId,
     } = collection;
     try {
       if (id === undefined) {
-        // yield put(setError(i18next.t('error_collection_not_found')));
         return;
       }
       await collectionRepository.update(id, {
@@ -171,7 +164,6 @@ export const useCollections = () => {
         tags,
         content,
         modelId,
-        offline,
         postLayoutModifierChainId,
         postOcrModifierChainId,
       });
@@ -183,26 +175,42 @@ export const useCollections = () => {
   };
 
   const removeElementFromCollection = async (collectionId: string, canvasId: string) => {
-    try {
-      await collectionRepository.deleteElement(collectionId, canvasId);
-      appDispatch(pushInfo(i18n.t('toast_element_removed')));
-    } catch (e) {
-      appDispatch(pushError(getErrorMessage(e)));
-    }
+    return await collectionRepository.deleteElement(collectionId, canvasId);
   };
 
   const removeCollection = async (id: string) => {
-    try {
-      const collectionToRemove = await collectionRepository.getById(id);
-      await collectionRepository.delete(collectionToRemove);
+    const collectionToRemoveResult = await collectionRepository.getById(id);
+    if (!collectionToRemoveResult.ok) {
+      appDispatch(pushError(getErrorMessage(collectionToRemoveResult.error)));
+      return;
+    }
+    const deleteResult = await collectionRepository.deleteById(id);
+    if (!deleteResult.ok) {
+      appDispatch(pushError(getErrorMessage(deleteResult.error)));
+      return;
+    }
+    appDispatch(pushInfo(i18n.t('toast_collection_deleted')));
+  };
+
+  const removeMultipleCollections = async (ids: string[]) => {
+    for (const id of ids) {
+      const collectionToRemoveResult = await collectionRepository.getById(id);
+      if (!collectionToRemoveResult.ok) {
+        appDispatch(pushError(getErrorMessage(collectionToRemoveResult.error)));
+        continue;
+      }
+      const deleteResult = await collectionRepository.deleteById(id);
+      if (!deleteResult.ok) {
+        appDispatch(pushError(getErrorMessage(deleteResult.error)));
+        continue;
+      }
       appDispatch(pushInfo(i18n.t('toast_collection_deleted')));
-    } catch (e) {
-      appDispatch(pushError(getErrorMessage(e)));
     }
   };
 
   return {
     collections,
+    collectionCount,
     getCollectionById,
     nameAlreadyExists,
     createCollection,
@@ -212,5 +220,6 @@ export const useCollections = () => {
     updateCollection,
     removeElementFromCollection,
     removeCollection,
+    removeMultipleCollections,
   };
 };

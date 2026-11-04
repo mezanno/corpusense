@@ -1,4 +1,4 @@
-import CollectionInspectorContent from '@/components/CollectionInspectorContent';
+import CollectionInspectorContent from '@/components/features/collectionInspector/CollectionInspectorContent';
 import { AnnotationContextProvider } from '@/components/reducers/AnnotationContext';
 import { CollectionInspectorProvider } from '@/components/reducers/CollectionInspectorContext';
 import 'gridstack/dist/gridstack.min.css';

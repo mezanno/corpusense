@@ -1,17 +1,18 @@
-import LanguageFlag from '@/components/LanguageFlag';
+import LanguageFlag from '@/components/common/LanguageFlag';
+import LayoutSideBar from '@/components/layout/LayoutSidebar';
 import { Toaster } from '@/components/ui/sonner';
+import usePendingMigration from '@/hooks/data/sources/usePendingMigration';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import useDialog from '@/hooks/ui/useDialog';
 import useJobRealtime from '@/hooks/useJobRealtime';
 import { resetLastEvent } from '@/state/reducers/events';
 import { selectLastErrorEvent, selectLastInfoEvent } from '@/state/selectors/events';
-import { Mail } from 'lucide-react';
+import { Mail, RefreshCw } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
 import { toast } from 'sonner';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '../components/ui/sidebar';
-import LayoutSideBar from './LayoutSidebar';
 
 const Layout = () => {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ const Layout = () => {
   const { openContactUsDialog } = useDialog();
   const lastInfo = useAppSelector(selectLastInfoEvent);
   const lastError = useAppSelector(selectLastErrorEvent);
+  const { pendingCount, isMigrating, migrateAll } = usePendingMigration();
   useJobRealtime();
 
   useEffect(() => {
@@ -45,6 +47,20 @@ const Layout = () => {
               <SidebarTrigger />
               <div className='flex gap-2'>
                 <LanguageFlag />
+                {pendingCount > 0 && (
+                  <button
+                    className='soft-button border-amber-400 text-amber-700 hover:bg-amber-50'
+                    aria-label={t('btn_pending_migration', { count: pendingCount })}
+                    onClick={() => void migrateAll()}
+                    disabled={isMigrating}
+                    title={t('migration_pending_banner', { count: '' }).trim()}
+                  >
+                    <RefreshCw size={16} className={isMigrating ? 'animate-spin' : ''} />
+                    {isMigrating
+                      ? t('migration_in_progress')
+                      : t('btn_pending_migration', { count: pendingCount })}
+                  </button>
+                )}
                 <button
                   className='soft-button'
                   aria-label={t('btn_open_contact')}

@@ -1,8 +1,11 @@
-import { getConvertedFileRepository } from '@/data/repositories/indexeddb/dbFactory';
-import { useFSHandleStore } from '@/state/zustand/useFSHandleStore';
-import { Canvas, IIIFExternalWebResource, ImageService } from '@iiif/presentation-3';
 import i18n from '@/i18n';
-import { TileSource } from 'openseadragon';
+import { useFSHandleStore } from '@/state/zustand/useFSHandleStore';
+import { Canvas, IIIFExternalWebResource } from '@iiif/presentation-3';
+import {
+  FilePermissionDeniedError,
+  MalformedFilepathError,
+  MissingCanvasImageError,
+} from './errors';
 
 const getLabel = (canvas: Canvas): string => {
   const label = canvas.label;
@@ -36,7 +39,7 @@ const getLabel = (canvas: Canvas): string => {
 const getImage = (canvas: Canvas): IIIFExternalWebResource => {
   const image = canvas.items?.[0]?.items?.[0].body as IIIFExternalWebResource;
   if (image === undefined) {
-    throw new Error(i18n.t('error_image_not_found'));
+    throw new MissingCanvasImageError({ canvasId: canvas.id });
   }
   return image;
 };
@@ -54,16 +57,13 @@ const getImageForThumbnail = (canvas: Canvas, maxWidth: number = 150): IIIFExter
   return image;
 };
 
-const getFile = async (filepath: string) => {
+const getFile = async (filepath: string, handle: FileSystemDirectoryHandle) => {
   const pathParts = filepath.split('/');
   if (pathParts.length < 2) {
-    throw new Error(i18n.t('error_malformed_filepath', { path: filepath }));
+    throw new MalformedFilepathError({ filepath });
   }
-  const convertedFilesRepository = getConvertedFileRepository();
   const folderName = pathParts[0];
   try {
-    const convertedFile = await convertedFilesRepository.getByFolderName(folderName);
-    const handle = convertedFile.outputDirectoryHandle;
     return await getFileFromHandle(pathParts[1], handle);
   } catch (e) {
     //if there is no converted file, we try to get it from the FSHandle store
@@ -78,40 +78,15 @@ const getFile = async (filepath: string) => {
 };
 
 const getFileFromHandle = async (filename: string, handle: FileSystemDirectoryHandle) => {
-  const perm = await handle.queryPermission({ mode: 'read' });
+  let perm = await handle.queryPermission({ mode: 'read' }); //check if we have permission to read the directory
   if (perm !== 'granted') {
-    throw new Error('No permission to read the manifest directory');
+    perm = await handle.requestPermission({ mode: 'read' }); //request permission if we don't have it
+  }
+  if (perm !== 'granted') {
+    throw new FilePermissionDeniedError({ directory: handle.name });
   }
   const fileHandle = await handle.getFileHandle(filename);
   return await fileHandle.getFile();
-};
-
-const getObjectUrl = async (filepath: string) => {
-  return URL.createObjectURL(await getFile(filepath));
-};
-
-const getSource = async (canvas: Canvas): Promise<TileSource[]> => {
-  const image = getImage(canvas);
-
-  let source: TileSource[] = [];
-  if (image?.service?.length != null && image.service.length > 0) {
-    const service = image.service[0] as ImageService;
-    if (service !== undefined) {
-      const id = service['@id'] ?? service.id;
-      if (id !== undefined) {
-        source = [`${id}/info.json`] as unknown as TileSource[];
-      }
-    }
-  } else {
-    if (image?.id !== undefined && !image.id.startsWith('http')) {
-      const url = await getObjectUrl(image.id);
-      source = [{ type: 'image', url: url }] as unknown as TileSource[];
-    } else {
-      source = [{ type: 'image', url: image.id }] as unknown as TileSource[];
-    }
-  }
-
-  return source;
 };
 
 const toGallicaUrl = (iiifUrl: string) => {
@@ -121,41 +96,4 @@ const toGallicaUrl = (iiifUrl: string) => {
   );
 };
 
-const imageToBase64 = async (image: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        resolve(reader.result); // data:image/...;base64,...
-      } else {
-        reject(new Error('Conversion en base64 échouée'));
-      }
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(image);
-  });
-};
-
-const imageUrlToBase64 = async (url: string): Promise<string> => {
-  const response = await fetch(url);
-  const blob = await response.blob();
-
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-};
-
-export {
-  getFile,
-  getImage,
-  getImageForThumbnail,
-  getLabel,
-  getObjectUrl,
-  getSource,
-  imageToBase64,
-  imageUrlToBase64,
-  toGallicaUrl,
-};
+export { getFile, getImage, getImageForThumbnail, getLabel, toGallicaUrl };

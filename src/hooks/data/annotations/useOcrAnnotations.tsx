@@ -1,4 +1,4 @@
-import { CanvasScope } from '@/data/models/Scope';
+import { CanvasScope } from '@/data/models/scope/scope';
 import { getAnnotationLiveRepository } from '@/data/repositories/indexeddb/dbFactory';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';

@@ -1,84 +1,38 @@
-# Reducers
+# Redux store
 
-## manifests
+The store (`store.ts`) is deliberately minimal. It carries only process status and UI
+notifications — **all business data lives in IndexedDB and reaches the UI through Dexie
+`useLiveQuery` hooks** (`src/hooks/data/`). The former `manifests`, `selection`, `lists` and
+`canvas` slices were removed during the local-first migration; anything still documented here
+must match `src/state/index.ts`.
 
-```javascript
-interface ManifestState {
-  isLoading: boolean;
-  error: string | null;
-  data: Manifest | null;
-  history: History[];
-}
-const initialState: ManifestState = {
-  isLoading: false,
-  error: '',
-  data: null,
-  history: [],
-};
-```
+## workers (`reducers/workers.ts`)
 
-| action               | payload                     | description                                     |
-| -------------------- | --------------------------- | ----------------------------------------------- |
-| fetchManifestRequest | string: URL of the manifest | Fetch the manifest data by URL                  |
-| fetchManifestError   | string: error message       |
-| fetchManifestSuccess | Manifest: data              | import { Manifest } from '@iiif/presentation-3' |
-| historyUpdated       | History                     | called if the history has been updated          |
-| setHistory           | History[]                   | called at init                                  |
+Plugin metadata + saga trigger actions. The request-type reducers are intentional no-ops:
+they exist so the saga (`sagas/workers.ts`) can take them.
 
-## selection
+| action                    | payload                     | description                                              |
+| ------------------------- | --------------------------- | -------------------------------------------------------- |
+| startWorkerProcessRequest | `StartWorkerProcessPayload` | saga takes it: starts a Worker run for a Scope           |
+| stopWorkerProcessRequest  | `Worker`                    | saga takes it: races the running worker to cancellation  |
+| recoverWorkerRequest      | `Worker`                    | saga takes it: recovers an interrupted worker            |
+| setPlugins                | plugin info array           | populates `workerPluginsInfo` (registry metadata for UI) |
 
-```javascript
-type SelectionState = SelectedCanvas[];
+## events (`reducers/events.ts`)
 
-const initialState: SelectionState = [];
-initialState: {
-  canvases: initialState,
-},
-```
+System events / toasts.
 
-| action            | payload          | description                                                    |
-| ----------------- | ---------------- | -------------------------------------------------------------- |
-| setSelection      | SelectedCanvas[] | set the selection canvases                                     |
-| setSelectionStart | SelectedCanvas   | set the selected element as the first element of the selection |
-| setSelectionEnd   | SelectedCanvas   | set the selected element as the last element of the selection  |
+| action         | payload | description                                  |
+| -------------- | ------- | -------------------------------------------- |
+| pushInfo       | string  | append an INFO event, set it as `lastEvent`  |
+| pushError      | string  | append an ERROR event, set it as `lastEvent` |
+| resetLastEvent | —       | clear `lastEvent` so it is not re-displayed  |
 
-## lists
+## Not in Redux
 
-```javascript
-interface ListsState {
-  values: List[];
-  error: string;
-}
-
-const initialState: ListsState = {
-  values: [],
-  error: '',
-};
-```
-
-| action                     | payload                                         | description              |
-| -------------------------- | ----------------------------------------------- | ------------------------ |
-| addListRequest             | string                                          | used to call Saga effect |
-| addListSuccess             | List                                            |
-| removeListRequest          | string                                          | used to call Saga effect |
-| removeListSuccess          | string                                          |
-| setLists                   | List[]                                          |
-| addSelectionToListRequest  | { selection: SelectedCanvas[]; listId: string } | used to call Saga effect |
-| addSelectionToListSuccess  | List                                            |
-| fetchCanvasesOfListRequest | string                                          | used to call Saga effect |
-| fetchCanvasesOfListSuccess | List                                            |
-
-## canvas
-
-```javascript
-interface CanvasesState {
-  values: { [key: string]: ContentResource };
-}
-const initialState: CanvasesState = {
-  values: {},
-};
-```
-
-| action                 | payload                                          | description |
-| ---------------------- | ------------------------------------------------ | ----------- |
-| setCanvasFromComponent | { componentId: string; canvas: ContentResource } |
+- Worker/Task data and statuses: IndexedDB + `useLiveQuery` + `useJobRealtime` (the status law
+  itself is specified in `docs/statuts.md`; its consolidation into one pure module is
+  `docs/roadmap.md` R1).
+- Manifests, collections, annotations, tags, models, history: `useLiveQuery` hooks in
+  `src/hooks/data/`.
+- File-system handles: zustand (`zustand/useFSHandleStore.ts`).

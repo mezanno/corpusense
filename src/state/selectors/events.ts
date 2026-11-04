@@ -1,4 +1,4 @@
-import { EventType } from '@/data/models/Event';
+import { EventType } from '@/data/models/event';
 import { RootState } from '../store';
 
 export const selectLastInfoEvent = (state: RootState) =>

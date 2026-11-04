@@ -1,5 +1,4 @@
 import { all, call, fork, spawn } from 'redux-saga/effects';
-import manifestsSaga from './manifests';
 import workerSaga, { initWorkersStatus, loadWorkerPluginsInfo } from './workers';
 
 function* launchSaga(saga: () => Generator) {
@@ -15,7 +14,7 @@ function* launchSaga(saga: () => Generator) {
 
 function getRootSaga() {
   return function* rootSaga() {
-    const coreSagas = [manifestsSaga, workerSaga];
+    const coreSagas = [workerSaga];
 
     yield all(coreSagas.map((saga) => spawn(launchSaga, saga)));
     yield fork(initWorkersStatus); //load workers at startup

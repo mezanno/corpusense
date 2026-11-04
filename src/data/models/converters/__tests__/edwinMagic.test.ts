@@ -1,5 +1,5 @@
 import annotationFromEdwin from '@/__tests__/annotationFromEdwin.json';
-import { vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { convertEdwinResult, EdwinBox } from '../edwinMagic';
 
 vi.mock('uuid', () => {

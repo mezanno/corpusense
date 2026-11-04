@@ -1,15 +1,10 @@
 import annotationCreateFromDTOWithId from '@/__tests__/annotationCreateFromDTOWithId.json';
 import annotationFromEdwin from '@/__tests__/annotationFromEdwin.json';
 import annotationWitoutTypeAndText from '@/__tests__/annotationWithoutTypeAndValue.json';
-import { vi } from 'vitest';
-import {
-  Annotation,
-  createAnnotation,
-  ElementType,
-  getAnnotationText,
-  getAnnotationType,
-  getBodies,
-} from '../Annotation';
+import { describe, expect, it, vi } from 'vitest';
+import { Annotation, ElementType } from '../annotations/annotation';
+import { createAnnotation } from '../annotations/annotation.factory';
+import { getAnnotationText, getAnnotationType, getBodies } from '../annotations/annotation.utils';
 
 vi.mock('uuid', () => {
   return {
@@ -18,7 +13,11 @@ vi.mock('uuid', () => {
 });
 
 describe('Annotation', () => {
-  const annotation = { ...annotationFromEdwin[0], type: ElementType.TEXT_REGION, order: 0 } as Annotation;
+  const annotation = {
+    ...annotationFromEdwin[0],
+    type: ElementType.TEXT_REGION,
+    order: 0,
+  } as Annotation;
   describe('getAnnotationType', () => {
     it('should get the correct annotation type', () => {
       const expectedType = ElementType.UNKNOWN;

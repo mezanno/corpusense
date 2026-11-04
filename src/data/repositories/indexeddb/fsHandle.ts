@@ -1,4 +1,4 @@
-import { FSHandle } from '@/data/models/FSHandle';
+import { FSHandle } from '@/data/models/fSHandle';
 import { db } from './db';
 import { FSHandleRepository } from './types';
 

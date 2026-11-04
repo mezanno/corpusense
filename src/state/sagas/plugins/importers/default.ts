@@ -1,10 +1,12 @@
-import i18n from 'i18next';
+import { ManifestSchema } from '@/data/models/source/source';
+import { BaseError } from '@/utils/BaseError';
+import { getErrorMessage } from '@/utils/utils';
+import { Manifest } from '@iiif/presentation-3';
+import { manifestHttpError, ManifestImportError, RemoteManifestInvalidError } from '../errors';
 
 export const pluginName = 'default';
 
-const defaultImporter = async (url: string): Promise<object> => {
-  console.log('defaultImporter: ', url);
-
+const defaultImporter = async (url: string): Promise<Manifest> => {
   try {
     const response = await fetch(url, {
       headers: {
@@ -12,22 +14,19 @@ const defaultImporter = async (url: string): Promise<object> => {
       },
     });
     if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error(i18n.t('error_404_manifest', { url }));
-      } else if (response.status === 403) {
-        throw new Error(i18n.t('error_403_manifest', { url }));
-      } else {
-        throw new Error(
-          i18n.t('error_loading_manifest', { error: `${response.status} ${response.statusText}` }),
-        );
-      }
+      throw manifestHttpError(url, response);
     }
-    //TODO! gérer cas où ce n'est pas un objet (unknown)
-    const data: object = (await response.json()) as object;
-
-    return data;
+    const validation = ManifestSchema.safeParse(await response.json());
+    if (!validation.success) {
+      throw new RemoteManifestInvalidError({ url });
+    }
+    return validation.data;
   } catch (error) {
-    throw new Error(i18n.t('error_unknown'));
+    // Le boundary (`utils/manifest.fetchManifestFromURL`) capture et rapporte une seule fois :
+    // on relance l'erreur déjà typée au lieu d'en fabriquer une neuve, et on nomme l'URL dans
+    // les autres cas plutôt que de conclure à une « erreur inconnue ».
+    if (error instanceof BaseError) throw error;
+    throw new ManifestImportError({ url, cause: getErrorMessage(error) });
   }
 };
 

@@ -1,5 +1,4 @@
 import { renderWithProviders } from '@/__tests__/utils';
-import { CollectionDetails } from '@/data/models/Collection';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import { useTags } from '@/hooks/data/tags/useTags';
 import useDialog from '@/hooks/ui/useDialog';
@@ -15,9 +14,9 @@ vi.mock('@/hooks/ui/useDialog');
 const user = userEvent.setup();
 
 describe('CollectionsManagerPage', () => {
-  const mockCollections: CollectionDetails[] = [
-    { id: 'col-1', name: 'Collection 1', tags: [], contentSize: 0, offline: false },
-    { id: 'col-2', name: 'Collection 2', tags: ['tag-1'], contentSize: 5, offline: false },
+  const mockCollections = [
+    { id: 'col-1', name: 'Collection 1', tags: [], contentSize: 0 },
+    { id: 'col-2', name: 'Collection 2', tags: ['tag-1'], contentSize: 5 },
   ];
 
   beforeEach(() => {
@@ -27,6 +26,7 @@ describe('CollectionsManagerPage', () => {
     });
     (useTags as Mock).mockReturnValue({
       getTagsByIds: vi.fn().mockReturnValue([]),
+      getLabelById: vi.fn((id: string) => id),
     });
     (useDialog as Mock).mockReturnValue({
       openImportCollectionDialog: vi.fn(),
@@ -57,6 +57,7 @@ describe('CollectionsManagerPage', () => {
       getTagsByIds: vi.fn((ids: string[]) =>
         ids.includes('tag-1') ? [{ id: 'tag-1', label: 'Tag 1' }] : [],
       ),
+      getLabelById: vi.fn((id: string) => (id === 'tag-1' ? 'Tag 1' : id)),
     });
 
     renderWithProviders(<CollectionsManagerPage />);

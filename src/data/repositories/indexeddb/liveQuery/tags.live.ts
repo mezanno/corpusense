@@ -1,4 +1,4 @@
-import { Tag } from '@/data/models/Tag';
+import { Tag } from '@/data/models/tag';
 import { db } from '../db';
 import { TagLiveRepository } from './types.live';
 

@@ -1,27 +1,40 @@
 import { workerPlugins } from '@/App';
-import ContactForm from '@/components/forms/ContactForm';
-import ConvertPdfForm from '@/components/forms/ConvertPdfForm';
-import DuplicateCollectionForm from '@/components/forms/DuplicateCollectionForm';
-import DuplicateLayoutForm from '@/components/forms/DuplicateLayoutForm';
-import ExportCollectionForm from '@/components/forms/ExportCollectionForm';
-import ExportFormatSelectionForm from '@/components/forms/ExportFormatSelectionForm';
-import ImportCollectionForm from '@/components/forms/ImportCollectionForm';
-import ImportModelForm from '@/components/forms/ImportModelForm';
-import LoadModifierChainForm from '@/components/forms/LoadModifierChainForm';
-import LoginForm from '@/components/forms/LoginForm';
-import NewCollectionForm, { NewCollectionFormParams } from '@/components/forms/NewCollectionForm';
-import NewModelForm from '@/components/forms/NewModelForm';
-import OpenManifestForm from '@/components/forms/OpenManifestForm';
-import RemoveAnnotationsForm from '@/components/forms/RemoveAnnotationsForm';
-import SaveModifierChainForm from '@/components/forms/SaveModifierChainForm';
-import StartWorkerForm from '@/components/forms/StartWorkerForm';
+import ContactForm from '@/components/common/forms/ContactForm';
+import ConvertPdfForm from '@/components/common/forms/ConvertPdfForm';
+import DuplicateCollectionForm from '@/components/common/forms/DuplicateCollectionForm';
+import DuplicateLayoutForm from '@/components/common/forms/DuplicateLayoutForm';
+import ExportCollectionForm from '@/components/common/forms/ExportCollectionForm';
+import ExportFormatSelectionForm from '@/components/common/forms/ExportFormatSelectionForm';
+import ImportCollectionForm from '@/components/common/forms/ImportCollectionForm';
+import ImportModelForm from '@/components/common/forms/ImportModelForm';
+import LLMProfileForm, { LLMProfileFormValues } from '@/components/common/forms/LLMProfileForm';
+import LoadModifierChainForm from '@/components/common/forms/LoadModifierChainForm';
+import LoginForm from '@/components/common/forms/LoginForm';
+import NewCollectionForm, {
+  NewCollectionFormParams,
+} from '@/components/common/forms/NewCollectionForm';
+import NewModelForm from '@/components/common/forms/NewModelForm';
+import NewProjectForm from '@/components/common/forms/NewProjectForm';
+import OpenManifestForm from '@/components/common/forms/openManifestForm/OpenManifestForm';
+import RemoveAnnotationsForm from '@/components/common/forms/RemoveAnnotationsForm';
+import SaveModifierChainForm from '@/components/common/forms/SaveModifierChainForm';
+import SelectLlmForm from '@/components/common/forms/SelectLlmForm';
+import StartWorkerForm from '@/components/common/forms/StartWorkerForm';
+import UpdateSourceNameForm from '@/components/common/forms/UpdateSourceNameForm';
+import UploadSourceForm, {
+  UploadSourceFormParams,
+} from '@/components/common/forms/UploadSourceForm';
+import ModelPreview from '@/components/features/models/ModelPreview';
+import ModelUsageList from '@/components/features/models/ModelUsageList';
 import { useAlertDialogContext } from '@/components/reducers/useAlertDialogContext';
-import ModelPreview from '@/components/textviewer/ModelPreview';
-import { CollectionDetails } from '@/data/models/Collection';
-import { DataModel } from '@/data/models/DataModel';
+import { CollectionDetails } from '@/data/models/collection/collection';
+import { DataModel } from '@/data/models/dataModel/dataModel';
+import { LLMProfile } from '@/data/models/LLMProfile';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
-import { CanvasScope, Scope } from '@/data/models/Scope';
-import { Worker } from '@/data/models/Worker';
+import { Project } from '@/data/models/project';
+import { CanvasScope, Scope } from '@/data/models/scope/scope';
+import { Source, SourceWithContent } from '@/data/models/source/source';
+import { Worker } from '@/data/models/worker/worker';
 import { ModifierChainData } from '@/data/utils/modifierChain';
 import { ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -35,7 +48,8 @@ export type FormProps<TResult = unknown> = {
 
 type FormDialogOptions = {
   title: string;
-  confirmLabel: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
   renderForm: (
     formRef: RefObject<HTMLFormElement | null>, //référence au formulaire pour pouvoir déclencher le submit
     setCanSubmit: (can: boolean) => void, //indique si le bouton de confirmation doit être actif (en fonction de la validité du formulaire)
@@ -53,19 +67,29 @@ const useDialog = () => {
   const openFormDialog = ({
     title,
     confirmLabel,
+    cancelLabel,
     renderForm,
     closeOnAction,
   }: FormDialogOptions) => {
     const formRef = { current: null } as RefObject<HTMLFormElement | null>; // Create a new ref for each dialog
-
     openDialog({
       title,
       children: renderForm(formRef, setCanSubmit, closeDialog),
-      onConfirm: {
-        message: confirmLabel,
-        action: () => formRef.current?.requestSubmit(),
-        closeOnAction,
-      },
+      onConfirm:
+        confirmLabel !== undefined
+          ? {
+              message: confirmLabel,
+              action: () => formRef.current?.requestSubmit(),
+              closeOnAction,
+            }
+          : undefined,
+      onCancel:
+        cancelLabel !== undefined
+          ? {
+              message: cancelLabel,
+              action: () => closeDialog(),
+            }
+          : undefined,
     });
   };
 
@@ -76,15 +100,16 @@ const useDialog = () => {
       renderForm: (formRef) => (
         <ImportCollectionForm formRef={formRef} setCanSubmit={setCanSubmit} />
       ),
+      closeOnAction: false, //ne pas fermer le dialog automatiquement après l'import, pour permettre de voir les logs
     });
   };
 
   const openNewCollectionDialog = (params?: NewCollectionFormParams) => {
     const extraProps =
-      params?.selection !== undefined && params.manifestId !== undefined
+      params?.selection !== undefined && params.sourceId !== undefined
         ? {
             selection: params.selection,
-            manifestId: params.manifestId,
+            sourceId: params.sourceId,
           }
         : {};
     openFormDialog({
@@ -125,6 +150,16 @@ const useDialog = () => {
     });
   };
 
+  const openSelectLLMDialog = (onResult: (llmId: string) => void) => {
+    openFormDialog({
+      title: t('title_select_llm'),
+      confirmLabel: t('btn_start'),
+      renderForm: (formRef) => (
+        <SelectLlmForm formRef={formRef} setCanSubmit={setCanSubmit} onResult={onResult} />
+      ),
+    });
+  };
+
   const openLoginDialog = () => {
     openFormDialog({
       title: t('title_login'),
@@ -136,14 +171,41 @@ const useDialog = () => {
     });
   };
 
-  const openOpenManifestDialog = () => {
+  type OpenManifestDialogOptions = {
+    onResult?: (sourceAddedId: string) => void;
+    existingSource?: SourceWithContent;
+  };
+
+  const openOpenManifestDialog = (options: OpenManifestDialogOptions) => {
     openFormDialog({
-      title: t('btn_open_manifest'),
-      confirmLabel: t('btn_open_manifest'),
+      title:
+        options.existingSource === undefined ? t('btn_open_manifest') : t('title_rename_source'),
+      cancelLabel: t('btn_close'),
       renderForm: (formRef) => (
-        <OpenManifestForm formRef={formRef} setCanSubmit={setCanSubmit} closeDialog={closeDialog} />
+        <OpenManifestForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          closeDialog={closeDialog}
+          onResult={options.onResult}
+          existingSource={options.existingSource}
+        />
       ),
       closeOnAction: false,
+    });
+  };
+
+  const openConvertPdfDialog = (onResult: (sourceAddedId: string) => void) => {
+    openFormDialog({
+      title: t('title_import_pdf'),
+      // description: t('description_select_pdf'),
+      renderForm: (formRef) => (
+        <ConvertPdfForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          closeDialog={closeDialog}
+          onResult={onResult}
+        />
+      ),
     });
   };
 
@@ -213,6 +275,7 @@ const useDialog = () => {
           setCanSubmit={setCanSubmit}
         />
       ),
+      closeOnAction: false, //ne pas fermer le dialog automatiquement après l'export, pour permettre de voir les logs
     });
   };
 
@@ -224,11 +287,11 @@ const useDialog = () => {
     });
   };
 
-  const openConvertPdfDialog = () => {
+  const openModelUsageList = (model: DataModel) => {
     openDialog({
-      title: t('title_import_pdf'),
-      description: t('description_select_pdf'),
-      children: <ConvertPdfForm />,
+      title: t('title_model_usage'),
+      description: t('info_model_usage'),
+      children: <ModelUsageList modelId={model.id} />,
     });
   };
 
@@ -288,6 +351,75 @@ const useDialog = () => {
     });
   };
 
+  const openUploadSourceDialog = (params: UploadSourceFormParams) => {
+    openFormDialog({
+      title: t('btn_upload_to_cloud'),
+      confirmLabel: t('btn_upload'),
+      closeOnAction: false,
+      renderForm: (formRef) => (
+        <UploadSourceForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          {...params}
+          closeDialog={closeDialog}
+        />
+      ),
+    });
+  };
+
+  const openCreateProjectDialog = (onResult: (project: Project) => void) => {
+    openFormDialog({
+      title: t('btn_create_project'),
+      confirmLabel: t('bnt_create_project'),
+      renderForm: (formRef) => (
+        <NewProjectForm formRef={formRef} setCanSubmit={setCanSubmit} onResult={onResult} />
+      ),
+    });
+  };
+
+  const openChangeSourceNameDialog = (source: Source, onResult: (result: void) => void) => {
+    openFormDialog({
+      title: t('title_rename_source'),
+      confirmLabel: t('btn_rename'),
+      renderForm: (formRef) => (
+        <UpdateSourceNameForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          source={source}
+          onResult={onResult}
+        />
+      ),
+    });
+  };
+
+  const openAddLLMProfileDialog = (onResult: (values: LLMProfileFormValues) => void) => {
+    openFormDialog({
+      title: t('dialog_llm_profile_add'),
+      confirmLabel: t('btn_save'),
+      renderForm: (formRef) => (
+        <LLMProfileForm formRef={formRef} setCanSubmit={setCanSubmit} onResult={onResult} />
+      ),
+    });
+  };
+
+  const openEditLLMProfileDialog = (
+    profile: LLMProfile,
+    onResult: (values: LLMProfileFormValues) => void,
+  ) => {
+    openFormDialog({
+      title: t('dialog_llm_profile_edit'),
+      confirmLabel: t('btn_save'),
+      renderForm: (formRef) => (
+        <LLMProfileForm
+          formRef={formRef}
+          setCanSubmit={setCanSubmit}
+          onResult={onResult}
+          defaultValues={profile}
+        />
+      ),
+    });
+  };
+
   return {
     openOpenManifestDialog,
     openImportCollectionDialog,
@@ -297,15 +429,22 @@ const useDialog = () => {
     openImportModelDialog,
     openCreateModelDialog,
     openModelPreviewDialog,
+    openModelUsageList,
     openContactUsDialog,
     openDuplicateLayoutDialog,
     openRemoveAnnotationsDialog,
     openExportCollectionDialog,
-    openConvertPdfForm: openConvertPdfDialog,
+    openConvertPdfDialog,
     openSaveModifierChainDialog,
     openLoadModifierChainDialog,
     openStartWorkerDialog,
     openDupicateCollectionDialog,
+    openUploadSourceDialog,
+    openCreateProjectDialog,
+    openChangeSourceNameDialog,
+    openAddLLMProfileDialog,
+    openEditLLMProfileDialog,
+    openSelectLLMDialog,
   };
 };
 

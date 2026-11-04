@@ -1,4 +1,4 @@
-import CollectionTable from '@/components/collectionPage/CollectionTable';
+import CollectionTable from '@/components/features/collections/CollectionTable';
 import { useCollections } from '@/hooks/data/collections/useCollections';
 import useDialog from '@/hooks/ui/useDialog';
 import { FilePlus, Import } from 'lucide-react';
@@ -35,9 +35,9 @@ const CollectionsManagerPage = () => {
       </section>
 
       {collections.length > 0 ? (
-        <section className='flex min-h-0 w-4/5 flex-1 flex-col items-center gap-1'>
+        <section className='flex min-h-0 w-full flex-1 flex-col items-center gap-1'>
           <h2 className='text-xl'>
-            {t('info_number_of_collections', { number: collections.length })}
+            <strong>{t('info_number_of_collections', { number: collections.length })}</strong>
           </h2>
           <CollectionTable />
         </section>

@@ -12,10 +12,12 @@ const useModifierChainIO = () => {
     if (modifiers.length === 0) return;
 
     const modifierChainRepository = getModifierChainRepository();
-    const existingChain = await modifierChainRepository.getByName(name);
+    const existingChainResult = await modifierChainRepository.getByName(name);
+
+    const chainId = existingChainResult.ok ? existingChainResult.value.id : uuid();
 
     const chainDTO = {
-      id: existingChain?.id ?? uuid(),
+      id: chainId,
       name,
       modifiers: modifiers.map((modifier) => {
         const rawValues = values[modifier.id] ?? {};

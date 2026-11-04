@@ -4,27 +4,29 @@ import {
   AnyMotivation,
   ContentResourceString,
   EmbeddedResource,
+  W3CMotivation,
 } from '@iiif/presentation-3';
 import { uniq } from 'lodash';
-import {
-  Annotation,
-  convertToElementTypeEnum,
-  createAnnotation,
-  W3CMotivationEnum,
-} from '../Annotation';
+import { Annotation } from '../annotations/annotation';
+import { createAnnotation } from '../annotations/annotation.factory';
+import { convertToElementTypeEnum } from '../annotations/annotation.utils';
 
 export const IIIF_CONTEXT = 'http://iiif.io/api/presentation/3/context.json';
-export const URL_ANNOTATIONPAGE = 'annotationpage/corpusense';
+const URL_ANNOTATIONPAGE = 'annotationpage/corpusense';
 
 /**
  * Converts W3C annotations to IIIF annotations. The annotations are supposed to be
  * from the same canvas.
  * The function will throw an error if the annotations are empty or if the canvasId is undefined.
  * @param annotations W3C annotations to convert
+ * @param purposes Optional array of purposes to filter the annotations by. If provided, only annotations with a purpose in this array will be converted.
  * @returns IIIF annotation page
  * @throws Error if the annotations are empty or if the canvasId is undefined
  */
-export function convertW3CAnnotationsToIIIF(annotations: Annotation[]): AnnotationPage {
+export function convertW3CAnnotationsToIIIF(
+  annotations: Annotation[],
+  purposes?: string[],
+): AnnotationPage {
   if (annotations.length === 0) {
     throw new Error('Error during convertion from W3CAnnotations to IIIF: annotations is empty');
   }
@@ -36,29 +38,35 @@ export function convertW3CAnnotationsToIIIF(annotations: Annotation[]): Annotati
 
   const annotationPageId = `${canvasId}/${URL_ANNOTATIONPAGE}`;
   const annotationsIff: AnnotationIIF[] = [];
-  console.log(`convertW3CAnnotationsToIIIF -> ${annotations.length} annotations in ${canvasId}`);
 
   for (let i = 0; i < annotations.length; i++) {
     const w3cAnnotation = annotations[i];
     const bounds = w3cAnnotation.target.selector.geometry.bounds;
     const bodies = w3cAnnotation.bodies;
     for (let b = 0; b < bodies.length; b++) {
-      const body = bodies[b];
-      const iifAnnotation = {
-        '@context': IIIF_CONTEXT,
-        type: 'Annotation',
-        id: `${annotationPageId}/${body.id}`,
-        motivation: body.purpose !== undefined ? body.purpose : W3CMotivationEnum.Commenting,
-        target: `${canvasId}#xywh=${bounds.minX},${bounds.minY},${bounds.maxX - bounds.minX},${bounds.maxY - bounds.minY}`,
-        body: {
-          type: 'TextualBody',
-          value: body.value,
-          format: 'text/plain',
-        },
-      };
+      const purpose = bodies[b].purpose;
+      if (
+        purposes === undefined ||
+        purpose === undefined ||
+        (purposes.length > 0 && purposes.includes(purpose))
+      ) {
+        const body = bodies[b];
+        const iifAnnotation = {
+          '@context': IIIF_CONTEXT,
+          type: 'Annotation',
+          id: `${annotationPageId}/${body.id}`,
+          motivation: body.purpose !== undefined ? body.purpose : 'commenting',
+          target: `${canvasId}#xywh=${bounds.minX},${bounds.minY},${bounds.maxX - bounds.minX},${bounds.maxY - bounds.minY}`,
+          body: {
+            type: 'TextualBody',
+            value: body.value,
+            format: 'text/plain',
+          },
+        };
 
-      //@ts-expect-error annotationsIff
-      annotationsIff.push(iifAnnotation);
+        //@ts-expect-error annotationsIff
+        annotationsIff.push(iifAnnotation);
+      }
     }
   }
 
@@ -99,15 +107,9 @@ export function convertAnnotationPageToW3CAnnotations(
         continue;
       }
 
-      const { value: typeValue } = getBodyIdAndValueForMotivation(
-        bodies,
-        W3CMotivationEnum.Classifying,
-      );
+      const { value: typeValue } = getBodyIdAndValueForMotivation(bodies, 'classifying');
       const type = convertToElementTypeEnum(typeValue);
-      const { id: idValue, value: valueValue } = getBodyIdAndValueForMotivation(
-        bodies,
-        W3CMotivationEnum.Tagging,
-      );
+      const { id: idValue, value: valueValue } = getBodyIdAndValueForMotivation(bodies, 'tagging');
       const annotationId = extractAnnotationIdFromBody(idValue);
       const a = createAnnotation({
         canvasId: baseUrl,
@@ -139,7 +141,7 @@ function extractAnnotationIdFromBody(bodyId: string): string {
 
 function getBodyIdAndValueForMotivation(
   bodies: { id: string; motivation: AnyMotivation; body: EmbeddedResource }[],
-  motivation: W3CMotivationEnum,
+  motivation: W3CMotivation,
 ): { id: string; value: string | undefined } {
   const body = bodies.find((b) => b.motivation === motivation);
   if (body === undefined || body.id === undefined) {

@@ -1,5 +1,5 @@
 import z from 'zod';
-import { Annotation } from '../Annotation';
+import { Annotation } from '../annotations/annotation';
 
 type MaybePromise<T> = T | Promise<T>;
 
@@ -75,7 +75,7 @@ export abstract class Modifier<TSchema extends z.ZodTypeAny> {
 
 export type AnyModifier = Modifier<z.ZodObject<z.ZodRawShape>>;
 
-export interface ModifierDTO {
+interface ModifierDTO {
   id: string;
   type: string;
   values: unknown;

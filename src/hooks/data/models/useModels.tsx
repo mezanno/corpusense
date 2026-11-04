@@ -1,8 +1,10 @@
-import { DataField, DataModelCreateDTO } from '@/data/models/DataModel';
+import { DataField } from '@/data/models/dataModel/dataModel';
+import { DataModelCreateDTO } from '@/data/models/dataModel/dataModel.dto';
 import {
   getModelLiveRepository,
   getModelRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
+import { NotFoundError } from '@/utils/NotFoundError';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
@@ -12,6 +14,10 @@ export const useModels = () => {
   const modelLiveRepository = useMemo(() => getModelLiveRepository(), []);
 
   const models = useLiveQuery(modelLiveRepository.getAll(), [], []);
+
+  const modelCount = useMemo(() => {
+    return models.length;
+  }, [models]);
 
   const getModelById = useCallback((id: string) => models.find((c) => c.id === id), [models]);
 
@@ -40,7 +46,7 @@ export const useModels = () => {
     if (fromModelId !== undefined) {
       try {
         const model = models.find((m) => m.id === fromModelId);
-        if (!model) throw new Error('Model not found');
+        if (!model) throw new NotFoundError({ entity: 'Model', id: fromModelId });
         fields = model.fields;
         prompt = model.prompt;
       } catch (error) {
@@ -61,6 +67,7 @@ export const useModels = () => {
 
   return {
     models,
+    modelCount,
     getModelById,
     getDatafieldById,
     createModel,

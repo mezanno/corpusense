@@ -1,8 +1,7 @@
-import { WordRect } from '@/components/reducers/MarkupContext';
-import { Annotation } from '@/data/models/Annotation';
-import { DataField } from '@/data/models/DataModel';
-import { NamedEntity } from '@/data/models/NamedEntity';
-import { CanvasScope } from '@/data/models/Scope';
+import { Annotation } from '@/data/models/annotations/annotation';
+import { DataField } from '@/data/models/dataModel/dataModel';
+import { NamedEntity } from '@/data/models/namedEntity';
+import { CanvasScope } from '@/data/models/scope/scope';
 import {
   getAnnotationRepository,
   getCollectionRepository,
@@ -19,7 +18,17 @@ import { uniq } from 'lodash';
 import { useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
 
-export interface AddEntityPayload {
+// previously imported from the (removed) MarkupContext; konva-free structural equivalent
+type WordRect = {
+  line: number;
+  rect: { x: number; y: number; width: number; height: number };
+  dataFieldId?: string;
+  word: string;
+  annotationId: string;
+  annotationWordIndex: number; // index of the word in the annotation
+};
+
+interface AddEntityPayload {
   rects: WordRect[];
   type: DataField;
 }
@@ -48,22 +57,35 @@ const useNamedEntities = (annotationIds: string[]) => {
     const resultRepository = getResultRepository();
     const result = await resultRepository.getByScopeAndWorkerName(
       scope,
-      'mistral', //TODO! paramétrer le worker
+      'openai', //TODO! paramétrer le worker
     );
-    const { value } = result;
+    if (!result.ok) {
+      appDisptach(pushError('error_result_undefined'));
+      return;
+    }
+    const { value } = result.value;
 
     let model = undefined;
     const collectionRepository = getCollectionRepository();
     try {
       //get the collection, its content and the model
-      const collection = await collectionRepository.getById(scope.collectionId);
-      const modelId = collection.modelId;
+      const collectionResult = await collectionRepository.getById(scope.collectionId);
+      if (!collectionResult.ok) {
+        appDisptach(pushError('error_collection_undefined'));
+        return;
+      }
+      const modelId = collectionResult.value.modelId;
       if (modelId === undefined) {
         appDisptach(pushError('error_model_undefined'));
         return;
       }
       const modelRepository = getModelRepository();
-      model = await modelRepository.getById(modelId);
+      const modelResult = await modelRepository.getById(modelId);
+      if (!modelResult.ok) {
+        appDisptach(pushError('error_model_undefined'));
+        return;
+      }
+      model = modelResult.value;
     } catch (error) {
       appDisptach(pushError('error_model_undefined'));
       return;

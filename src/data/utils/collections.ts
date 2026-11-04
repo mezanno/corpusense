@@ -1,7 +1,6 @@
 function generateCollectionContent(
-  position: number,
   canvasIds: string[],
-  manifestId: string,
+  sourceId: string,
   existingCanvasIds: string[] = [],
 ) {
   return canvasIds
@@ -10,8 +9,7 @@ function generateCollectionContent(
         ? null
         : {
             canvasId: id,
-            position: ++position,
-            manifestId,
+            sourceId,
           },
     )
     .filter((elt) => elt !== null);

@@ -1,5 +1,6 @@
-import { DataModel } from '@/data/models/DataModel';
+import { DataModel, DataModelSchema } from '@/data/models/dataModel/dataModel';
 import { getModelRepository } from '@/data/repositories/indexeddb/dbFactory';
+import { InvalidModelStructureError } from '@/data/utils/errors';
 import { useAppDispatch } from '@/hooks/hooks';
 import i18n from '@/i18n';
 import { pushError, pushInfo } from '@/state/reducers/events';
@@ -23,7 +24,12 @@ export const useModelIO = () => {
 
   const exportModel = async (id: string) => {
     try {
-      const model = await modelRepository.getById(id);
+      const modelResult = await modelRepository.getById(id);
+      if (!modelResult.ok) {
+        appDispatch(pushError('Error exporting model: ' + getErrorMessage(modelResult.error)));
+        return;
+      }
+      const model = modelResult.value;
 
       FileSaver.saveAs(
         new Blob([JSON.stringify(model)], { type: 'application/json' }),
@@ -35,13 +41,17 @@ export const useModelIO = () => {
     }
   };
 
-  const importModel = async (data: object, overwrite: boolean) => {
+  const importModel = async (data: unknown, overwrite: boolean) => {
     try {
-      const model = data as DataModel; //TODO: validate the model structure and display error if invalid
-      console.log(model);
+      const validation = DataModelSchema.safeParse(data);
+      if (!validation.success) {
+        throw new InvalidModelStructureError({ issues: validation.error.message });
+      }
+      const model = validation.data;
 
-      const existingModel = await modelRepository.getByName(model.name);
-      if (existingModel !== null) {
+      const existingModelResult = await modelRepository.getByName(model.name);
+      if (existingModelResult.ok) {
+        const existingModel = existingModelResult.value;
         if (!overwrite) {
           model.name = model.name + ' (imported)';
           model.id = uuid();

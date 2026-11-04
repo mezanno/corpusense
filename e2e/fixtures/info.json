@@ -1,0 +1,15 @@
+{
+  "@context": "http://iiif.io/api/image/2/context.json",
+  "@id": "https://iiif.e2e.test/image",
+  "protocol": "http://iiif.io/api/image",
+  "width": 1024,
+  "height": 768,
+  "tiles": [
+    {
+      "width": 1024,
+      "height": 768,
+      "scaleFactors": [1]
+    }
+  ],
+  "profile": ["http://iiif.io/api/image/2/profiles/level2.json"]
+}

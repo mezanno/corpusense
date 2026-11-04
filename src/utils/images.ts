@@ -1,3 +1,6 @@
+import { InvalidBase64Error } from '@/data/utils/errors';
+import { FunctionResult } from './functionResult';
+
 type Crop = {
   x: number;
   y: number;
@@ -82,4 +85,21 @@ function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-export { canvasToBase64, cropImage, loadImageFromUrl };
+function base64ToBlob(base64: string): FunctionResult<Blob, Error> {
+  try {
+    const byteString = atob(base64.split(',')[1]);
+    const mimeString = base64.split(',')[0].split(':')[1].split(';')[0];
+
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+
+    return FunctionResult.ok(new Blob([ab], { type: mimeString }));
+  } catch (error) {
+    return FunctionResult.err(new InvalidBase64Error());
+  }
+}
+
+export { base64ToBlob, blobToBase64, canvasToBase64, cropImage };

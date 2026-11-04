@@ -1,0 +1,19 @@
+{
+  "title": "Welcome to Corpusense",
+  "introduction": {
+    "p1": "Corpusense is a web application designed for researchers and professionals who want to work with digitized historical documents simply and efficiently.",
+    "p2": "With Corpusense, you can:"
+  },
+  "features": {
+    "import": "<strong>Import documents</strong> and select the pages you are interested in to create your custom corpora.",
+    "process": "<strong>Process your corpora</strong> using features such as text recognition (OCR) and structured data extraction.",
+    "analyze": "<strong>Analyze and leverage your documents</strong> without needing any particular technical skills."
+  },
+  "conclusion": "Corpusense turns your digitized documents into structured, usable resources, while remaining intuitive and accessible. Start organizing and analyzing your historical sources with ease right now.",
+  "getting_started": {
+    "title": "Where to start?",
+    "description": "The first step is to select a document (from Gallica, for example). If you don't have a document yet, you can choose one from the list below:",
+    "example1": "Annuaire général de la cinématographie et des industries qui s'y rattachent",
+    "example2": "Catalogue d'une jolie collection : objets de la Perse, armes, armures..."
+  }
+}

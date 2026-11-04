@@ -1,7 +1,7 @@
-import { Result } from '@/data/models/Result';
-import { isAnnotationScope, isCanvasScope, Scope, toString } from '@/data/models/Scope';
-import { Tag } from '@/data/models/Tag';
-import { Task, WorkerResponse, WorkerStatus } from '@/data/models/Worker';
+import { Result } from '@/data/models/result/result';
+import { Scope } from '@/data/models/scope/scope';
+import { isAnnotationScope, isCanvasScope, toString } from '@/data/models/scope/scope.utils';
+import { Task, WorkerEvent, WorkerResponse } from '@/data/models/worker/worker';
 import {
   getCollectionRepository,
   getModelRepository,
@@ -16,12 +16,14 @@ import { generateSchema, hasPreviousValueField } from '@/data/utils/model';
 import { getValueForPluginParam } from '@/data/utils/plugins';
 import i18n from '@/i18n';
 import { PluginParams } from '@/state/reducers/workers';
+import { FunctionResult } from '@/utils/functionResult';
 import { getErrorMessage } from '@/utils/utils';
 import { Mistral } from '@mistralai/mistralai';
 import FileSaver from 'file-saver';
 import { json2csv } from 'json-2-csv';
 import * as XLSX from 'xlsx';
 import { WorkerCategory } from './WorkerCategory';
+import { flattenForExcel, sanitizeFilenamePart } from './excel.utils';
 
 export const pluginName = 'mistral';
 export const pluginDisplayName = 'Extraction de données Mistral';
@@ -48,7 +50,11 @@ async function getText(scope: Scope) {
     //TODO: implement text extraction from annotation
     fullText = '';
   } else {
-    fullText = await generateNumberedTextForCollection(scope.collectionId);
+    //TODO : en cas d'erreur ?
+    fullText = FunctionResult.unwrapOr(
+      await generateNumberedTextForCollection(scope.collectionId),
+      '',
+    );
   }
   return fullText.replace(/["«»]/g, '');
 }
@@ -63,20 +69,34 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   let model = undefined;
   const collectionRepository = getCollectionRepository();
   try {
-    const collection = await collectionRepository.getById(task.scope.collectionId);
+    const collectionResult = await collectionRepository.getById(task.scope.collectionId);
+    if (!collectionResult.ok) {
+      return {
+        event: WorkerEvent.RESULT_ERR,
+        message: collectionResult.error.message,
+      };
+    }
+    const collection = collectionResult.value;
     const modelId = collection.modelId;
     if (modelId === undefined) {
       return {
-        status: WorkerStatus.ERROR,
-        statusMessage: i18n.t('error_model_undefined'),
+        event: WorkerEvent.RESULT_ERR,
+        message: i18n.t('error_model_undefined'),
       };
     }
     const modelRepository = getModelRepository();
-    model = await modelRepository.getById(modelId);
+    const modelResult = await modelRepository.getById(modelId);
+    if (!modelResult.ok) {
+      return {
+        event: WorkerEvent.RESULT_ERR,
+        message: modelResult.error.message,
+      };
+    }
+    model = modelResult.value;
   } catch (error) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(error),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(error),
     };
   }
 
@@ -84,14 +104,14 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
   //return an error if no text is found
   if (text === undefined || text.length === 0) {
     console.log('No text found for this canvas');
-    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_export_no_text') };
+    return { event: WorkerEvent.RESULT_ERR, message: i18n.t('error_export_no_text') };
   }
 
   const apiKey = getValueForPluginParam(pluginName, 'apiKey');
   //return an error if no API key is found
   if (apiKey === null || apiKey === '') {
     console.log('No Mistral API key found');
-    return { status: WorkerStatus.ERROR, statusMessage: i18n.t('error_no_mistral_key') };
+    return { event: WorkerEvent.RESULT_ERR, message: i18n.t('error_no_mistral_key') };
   }
 
   const modelHasPreviousValueField = hasPreviousValueField(model);
@@ -103,11 +123,13 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
       task.previousTask.workerId,
       task.previousTask.taskId,
     );
-    const previousResult = JSON.parse(result.value as string) as unknown;
-    if (Array.isArray(previousResult)) {
-      lastValue = previousResult[previousResult.length - 1] as unknown; //on prend la dernière entrée si le résultat est un tableau
-    } else {
-      lastValue = previousResult;
+    if (result.ok) {
+      const previousResult = JSON.parse(result.value.value as string) as unknown;
+      if (Array.isArray(previousResult)) {
+        lastValue = previousResult[previousResult.length - 1] as unknown; //on prend la dernière entrée si le résultat est un tableau
+      } else {
+        lastValue = previousResult;
+      }
     }
   }
   console.log('previousResult: ', lastValue);
@@ -149,13 +171,14 @@ export default async function run(task: Task, _params: PluginParams): Promise<Wo
 
     console.log('Response from Mistral:', response);
     return {
-      status: WorkerStatus.COMPLETED,
-      content: response.choices[0].message.content as string,
+      event: WorkerEvent.RESULT_OK,
+      // content: response.choices[0].message.content as string,
+      content: response.choices[0]?.message?.content as string,
     };
   } catch (error) {
     return {
-      status: WorkerStatus.ERROR,
-      statusMessage: getErrorMessage(error),
+      event: WorkerEvent.RESULT_ERR,
+      message: getErrorMessage(error),
     };
   }
 }
@@ -173,14 +196,19 @@ export async function extractData(results: Result[]): Promise<unknown[]> {
     const result = results[i];
     const canvasId = isCanvasScope(result.scope) ? toGallicaUrl(result.scope.canvasId) : undefined;
 
-    const tags: Tag[] = await collectionRepository.getTagsByCollectionId(result.scope.collectionId);
-    const tagsAsColumns = tags.reduce(
-      (acc, t, index) => {
-        acc[`tag${index + 1}`] = t.label;
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
+    const tagsResult = await collectionRepository.getTagsByCollectionId(result.scope.collectionId);
+
+    let tagsAsColumns: Record<string, string> = {};
+    if (tagsResult.ok) {
+      const tags = tagsResult.value;
+      tagsAsColumns = tags.reduce(
+        (acc, t, index) => {
+          acc[`tag${index + 1}`] = t.label;
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
+    }
 
     try {
       const dataParsed = JSON.parse(result.value as string) as unknown;
@@ -218,50 +246,70 @@ export async function exportResult(results: Result[], formats: string[]) {
 
   const collectionRepository = getCollectionRepository();
   const collectionId = results[0].scope.collectionId;
-  const collection = await collectionRepository.getById(collectionId);
+  const collectionResult = await collectionRepository.getById(collectionId);
+  const collectionName = collectionResult.ok ? collectionResult.value.name : undefined;
+  const collectionNamePart = sanitizeFilenamePart(collectionName ?? collectionId);
 
-  const filename = `mistral_export_${collection.name ?? collectionId}_${new Date().toLocaleDateString()}`;
+  // Utiliser YYYY-MM-DD évite notamment les "/" dans les noms de fichiers
+  // avec les locales françaises.
+  const datePart = new Date().toISOString().slice(0, 10);
+  const filename = `mistral_export_${collectionNamePart}_${datePart}`;
 
   const allTheData = await extractData(results);
 
-  if (formats.includes('xlsx')) {
-    const flattenedData: Record<string, unknown>[] = [];
-    allTheData.forEach((item) => {
-      if (item !== undefined && typeof item === 'object') {
-        const flattenedItem: Record<string, unknown> = { ...item };
-        Object.keys(flattenedItem).forEach((key) => {
-          if (Array.isArray(flattenedItem[key])) {
-            flattenedItem[key] = (flattenedItem[key] as unknown[]).join('; ');
-          } else if (typeof flattenedItem[key] === 'object' && flattenedItem[key] !== null) {
-            flattenedItem[key] = JSON.stringify(flattenedItem[key]);
-          }
-        });
-        flattenedData.push(flattenedItem);
-      }
-    });
+  // -------------------------------------------------------------------------
+  // XLSX
+  // -------------------------------------------------------------------------
 
+  if (formats.includes('xlsx')) {
+    const flattenedData = flattenForExcel(allTheData);
     const worksheet = XLSX.utils.json_to_sheet(flattenedData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Mistral Data');
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+
     FileSaver.saveAs(
       new Blob([excelBuffer], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
       }),
-      filename + '.xlsx',
+      `${filename}.xlsx`,
     );
   }
+
+  // -------------------------------------------------------------------------
+  // JSON
+  // -------------------------------------------------------------------------
 
   if (formats.includes('json')) {
     FileSaver.saveAs(
-      new Blob([JSON.stringify(allTheData)], { type: 'text/plain;charset=utf-8' }),
-      filename + '.json',
+      new Blob([JSON.stringify(allTheData, null, 2)], {
+        type: 'application/json;charset=utf-8',
+      }),
+      `${filename}.json`,
     );
   }
 
+  // -------------------------------------------------------------------------
+  // CSV
+  // -------------------------------------------------------------------------
+
   if (formats.includes('csv')) {
-    const csv = json2csv((allTheData as object[]).filter(Boolean));
-    FileSaver.saveAs(new Blob([csv], { type: 'text/plain;charset=utf-8' }), filename + '.csv');
+    const csvData = allTheData.filter(
+      (item): item is object => item !== null && typeof item === 'object',
+    );
+
+    const csv = json2csv(csvData);
+
+    FileSaver.saveAs(
+      new Blob([csv], {
+        type: 'text/csv;charset=utf-8',
+      }),
+      `${filename}.csv`,
+    );
   }
 }

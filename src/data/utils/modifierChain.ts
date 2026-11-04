@@ -1,12 +1,14 @@
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
 import { modifierRegistry } from '@/data/models/modifiers/ModifierFactory';
-import { CanvasScope, CollectionScope, isCanvasScope } from '@/data/models/Scope';
+import { CanvasScope, CollectionScope } from '@/data/models/scope/scope';
 import {
   getAnnotationRepository,
   getCollectionRepository,
   getModifierChainRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { Annotation, ElementType } from '../models/Annotation';
+import { Annotation, ElementType } from '../models/annotations/annotation';
+import { isCanvasScope } from '../models/scope/scope.utils';
+import { UnknownModifierTypeError } from './errors';
 
 export type ModifierChainData = {
   modifiers: AnyModifier[];
@@ -16,12 +18,16 @@ export type ModifierChainData = {
 
 const getModifiersAndValues = async (id: string): Promise<ModifierChainData> => {
   const modifierChainRepository = getModifierChainRepository();
-  const modifierDTO = await modifierChainRepository.getById(id);
+  const modifierResult = await modifierChainRepository.getById(id);
+  if (!modifierResult.ok) {
+    throw modifierResult.error;
+  }
+  const modifierDTO = modifierResult.value;
 
   const modifiers = modifierDTO.modifiers.map((dto) => {
     const factory = modifierRegistry[dto.type];
     if (factory === undefined || factory === null) {
-      throw new Error(`No factory found for modifier type: ${dto.type}`);
+      throw new UnknownModifierTypeError({ type: dto.type });
     }
     const modifier = factory.create();
     modifier.id = dto.id; // Assigner l'ID du DTO au modifier créé
@@ -55,7 +61,15 @@ const applyModifiersToScope = async (
   } else {
     //for collection scope, we get the annotations for each canvas, apply the modifier chain and save the updated annotations
     const collectionRepository = getCollectionRepository();
-    const canvases = await collectionRepository.getCanvasesByCollectionId(scope.collectionId);
+    const canvasesResult = await collectionRepository.getCanvasesByCollectionId(scope.collectionId);
+    if (!canvasesResult.ok) {
+      console.error(
+        `Error fetching canvases for collection ${scope.collectionId}:`,
+        canvasesResult.error,
+      );
+      return;
+    }
+    const canvases = canvasesResult.value;
     for (const canvas of canvases) {
       const canvasScope = { collectionId: scope.collectionId, canvasId: canvas.id };
       const scopeAnnotations = await annotationRepository.getByScopeAndTypes(canvasScope, [type]);
@@ -93,12 +107,6 @@ const applyChainToAnnotations = async (
       const parsedValues = modifier.schema.parse(rawValues);
       updatedAnnotations = await modifier.apply(updatedAnnotations, parsedValues);
     }
-
-    // const rawValues = modifierValues[modifier.id];
-    // if (rawValues !== undefined) {
-    //   const parsedValues = modifier.schema.parse(rawValues);
-    //   updatedAnnotations = await modifier.apply(updatedAnnotations, parsedValues);
-    // }
   }
   return updatedAnnotations;
 };

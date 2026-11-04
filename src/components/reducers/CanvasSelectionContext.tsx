@@ -1,13 +1,13 @@
 import { Canvas } from '@iiif/presentation-3';
 import { createContext, Reducer, useContext, useReducer } from 'react';
 
-export const CANVAS_SELECTION_ACTIONS = {
+const CANVAS_SELECTION_ACTIONS = {
   SET_SELECTION: 'SET_SELECTION',
   SET_SELECTION_START: 'SET_SELECTION_START',
   SET_SELECTION_END: 'SET_SELECTION_END',
 } as const;
 
-export type CanvasSelectionAction =
+type CanvasSelectionAction =
   | {
       type: typeof CANVAS_SELECTION_ACTIONS.SET_SELECTION;
       payload: number[]; //list of selected indexes
@@ -32,8 +32,6 @@ const reducer: Reducer<CanvasSelectionState, CanvasSelectionAction> = (
 ) => {
   switch (action.type) {
     case CANVAS_SELECTION_ACTIONS.SET_SELECTION:
-      console.log('CanvasSelectionContext - SET_SELECTION', action.payload);
-
       return {
         ...state,
         indexStart: Math.min(...action.payload),

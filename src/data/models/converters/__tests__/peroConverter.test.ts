@@ -1,6 +1,6 @@
 import annotationsFromPero from '@/__tests__/annotationsFromPero.json';
 import peroResult from '@/__tests__/peroResult.json';
-import { vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { convertPeroTranscriptionsToAnnotations } from '../peroConverter';
 
 vi.mock('uuid', () => {

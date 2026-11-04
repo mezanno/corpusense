@@ -1,0 +1,96 @@
+name: Publish to GitHub Pages
+
+# Aucune permission par défaut : chaque job demande ce qu'il lui faut
+permissions: {}
+
+on:
+  push:
+    branches:
+      - develop
+
+# 2. Gestion de la concurrence : annule les déploiements obsolètes et évite les race conditions
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  # --- JOB 0 : VALIDATION (workflow réutilisable ci.yml) ---
+  # Le déploiement est conditionné : build et deploy ne tournent que si la
+  # validation (types, tests, format, lint ratchet) passe.
+  validate:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
+  # --- JOB 1 : BUILD  ---
+  build:
+    needs: validate # Validé d'abord, buildé ensuite
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: read # Requis pour le déploiement Pages natif
+      contents: read # Droit de lecture uniquement sur le dépôt
+    # Variables de dépôt (Settings → Secrets and variables → Actions → Variables).
+    # Publiques par conception : tout VITE_* est incrusté dans le bundle client.
+    # Elles vivaient dans .env (déindexé par Q5) ; sans elles, jobs distants
+    # Supabase et formulaire EmailJS se cassent silencieusement au runtime.
+    env:
+      VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH }}
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+      VITE_SUPABASE_STORAGE_URL: ${{ vars.VITE_SUPABASE_STORAGE_URL }}
+      VITE_EMAILJS_PUBLIC_KEY: ${{ vars.VITE_EMAILJS_PUBLIC_KEY }}
+      VITE_EMAILJS_SERVICE_ID: ${{ vars.VITE_EMAILJS_SERVICE_ID }}
+      VITE_EMAILJS_TEMPLATE_ID: ${{ vars.VITE_EMAILJS_TEMPLATE_ID }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Setup npm
+        run: npm install --global npm@11.6.4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+
+      - name: Vérifier les variables de dépôt requises
+        run: |
+          missing=0
+          for v in VITE_BASE_PATH VITE_SUPABASE_URL VITE_SUPABASE_ANON_KEY VITE_SUPABASE_STORAGE_URL VITE_EMAILJS_PUBLIC_KEY VITE_EMAILJS_SERVICE_ID VITE_EMAILJS_TEMPLATE_ID; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Variable de dépôt $v non définie — déclarez-la dans Settings → Secrets and variables → Actions → Variables."
+              missing=1
+            fi
+          done
+          exit $missing
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Upload GitHub Pages Artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: dist
+
+  # --- JOB 2 : DEPLOYMENT ---
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-24.04
+    needs: build # Ne s'exécute qu'après la réussite du job build
+    permissions:
+      pages: write # Requis pour le déploiement Pages natif
+      id-token: write # Requis pour la vérification OIDC
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5

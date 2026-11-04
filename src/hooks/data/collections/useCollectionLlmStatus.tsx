@@ -12,13 +12,15 @@ const useCollectionLlmStatus = ({ collectionId }: { collectionId: string }) => {
 
   const getResultData = async () => {
     const workerRepository = getWorkerRepository();
-    const worker = await workerRepository.getByNameAndScope('mistral', { collectionId });
-    if (!worker) return;
+    const workers = await workerRepository.getByNamesAndScope(['openai', 'mistral'], {
+      collectionId,
+    });
+    if (workers.length === 0) return;
 
-    const saga = workerPlugins[worker.name];
+    const saga = workerPlugins[workers[0].name];
 
     const resultRepository = getResultRepository();
-    const results = await resultRepository.getAllByWorkerId(worker.id);
+    const results = await resultRepository.getAllByWorkerId(workers[0].id);
 
     if (saga?.extractData) {
       return await saga.extractData(results);
@@ -26,7 +28,7 @@ const useCollectionLlmStatus = ({ collectionId }: { collectionId: string }) => {
   };
 
   const hasLlmResult = useLiveQuery(
-    workerLiveRepository.hasResult({ collectionId }, 'mistral'),
+    workerLiveRepository.hasResult({ collectionId }, ['openai', 'mistral']),
     [collectionId, workerLiveRepository],
     false,
   );

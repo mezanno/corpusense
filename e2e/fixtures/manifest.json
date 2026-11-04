@@ -1,0 +1,53 @@
+{
+  "@context": "http://iiif.io/api/presentation/2/context.json",
+  "@id": "https://iiif.e2e.test/manifest.json",
+  "@type": "sc:Manifest",
+  "label": "Manifeste de test E2E",
+  "metadata": [
+    { "label": "Auteur", "value": "CorpuSense E2E (Q9)" },
+    { "label": "Source", "value": "Fixture locale, hors réseau" }
+  ],
+  "description": "Manifeste de test E2E",
+  "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "Domaine public — fixture de test",
+  "thumbnail": [
+    {
+      "@id": "https://iiif.e2e.test/image/full/full/0/default.jpg",
+      "format": "image/jpeg"
+    }
+  ],
+  "sequences": [
+    {
+      "@id": "https://iiif.e2e.test/manifest/sequence/normal",
+      "@type": "sc:Sequence",
+      "canvases": [
+        {
+          "@id": "https://iiif.e2e.test/canvas/p1",
+          "@type": "sc:Canvas",
+          "label": "Page 1",
+          "width": 1024,
+          "height": 768,
+          "images": [
+            {
+              "@id": "https://iiif.e2e.test/canvas/p1/annotation/1",
+              "@type": "oa:Annotation",
+              "motivation": "sc:painting",
+              "resource": {
+                "@id": "https://iiif.e2e.test/image/full/full/0/default.jpg",
+                "@type": "dctypes:Image",
+                "format": "image/jpeg",
+                "service": {
+                  "@context": "http://iiif.io/api/image/2/context.json",
+                  "@id": "https://iiif.e2e.test/image",
+                  "protocol": "http://iiif.io/api/image",
+                  "profile": "http://iiif.io/api/image/2/profiles/level2.json"
+                }
+              },
+              "on": "https://iiif.e2e.test/canvas/p1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

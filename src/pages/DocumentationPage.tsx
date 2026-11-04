@@ -1,4 +1,4 @@
-import DocsSidebar from '@/components/DocSideBar';
+import DocsSidebar from '@/components/features/documentation/DocSideBar';
 import GithubSlugger from 'github-slugger';
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';

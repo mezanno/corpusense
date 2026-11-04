@@ -1,0 +1,87 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/components/ui/form';
+import { ElementType } from '@/data/models/annotations/annotation';
+import { Scope } from '@/data/models/scope/scope';
+import { useAnnotationActions } from '@/hooks/data/annotations/useAnnotationActions';
+import { FormProps } from '@/hooks/ui/useDialog';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+
+type RemoveAnnotationsFormProps = FormProps & {
+  scope: Scope;
+};
+
+const existingTypes = Object.values(ElementType).map((type) => ({
+  type,
+  selected: true,
+}));
+
+const checkbox = existingTypes.reduce(
+  (acc, ty) => {
+    acc[ty.type] = z.boolean().optional();
+    return acc;
+  },
+  {} as Record<string, z.ZodOptional<z.ZodBoolean>>,
+);
+
+const schema = z.object(checkbox);
+
+const RemoveAnnotationsForm = ({ scope, formRef }: RemoveAnnotationsFormProps) => {
+  const { t } = useTranslation();
+  const { removeAnnotationsByScope } = useAnnotationActions();
+
+  const form = useForm<Record<string, boolean | undefined>>({
+    resolver: zodResolver(schema),
+    defaultValues: existingTypes.reduce((acc, type) => ({ ...acc, [type.type]: true }), {}),
+    mode: 'onChange',
+  });
+
+  const onSubmit = async (values: z.infer<typeof schema>) => {
+    if (values !== undefined) {
+      const types = Object.entries(values)
+        .filter(([_, selected]) => selected ?? false)
+        .map(([type, _]) => type as ElementType);
+
+      await removeAnnotationsByScope(scope, types);
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <FormDescription className='mb-2'>{t('description_remove_annotations')}</FormDescription>
+      <form
+        className='mb-4 flex flex-wrap gap-4'
+        ref={formRef}
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
+        {existingTypes.map((type) => (
+          <FormField
+            control={form.control}
+            name={type.type}
+            key={type.type}
+            render={({ field }) => (
+              <FormItem className='flex gap-1'>
+                <FormControl>
+                  <Checkbox id={type.type} checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormLabel>{t(`form_option_${type.type}`)}</FormLabel>
+              </FormItem>
+            )}
+          />
+        ))}
+      </form>
+    </Form>
+  );
+};
+
+export default RemoveAnnotationsForm;

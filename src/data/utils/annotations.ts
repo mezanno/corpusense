@@ -1,18 +1,12 @@
-import i18n from '@/i18n';
 import { ImageAnnotation, ShapeType } from '@annotorious/annotorious';
-import { AnnotationPage, Canvas } from '@iiif/presentation-3';
+import { Canvas } from '@iiif/presentation-3';
 import { Rect } from 'openseadragon';
-import {
-  Annotation,
-  createAnnotation,
-  createBodies,
-  ElementType,
-  getAnnotationType,
-  getAnnotationValue,
-} from '../models/Annotation';
-import { convertAnnotationPageToW3CAnnotations } from '../models/converters/iiif';
-import { getAnnotationRepository } from '../repositories/indexeddb/dbFactory';
+import { v4 as uuid } from 'uuid';
+import { Annotation, ElementType } from '../models/annotations/annotation';
+import { createAnnotation, createBodies } from '../models/annotations/annotation.factory';
+import { getAnnotationType, getAnnotationValue } from '../models/annotations/annotation.utils';
 import { getImage } from './canvas';
+import { MissingImageDimensionsError, NothingToMergeError } from './errors';
 
 /**
  * This function checks if the annotation is contained in the annotationContainer
@@ -58,7 +52,7 @@ const containsAtLeast2Corners = (
 const generateRegionAnnotationForCanvas = (canvas: Canvas, collectionId: string) => {
   const image = getImage(canvas);
   if (image.width === undefined || image.height === undefined) {
-    throw new Error(i18n.t('error_image_dimensions'));
+    throw new MissingImageDimensionsError({ canvasId: canvas.id });
   }
   return createAnnotation({
     canvasId: canvas.id,
@@ -93,20 +87,6 @@ function generateFirstAnnotation(
   return annotations.filter((elt) => elt !== null);
 }
 
-//TODO! ? ça fait redit avec la fonction dans AnnotationRepository
-async function getAnnotationsByType(type: ElementType, canvasId: string, collectionId: string) {
-  return await getAnnotationRepository().getByScopeAndTypes({ canvasId, collectionId }, [type]);
-}
-
-function importAnnotationFromJson(aPage: AnnotationPage, collectionId: string) {
-  console.log(`importAnnotationFromJson in - ${collectionId}: `, aPage);
-  const annotationsW3C = convertAnnotationPageToW3CAnnotations(aPage, collectionId);
-  console.log(`importAnnotationFromJson out - ${collectionId}: `, annotationsW3C);
-  // return await db.annotations.bulkPut(annotationsW3C);
-  const annotationRepository = getAnnotationRepository();
-  return annotationRepository.addAll(annotationsW3C);
-}
-
 const getRectFromBounds = (annotation: Annotation | ImageAnnotation) => {
   const bounds = annotation.target.selector.geometry.bounds;
   return new Rect(bounds.minX, bounds.minY, bounds.maxX - bounds.minX, bounds.maxY - bounds.minY);
@@ -117,9 +97,7 @@ export {
   containsAtLeast2Corners,
   generateFirstAnnotation,
   generateRegionAnnotationForCanvas,
-  getAnnotationsByType,
   getRectFromBounds,
-  importAnnotationFromJson,
 };
 
 export function getDimensions(annotation: ImageAnnotation) {
@@ -139,7 +117,7 @@ export function getSurface(annotation: ImageAnnotation) {
   return dimensions.width * dimensions.height;
 }
 
-export function getPosition(annotation: ImageAnnotation) {
+function getPosition(annotation: ImageAnnotation) {
   const selector = annotation.target.selector;
   if (selector.type === ShapeType.RECTANGLE) {
     const geometry = selector.geometry;
@@ -153,7 +131,7 @@ export function getPosition(annotation: ImageAnnotation) {
 export function getTop(annotation: ImageAnnotation) {
   return getPosition(annotation).y;
 }
-export function getBottom(annotation: ImageAnnotation) {
+function getBottom(annotation: ImageAnnotation) {
   const pos = getPosition(annotation);
   const dim = getDimensions(annotation);
   return pos.y + dim.height;
@@ -161,7 +139,7 @@ export function getBottom(annotation: ImageAnnotation) {
 export function getLeft(annotation: ImageAnnotation) {
   return getPosition(annotation).x;
 }
-export function getRight(annotation: ImageAnnotation) {
+function getRight(annotation: ImageAnnotation) {
   const pos = getPosition(annotation);
   const dim = getDimensions(annotation);
   return pos.x + dim.width;
@@ -298,4 +276,20 @@ export const scaleAnnotation = (annotation: Annotation, annotationScale: number)
       },
     },
   };
+};
+
+/*
+ This function takes an array of annotations and merges them into one annotation that contains all the text of the annotations and has a bounding box that contains all the annotations.
+ The bounding box is calculated by making boolean operations on the rectangles of the annotations. The text is merged by concatenating the text of the annotations with a space in between.
+ The function assumes that the annotations are of type TEXT_LINE and that they are on the same canvas and collection.
+*/
+export const mergeMultipleAnnotations = (annotations: Annotation[]): Annotation => {
+  if (annotations.length === 0) {
+    throw new NothingToMergeError();
+  }
+  //TODO make a polygon that contains all the rectangles instead of a rectangle that contains all the rectangles
+  const mergedAnnotation = annotations.reduce((acc, annotation) =>
+    mergeTwoAnnotations(acc, annotation),
+  );
+  return { ...mergedAnnotation, id: uuid() };
 };

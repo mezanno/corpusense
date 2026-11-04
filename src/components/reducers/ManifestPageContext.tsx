@@ -1,40 +1,38 @@
-import useConvertedFileIO from '@/hooks/data/convertedFiles/useConvertedFileIO';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { fecthManifestRequest } from '@/state/reducers/manifests';
+import useSource from '@/hooks/data/sources/useSource';
 import { Canvas, Manifest } from '@iiif/presentation-3';
 import { findIndex } from 'lodash';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 type ManifestPageContextValue = {
   manifest: Manifest | undefined;
+  sourceWithContent: ReturnType<typeof useSource>['sourceWithContent'] | undefined;
   isLoading: boolean;
   hasPrevious: boolean;
   hasNext: boolean;
   handleNext: () => void;
   handlePrevious: () => void;
-  setSearchParams: (searchParams: URLSearchParams) => void;
   canvasToDisplay: Canvas | null;
   setCanvasToDisplay: (canvas: Canvas | null) => void;
 };
 
-export const ManifestPageContext = createContext<ManifestPageContextValue | undefined>(undefined);
+const ManifestPageContext = createContext<ManifestPageContextValue | undefined>(undefined);
 
 type Props = {
   children: React.ReactNode;
 };
 
 export const ManifestPageProvider = ({ children }: Props) => {
-  const appDispatch = useAppDispatch();
-  const { isLoading, loadedData } = useAppSelector((state) => state.manifests);
-  const { loadManifest } = useConvertedFileIO();
+  const [searchParams] = useSearchParams();
   const [canvasToDisplay, setCanvasToDisplay] = useState<Canvas | null>(null);
 
-  const manifest = loadedData?.content;
+  const id = searchParams.get('manifestId');
+  const { isLoading, sourceWithContent, manifest } = useSource(id ?? '');
 
   const canvasIds = useMemo(() => manifest?.items.map((canvas) => canvas.id) ?? [], [manifest]);
 
   const currentCanvasIndex =
-    canvasToDisplay !== null ? findIndex(canvasIds, (id) => id === canvasToDisplay.id) : 0;
+    canvasToDisplay !== null ? findIndex(canvasIds, (cId) => cId === canvasToDisplay.id) : 0;
 
   const hasPrevious = currentCanvasIndex > 0;
   const hasNext = currentCanvasIndex < canvasIds.length - 1;
@@ -53,39 +51,20 @@ export const ManifestPageProvider = ({ children }: Props) => {
     }
   };
 
-  const setSearchParams = (searchParams: URLSearchParams) => {
-    const id = searchParams.get('manifestId');
-    if (id != null) {
-      appDispatch(fecthManifestRequest(id));
-    } else {
-      const indexeddbId = searchParams.get('indexeddbId');
-
-      if (indexeddbId != null) {
-        try {
-          void loadManifest(indexeddbId);
-        } catch (error) {
-          console.error('Error loading manifest from IndexedDB:', error);
-        }
-      }
-    }
-    setCanvasToDisplay(null);
-  };
-
   useEffect(() => {
     if (isLoading) {
       setCanvasToDisplay(null);
     }
-  }, [isLoading]);
+  }, [isLoading, setCanvasToDisplay]);
 
   const value: ManifestPageContextValue = {
     isLoading,
-
     manifest,
+    sourceWithContent,
     hasPrevious,
     hasNext,
     handleNext,
     handlePrevious,
-    setSearchParams,
     canvasToDisplay,
     setCanvasToDisplay,
   };

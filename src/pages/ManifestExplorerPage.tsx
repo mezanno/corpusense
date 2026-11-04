@@ -1,28 +1,24 @@
-import CanvasViewer from '@/components/canvasViewer/CanvasViewer';
-import Loading from '@/components/Loading';
-import ManifestNavigation from '@/components/ManifestNavigation';
-import NoManifestToShow from '@/components/NoManifestToShow';
-import NothingToShow from '@/components/NothingToShow';
+import Loading from '@/components/common/Loading';
+import NothingToShow from '@/components/common/NothingToShow';
+import CanvasViewer from '@/components/features/canvasViewer/CanvasViewer';
+import ManifestCanvasGallery from '@/components/features/manifests/ManifestCanvasGallery';
+import ManifestExplorer from '@/components/features/manifests/ManifestExplorer';
+import ManifestNavigation from '@/components/features/manifests/ManifestNavigation';
+import NoManifestToShow from '@/components/features/manifests/NoManifestToShow';
 import { CanvasSelectionProvider } from '@/components/reducers/CanvasSelectionContext';
 import { useManifestPageContext } from '@/components/reducers/ManifestPageContext';
-import { Toggle } from '@/components/ui/toggle';
 import useKeyboard from '@/hooks/ui/useKeyboard';
-import { ArrowLeftToLine, ArrowRightToLine } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
-import CanvasGallery from '../components/CanvasGallery';
-import ManifestDetails from '../components/ManifestDetails';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../components/ui/resizable';
 
 const ManifestExplorerPage = () => {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
-  const [metadataVisible, setMetadataVisible] = useState(true);
+  const [metadataVisible, _setMetadataVisible] = useState(true);
   const {
     isLoading,
     manifest,
-    setSearchParams,
+    sourceWithContent,
     canvasToDisplay,
     setCanvasToDisplay,
     handleNext,
@@ -38,15 +34,11 @@ const ManifestExplorerPage = () => {
   };
   useKeyboard({ onKeyPressed });
 
-  useEffect(() => {
-    setSearchParams(searchParams);
-  }, [searchParams]);
-
   if (isLoading) {
     return <Loading />;
   }
 
-  if (manifest === undefined) {
+  if (manifest === undefined || sourceWithContent == null) {
     return (
       <div className='flex h-full w-full flex-col items-center justify-center space-y-2 p-2'>
         <NoManifestToShow />
@@ -56,7 +48,7 @@ const ManifestExplorerPage = () => {
 
   return (
     <div className='flex h-full w-full'>
-      <div className='h-full'>
+      {/* <div className='h-full'>
         <Toggle
           className='soft-button mt-4'
           onClick={() => setMetadataVisible(!metadataVisible)}
@@ -65,7 +57,7 @@ const ManifestExplorerPage = () => {
         >
           {metadataVisible ? <ArrowLeftToLine /> : <ArrowRightToLine />}
         </Toggle>
-      </div>
+      </div> */}
       <ResizablePanelGroup direction='horizontal' className='flex-1 space-x-2'>
         {metadataVisible && (
           <>
@@ -75,7 +67,7 @@ const ManifestExplorerPage = () => {
               className='panel grow justify-center'
               minSize={25}
             >
-              <ManifestDetails manifest={manifest} />
+              <ManifestExplorer manifest={manifest} source={sourceWithContent} />
             </ResizablePanel>
 
             <ResizableHandle withHandle className='w-1 cursor-col-resize bg-dark-slate-gray' />
@@ -86,9 +78,10 @@ const ManifestExplorerPage = () => {
           <>
             <ResizablePanel order={2} id='gallery-panel' className='panel' minSize={25}>
               <CanvasSelectionProvider canvasesLoaded={manifest.items}>
-                <CanvasGallery
+                <ManifestCanvasGallery
                   setCanvasToDisplay={setCanvasToDisplay}
                   canvasToDisplay={canvasToDisplay}
+                  sourceWithContent={sourceWithContent}
                 />
               </CanvasSelectionProvider>
             </ResizablePanel>
@@ -99,13 +92,13 @@ const ManifestExplorerPage = () => {
         <ResizablePanel id='canvas-panel' order={3} minSize={30} className='panel'>
           <section
             className='flex h-full w-full flex-col items-center justify-center'
-            aria-label='canvas viewer'
+            aria-label={t('aria_label_canvas_viewer')}
           >
             {canvasToDisplay === null ? (
               <NothingToShow />
             ) : (
               <>
-                <CanvasViewer canvas={canvasToDisplay} />
+                <CanvasViewer canvas={canvasToDisplay} sourceId={sourceWithContent.id} />
                 <ManifestNavigation />
               </>
             )}

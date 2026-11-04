@@ -1,13 +1,14 @@
-import { Annotation, changeType, duplicateAnnotation, ElementType } from '@/data/models/Annotation';
+import { Annotation, ElementType } from '@/data/models/annotations/annotation';
+import { changeType, duplicateAnnotation } from '@/data/models/annotations/annotation.factory';
 import { AnyModifier } from '@/data/models/modifiers/Modifier';
-import { CanvasScope } from '@/data/models/Scope';
+import { CanvasScope } from '@/data/models/scope/scope';
 import {
   getAnnotationLiveRepository,
   getAnnotationRepository,
   getAnnotationTempRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useEffectEvent, useMemo } from 'react';
+import { useCallback, useEffect, useEffectEvent, useMemo } from 'react';
 
 const duplicateAnnotations = (fromAnnotations: Annotation[]) => {
   const duplicatedAnnotations = [];
@@ -29,24 +30,13 @@ const useAnnotationModifierActions = ({
 }) => {
   const annotationLiveRepository = useMemo(() => getAnnotationLiveRepository(), []);
   const annotationTempRepository = useMemo(() => getAnnotationTempRepository(), []);
-
-  const scopeAnnotations = useLiveQuery(
-    annotationLiveRepository.getByScopeAndType(scope, applyModifierChainTo),
-    [scope, applyModifierChainTo, annotationLiveRepository],
-    [],
+  const { canvasId, collectionId } = scope;
+  const getScopeAnnotations = useCallback(
+    () => annotationLiveRepository.getByScopeAndType(scope, applyModifierChainTo)(),
+    [annotationLiveRepository, canvasId, collectionId, applyModifierChainTo],
   );
 
-  // const biggestSurface = useMemo(() => {
-  //   let maxSurface = 0;
-  //   for (const annotation of scopeAnnotations) {
-  //     const dimensions = getDimensions(annotation);
-  //     const surface = dimensions.width * dimensions.height;
-  //     if (surface > maxSurface) {
-  //       maxSurface = surface;
-  //     }
-  //   }
-  //   return maxSurface;
-  // }, [scopeAnnotations]);
+  const scopeAnnotations = useLiveQuery(getScopeAnnotations, [getScopeAnnotations], []);
 
   useEffect(() => {
     void (async () => {

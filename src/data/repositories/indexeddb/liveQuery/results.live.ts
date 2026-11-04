@@ -1,4 +1,4 @@
-import { Result } from '@/data/models/Result';
+import { Result } from '@/data/models/result/result';
 import { db } from '../db';
 import { ResultLiveRepository } from './types.live';
 

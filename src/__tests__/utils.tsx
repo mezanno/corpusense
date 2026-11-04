@@ -1,6 +1,7 @@
 import { rootReducer } from '@/state';
 import { RootState } from '@/state/store';
 import { configureStore } from '@reduxjs/toolkit';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
@@ -8,9 +9,17 @@ import createSagaMiddleware from 'redux-saga';
 
 import { AlertDialogProvider } from '@/components/reducers/AlertDialogContext';
 import { CollectionProvider } from '@/components/reducers/CollectionContext';
-import { WorkerProvider } from '@/components/reducers/WorkerContext';
 import { ConnectedUserProvider } from '@/components/reducers/ConnectedUserContext';
+import { WorkerProvider } from '@/components/reducers/WorkerContext';
 import { ExperimentalProvider } from '@/hooks/useExperimental';
+
+const testQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
 
 // This function is used to render a component with the redux store and provider
 export function renderWithProviders(
@@ -22,19 +31,21 @@ export function renderWithProviders(
   }: { preloadedState?: Partial<RootState>; store?: ReturnType<typeof createMockStore> } = {},
 ) {
   return render(
-    <Provider store={store}>
-      <ConnectedUserProvider>
-        <ExperimentalProvider>
-          <AlertDialogProvider>
-            <CollectionProvider>
-              <WorkerProvider>
-                <MemoryRouter>{ui}</MemoryRouter>{' '}
-              </WorkerProvider>
-            </CollectionProvider>
-          </AlertDialogProvider>
-        </ExperimentalProvider>
-      </ConnectedUserProvider>
-    </Provider>,
+    <QueryClientProvider client={testQueryClient}>
+      <Provider store={store}>
+        <ConnectedUserProvider>
+          <ExperimentalProvider>
+            <AlertDialogProvider>
+              <CollectionProvider>
+                <WorkerProvider>
+                  <MemoryRouter>{ui}</MemoryRouter>{' '}
+                </WorkerProvider>
+              </CollectionProvider>
+            </AlertDialogProvider>
+          </ExperimentalProvider>
+        </ConnectedUserProvider>
+      </Provider>
+    </QueryClientProvider>,
     renderOptions,
   );
 }

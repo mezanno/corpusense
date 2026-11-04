@@ -2,7 +2,7 @@ import { getDimensions, getLeft, getTop } from '@/data/utils/annotations';
 import i18n from '@/i18n';
 import { v4 as uuid } from 'uuid';
 import z from 'zod';
-import { Annotation } from '../Annotation';
+import { Annotation } from '../annotations/annotation';
 import { Modifier } from './Modifier';
 
 const reorderSchema = z.object({
@@ -35,9 +35,7 @@ export class ReOrderModifier extends Modifier<typeof reorderSchema> {
 
   //Reading Order Resolution --> Column-based reading order //TODO: voir Docstrum algorithm
   //TODO: ajouter d'autres ordres possibles (ex: ZIGZAG, etc.)
-  apply = (data: Annotation[], values: z.infer<typeof reorderSchema>) => {
-    console.log('Applying ReOrderModifier with values: ', values, ' on data: ', data);
-
+  apply = (data: Annotation[], _values: z.infer<typeof reorderSchema>) => {
     if (data.length > 1) {
       const annotations = [...data];
 

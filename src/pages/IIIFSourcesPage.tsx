@@ -1,4 +1,4 @@
-import IIIFSourcesDashboard from '@/components/storage/IIIFSourcesDashboard';
+import IIIFSourcesDashboard from '@/components/features/storage/IIIFSourcesDashboard';
 
 const IIIFSourcesPage = () => {
   return (

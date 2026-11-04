@@ -1,21 +1,37 @@
-import { getAnnotationText, isAnnotationArray } from '@/data/models/Annotation';
-import { Result, ResultCreateDTO } from '@/data/models/Result';
-import { isAnnotationScope, isCanvasScope, isCollectionScope, toString } from '@/data/models/Scope';
+import { getAnnotationText, isAnnotationArray } from '@/data/models/annotations/annotation.utils';
+import { ResultCreateDTO } from '@/data/models/result/result.dto';
 import {
-  isWorker,
-  Task,
-  Worker,
-  WorkerCreateDTO,
-  WorkerResponse,
-  WorkerStatus,
-} from '@/data/models/Worker';
+  isAnnotationScope,
+  isCanvasScope,
+  isCollectionScope,
+  toString,
+} from '@/data/models/scope/scope.utils';
+import { Task, TaskStatus, Worker, WorkerEvent, WorkerResponse } from '@/data/models/worker/worker';
+import { WorkerCreateDTO } from '@/data/models/worker/worker.dto';
+import { isWorker } from '@/data/models/worker/worker.utils';
+import type { TaskEvent, WorkerLifecycleEvent } from '@/data/models/worker/workerStatusLaw';
+import {
+  canRecoverWorker,
+  hasWorkerErrors,
+  isTaskCompleted,
+  isTaskJobTracked,
+  isTaskPosting,
+  isTaskWaiting,
+  isWorkerCompleted,
+  isWorkerInProgress,
+  StatusChangeError,
+  taskStatusOfJobStatus,
+} from '@/data/models/worker/workerStatusLaw';
+import { EntityNotFoundError } from '@/data/repositories/EntityNotFoundError';
 import {
   getCollectionRepository,
   getResultRepository,
   getWorkerRepository,
 } from '@/data/repositories/indexeddb/dbFactory';
-import { updateTaskStatus } from '@/data/utils/worker';
 import i18n from '@/i18n';
+import { BaseError } from '@/utils/BaseError';
+import { JobRow, supabase } from '@/utils/config';
+import { FunctionResult } from '@/utils/functionResult';
 import { getErrorMessage } from '@/utils/utils';
 import { Canvas } from '@iiif/presentation-3';
 import { PayloadAction } from '@reduxjs/toolkit';
@@ -24,8 +40,10 @@ import {
   call,
   cancel,
   cancelled,
+  delay,
   Effect,
   fork,
+  join,
   put,
   race,
   take,
@@ -42,7 +60,90 @@ import {
 } from '../reducers/workers';
 import { loadWorkerPlugins, WorkerPlugin } from './plugins/loader';
 
+const POST_TIMEOUT_MS = 60000;
+
 export const workerPlugins: Record<string, WorkerPlugin> = loadWorkerPlugins();
+
+async function findJobForTask(workerId: string, taskId: number): Promise<JobRow | undefined> {
+  const { data, error } = await supabase
+    .from('cs_jobs')
+    .select('*')
+    .eq('worker_id', workerId)
+    .eq('task_id', taskId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ?? undefined;
+}
+
+async function resumeJob(jobId: number): Promise<JobRow> {
+  const { data, error } = await supabase
+    .from('cs_jobs')
+    .update({ status: 'pending' })
+    .eq('id', jobId)
+    .select('*')
+    .maybeSingle();
+  if (error) throw error;
+  if (data === null) {
+    throw new BaseError(`Unable to resume Supabase job ${jobId}`, {
+      context: { jobId },
+    });
+  }
+  return data;
+}
+
+async function pauseWorkerJobs(workerId: string): Promise<JobRow[]> {
+  const { data, error } = await supabase
+    .from('cs_jobs')
+    .select('*')
+    .eq('worker_id', workerId)
+    .in('status', ['pending', 'processing']);
+  if (error) throw error;
+
+  const pausedJobs: JobRow[] = [];
+  for (const job of data ?? []) {
+    const { data: pausedJob, error: pauseError } = await supabase
+      .from('cs_jobs')
+      .update({ status: 'paused' })
+      .eq('id', job.id)
+      .select('*')
+      .maybeSingle();
+    if (pauseError) throw pauseError;
+    if (pausedJob !== null) pausedJobs.push(pausedJob);
+  }
+  return pausedJobs;
+}
+
+function* applyTaskEvent(
+  workerRepository: ReturnType<typeof getWorkerRepository>,
+  workerId: string,
+  taskId: number,
+  event: TaskEvent,
+  statusMessage?: string,
+): Generator<Effect, Task, unknown> {
+  const result = (yield call(
+    [workerRepository, workerRepository.updateTaskStatus],
+    workerId,
+    taskId,
+    event,
+    statusMessage,
+  )) as FunctionResult<Task, EntityNotFoundError | StatusChangeError>;
+  if (!result.ok) throw result.error;
+  return result.value;
+}
+
+function* applyWorkerEvent(
+  workerRepository: ReturnType<typeof getWorkerRepository>,
+  workerId: string,
+  event: WorkerLifecycleEvent,
+): Generator<Effect, Worker, unknown> {
+  const result = (yield call(
+    [workerRepository, workerRepository.updateWorkerStatus],
+    workerId,
+    event,
+  )) as FunctionResult<Worker, EntityNotFoundError | StatusChangeError>;
+  if (!result.ok) throw result.error;
+  return result.value;
+}
 
 function* handleStartWorkerProcess(action: PayloadAction<StartWorkerProcessPayload>) {
   const { workerName, params, scope } = action.payload;
@@ -94,6 +195,7 @@ function* forkStartWorker(worker: Worker | WorkerCreateDTO): Generator<Effect, v
     stopped: take(
       (action: unknown) => isStopWorkerAction(action) && action.payload.id === worker.id,
     ),
+    completed: join(task),
   })) as WorkerForkRaceResult;
   console.log(`Worker ${worker.name} finished with result:`, result);
   if ('stopped' in result) {
@@ -107,235 +209,289 @@ function* forkStartWorker(worker: Worker | WorkerCreateDTO): Generator<Effect, v
  *
  * @param worker Worker or WorkerCreateDTOr'
  */
-function* startWorker(
-  worker: Worker | WorkerCreateDTO,
-): Generator<Effect, void, WorkerResponse | Worker | undefined | Canvas[] | Result> {
+function* startWorker(workerInput: Worker | WorkerCreateDTO): Generator<Effect, void, unknown> {
   const workerRepository = getWorkerRepository();
   let currentWorker: Worker | undefined = undefined;
   let task: Task | undefined = undefined;
-  let idTask = 0;
   try {
-    //try...finally used to finish the worker process if it is stopped (cancelled)
+    const plugin = workerPlugins[workerInput.name];
+    if (plugin === undefined) {
+      console.error(`No plugin saga found for ${workerInput.name}`);
+      return;
+    }
 
-    const saga = workerPlugins[worker.name];
-
-    if (isWorker(worker)) {
-      //if worker is already a Worker instance, it means it is being recovered
-      currentWorker = worker;
-      //we update the status according to the current status
-      switch (currentWorker.status) {
-        case WorkerStatus.UNFINISHED:
-          currentWorker = { ...currentWorker, status: WorkerStatus.INPROGRESS };
-          break;
-        case WorkerStatus.UNFINISHED_WITH_ERRORS:
-        case WorkerStatus.COMPLETED_WITH_ERRORS:
-          currentWorker = { ...currentWorker, status: WorkerStatus.INPROGRESS_WITH_ERRORS };
-          break;
+    const tasksWithExistingJobs = new Set<number>();
+    if (isWorker(workerInput)) {
+      const stored = (yield call(
+        [workerRepository, workerRepository.getById],
+        workerInput.id,
+      )) as FunctionResult<Worker, EntityNotFoundError>;
+      if (!stored.ok) {
+        console.error('Unable to load worker for relaunch:', stored.error);
+        return;
       }
-      yield call([workerRepository, workerRepository.patch], currentWorker.id, {
-        status: currentWorker.status,
+
+      currentWorker = stored.value;
+      if (!canRecoverWorker(currentWorker.status)) {
+        console.warn(`Worker ${currentWorker.id} is not in a recoverable status`);
+        return;
+      }
+      currentWorker = yield* applyWorkerEvent(workerRepository, currentWorker.id, {
+        type: WorkerEvent.REQUEUE,
       });
-    } else {
-      //else, if it's a WorkerCreateDTO, we need to create a new worker
-      //but we delete previous worker with same name and same scope if it exists
-      const existingWorker = (yield call(
-        [workerRepository, workerRepository.getByNameAndScope],
-        worker.name,
-        worker.scope,
-      )) as Worker | undefined;
-      if (existingWorker !== undefined) {
-        yield call([workerRepository, workerRepository.deleteById], existingWorker.id);
+
+      for (const queuedTask of currentWorker.queue) {
+        if (isTaskCompleted(queuedTask.status)) continue;
+
+        if (plugin.executionStrategy === 'job') {
+          let job = (yield call(findJobForTask, currentWorker.id, queuedTask.id)) as
+            | JobRow
+            | undefined;
+          if (job !== undefined) {
+            if (job.status === 'paused') {
+              job = (yield call(resumeJob, job.id)) as JobRow;
+            }
+            tasksWithExistingJobs.add(queuedTask.id);
+            if (job.status !== 'completed' && job.status !== 'failed') {
+              const mappedStatus = taskStatusOfJobStatus(job.status);
+              if (!mappedStatus.ok) throw mappedStatus.error;
+              yield* applyTaskEvent(workerRepository, currentWorker.id, queuedTask.id, {
+                type: WorkerEvent.JOB_DELIVERED,
+                jobStatus: job.status,
+              });
+            }
+            continue;
+          }
+        }
+
+        if (!isTaskWaiting(queuedTask.status)) {
+          yield* applyTaskEvent(workerRepository, currentWorker.id, queuedTask.id, {
+            type: WorkerEvent.REQUEUE,
+          });
+        }
       }
-      //then, create a new worker
-      currentWorker = (yield call([workerRepository, workerRepository.add], worker)) as Worker;
-
-      const collectionRepository = getCollectionRepository();
-
-      //initialize the worker queue if the scope is collection
-      currentWorker.queue = [];
-      if (isAnnotationScope(worker.scope) || isCanvasScope(worker.scope)) {
-        //add the canvas to the worker queue
-        currentWorker.queue.push({
-          id: 0,
-          scope: worker.scope,
-          status: WorkerStatus.WAITING,
-        });
-      } else if (isCollectionScope(worker.scope)) {
-        const collectionId = worker.scope.collectionId;
-        const canvases = (yield call(
+    } else {
+      let queue: Task[] = [];
+      if (isAnnotationScope(workerInput.scope) || isCanvasScope(workerInput.scope)) {
+        queue = [{ id: 0, scope: workerInput.scope, status: TaskStatus.WAITING }];
+      } else if (isCollectionScope(workerInput.scope)) {
+        const collectionId = workerInput.scope.collectionId;
+        const collectionRepository = getCollectionRepository();
+        const canvasesResult = (yield call(
           [collectionRepository, collectionRepository.getCanvasesByCollectionId],
           collectionId,
-        )) as Canvas[];
-        //if the collection has no canvases, we set the worker status to ERROR and stop the saga
-        if (canvases === undefined || canvases.length === 0) {
-          currentWorker.status = WorkerStatus.ERROR;
-          yield call([workerRepository, workerRepository.patch], currentWorker.id, {
-            status: WorkerStatus.ERROR,
-          });
+        )) as FunctionResult<Canvas[], EntityNotFoundError>;
+        if (!canvasesResult.ok || canvasesResult.value.length === 0) {
           yield put(pushError(i18n.t('info_empty_collection')));
           return;
         }
-        //else, we add the canvases to the worker queue
-        currentWorker.queue = canvases.map((canvas, index) => ({
+        queue = canvasesResult.value.map((canvas, index) => ({
           id: index,
-          scope: { collectionId: collectionId, canvasId: canvas.id },
-          status: WorkerStatus.WAITING,
+          scope: { collectionId, canvasId: canvas.id },
+          status: TaskStatus.WAITING,
           previousTask:
             index > 0
               ? {
-                  workerId: currentWorker!.id,
-                  taskId: index - 1, //the previous task is the previous canvas in the queue
+                  workerId: workerInput.id,
+                  taskId: index - 1,
                 }
               : undefined,
         }));
-
-        yield call([workerRepository, workerRepository.patch], currentWorker.id, {
-          queue: currentWorker.queue,
-        });
       }
+
+      currentWorker = (yield call(
+        [workerRepository, workerRepository.add],
+        workerInput,
+        queue,
+      )) as Worker;
     }
 
-    //start the saga for each task in the queue
     const resultRepository = getResultRepository();
-    let hasError = false;
+    let averageTaskDuration = 0;
+    let totalTasksDone = 0;
 
-    while (idTask < currentWorker.queue.length) {
-      task = currentWorker.queue[idTask];
-      //if the task is already completed, we skip it
-      if (task.status === WorkerStatus.COMPLETED) {
-        idTask++;
-        continue;
-      }
-      //update the status of the task to INPROGRESS
-      task = { ...task, status: WorkerStatus.INPROGRESS };
-      currentWorker = {
-        ...currentWorker,
-        queue: updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.INPROGRESS),
-      };
+    for (let taskIndex = 0; taskIndex < currentWorker.queue.length; taskIndex++) {
+      const freshWorker = (yield call(
+        [workerRepository, workerRepository.getById],
+        currentWorker.id,
+      )) as FunctionResult<Worker, EntityNotFoundError>;
+      if (!freshWorker.ok) throw freshWorker.error;
+      currentWorker = freshWorker.value;
 
-      yield call([workerRepository, workerRepository.patch], currentWorker.id, {
-        queue: currentWorker.queue,
+      task = currentWorker.queue[taskIndex];
+      if (task === undefined || isTaskCompleted(task.status)) continue;
+      if (tasksWithExistingJobs.has(task.id)) continue;
+      const taskStartTime = Date.now();
+
+      const initialEvent =
+        plugin.executionStrategy === 'job' ? WorkerEvent.POST : WorkerEvent.START;
+      task = yield* applyTaskEvent(workerRepository, currentWorker.id, task.id, {
+        type: initialEvent,
       });
 
-      //start the saga for the task
+      let taskResult: WorkerResponse;
       try {
-        const taskResult = (yield call(saga.run, task, currentWorker)) as WorkerResponse;
-        switch (taskResult.status) {
-          case WorkerStatus.COMPLETED:
-            {
-              console.log(`Task for scope ${toString(task.scope)} completed successfully`);
-              //save the result in the database
-              let value: unknown = undefined;
-              if (taskResult.content !== undefined) {
-                //if the content is an array of annotations, we concatenate the text values
-                if (isAnnotationArray(taskResult.content)) {
-                  value = taskResult.content.map((a) => getAnnotationText(a)).join('\n');
-                } else if (typeof taskResult.content === 'string') {
-                  //else, if it's a string, we save it directly
-                  value = taskResult.content;
-                }
-              }
-              const result: ResultCreateDTO = {
-                scope: task.scope,
-                workerName: currentWorker.name,
-                workerId: currentWorker.id,
-                value,
-                taskId: task.id,
-                params: worker.params,
-              };
-
-              yield call([resultRepository, resultRepository.add], result);
-              currentWorker = {
-                ...currentWorker,
-                queue: updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.COMPLETED, ''), //on ajoute un message vide pour supprimer un potentiel précédent message d'erreur
-              };
-            }
-            break;
-          case WorkerStatus.POSTED:
-            currentWorker = {
-              ...currentWorker,
-              queue: updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.POSTED, ''),
-            };
-            break;
-          case WorkerStatus.ERROR:
-            console.error(
-              `Task for scope ${toString(task.scope)} encountered an error: ${taskResult.statusMessage}`,
+        if (plugin.executionStrategy === 'job') {
+          const outcome = (yield race({
+            response: call(plugin.run, task, currentWorker),
+            timedOut: delay(POST_TIMEOUT_MS),
+          })) as { response?: WorkerResponse; timedOut?: unknown };
+          if ('timedOut' in outcome) {
+            yield* applyTaskEvent(
+              workerRepository,
+              currentWorker.id,
+              task.id,
+              {
+                type: WorkerEvent.POST_TIMEOUT,
+              },
+              'Job post timed out after 60 seconds',
             );
-            currentWorker = {
-              ...currentWorker,
-              status: WorkerStatus.INPROGRESS_WITH_ERRORS,
-              queue: updateTaskStatus(
-                currentWorker.queue,
-                idTask,
-                WorkerStatus.ERROR,
-                taskResult.statusMessage,
-              ),
-            };
-            hasError = true;
-            // i++; //needed if we remove the task when it is completed
-            break;
-          default:
-            // i++; //needed if we remove the task when it is completed
-            console.warn(`Unknown status for task: ${taskResult.status}`);
+            continue;
+          }
+          if (outcome.response === undefined) {
+            throw new BaseError('Job plugin completed without a response', {
+              context: { workerId: currentWorker.id, taskId: task.id },
+            });
+          }
+          taskResult = outcome.response;
+        } else {
+          taskResult = (yield call(plugin.run, task, currentWorker)) as WorkerResponse;
         }
-        idTask++;
       } catch (error) {
-        console.error(`Error in plugin saga for ${worker.name}:`, error);
-        currentWorker = {
-          ...currentWorker,
-          status: WorkerStatus.INPROGRESS_WITH_ERRORS,
-          queue: updateTaskStatus(
-            currentWorker.queue,
-            idTask,
-            WorkerStatus.ERROR,
-            getErrorMessage(error),
-          ),
+        taskResult = {
+          event: WorkerEvent.RESULT_ERR,
+          message: getErrorMessage(error),
         };
-        hasError = true;
       }
 
-      //update the worker variables at each iteration
-      yield call([workerRepository, workerRepository.patch], currentWorker.id, {
-        status: currentWorker.status,
-        statusMessage: currentWorker.statusMessage,
-        queue: currentWorker.queue,
-      });
-    } //end while loop
-
-    if (hasError) {
-      currentWorker = { ...currentWorker, status: WorkerStatus.COMPLETED_WITH_ERRORS };
-      yield put(pushError(i18n.t('info_worker_completed_with_error')));
-    } else {
-      const hasTaskPosted = currentWorker.queue.some((t) => t.status === WorkerStatus.POSTED);
-      if (hasTaskPosted) {
-        currentWorker = { ...currentWorker, status: WorkerStatus.POSTED };
-        yield put(pushInfo(i18n.t('info_worker_all_tasks_posted')));
+      let taskEvent: TaskEvent;
+      let statusMessage = taskResult.message;
+      if (
+        taskResult.event === WorkerEvent.RESULT_OK &&
+        plugin.executionStrategy === 'synchronous'
+      ) {
+        try {
+          let value: unknown;
+          if (taskResult.content !== undefined) {
+            if (isAnnotationArray(taskResult.content)) {
+              value = taskResult.content
+                .map((annotation) => getAnnotationText(annotation))
+                .join('\n');
+            } else if (typeof taskResult.content === 'string') {
+              value = taskResult.content;
+            }
+          }
+          const result: ResultCreateDTO = {
+            scope: task.scope,
+            workerName: currentWorker.name,
+            workerCategory: plugin.info.category,
+            workerId: currentWorker.id,
+            value,
+            taskId: task.id,
+            params: currentWorker.params,
+          };
+          yield call([resultRepository, resultRepository.add], result);
+          taskEvent = { type: WorkerEvent.RESULT_OK };
+          statusMessage = undefined;
+        } catch (error) {
+          taskEvent = { type: WorkerEvent.RESULT_ERR };
+          statusMessage = getErrorMessage(error);
+        }
+      } else if (
+        taskResult.event === WorkerEvent.JOB_ACCEPTED &&
+        plugin.executionStrategy === 'job'
+      ) {
+        taskEvent = { type: WorkerEvent.JOB_ACCEPTED };
       } else {
-        currentWorker = { ...currentWorker, status: WorkerStatus.COMPLETED };
-        yield put(pushInfo(i18n.t('info_worker_completed')));
+        taskEvent = { type: WorkerEvent.RESULT_ERR };
+        if (taskResult.event !== WorkerEvent.RESULT_ERR) {
+          statusMessage = 'Plugin returned an event that does not match its execution strategy';
+        }
+      }
+
+      yield* applyTaskEvent(workerRepository, currentWorker.id, task.id, taskEvent, statusMessage);
+
+      const taskDuration = Date.now() - taskStartTime;
+      averageTaskDuration =
+        totalTasksDone === 0 ? taskDuration : 0.2 * taskDuration + 0.8 * averageTaskDuration;
+      const remainingTaskCount = currentWorker.queue.length - taskIndex - 1;
+      const estimatedDuration = averageTaskDuration * remainingTaskCount;
+      yield call([workerRepository, workerRepository.patch], currentWorker.id, {
+        estimatedDuration,
+      });
+      totalTasksDone++;
+    }
+
+    const finalWorker = (yield call(
+      [workerRepository, workerRepository.getById],
+      currentWorker.id,
+    )) as FunctionResult<Worker, EntityNotFoundError>;
+    if (!finalWorker.ok) throw finalWorker.error;
+    currentWorker = finalWorker.value;
+
+    if (isWorkerCompleted(currentWorker.status) && hasWorkerErrors(currentWorker.status)) {
+      yield put(pushError(i18n.t('info_worker_completed_with_error')));
+    } else if (isWorkerCompleted(currentWorker.status)) {
+      yield put(pushInfo(i18n.t('info_worker_completed')));
+    } else if (currentWorker.queue.some((queuedTask) => isTaskJobTracked(queuedTask.status))) {
+      yield put(pushInfo(i18n.t('info_worker_all_tasks_posted')));
+    }
+  } catch (error) {
+    console.error(`Error running worker ${workerInput.name}:`, error);
+    yield put(pushError(getErrorMessage(error)));
+    if (currentWorker !== undefined) {
+      try {
+        const latest = (yield call(
+          [workerRepository, workerRepository.getById],
+          currentWorker.id,
+        )) as FunctionResult<Worker, EntityNotFoundError>;
+        if (latest.ok && isWorkerInProgress(latest.value.status)) {
+          yield* applyWorkerEvent(workerRepository, currentWorker.id, {
+            type: WorkerEvent.INTERRUPT,
+          });
+        }
+      } catch (recoveryError) {
+        console.error(`Unable to recover worker ${currentWorker.id} after failure:`, recoveryError);
       }
     }
-    yield call([workerRepository, workerRepository.patch], currentWorker.id, {
-      status: currentWorker.status,
-    });
   } finally {
-    if (yield cancelled()) {
-      //if the saga is cancelled, we set the worker status to UNFINISHED or UNFINISHED_WITH_ERRORS
+    if ((yield cancelled()) === true) {
       if (currentWorker !== undefined) {
-        console.log(`Worker ${worker.name} was cancelled`);
-        if (currentWorker.status === WorkerStatus.INPROGRESS) {
-          currentWorker = { ...currentWorker, status: WorkerStatus.UNFINISHED };
-        } else if (currentWorker.status === WorkerStatus.INPROGRESS_WITH_ERRORS) {
-          currentWorker = { ...currentWorker, status: WorkerStatus.UNFINISHED_WITH_ERRORS };
-        }
+        console.log(`Worker ${currentWorker.name} was cancelled`);
+        try {
+          currentWorker = yield* applyWorkerEvent(workerRepository, currentWorker.id, {
+            type: WorkerEvent.INTERRUPT,
+          });
+          const pausedJobs = (yield call(pauseWorkerJobs, currentWorker.id)) as JobRow[];
+          for (const job of pausedJobs) {
+            const latest = (yield call(
+              [workerRepository, workerRepository.getById],
+              currentWorker.id,
+            )) as FunctionResult<Worker, EntityNotFoundError>;
+            if (!latest.ok) {
+              console.error(
+                `Unable to load worker ${currentWorker.id} while pausing job ${job.id}:`,
+                latest.error,
+              );
+              continue;
+            }
+            const pausedTask = latest.value.queue.find(
+              (queuedTask) => queuedTask.id === job.task_id,
+            );
+            if (pausedTask === undefined) continue;
 
-        //if there is a task in progress, we update its status to WAITING
-        if (task !== undefined) {
-          currentWorker.queue = updateTaskStatus(currentWorker.queue, idTask, WorkerStatus.WAITING);
+            if (isTaskPosting(pausedTask.status)) {
+              yield* applyTaskEvent(workerRepository, currentWorker.id, pausedTask.id, {
+                type: WorkerEvent.JOB_ACCEPTED,
+              });
+            }
+            yield* applyTaskEvent(workerRepository, currentWorker.id, pausedTask.id, {
+              type: WorkerEvent.JOB_PAUSED,
+            });
+          }
+        } catch (error) {
+          console.error(`Unable to persist interruption of worker ${currentWorker.id}:`, error);
         }
-        yield call([workerRepository, workerRepository.patch], currentWorker.id, {
-          status: currentWorker.status,
-        });
       }
     }
   }
@@ -346,38 +502,19 @@ function* startWorker(
  * This function is called when the application starts to load the workers and their results into the Redux store.
  */
 //TODO! à conserver pour permettre la mise à jour des workers au démarrage de l'application
-function* initWorkersStatus(): Generator<Effect, void, Worker[] | Result[]> {
+function* initWorkersStatus(): Generator<Effect, void, unknown> {
   const workerRepository = getWorkerRepository();
   const workers = (yield call([workerRepository, workerRepository.getAll])) as Worker[];
 
-  //if there are workers with status INPROGRESS or INPROGRESS_WITH_ERRORS, we set them to UNFINISHED or UNFINISHED_WITH_ERRORS
   for (const worker of workers) {
-    if (
-      worker.status === WorkerStatus.INPROGRESS ||
-      worker.status === WorkerStatus.INPROGRESS_WITH_ERRORS
-    ) {
-      const newQueue = worker.queue.map((task) => ({
-        ...task,
-        status:
-          task.status === WorkerStatus.COMPLETED || task.status === WorkerStatus.POSTED
-            ? task.status
-            : WorkerStatus.WAITING,
-      }));
-      const hasPostedTask = newQueue.some((t) => t.status === WorkerStatus.POSTED);
-      let newStatus: WorkerStatus = worker.status;
-      if (!hasPostedTask) {
-        newStatus =
-          worker.status === WorkerStatus.INPROGRESS
-            ? WorkerStatus.UNFINISHED
-            : WorkerStatus.UNFINISHED_WITH_ERRORS;
+    if (isWorkerInProgress(worker.status)) {
+      try {
+        yield* applyWorkerEvent(workerRepository, worker.id, {
+          type: WorkerEvent.INTERRUPT,
+        });
+      } catch (error) {
+        console.error(`Unable to recover worker ${worker.id} at startup:`, error);
       }
-
-      yield call([workerRepository, workerRepository.patch], worker.id, {
-        status: newStatus,
-        queue: newQueue,
-      });
-      worker.status = newStatus;
-      worker.queue = newQueue;
     }
   }
 }

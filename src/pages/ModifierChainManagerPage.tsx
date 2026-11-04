@@ -1,5 +1,5 @@
-import ModifierChainDashboard from '@/components/modifiers/ModifierChainDashboard';
-import ModifierChainFlow from '@/components/modifiers/ModifierChainFlow';
+import ModifierChainDashboard from '@/components/features/modifiers/ModifierChainDashboard';
+import ModifierChainFlow from '@/components/features/modifiers/ModifierChainFlow';
 import { ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Container } from 'lucide-react';
 import { useState } from 'react';

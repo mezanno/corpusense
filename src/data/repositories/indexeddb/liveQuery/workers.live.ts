@@ -1,28 +1,21 @@
-import { CanvasScope, CollectionScope } from '@/data/models/Scope';
-import { Worker } from '@/data/models/Worker';
+import { CanvasScope, CollectionScope } from '@/data/models/scope/scope';
+import { Worker } from '@/data/models/worker/worker';
 import { db } from '../db';
 import { computeScopeKey } from '../utils';
 import { WorkerLiveRepository } from './types.live';
 
 export class IndexedDBWorkerLiveRepository implements WorkerLiveRepository {
-  getById(id: string): () => Promise<Worker> {
-    return async () => {
-      const worker = await db.workers.get(id);
-      if (worker === undefined) {
-        throw new Error(`Worker with id ${id} not found`);
-      }
-      return worker;
-    };
-  }
-
   getAll(): () => Promise<Worker[]> {
     return () => db.workers.toArray();
   }
 
-  hasResult(scope: CanvasScope | CollectionScope, workerName: string): () => Promise<boolean> {
+  hasResult(scope: CanvasScope | CollectionScope, workerNames: string[]): () => Promise<boolean> {
+    const scopeKey = computeScopeKey(scope);
+
     return () =>
       db.workers
-        .where({ '[scopeKey+name]': [computeScopeKey(scope), workerName] })
+        .where('[scopeKey+name]')
+        .anyOf(workerNames.map((name) => [scopeKey, name]))
         .count()
         .then((count) => count > 0);
   }

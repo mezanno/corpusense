@@ -1,15 +1,14 @@
-import { Scope } from '../models/Scope';
+import { Scope } from '../models/scope/scope';
 import { getCollectionRepository } from '../repositories/indexeddb/dbFactory';
 
 const contains = async (scope: Scope, value: string) => {
   const collectionRepository = getCollectionRepository();
-  try {
-    const collection = await collectionRepository.getById(scope.collectionId);
-    return collection.name.toLowerCase().includes(value.toLowerCase());
-  } catch (error) {
-    console.error('Error fetching collection: ', error);
+
+  const collectionResult = await collectionRepository.getById(scope.collectionId);
+  if (!collectionResult.ok) {
     return false;
   }
+  return collectionResult.value.name.toLowerCase().includes(value.toLowerCase());
 };
 
 export { contains };

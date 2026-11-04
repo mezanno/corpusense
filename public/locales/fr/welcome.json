@@ -1,0 +1,19 @@
+{
+  "title": "Bienvenue sur Corpusense",
+  "introduction": {
+    "p1": "Corpusense est une application web pensée pour les chercheurs et professionnels souhaitant exploiter des documents anciens numérisés de manière simple et efficace.",
+    "p2": "Avec Corpusense, vous pouvez :"
+  },
+  "features": {
+    "import": "<strong>Importez des documents</strong> et sélectionnez les pages qui vous intéressent pour créer vos corpus personnalisés.",
+    "process": "<strong>Traitez vos corpus</strong> grâce à des fonctionnalités telles que la reconnaissance de texte (OCR) et l’extraction de données structurées.",
+    "analyze": "<strong>Analysez et exploitez vos documents</strong> sans avoir besoin de compétences techniques particulières."
+  },
+  "conclusion": "Corpusense transforme vos documents numérisés en ressources structurées et exploitables, tout en restant intuitif et accessible. Commencez dès maintenant à organiser et analyser vos sources historiques avec facilité.",
+  "getting_started": {
+    "title": "Par où commencer ?",
+    "description": "La première étape consiste à sélectionner un document (sur Gallica par exemple). Si vous n'avez pas encore de document, vous pouvez en choisir un dans la liste ci-dessous :",
+    "example1": "Annuaire général de la cinématographie et des industries qui s'y rattachent",
+    "example2": "Catalogue d'une jolie collection : objets de la Perse, armes, armures..."
+  }
+}

@@ -1,11 +1,13 @@
 import { z } from 'zod';
-import { AnnotationDTO, createAnnotation, ElementType } from '../Annotation';
+import { ElementType } from '../annotations/annotation';
+import { AnnotationDTO } from '../annotations/annotation.dto';
+import { createAnnotation } from '../annotations/annotation.factory';
 import { peroLineSchema, peroResultSchema } from './peroSchema';
 
 export type PeroResult = z.infer<typeof peroResultSchema>;
 type PeroLine = z.infer<typeof peroLineSchema>;
 
-export function convertPeroLineToAnnotation(
+function convertPeroLineToAnnotation(
   line: PeroLine,
   canvasId: string,
   collectionId: string,

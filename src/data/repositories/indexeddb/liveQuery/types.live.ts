@@ -1,26 +1,26 @@
-import { Annotation, ElementType } from '@/data/models/Annotation';
-import { Collection, CollectionDetails } from '@/data/models/Collection';
-import { ConvertedFile } from '@/data/models/ConvertedFile';
-import { DataModel } from '@/data/models/DataModel';
-import { History } from '@/data/models/History';
+import { Annotation, ElementType } from '@/data/models/annotations/annotation';
+import { Collection, CollectionDetails } from '@/data/models/collection/collection';
+import { DataModel } from '@/data/models/dataModel/dataModel';
 import { ModifierChainDTO } from '@/data/models/modifiers/Modifier';
-import { NamedEntity } from '@/data/models/NamedEntity';
-import { Result } from '@/data/models/Result';
-import { CanvasScope, CollectionScope, Scope } from '@/data/models/Scope';
-import { StoredManifestDetails } from '@/data/models/StoredManifest';
-import { Tag } from '@/data/models/Tag';
-import { Worker } from '@/data/models/Worker';
+import { NamedEntity } from '@/data/models/namedEntity';
+import { Project } from '@/data/models/project';
+import { Result } from '@/data/models/result/result';
+import { CanvasScope, CollectionScope, Scope } from '@/data/models/scope/scope';
+import { Source } from '@/data/models/source/source';
+import { Tag } from '@/data/models/tag';
+import { Worker } from '@/data/models/worker/worker';
 import { Canvas } from '@iiif/presentation-3';
 
 export interface CollectionLiveRepository {
   getAllDetails(): () => Promise<CollectionDetails[]>;
   getAllDetailsByIds(ids: string[]): () => Promise<CollectionDetails[]>;
-  getById(id: string): () => Promise<Collection>;
-  getCanvasesByCollectionId(collectionId: string): () => Promise<Canvas[]>;
+  getById(id: string): () => Promise<Collection | undefined>;
+  getCanvasesByCollectionId(
+    collectionId: string,
+  ): () => Promise<{ canvas: Canvas; sourceId: string }[]>;
 }
 
 export interface ModelLiveRepository {
-  getById(id: string): () => Promise<DataModel>;
   getAll(): () => Promise<DataModel[]>;
 }
 
@@ -34,9 +34,8 @@ export interface AnnotationTempLiveRepository {
   getByScope(scope: Scope): () => Promise<Annotation[]>;
 }
 
-export interface ManifestLiveRepository {
-  getHistoryEntries(): () => Promise<History[]>;
-  getDetailsByManifestIds(manifestIds: string[]): () => Promise<StoredManifestDetails[]>;
+export interface SourceLiveRepository {
+  getAll(type: string): () => Promise<Source[]>;
 }
 
 export interface TagLiveRepository {
@@ -48,19 +47,18 @@ export interface NamedEntityLiveRepository {
 }
 
 export interface WorkerLiveRepository {
-  getById(id: string): () => Promise<Worker>;
   getAll(): () => Promise<Worker[]>;
-  hasResult(scope: CanvasScope | CollectionScope, workerName: string): () => Promise<boolean>;
+  hasResult(scope: CanvasScope | CollectionScope, workerNames: string[]): () => Promise<boolean>;
 }
 
 export interface ResultLiveRepository {
   getAll(): () => Promise<Result[]>;
 }
 
-export interface ConvertedFileLiveRepository {
-  getAll(): () => Promise<ConvertedFile[]>;
-}
-
 export interface ModifierChainLiveRepository {
   getAll(): () => Promise<ModifierChainDTO[]>;
+}
+
+export interface ProjectLiveRepository {
+  getAll(): () => Promise<Project[]>;
 }

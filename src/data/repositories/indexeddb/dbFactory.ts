@@ -1,25 +1,24 @@
 import { IndexedDBAnnotationRepository } from './annotations';
 import { IndexedDBAnnotationTempRepository } from './annotationsTemp';
 import { IndexedDBCollectionRepository } from './collections';
-import { IndexedDBConvertedFileRepository } from './convertedFile';
 import { IndexedDBFSHandleRepository } from './fsHandle';
-import { IndexedDBItemMetadataRepository } from './itemMetadata';
 import { IndexedDBAnnotationLiveRepository } from './liveQuery/annotations.live';
 import { IndexedDBAnnotationTempLiveRepository } from './liveQuery/annotationsTemp.live';
 import { IndexedDBCollectionLiveRepository } from './liveQuery/collections.live';
-import { IndexedDBConvertedFileLiveRepository } from './liveQuery/convertedFile.live';
-import { IndexedDBManifestLiveRepository } from './liveQuery/manifests.live';
 import { IndexedDBModelLiveRepository } from './liveQuery/models.live';
 import { IndexedDBModifierChainlLiveRepository } from './liveQuery/modifierChain.live';
 import { IndexedDBNamedEntityLiveRepository } from './liveQuery/namedEntity.live';
+import { IndexedDBProjectLiveRepository } from './liveQuery/projects.live';
 import { IndexedDBResultLiveRepository } from './liveQuery/results.live';
+import { IndexedDBSourceLiveRepository } from './liveQuery/sources.live';
 import { IndexedDBTagLiveRepository } from './liveQuery/tags.live';
 import { IndexedDBWorkerLiveRepository } from './liveQuery/workers.live';
-import { IndexedDBManifestRepository } from './manifest';
 import { IndexedDBModelRepository } from './models';
 import { IndexedDBModifierChainRepository } from './modifierChain';
 import { IndexedDBNamedEntityRepository } from './namedEntities';
+import { IndexedDBProjectRepository } from './projects';
 import { IndexedDBResultRepository } from './results';
+import { IndexedDBSourceRepository } from './sources';
 import { IndexedDBTagRepository } from './tags';
 import { IndexedDBWorkerRepository } from './workers';
 
@@ -43,16 +42,16 @@ export function getCollectionRepository() {
   return new IndexedDBCollectionRepository();
 }
 
-export function getCollectonLiveRepository() {
+export function getCollectionLiveRepository() {
   return new IndexedDBCollectionLiveRepository();
 }
 
-export function getManifestRepository() {
-  return new IndexedDBManifestRepository();
+export function getSourceRepository() {
+  return new IndexedDBSourceRepository();
 }
 
-export function getManifestLiveRepository() {
-  return new IndexedDBManifestLiveRepository();
+export function getSourceLiveRepository() {
+  return new IndexedDBSourceLiveRepository();
 }
 
 export function getTagRepository() {
@@ -61,10 +60,6 @@ export function getTagRepository() {
 
 export function getTagLiveRepository() {
   return new IndexedDBTagLiveRepository();
-}
-
-export function getItemMetadataRepository() {
-  return new IndexedDBItemMetadataRepository();
 }
 
 export function getModelRepository() {
@@ -103,18 +98,18 @@ export function getFSHandleRepository() {
   return new IndexedDBFSHandleRepository();
 }
 
-export function getConvertedFileRepository() {
-  return new IndexedDBConvertedFileRepository();
-}
-
-export function getConvertedFileLiveRepository() {
-  return new IndexedDBConvertedFileLiveRepository();
-}
-
 export function getModifierChainRepository() {
   return new IndexedDBModifierChainRepository();
 }
 
 export function getModifierChainLiveRepository() {
   return new IndexedDBModifierChainlLiveRepository();
+}
+
+export function getProjectRepository() {
+  return new IndexedDBProjectRepository();
+}
+
+export function getProjectLiveRepository() {
+  return new IndexedDBProjectLiveRepository();
 }

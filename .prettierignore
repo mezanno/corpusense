@@ -1,6 +1,14 @@
 # Ignore artifacts:
 build
 coverage
+playwright-report
+test-results
+
+# Assets vendor (pdfjs, servis tels quels) :
+public/pdfjs
+
+# Code archivé (hors compilation, voir archive/legacy-workers/README.md):
+archive
 
 # Ignore all HTML files:
 **/*.html

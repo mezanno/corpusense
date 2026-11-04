@@ -1,4 +1,4 @@
-import { Event, EventType } from '@/data/models/Event';
+import { Event, EventType } from '@/data/models/event';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface EventsState {
@@ -11,7 +11,7 @@ export const eventsInitialState: EventsState = {
   allEvents: [],
 };
 
-export const eventsSlice = createSlice({
+const eventsSlice = createSlice({
   name: 'events',
   initialState: eventsInitialState,
   reducers: {

@@ -1,4 +1,5 @@
 [
   { "slug": "howto", "title": "Manuel d'utilisation" },
-  { "slug": "data", "title": "Données" }
+  { "slug": "data", "title": "Données" },
+  { "slug": "usecase", "title": "Cas d'usages" }
 ]

@@ -1,6 +1,6 @@
-import ModelsDashboard from '@/components/models/ModelsDashboard';
-import ModelViewer from '@/components/models/ModelViewer';
-import QuickCanvasViewer from '@/components/QuickCanvasViewer';
+import QuickCanvasViewer from '@/components/features/canvasViewer/QuickCanvasViewer';
+import ModelsDashboard from '@/components/features/models/ModelsDashboard';
+import ModelViewer from '@/components/features/models/ModelViewer';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Container, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { useState } from 'react';

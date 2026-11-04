@@ -5,7 +5,7 @@ import canvasWithNoDimensions from '../../../__tests__/canvasWithNoDimensions.js
 import canvasWithoutImage from '../../../__tests__/canvasWithoutImage.json';
 import { generateFirstAnnotation, generateRegionAnnotationForCanvas } from '../annotations';
 
-import { vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('uuid', () => {
   return {

@@ -9,7 +9,7 @@ import i18n from '@/i18n';
 import { Bounds } from '@annotorious/annotorious';
 import { v4 as uuid } from 'uuid';
 import z from 'zod';
-import { Annotation } from '../Annotation';
+import { Annotation } from '../annotations/annotation';
 import { Modifier } from './Modifier';
 
 const mergeSchema = z.object({
@@ -54,87 +54,6 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
     this.verticalThresholdMax = verticalThresholdMax;
     this.horizontalThresholdMax = horizontalThresholdMax;
   }
-
-  // apply = (data: Annotation[], values: z.infer<typeof mergeSchema>) => {
-  //   console.log('Applying MergeModifier with values: ', values);
-  //   if (data.length > 1) {
-  //     const {
-  //       origin,
-  //       verticalThreshold: defaultVerticalThreshold,
-  //       horizontalThreshold: defaultHorizontalThreshold,
-  //     } = mergeSchema.parse(values);
-  //     const verticalThreshold = values.verticalThreshold ?? defaultVerticalThreshold;
-  //     const horizontalThreshold = values.horizontalThreshold ?? defaultHorizontalThreshold;
-  //     console.log('Using values ', verticalThreshold, '|', horizontalThreshold);
-
-  //     const verticalActive = verticalThreshold >= 0;
-  //     const horizontalActive = horizontalThreshold >= 0;
-
-  //     if (!verticalActive && !horizontalActive) return data;
-
-  //     const annotations = [...data];
-  //     annotations.sort(
-  //       (a, b) => a.target.selector.geometry.bounds.minY - b.target.selector.geometry.bounds.minY,
-  //     );
-  //     console.log(
-  //       'annotations to merge: ',
-  //       annotations.map((a) => a.id.substring(0, 2)),
-  //     );
-
-  //     let changed = true;
-  //     while (changed) {
-  //       changed = false;
-  //       for (let i = 0; i < annotations.length; i++) {
-  //         for (let j = i + 1; j < annotations.length; j++) {
-  //           const distance =
-  //             origin === 'center'
-  //               ? getDistanceBetweenAnnotationCenters(annotations[i], annotations[j])
-  //               : getDistanceBetweenAnnotations(annotations[i], annotations[j]);
-  //           console.log(
-  //             'distance between ',
-  //             annotations[i].id.substring(3),
-  //             '<->',
-  //             annotations[j].id.substring(3),
-  //             ': ',
-  //             distance,
-  //           );
-  //           const verticalOk = !verticalActive || Math.abs(distance.vertical) <= verticalThreshold;
-
-  //           const horizontalOk =
-  //             !horizontalActive || Math.abs(distance.horizontal) <= horizontalThreshold;
-
-  //           if (verticalOk && horizontalOk) {
-  //             //TODO! hack temporaire pour forcer le merge dans le bon ordre (pour que le texte soit dans le bon ordre)
-  //             if (origin === 'center') {
-  //               if (getLeft(annotations[i]) < getLeft(annotations[j])) {
-  //                 //si merge de lignes, on merge de gauche à droite
-  //                 annotations[i] = mergeTwoAnnotations(annotations[i], annotations[j]);
-  //               } else {
-  //                 annotations[i] = mergeTwoAnnotations(annotations[j], annotations[i]);
-  //               }
-  //             } else {
-  //               annotations[i] = mergeTwoAnnotations(annotations[i], annotations[j]);
-  //             }
-  //             annotations.splice(j, 1);
-  //             changed = true;
-  //             break; // Break the inner loop to restart checking from the beginning
-  //           }
-  //         }
-  //         if (changed) {
-  //           break; // Break the outer loop to restart checking from the beginning
-  //         }
-  //       }
-  //     }
-  //     if (data.length !== annotations.length) {
-  //       console.log(
-  //         'annotations merged: ',
-  //         annotations.map((a) => a.id.substring(0, 2)),
-  //       );
-  //     }
-  //     return annotations;
-  //   }
-  //   return data;
-  // };
 
   apply = (data: Annotation[], values: z.infer<typeof mergeSchema>) => {
     if (data.length <= 1) return data;
@@ -199,7 +118,12 @@ export class MergeModifier extends Modifier<typeof mergeSchema> {
     const parents = new Map<string, Annotation | null>();
     await Promise.all(
       annotations.map(async (a) => {
-        parents.set(a.id, await annotationRepository.getParent(a));
+        const result = await annotationRepository.getParent(a);
+        if (result.ok) {
+          parents.set(a.id, result.value);
+        } else {
+          parents.set(a.id, null);
+        }
       }),
     );
 

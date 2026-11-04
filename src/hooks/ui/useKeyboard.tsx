@@ -1,17 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 
 const useKeyboard = ({ onKeyPressed }: { onKeyPressed: (key: string) => void }) => {
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      onKeyPressed(event.key);
-    };
+  const onKey = useEffectEvent((event: KeyboardEvent) => {
+    onKeyPressed(event.key);
+  });
 
-    window.addEventListener('keydown', handleKeyDown);
+  useEffect(() => {
+    window.addEventListener('keydown', onKey);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', onKey);
     };
-  }, [onKeyPressed]);
+  }, []);
 };
 
 export default useKeyboard;

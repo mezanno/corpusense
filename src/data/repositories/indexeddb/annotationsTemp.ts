@@ -1,5 +1,5 @@
-import { Annotation } from '@/data/models/Annotation';
-import { CanvasScope } from '@/data/models/Scope';
+import { Annotation } from '@/data/models/annotations/annotation';
+import { CanvasScope } from '@/data/models/scope/scope';
 import { db } from './db';
 import { AnnotationTempRepository } from './types';
 
