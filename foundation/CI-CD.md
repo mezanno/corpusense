@@ -19,14 +19,14 @@ Pratiques observées, toutes transférables à n'importe quel système de CI :
 3. **Actions épinglées par SHA** avec commentaire de version — protection supply-chain de base.
 4. **Concurrency avec `cancel-in-progress`** : les validations obsolètes s'annulent d'elles-mêmes.
 5. **Cache de dépendances et de binaires de test** indexés sur le lockfile.
-6. **Vérification des variables de build avant le build** : une variable manquante fait échouer tôt avec un message d'erreur actionnable (les variables sont des *variables de dépôt*, publiques par design, pas des secrets).
+6. **Vérification des variables de build avant le build** : une variable manquante fait échouer tôt avec un message d'erreur actionnable (les variables sont des _variables de dépôt_, publiques par design, pas des secrets).
 7. **Audit de dépendances présent mais non bloquant**, assorti d'une décision documentée (dette connue, à résorber) — un check bloquant ignoré par `continue-on-error` sans trace serait pire.
 8. **Ratchet de lint comme gate** : la dette héritée est chiffrée dans un fichier versionné ; la CI compare et bloque la dérive (voir PATTERNS P8).
-9. **E2E bloquant sur PR mais sauté dans l'appel réutilisable du deploy** : on distingue « bloquer la fusion » et « ne pas ralentir la publication ».
+9. **E2E exécuté sur PR mais sauté dans l'appel réutilisable du deploy** : sa réussite ne bloque effectivement la fusion que si la protection de branche l'impose.
 10. **Runtime épinglé** (Node 22) **et package manager épinglé** (`packageManager` dans le manifest + installation explicite du npm attendu dans la CI) — l'écart lockfile/runner est traité comme une cause d'échec connue, pas comme un hasard.
-11. Artefacts téléversés **au premier échec seulement**, rétention courte (7 jours).
+11. Artefacts téléversés **en cas d'échec du job**, après les éventuelles tentatives, rétention courte (7 jours).
 
-Lacune observée (roadmap Q3) : la protection de branches rendant ces checks bloquants à la fusion est un réglage de dépôt non encore appliqué — à faire dès le premier jour dans un nouveau projet.
+La protection de branches rendant ces checks bloquants à la fusion est un réglage externe à vérifier par dépôt (roadmap Q3) — à prévoir dès le premier jour dans un nouveau projet.
 
 ## Pipeline de référence indépendante du langage (RECOMMENDED)
 

@@ -38,8 +38,8 @@ CorpuSense permet de :
 
 Guides fonctionnels détaillés :
 
-- public/doc/howto.md
-- public/doc/usecase.md
+- [Manuel d'utilisation](./public/doc/howto.md)
+- [Cas d'usage](./public/doc/usecase.md)
 
 ## Comment l'application est structurée
 
@@ -105,8 +105,9 @@ Références de configuration :
 
 Prérequis :
 
-- Node.js 22+
-- npm 10+
+- Node.js 22 (version utilisée en CI)
+- npm 11.6.4 (version déclarée dans `package.json`)
+- Certificat HTTPS local et configuration Supabase : voir le [guide développeur](./docs/developpement.md#1-démarrage)
 
 Étapes :
 
@@ -117,11 +118,11 @@ Prérequis :
 Commandes :
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-L'application est ensuite disponible sur l'URL locale affichée par Vite.
+Après configuration, l'application est disponible sur l'URL HTTPS locale affichée par Vite.
 
 ## Contribuer au projet
 
@@ -139,7 +140,9 @@ L'application est ensuite disponible sur l'URL locale affichée par Vite.
 - Preview build : `npm run preview`
 - Tests : `npm run test`
 - Tests coverage : `npm run test:coverage`
+- Tests E2E : `npm run test:e2e` (installation de Chromium et détails dans le [guide développeur](./docs/developpement.md#tests-e2e-playwright-q9))
 - Lint : `npm run lint`
+- Lint utilisé en CI : `npm run lint:ratchet`
 - Lint auto-fix : `npm run lint-fix`
 - Format check : `npm run format`
 - Format fix : `npm run format-fix`
@@ -182,7 +185,7 @@ Le build lit ses valeurs de configuration dans les **variables de dépôt** GitH
 Commandes :
 
 ```bash
-npm install
+npm ci
 npm run build
 ```
 
@@ -205,7 +208,7 @@ Cette valeur est utilisée par le routeur, les assets et le manifest PWA.
 Certaines fonctionnalités nécessitent une clé API (exemple : Mistral pour l'extraction).
 La saisie se fait dans la page de configuration de l'application.
 
-Guide : public/doc/howto.md
+Guide : [manuel d'utilisation](./public/doc/howto.md)
 
 ## Notes
 

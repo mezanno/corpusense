@@ -50,10 +50,9 @@ _Avoid_: boundary, plug, abstraction layer
 
 ### Data access
 
-> **Status: banked, not shipped.** The four terms below describe the deferred Table-seam design
-> (`docs/DECISIONS.md` D-005, banked design + reactivation triggers). Today's code is Dexie repositories behind
-> `dbFactory.ts` factories. Do not treat these as current architecture until a reactivation
-> trigger fires.
+> **Status: abandoned, not shipped.** The four terms below describe the former Table-seam design
+> (`docs/DECISIONS.md` D-005). Today's code is Dexie repositories behind `dbFactory.ts` factories.
+> Do not treat the terminology below as the current architecture.
 
 **Table**:
 The deep module for accessing one entity store: a small verb surface with not-found, DB-error, and partial-update behaviour absorbed inside.

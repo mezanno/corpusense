@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import { E2E_ORIGIN, E2E_PORT } from './e2e/helpers/config';
 
-// E2E Q9 (docs/plan-q9-e2e.md) — chromium seul : l'app ne cible que ce moteur en
+// E2E Q9 (docs/developpement.md) — chromium seul : l'app ne cible que ce moteur en
 // pratique (File System Access API). Les specs vivent dans `e2e/`, jamais en
 // co-localisation (D-010 réserve `__tests__/` à Vitest).
 export default defineConfig({

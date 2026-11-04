@@ -140,13 +140,13 @@ _Statut : active · Cible adoptée en 2026, migration R7 terminée le 2026-10-12
 
 _Statut : active · Formalisée en 2026, harnais réparé le 2026-09-30, E2E déployés le 2026-10-13 (Q9)_
 
-**Décision.** Pyramide à trois niveaux : majoritairement des tests unitaires de fonctions pures ; tests de composants/hooks via React Testing Library (rôles accessibles, `user-event`, jamais les détails d'implémentation) ; E2E Playwright en nombre limité sur les parcours critiques (déployés le 2026-10-13 : 14 specs dans `e2e/`, chromium seul, bloquants sur les PR — voir [plan-q9-e2e.md](./plan-q9-e2e.md)). Standards :
+**Décision.** Pyramide à trois niveaux : majoritairement des tests unitaires de fonctions pures ; tests de composants/hooks via React Testing Library (rôles accessibles, `user-event`, jamais les détails d'implémentation) ; E2E Playwright en nombre limité sur les parcours critiques (déployés le 2026-10-13 : 14 tests dans `e2e/`, chromium seul, job sur les PR — voir [roadmap Q9](./roadmap.md#qualité--outillage)). Standards :
 
 - tests co-localisés dans `__tests__/` à côté du fichier source ;
 - `fake-indexeddb` pour tout test touchant un repository (D-004) ; le helper `createTestDb()` réinitialise la base Dexie entre les tests ;
 - harnais Vitest : stub `ResizeObserver` requis par `@dnd-kit`, mock i18n exportant `useTranslation` **et** `Trans` (les assertions ciblent les clés, que le mock renvoie à l'identique), mock WebGL fourni par `vitest-webgl-canvas-mock` ;
 - Vitest vérifié le 2026-10-12 : 24 fichiers réussis, 1 ignoré, 96 tests réussis et 1 todo. Baseline statique du 2026-10-08 : tsc vert, ESLint `src` : 48 erreurs / 2 warnings (backlog roadmap Q1) ;
-- E2E : specs dans `e2e/` (non co-localisées — la co-localisation est la règle Vitest), réseau externe entièrement abandonné (fixtures servies en `page.route` sur un hôte factice), assertions par rôles accessibles et libellés FR réels, sans `data-testid` ; un spec ne se commite qu'après 10 runs consécutifs verts.
+- E2E : specs dans `e2e/` (non co-localisées — la co-localisation est la règle Vitest), requêtes HTTP externes abandonnées (fixtures servies en `page.route` sur un hôte factice ; WebSockets non filtrés par cette interception), assertions par rôles accessibles et libellés FR réels, sans `data-testid` ; une spec ne se commite qu'après 10 runs consécutifs verts.
 
 **Conséquences.** Le mock i18n renvoie les clés à l'identique : les tests vérifient les clés, pas les phrases. Toute nouvelle dépendance qui touche IndexedDB en production se teste sur le vrai stack, pas en `vi.mock`.
 

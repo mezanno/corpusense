@@ -2,7 +2,7 @@
 
 Extraction des fondations réutilisables du projet **CorpuSense** en vue de démarrer un nouveau projet, potentiellement dans une autre technologie. **Aucune stack cible n'a été fixée** : ce document reste au niveau conceptuel et signale les points nécessitant un choix technologique.
 
-> Ce n'est pas une documentation de CorpuSense. La documentation de référence du projet source reste `docs/architecture.md`, `docs/DECISIONS.md`, `docs/developpement.md`. Ce répertoire répond à une seule question : *qu quoi, dans ce projet, mérite d'être conservé comme fondation d'un nouveau projet ?*
+> Ce n'est pas une documentation de CorpuSense. La documentation de référence du projet source reste `docs/architecture.md`, `docs/DECISIONS.md`, `docs/developpement.md`. Ce répertoire répond à une seule question : _quoi, dans ce projet, mérite d'être conservé comme fondation d'un nouveau projet ?_ Les constats sur le projet source sont un instantané historique, pas un suivi vivant : consulter la roadmap et le registre de sécurité de `docs/` avant de les reprendre.
 
 ## Le projet source en une phrase
 
@@ -34,7 +34,7 @@ Et classe la réutilisabilité : `UNIVERSAL` · `ECOSYSTEM` · `FRAMEWORK` · `D
 
 ### 2. Dépendant de l'écosystème (ECOSYSTEM)
 
-- Persistance dans le navigateur via IndexedDB (Local-First) — le *principe* est universel, l'*implémentation* est web.
+- Persistance dans le navigateur via IndexedDB (Local-First) — le _principe_ est universel, l'_implémentation_ est web.
 - Configuration par variables `VITE_*` lues via `import.meta.env` ; build statique déployable sous sous-répertoire.
 - i18n par clés avec mock de test renvoyant les clés à l'identique.
 - Alias d'import `@/`, tests co-localisés `__tests__/`, PascalCase composants.
@@ -58,44 +58,42 @@ Voir `TECHNICAL-DEBT.md` § Éléments manquants : guards d'architecture par lin
 
 ## Index des documents
 
-| Document | Contenu |
-|---|---|
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Architecture réelle, règle de dépendances, architecture cible abstraite |
-| [CONVENTIONS.md](./CONVENTIONS.md) | Conventions de code, nommage, documentation, Git |
-| [PATTERNS.md](./PATTERNS.md) | Patterns réels avec leur version abstraite |
-| [DATA.md](./DATA.md) | Modèle de données, validation, migrations, persistance |
-| [TESTING.md](./TESTING.md) | Stratégie de tests observée + stratégie générique |
-| [CI-CD.md](./CI-CD.md) | Pipeline observée + pipeline de référence |
-| [OBSERVABILITY.md](./OBSERVABILITY.md) | Logging, métriques, Build-info — principe / implémentation / techno |
-| [SECURITY.md](./SECURITY.md) | Registre de sécurité transposable |
-| [DECISIONS.md](./DECISIONS.md) | ADR source avec transferability |
-| [TECHNICAL-DEBT.md](./TECHNICAL-DEBT.md) | Dette + éléments manquants |
-| [STARTER.md](./STARTER.md) | Spécification du starter (conceptuelle) |
-| [BOOTSTRAP-CHECKLIST.md](./BOOTSTRAP-CHECKLIST.md) | Checklist ordonnée de bootstrap |
-
-> Variante avec cible **React/TypeScript** : [`../foundation-react/`](../foundation-react/FOUNDATION.md).
+| Document                                           | Contenu                                                                 |
+| -------------------------------------------------- | ----------------------------------------------------------------------- |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)               | Architecture réelle, règle de dépendances, architecture cible abstraite |
+| [CONVENTIONS.md](./CONVENTIONS.md)                 | Conventions de code, nommage, documentation, Git                        |
+| [PATTERNS.md](./PATTERNS.md)                       | Patterns réels avec leur version abstraite                              |
+| [DATA.md](./DATA.md)                               | Modèle de données, validation, migrations, persistance                  |
+| [TESTING.md](./TESTING.md)                         | Stratégie de tests observée + stratégie générique                       |
+| [CI-CD.md](./CI-CD.md)                             | Pipeline observée + pipeline de référence                               |
+| [OBSERVABILITY.md](./OBSERVABILITY.md)             | Logging, métriques, Build-info — principe / implémentation / techno     |
+| [SECURITY.md](./SECURITY.md)                       | Registre de sécurité transposable                                       |
+| [DECISIONS.md](./DECISIONS.md)                     | ADR source avec transferability                                         |
+| [TECHNICAL-DEBT.md](./TECHNICAL-DEBT.md)           | Dette + éléments manquants                                              |
+| [STARTER.md](./STARTER.md)                         | Spécification du starter (conceptuelle)                                 |
+| [BOOTSTRAP-CHECKLIST.md](./BOOTSTRAP-CHECKLIST.md) | Checklist ordonnée de bootstrap                                         |
 
 ## Matrice de transférabilité
 
-| Élément | Source | Niveau | Réutilisable | Adaptation | Cible |
-|---|---|---|---|---|---|
-| Séparation lecture réactive / écriture commande | Flux 1 & 2, D-001 | UNIVERSAL | Oui | Faible | Tout projet avec état persistant |
-| Result Pattern + BaseError + garde-fou lint | `functionResult.ts`, D-002 | UNIVERSAL (traduction typée par langage) | Oui | Moyenne | Toute frontière de commande |
-| Loi d'état en module pur | `workerStatusLaw.ts`, D-008 | UNIVERSAL | Oui | Faible | Tout système à cycles de vie |
-| Rôles exclusifs des mécanismes d'état | D-001, `states.md` | UNIVERSAL | Oui | Faible | Toute app à état multiple |
-| Docs : spec + ADR + registre sécurité + roadmap | `docs/` | UNIVERSAL | Oui | Faible | Tout projet |
-| Glossaire domaine (`CONTEXT.md`) | racine | UNIVERSAL | Oui | Faible | Tout projet |
-| Ratchet ESLint + baseline | `scripts/eslint-ratchet.mjs` | ECOSYSTEM (le principe est UNIVERSAL) | Oui | Moyenne | Tout CLI de lint machine-readable |
-| Pyramide de tests + faux moteur de persistance | D-004, D-010 | UNIVERSAL | Oui | Moyenne | Tout projet avec stockage |
-| E2E sans réseau externe (fixtures interceptées) | `e2e/` | ECOSYSTEM | Oui | Moyenne | Tout E2E avec service web |
-| CI réutilisable + deploy conditionné | `ci.yml`/`deploy.yml` | ECOSYSTEM (GitHub Actions) | Oui | Moyenne | Tout système de CI |
-| Plugins découverts dynamiquement | D-007 | FRAMEWORK (Vite glob) | Le principe : Oui | Forte | Registry explicite ailleurs |
-| `useLiveQuery` / sagas / Context | D-001, D-006 | FRAMEWORK | Non (tels quels) | Forte | Voir version abstraite dans PATTERNS.md |
-| IndexedDB/Dexie v32, schéma stores | `db.ts` | ECOSYSTEM+DOMAIN | Non | Forte | Moteur local-first équivalent ou serveur |
-| Vocabulaire Worker/Task/Job/Scope… | `CONTEXT.md` | DOMAIN | Si même domaine | — | — |
-| IIIF / W3C / Supabase cs_jobs | plugins, hooks | DOMAIN | Si même domaine | — | — |
-| Saga `workers.ts` (~420 l.) | code | PROJECT_SPECIFIC | Non — à remplacer par queueEngine (D-006) | — | — |
-| Clés API en localStorage | D-011, S-04 | PROJECT_SPECIFIC (contexte mono-utilisateur) | Partiel | À reconsidérer si multi-utilisateur | — |
+| Élément                                         | Source                       | Niveau                                       | Réutilisable                              | Adaptation                          | Cible                                    |
+| ----------------------------------------------- | ---------------------------- | -------------------------------------------- | ----------------------------------------- | ----------------------------------- | ---------------------------------------- |
+| Séparation lecture réactive / écriture commande | Flux 1 & 2, D-001            | UNIVERSAL                                    | Oui                                       | Faible                              | Tout projet avec état persistant         |
+| Result Pattern + BaseError + garde-fou lint     | `functionResult.ts`, D-002   | UNIVERSAL (traduction typée par langage)     | Oui                                       | Moyenne                             | Toute frontière de commande              |
+| Loi d'état en module pur                        | `workerStatusLaw.ts`, D-008  | UNIVERSAL                                    | Oui                                       | Faible                              | Tout système à cycles de vie             |
+| Rôles exclusifs des mécanismes d'état           | D-001, `states.md`           | UNIVERSAL                                    | Oui                                       | Faible                              | Toute app à état multiple                |
+| Docs : spec + ADR + registre sécurité + roadmap | `docs/`                      | UNIVERSAL                                    | Oui                                       | Faible                              | Tout projet                              |
+| Glossaire domaine (`CONTEXT.md`)                | racine                       | UNIVERSAL                                    | Oui                                       | Faible                              | Tout projet                              |
+| Ratchet ESLint + baseline                       | `scripts/eslint-ratchet.mjs` | ECOSYSTEM (le principe est UNIVERSAL)        | Oui                                       | Moyenne                             | Tout CLI de lint machine-readable        |
+| Pyramide de tests + faux moteur de persistance  | D-004, D-010                 | UNIVERSAL                                    | Oui                                       | Moyenne                             | Tout projet avec stockage                |
+| E2E sans réseau externe (fixtures interceptées) | `e2e/`                       | ECOSYSTEM                                    | Oui                                       | Moyenne                             | Tout E2E avec service web                |
+| CI réutilisable + deploy conditionné            | `ci.yml`/`deploy.yml`        | ECOSYSTEM (GitHub Actions)                   | Oui                                       | Moyenne                             | Tout système de CI                       |
+| Plugins découverts dynamiquement                | D-007                        | FRAMEWORK (Vite glob)                        | Le principe : Oui                         | Forte                               | Registry explicite ailleurs              |
+| `useLiveQuery` / sagas / Context                | D-001, D-006                 | FRAMEWORK                                    | Non (tels quels)                          | Forte                               | Voir version abstraite dans PATTERNS.md  |
+| IndexedDB/Dexie v32, schéma stores              | `db.ts`                      | ECOSYSTEM+DOMAIN                             | Non                                       | Forte                               | Moteur local-first équivalent ou serveur |
+| Vocabulaire Worker/Task/Job/Scope…              | `CONTEXT.md`                 | DOMAIN                                       | Si même domaine                           | —                                   | —                                        |
+| IIIF / W3C / Supabase cs_jobs                   | plugins, hooks               | DOMAIN                                       | Si même domaine                           | —                                   | —                                        |
+| Saga `workers.ts` (~420 l.)                     | code                         | PROJECT_SPECIFIC                             | Non — à remplacer par queueEngine (D-006) | —                                   | —                                        |
+| Clés API en localStorage                        | D-011, S-04                  | PROJECT_SPECIFIC (contexte mono-utilisateur) | Partiel                                   | À reconsidérer si multi-utilisateur | —                                        |
 
 ## Synthèse finale
 
@@ -126,8 +124,8 @@ Voir `TECHNICAL-DEBT.md` § Éléments manquants : guards d'architecture par lin
 2. La duplication des plugins LLM (Mistral/OpenAI, ~200 lignes) et la triplication des exports.
 3. Le double registry de plugins (`App.tsx` vs `sagas/workers.ts`).
 4. Les trois niveaux « utils » (`lib/`, `utils/`, `data/utils/`) et les alias dépréciés.
-5. `xlsx` non maintenu, dépendances non épinglées (`cozy-iiif` sur GitHub sans tag), `stats.html` versionné (1,9 Mo).
-6. `console.log` en production et debug de l'ORM activé.
+5. `xlsx` non maintenu et dépendances non épinglées (`cozy-iiif` sur GitHub sans tag). `stats.html` est désormais ignoré.
+6. `console.log` en production ; le debug inconditionnel de l'ORM a depuis été supprimé.
 7. `.env` versionné historiquement (secrets publics par design, mais le réflexe est à corriger).
 
 ### À ajouter (absents du source, recommandés au nouveau projet)

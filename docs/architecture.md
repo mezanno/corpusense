@@ -10,18 +10,18 @@ Cas d'usage détaillés : [public/doc/usecase.md](../public/doc/usecase.md). Man
 
 ## 2. Stack technique
 
-| Domaine         | Choix                                                                                                                      |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| UI              | React 19, TypeScript 5.9, Tailwind CSS 4, Radix UI / Shadcn UI, Lucide React                                               |
-| Build           | Vite 7 (+ `vite-plugin-pwa`), Node 22+, npm 10+                                                                            |
-| Persistance     | Dexie v4 (IndexedDB, base `mezanno`), réactivité via `dexie-react-hooks.useLiveQuery`                                      |
-| Erreurs         | Result Pattern `FunctionResult<T, E>` (voir D-002)                                                                         |
-| État asynchrone | Redux Toolkit (allégé, sans logger) + Redux-Saga ; TanStack React Query v5 ; Zustand v5                                    |
-| Visualisation   | OpenSeaDragon, Annotorious 3 (`@annotorious/react`, `@annotorious/openseadragon`), dnd-kit                                 |
-| IIIF            | `@iiif/presentation-3`, `@iiif/parser` (le serveur d'images Cantaloupe n'est référencé que dans `.env`, inutilisé en code) |
-| PDF             | `@hyzyla/pdfium`, `pdfjs-dist`                                                                                             |
-| Services        | Supabase (jobs `cs_jobs` via Realtime, Storage, Auth), Mistral AI, OpenAI-compatible, Pero OCR, EmailJS                    |
-| Tests           | Vitest + Testing Library + `fake-indexeddb` ; ESLint 9 ; Prettier 3                                                        |
+| Domaine         | Choix                                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------------------- |
+| UI              | React 19, TypeScript 5.9, Tailwind CSS 4, Radix UI / Shadcn UI, Lucide React                            |
+| Build           | Vite 7 (+ `vite-plugin-pwa`), Node 22 et npm 11.6.4 en CI                                               |
+| Persistance     | Dexie v4 (IndexedDB, base `mezanno`), réactivité via `dexie-react-hooks.useLiveQuery`                   |
+| Erreurs         | Result Pattern `FunctionResult<T, E>` (voir D-002)                                                      |
+| État asynchrone | Redux Toolkit (allégé, sans logger) + Redux-Saga ; TanStack React Query v5 ; Zustand v5                 |
+| Visualisation   | OpenSeaDragon, Annotorious 3 (`@annotorious/react`, `@annotorious/openseadragon`), dnd-kit              |
+| IIIF            | `@iiif/presentation-3`, `@iiif/parser`                                                                  |
+| PDF             | `@hyzyla/pdfium`, `pdfjs-dist`                                                                          |
+| Services        | Supabase (jobs `cs_jobs` via Realtime, Storage, Auth), Mistral AI, OpenAI-compatible, Pero OCR, EmailJS |
+| Tests           | Vitest + Testing Library + `fake-indexeddb` ; ESLint 9 ; Prettier 3                                     |
 
 ## 3. Architecture générale
 
@@ -121,7 +121,7 @@ Clic « Lancer worker » → dispatch startWorkerProcessRequest
 → toast via eventsReducer → vue réactive mise à jour par Dexie
 ```
 
-La loi des statuts worker/tâche est centralisée dans le module pur `workerStatusLaw.ts` (R1, D-008) : elle valide les transitions, dérive le statut worker depuis sa file et mappe les états Supabase. Repository, saga, bridge realtime et présentation UI s'appuient sur cette loi ou sur des tables de présentation exhaustives ; `patch()` ne permet pas de modifier le statut ni la file. La migration Dexie v31 → v32 convertit les anciens alphabets et rejette explicitement les valeurs persistées inconnues. Les détails des transitions et de l'interruption/reprise sont dans [statuts.md](./statuts.md). Les anciens plugins `tesseract`/`surya` ne sont plus chargés (dossier `workers/old/`, suppression en roadmap Q5).
+La loi des statuts worker/tâche est centralisée dans le module pur `workerStatusLaw.ts` (R1, D-008) : elle valide les transitions, dérive le statut worker depuis sa file et mappe les états Supabase. Repository, saga, bridge realtime et présentation UI s'appuient sur cette loi ou sur des tables de présentation exhaustives ; `patch()` ne permet pas de modifier le statut ni la file. La migration Dexie v31 → v32 convertit les anciens alphabets et rejette explicitement les valeurs persistées inconnues. Les détails des transitions et de l'interruption/reprise sont dans [statuts.md](./statuts.md). Les anciens plugins `tesseract`/`surya` ne sont plus chargés et sont conservés dans `archive/legacy-workers/` (Q5).
 
 ## 6. Plugins
 
@@ -181,21 +181,20 @@ L'application est mono-utilisateur locale : pas de garde de routes, décision do
 
 Variables lues via `import.meta.env` (`src/utils/config.ts`) :
 
-| Variable                                                                     | Rôle                                                                                    | Défaut    |
-| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | --------- |
-| `VITE_BASE_PATH`                                                             | Sous-répertoire d'hébergement (router, assets, PWA)                                     | `/`       |
-| `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` / `VITE_SUPABASE_STORAGE_URL` | Instance Supabase (jobs, storage)                                                       | —         |
-| `VITE_CANTALOUPE_URL`                                                        | Serveur d'images IIIF — présente dans `.env` mais jamais lue dans `src/` (candidate Q5) | optionnel |
-| `VITE_EMAILJS_PUBLIC_KEY` / `_SERVICE_ID` / `_TEMPLATE_ID`                   | Formulaire de contact                                                                   | optionnel |
-| `VITE_APP_VERSION` / `VITE_BUILD_DATE` / `VITE_GIT_HASH`                     | Injectées au build par `scripts/generate-env.js`                                        | —         |
+| Variable                                                                     | Rôle                                                                           | Défaut    |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | --------- |
+| `VITE_BASE_PATH`                                                             | Sous-répertoire d'hébergement (router, assets, PWA)                            | `/`       |
+| `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` / `VITE_SUPABASE_STORAGE_URL` | Instance Supabase (jobs, storage)                                              | —         |
+| `VITE_EMAILJS_PUBLIC_KEY` / `_SERVICE_ID` / `_TEMPLATE_ID`                   | Formulaire de contact                                                          | optionnel |
+| `VITE_APP_VERSION` / `VITE_BUILD_DATE` / `VITE_GIT_HASH`                     | Version injectée par Vite ; date et hash générés par `scripts/generate-env.js` | —         |
 
-Les clés API utilisateur (Mistral, OpenAI, GitHub PAT) ne passent **jamais** par `.env` : saisies dans la page de configuration, stockées en `localStorage` (D-011, registre S-04).
+Le client Supabase est créé au chargement du module : une URL valide et une clé anon non vide sont nécessaires au démarrage, même sans utiliser les jobs distants. La CI de déploiement exige les sept variables de configuration de déploiement listées dans le [README](../README.md#télécharger-et-déployer-simplement). Toutes les variables `VITE_*` sont publiques dans le bundle. Les clés API utilisateur (Mistral, OpenAI, GitHub PAT) sont saisies dans la page de configuration et stockées en `localStorage` (D-011, registre S-04).
 
 ## 10. Build & déploiement
 
 ```text
 npm run build → scripts/generate-env.js → tsc -b → vite build → dist/
-push develop → .github/workflows/deploy.yml → GitHub Pages (branche gh-pages)
+push develop → validation → build → artefact Pages → déploiement GitHub Pages
 ```
 
-La PWA est générée par `vite-plugin-pwa`. `manualChunks` (vite.config.ts) isole les gros paquets (`@annotorious/*`, `@samvera/clover-iiif`). **Il n'existe pas de job CI de qualité** (lint/tests/tsc sur PR) — roadmap Q3.
+La PWA est générée par `vite-plugin-pwa`. `manualChunks` (vite.config.ts) isole les gros paquets (`@annotorious/*`, `@samvera/clover-iiif`). La CI vérifie types, tests, format et lint ratchet sur les PR et avant déploiement ; l'audit des dépendances est non bloquant. Les E2E ne tournent que sur les PR ; leur caractère obligatoire à la fusion dépend de la protection de branche (Q3/Q9).

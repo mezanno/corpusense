@@ -1,25 +1,43 @@
 # Guide développeur
 
-_Dernière vérification contre le code : 2026-10-12. Architecture : [architecture.md](./architecture.md)._
+_Démarrage et CI vérifiés contre la configuration du dépôt le 2026-11-04. Architecture : [architecture.md](./architecture.md)._
 
 ## 1. Démarrage
 
-Prérequis : **Node.js ≥ 22**, **npm ≥ 10**.
+Prérequis : **Node.js 22** et **npm 11.6.4**, versions utilisées en CI. Le serveur de développement habituel exige aussi un certificat HTTPS local.
 
 ```bash
 git clone https://github.com/mezanno/corpusense-dev.git
-cd corpusense-dev && npm install
-npm run dev        # Vite, http://localhost:5173
+cd corpusense-dev
+npm ci
 ```
 
-Un `.env` de développement est présent à la racine ; surchargez localement via `.env.local`. Variables : voir [architecture.md §9](./architecture.md).
+Le dépôt ne fournit ni `.env` ni certificats de développement. Créer un `.env.local` ignoré par Git, avec au minimum une URL Supabase valide et une clé anon pour que le client s'initialise :
+
+```dotenv
+VITE_SUPABASE_URL=https://votre-projet.supabase.co
+VITE_SUPABASE_ANON_KEY=votre-cle-anon
+```
+
+Utiliser une instance réellement configurée pour les fonctions distantes ; les autres variables et leurs usages sont décrits dans [architecture.md §9](./architecture.md#9-configuration). Ne jamais mettre de clé secrète dans une variable `VITE_*` : elle est exposée au navigateur.
+
+Installer [mkcert](https://github.com/FiloSottile/mkcert), puis créer les fichiers attendus par `vite.config.ts` :
+
+```bash
+mkdir -p certs
+mkcert -install
+mkcert -key-file certs/localhost+2-key.pem -cert-file certs/localhost+2.pem localhost 127.0.0.1 ::1
+npm run dev
+```
+
+Ouvrir l'URL HTTPS affichée par Vite. Les certificats et `.env.local` restent locaux. Pour les seuls E2E, aucun certificat n'est nécessaire : Playwright démarre son serveur HTTP dédié.
 
 ### Commandes de vérification (le contrôle qualité du dépôt)
 
 ```bash
-npx tsc --noEmit -p tsconfig.app.json   # types
+npx tsc -b                              # types, comme en CI
 npx vitest run                          # tests
-npx eslint src                          # lint
+npm run lint:ratchet                    # lint avec baseline, comme en CI
 npx prettier . --check                  # format
 ```
 
@@ -28,15 +46,17 @@ Autres scripts utiles : `npm run build` (generate-env → tsc -b → vite build)
 ### Tests E2E (Playwright, Q9)
 
 ```bash
+npx playwright install chromium  # première utilisation ; --with-deps sous Linux si nécessaire
 npm run test:e2e           # npx playwright test — lance son propre serveur `dev:e2e` sur le port 5273
 npm run test:e2e:ui        # mode interactif
 ```
 
 - Specs dans `e2e/` (jamais co-localisées : D-010 réserve `__tests__/` à Vitest) ; chromium seul ; assertions par rôles accessibles et libellés FR réels via `e2e/helpers/selectors.ts` (aucun `data-testid`).
-- **Aucun réseau externe** : `installE2ENetwork` abandonne tout ce qui n'est pas le serveur local ; la fixture IIIF (manifest P2, image, `info.json` single-tile) est servie en `page.route` sur l'hôte factice `https://iiif.e2e.test` (`e2e/fixtures/README.md`, régénération : `node scripts/generate-e2e-image.mjs`).
-- Environnement de test : `.env.e2e` versionné (valeurs Supabase factices — `createClient()` exige des valeurs valides), serveur HTTP en mode `e2e`, service worker PWA désactivé.
+- **Requêtes HTTP interceptées** : `installE2ENetwork` abandonne les requêtes autres que celles du serveur local et de la fixture IIIF (manifest P2, image, `info.json` single-tile), servie sur l'hôte factice `https://iiif.e2e.test` (`e2e/fixtures/README.md`, régénération : `node scripts/generate-e2e-image.mjs`). `page.route` ne filtre pas les WebSockets.
+- Environnement de test : `.env.e2e` versionné (valeurs Supabase factices — `createClient()` exige des valeurs valides), serveur HTTP en mode `e2e`, service worker PWA désactivé. Les variables déjà présentes dans l'environnement et `.env.e2e.local` peuvent prendre priorité : éviter d'y injecter une configuration réelle pour ces tests.
 - État : IndexedDB vierge par test (contexte neuf) ; les parcours se reconstruisent via `e2e/helpers/journeys.ts`.
-- Un spec ne se commite qu'après **10 runs consécutifs** `npx playwright test` verts ; le job CI (`ci.yml`, PR uniquement) téléverse le rapport en artefact au premier échec.
+- Une spec ne se commite qu'après **10 runs consécutifs** `npx playwright test` verts ; le job CI (`ci.yml`, PR uniquement) téléverse le rapport si le job échoue. La protection de branche doit être configurée séparément pour imposer les checks à la fusion.
+- Hors périmètre : workers et jobs distants, IIIF distant réel, import de fichiers locaux, PDF, chaînes de modificateurs, multi-onglets et PWA installée.
 
 ## 2. Conventions
 
@@ -80,18 +100,18 @@ npm run test:e2e:ui        # mode interactif
 
 ### Carte de navigation (« où chercher quand… »)
 
-| Je veux…                               | Regarder                                                      |
-| -------------------------------------- | ------------------------------------------------------------- |
-| Ajouter/modifier une page ou route     | `src/pages/`, `src/App.tsx`, `src/hooks/useAppNavigation.tsx` |
-| Modifier le visualiseur / l'annotation | `src/components/canvasViewer/CanvasViewerOSD*.tsx`            |
-| Modifier le schéma de base             | `src/data/repositories/indexeddb/db.ts`                       |
-| Ajouter un accesseur de données        | `src/data/repositories/indexeddb/` + `dbFactory.ts`           |
-| Ajouter un worker / importer           | `src/state/sagas/plugins/`                                    |
-| Modifier les types métier              | `src/data/models/`                                            |
-| Suivi jobs distribués                  | `src/hooks/useJobRealtime.tsx`, `src/utils/supabase.ts`       |
-| Configuration / clés API               | `src/utils/config.ts`, `src/components/configuration/`        |
-| Build, PWA, chunks                     | `vite.config.ts`                                              |
-| Déploiement                            | `.github/workflows/deploy.yml`                                |
+| Je veux…                               | Regarder                                                        |
+| -------------------------------------- | --------------------------------------------------------------- |
+| Ajouter/modifier une page ou route     | `src/pages/`, `src/App.tsx`, `src/hooks/useAppNavigation.tsx`   |
+| Modifier le visualiseur / l'annotation | `src/components/features/canvasViewer/CanvasViewerOSD*.tsx`     |
+| Modifier le schéma de base             | `src/data/repositories/indexeddb/db.ts`                         |
+| Ajouter un accesseur de données        | `src/data/repositories/indexeddb/` + `dbFactory.ts`             |
+| Ajouter un worker / importer           | `src/state/sagas/plugins/`                                      |
+| Modifier les types métier              | `src/data/models/`                                              |
+| Suivi jobs distribués                  | `src/hooks/useJobRealtime.tsx`, `src/utils/supabase.ts`         |
+| Configuration / clés API               | `src/utils/config.ts`, `src/components/features/configuration/` |
+| Build, PWA, chunks                     | `vite.config.ts`                                                |
+| Déploiement                            | `.github/workflows/deploy.yml`                                  |
 
 ## 5. Pièges connus
 
