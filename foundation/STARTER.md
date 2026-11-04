@@ -4,14 +4,14 @@ Spécification du starter d'un nouveau projet bâti sur ces fondations. **Aucune
 
 ## 1. Points de choix à trancher avant le premier commit
 
-| # | Choix | Contraintes héritées des fondations |
-|---|---|---|
-| C1 | Domaine : réutiliser le domaine CorpuSense (IIIF/annotation) ou nouveau domaine ? | Le vocabulaire (DOMAIN) ne se transpose que si le domaine est gardé ; sinon réécrire `CONTEXT.md` |
-| C2 | Moteur de persistance : local-first (navigateur/embarqué) ou client-serveur ? | Si local-first : il faut un **moteur observable** (abonnements) et transactionnel. Sinon : prévoir une file d'événements locale pour garder le flux réactif |
-| C3 | Framework d'interface | Doit permettre : abonnement de vue à un flux, contexte par écran, routes avec base-path configurable |
-| C4 | Mécanisme d'orchestration asynchrone | Le moteur de file headless à ports (P6) est la cible ; l'orchestrateur n'est jamais une dépendance du domaine |
-| C5 | Langage/typage | Le Result Pattern, les alphabets clos et les tables totales exigent un **typage statique avec union discriminée ou enums exhaustifs** ; à défaut, prévoir des tests de contrat remplaçant le typage |
-| C6 | Distribution : statique sous sous-répertoire ? PWA/offline ? | Le source est un bundle statique publiable sous sous-chemin ; à garder seulement si pertinent |
+| #   | Choix                                                                             | Contraintes héritées des fondations                                                                                                                                                                 |
+| --- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | Domaine : réutiliser le domaine CorpuSense (IIIF/annotation) ou nouveau domaine ? | Le vocabulaire (DOMAIN) ne se transpose que si le domaine est gardé ; sinon réécrire `CONTEXT.md`                                                                                                   |
+| C2  | Moteur de persistance : local-first (navigateur/embarqué) ou client-serveur ?     | Si local-first : il faut un **moteur observable** (abonnements) et transactionnel. Sinon : prévoir une file d'événements locale pour garder le flux réactif                                         |
+| C3  | Framework d'interface                                                             | Doit permettre : abonnement de vue à un flux, contexte par écran, routes avec base-path configurable                                                                                                |
+| C4  | Mécanisme d'orchestration asynchrone                                              | Le moteur de file headless à ports (P6) est la cible ; l'orchestrateur n'est jamais une dépendance du domaine                                                                                       |
+| C5  | Langage/typage                                                                    | Le Result Pattern, les alphabets clos et les tables totales exigent un **typage statique avec union discriminée ou enums exhaustifs** ; à défaut, prévoir des tests de contrat remplaçant le typage |
+| C6  | Distribution : statique sous sous-répertoire ? PWA/offline ?                      | Le source est un bundle statique publiable sous sous-chemin ; à garder seulement si pertinent                                                                                                       |
 
 ## 2. Arborescence conceptuelle (transposable à tout layout)
 

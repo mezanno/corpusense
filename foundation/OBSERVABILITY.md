@@ -4,14 +4,14 @@ Le point le plus faible du projet source : l'observabilité est **réduite à l'
 
 ## Ce qui existe (OBSERVED)
 
-| Principe | Implémentation | Technologie |
-|---|---|---|
-| Identifier chaque build publié | version+git hash+date injectés au build dans un fichier env généré (jamais commité) | script de build + variables de build |
-| Signaler les événements système à l'utilisateur | file d'événements INFO/ERROR avec `lastEvent` consommé puis réinitialisé | store global minimal (slice `events`) + toasts |
-| Journaliser les cycles de vie longs (workers) | statuts persistés + historique de tâches consultable dans l'UI (c'est la « log » métier) | base locale + écrans de suivi |
-| Corréler une erreur à son job | erreurs de plugin nommant plugin/tâche/URL dans message et `context` JSON | hiérarchie `BaseError` (D-002) |
-| Éviter le bruit en production | suppression du debug inconditionnel de l'ORM (registre S-02 clos) | défauts constructeur de l'ORM |
-| Preuve de test déterministe | rapport E2E + traces téléversés au 1er échec, rétention 7 j | artefacts CI |
+| Principe                                        | Implémentation                                                                           | Technologie                                    |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Identifier chaque build publié                  | version+git hash+date injectés au build dans un fichier env généré (jamais commité)      | script de build + variables de build           |
+| Signaler les événements système à l'utilisateur | file d'événements INFO/ERROR avec `lastEvent` consommé puis réinitialisé                 | store global minimal (slice `events`) + toasts |
+| Journaliser les cycles de vie longs (workers)   | statuts persistés + historique de tâches consultable dans l'UI (c'est la « log » métier) | base locale + écrans de suivi                  |
+| Corréler une erreur à son job                   | erreurs de plugin nommant plugin/tâche/URL dans message et `context` JSON                | hiérarchie `BaseError` (D-002)                 |
+| Éviter le bruit en production                   | suppression du debug inconditionnel de l'ORM (registre S-02 clos)                        | défauts constructeur de l'ORM                  |
+| Preuve de test déterministe                     | rapport E2E + traces téléversés au 1er échec, rétention 7 j                              | artefacts CI                                   |
 
 ## Lacunes (OBSERVED, consignées dans le registre de sécurité/roadmap)
 

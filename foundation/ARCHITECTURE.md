@@ -19,7 +19,7 @@ Points structurants :
 
 1. **La persistance est la source de vérité**, pas un cache. L'UI s'y abonne ; aucun store applicatif ne duplique la donnée métier.
 2. **Redux (ou tout store global) est volontairement vidé de la donnée métier** : il ne porte que le statut d'exécution des traitements et les notifications.
-3. **Les traitements lourds sont des plugins autonomes**, découverts dynamiquement, qui émettent des *événements* et jamais des statuts bruts.
+3. **Les traitements lourds sont des plugins autonomes**, découverts dynamiquement, qui émettent des _événements_ et jamais des statuts bruts.
 4. **La loi des statuts est un module pur**, sans import framework, seul endroit où les transitions sont décidées.
 5. L'asynchrone distribué (jobs externes) est une **passerelle** : la file locale reste la référence, le service distant est mappé vers les statuts locaux, avec repli périodique si le canal temps réel tombe.
 
@@ -62,15 +62,15 @@ INTERDIT : Persistance/Modèles → Interface (imports inverses ; 2 violations c
 
 ## 4. État et données — qui possède quoi (OBSERVED, D-001)
 
-| Type d'état | Propriétaire | Justification |
-|---|---|---|
-| Métier persistant | Base locale réactive | survit au offline, source de vérité unique |
-| Statut d'exécution des traitements | store global minimal | transitoire, multi-vues, ne se persiste pas tel quel (dérivé de la file) |
-| Notifications/toasts | store global minimal | éphémère |
-| Session/sélection/contexte de page | contexte UI local | lié au cycle de vie d'un écran |
-| Handle d'API système (filesystem) | store minimal dédié | objet non sérialisable, global |
-| Config utilisateur & clés | stockage persistant du navigateur | choix explicite, risque documenté |
-| Données externes ponctuelles | couche de fetch avec cache | pas métier, invalidable |
+| Type d'état                        | Propriétaire                      | Justification                                                            |
+| ---------------------------------- | --------------------------------- | ------------------------------------------------------------------------ |
+| Métier persistant                  | Base locale réactive              | survit au offline, source de vérité unique                               |
+| Statut d'exécution des traitements | store global minimal              | transitoire, multi-vues, ne se persiste pas tel quel (dérivé de la file) |
+| Notifications/toasts               | store global minimal              | éphémère                                                                 |
+| Session/sélection/contexte de page | contexte UI local                 | lié au cycle de vie d'un écran                                           |
+| Handle d'API système (filesystem)  | store minimal dédié               | objet non sérialisable, global                                           |
+| Config utilisateur & clés          | stockage persistant du navigateur | choix explicite, risque documenté                                        |
+| Données externes ponctuelles       | couche de fetch avec cache        | pas métier, invalidable                                                  |
 
 Principe transférable : **chaque mécanisme a un rôle exclusif écrit quelque part** ; la dérive vient toujours d'un état qui n'a pas de propriétaire nommé. Le projet source recommande explicitement de ne pas généraliser : cinq mécanismes coexistent parce que chacun a une raison nommée dans un ADR, pas par accumulation.
 

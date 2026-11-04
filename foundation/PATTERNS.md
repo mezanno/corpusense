@@ -8,7 +8,7 @@ Patterns réellement présents dans le projet source. Pour chacun : la version a
 
 - **Catégorie** : gestion des erreurs · **Réutilisabilité** : UNIVERSAL (expressible dans tout langage typé)
 - **Problème** : les erreurs attendues (entité absente, refus de transition, erreur de stockage) disparaissent dans des `try/catch` dispersés ou des retours non typés.
-- **Principe** : une fonction faillible dont l'échec est *normal* retourne `{ ok: true, value } | { ok: false, error }` ; les erreurs sont une hiérarchie nommée portant un contexte JSON sérialisable et une `cause` préservée.
+- **Principe** : une fonction faillible dont l'échec est _normal_ retourne `{ ok: true, value } | { ok: false, error }` ; les erreurs sont une hiérarchie nommée portant un contexte JSON sérialisable et une `cause` préservée.
 - **Implémentation actuelle** : `FunctionResult<T,E>` + `BaseError` (D-002), assortie d'un **garde-fou lint** (`no-restricted-syntax` sur la création d'erreurs nues, liste blanche au fichier, chaque ligne = un verdict documenté).
 - **Version abstraite** : aux frontières de commande uniquement, retourner un somme discriminé succès/échec ; l'échec porte un type nommé + contexte. Les langages sans union discriminée l'expriment par exceptions typées + conventions de capture au boundary.
 - **Quand l'utiliser** : toute frontière traversable par plusieurs appelants. **Quand ne pas l'utiliser** : les abonnements réactifs (un Result à deux états ne peut pas exprimer `loading|missing|found` — l'absence y est une valeur).
@@ -32,7 +32,7 @@ Patterns réellement présents dans le projet source. Pour chacun : la version a
 ## P4 — Rôles exclusifs des mécanismes d'état
 
 - **Catégorie** : state management · **Réutilisabilité** : UNIVERSAL
-- **Principe** : si plusieurs mécanismes d'état coexistent, chacun a un **rôle exclusif écrit dans un ADR** et un doc d'inventaire (« ce qui vit hors du store »). La règle d'or observée : *toute nouvelle donnée métier va dans la persistance + un hook d'abonnement, jamais dans le store global*.
+- **Principe** : si plusieurs mécanismes d'état coexistent, chacun a un **rôle exclusif écrit dans un ADR** et un doc d'inventaire (« ce qui vit hors du store »). La règle d'or observée : _toute nouvelle donnée métier va dans la persistance + un hook d'abonnement, jamais dans le store global_.
 - **Anti-pattern combattu** : l'accumulation par défaut (« on met ça dans Redux pour l'instant »).
 
 ## P5 — Plugins découverts, registry assumé

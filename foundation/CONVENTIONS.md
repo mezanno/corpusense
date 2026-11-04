@@ -29,17 +29,17 @@ Tout ce qui est marqué OBSERVED est réellement pratiqué dans le dépôt sourc
 
 ## Politique de documentation (OBSERVED — l'une des meilleures pratiques du projet)
 
-| Foyer | Public | Règle |
-|---|---|---|
-| `docs/` | contributeurs | spec de référence **datée d'une vérification contre le code** ; rien d'obsolète — une note consolidée se supprime, ses décisions survivent dans l'ADR |
-| `docs/DECISIONS.md` | contributeurs | une entrée = une décision, avec contexte, statut, conséquences, déclencheurs de réouverture |
-| `docs/roadmap.md` | contributeurs | chantiers avec **critères de sortie** vérifiables ; « comment reprendre un chantier » en tête de chapitre |
-| `public/doc/` | utilisateurs | manuel utilisateur servi par l'app ; **rien de technique/interne** |
-| `CONTEXT.md` racine | contributeurs | glossaire unique du domaine + vocabulaire d'architecture |
-| `src/state/states.md` | contributeurs | l'état réel : « ce qui vit dans le store doit matcher le code ; sinon on corrige le doc » |
+| Foyer                 | Public        | Règle                                                                                                                                                 |
+| --------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/`               | contributeurs | spec de référence **datée d'une vérification contre le code** ; rien d'obsolète — une note consolidée se supprime, ses décisions survivent dans l'ADR |
+| `docs/DECISIONS.md`   | contributeurs | une entrée = une décision, avec contexte, statut, conséquences, déclencheurs de réouverture                                                           |
+| `docs/roadmap.md`     | contributeurs | chantiers avec **critères de sortie** vérifiables ; « comment reprendre un chantier » en tête de chapitre                                             |
+| `public/doc/`         | utilisateurs  | manuel utilisateur servi par l'app ; **rien de technique/interne**                                                                                    |
+| `CONTEXT.md` racine   | contributeurs | glossaire unique du domaine + vocabulaire d'architecture                                                                                              |
+| `src/state/states.md` | contributeurs | l'état réel : « ce qui vit dans le store doit matcher le code ; sinon on corrige le doc »                                                             |
 
 Autres pratiques documentées observées :
 
-- Guide développeur avec « carte de navigation » (*où chercher quand…*) et section **pièges connus** — chaque piège est une décision implicite rendue explicite.
+- Guide développeur avec « carte de navigation » (_où chercher quand…_) et section **pièges connus** — chaque piège est une décision implicite rendue explicite.
 - Guides d'extension pas-à-pas (« ajouter une route », « ajouter un worker », « ajouter un modèle métier ») qui encodent l'architecture en procédure.
 - Règle de proportionnalité érigée en convention : pas de nouvelle abstraction sans besoin au call site (D-004).

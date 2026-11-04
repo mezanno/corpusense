@@ -4,21 +4,21 @@
 
 Pyramide à trois niveaux :
 
-| Ce qui est testé | Niveau | Outils | Dépendance framework | Valeur | Limites |
-|---|---|---|---|---|---|
-| Fonctions pures (loi de statut, convertisseurs, dérivations) | Unitaire | Vitest | Aucune | Élevée — couvre le cœur critique sans harness | Sous-couvre l'intégration si on s'arrête là |
-| Composants/hooks via rôles accessibles + user-event | Composant | RTL + jsdom + faux moteur IndexedDB | Framework UI | Bonne — tests robustes au refactoring d'implémentation | Harnais non trivial (voir plus bas) |
-| Parcours critiques (import → collection → annotation persistée → export) | E2E | Playwright, chromium seul | Navigateur | Élevée sur les parcours ; a trouvé 2 bugs produits | Coût de stabilité (règle des 10 runs) |
+| Ce qui est testé                                                         | Niveau    | Outils                              | Dépendance framework | Valeur                                                 | Limites                                     |
+| ------------------------------------------------------------------------ | --------- | ----------------------------------- | -------------------- | ------------------------------------------------------ | ------------------------------------------- |
+| Fonctions pures (loi de statut, convertisseurs, dérivations)             | Unitaire  | Vitest                              | Aucune               | Élevée — couvre le cœur critique sans harness          | Sous-couvre l'intégration si on s'arrête là |
+| Composants/hooks via rôles accessibles + user-event                      | Composant | RTL + jsdom + faux moteur IndexedDB | Framework UI         | Bonne — tests robustes au refactoring d'implémentation | Harnais non trivial (voir plus bas)         |
+| Parcours critiques (import → collection → annotation persistée → export) | E2E       | Playwright, chromium seul           | Navigateur           | Élevée sur les parcours ; a trouvé 2 bugs produits     | Coût de stabilité (règle des 10 runs)       |
 
 Standards observés, tous transférables :
 
 1. **Unitaire massif sur les modules purs** — la loi d'état, la migration, les transitions se testent sans jsdom, sans ORM, sans framework.
 2. **Tests sur le vrai stack de persistance** : faux moteur IndexedDB in-process + helper de réinitialisation de base entre tests ; interdiction de mocker les factories d'accès aux données. Choix délibéré (D-004) : « tester le vrai Dexie plutôt que simuler le contrat ».3. **Accessibilité comme contrat de test** : assertions par rôles accessibles et libellés réels ; **aucun `data-testid`** en production.
-4. **i18n neutralisé par le mock** : le mock de test renvoie les clés à l'identique → les tests assertent sur les clés ; une chaîne traduite n'est jamais une dépendance de test.
-5. **E2E déterministe, zéro réseau externe** : abandon de toute requête sortante, fixtures servies par interception sur un hôte factice ;IndexedDB vierge par test (contexte neuf) ; les parcours se reconstruisent eux-mêmes via des helpers de journey.
-6. **Règle de stabilité E2E** : un spec ne se commite qu'après 10 runs consécutifs verts ; retries activés **uniquement en CI** ; rapport/trace téléversés seulement au premier échec.
-7. **Tests co-localisés** (unitaire) et **E2E en répertoire dédié** — la séparation des deux communautés est explicitement actée.
-8. `it.todo` et tests ignorés visibles plutôt que supprimés silencieusement.
+3. **i18n neutralisé par le mock** : le mock de test renvoie les clés à l'identique → les tests assertent sur les clés ; une chaîne traduite n'est jamais une dépendance de test.
+4. **E2E déterministe, zéro réseau externe** : abandon de toute requête sortante, fixtures servies par interception sur un hôte factice ;IndexedDB vierge par test (contexte neuf) ; les parcours se reconstruisent eux-mêmes via des helpers de journey.
+5. **Règle de stabilité E2E** : un spec ne se commite qu'après 10 runs consécutifs verts ; retries activés **uniquement en CI** ; rapport/trace téléversés seulement au premier échec.
+6. **Tests co-localisés** (unitaire) et **E2E en répertoire dédié** — la séparation des deux communautés est explicitement actée.
+7. `it.todo` et tests ignorés visibles plutôt que supprimés silencieusement.
 
 ## Harnais : leçons concrètes (OBSERVED — à recréer équivalent dans toute cible)
 
