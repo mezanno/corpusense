@@ -279,7 +279,7 @@ export const scaleAnnotation = (annotation: Annotation, annotationScale: number)
 };
 
 /*
- This function takes an array of annotations and merges them into one annotation that contains all the text of the annotations and has a bounding box that contains all the annotations. 
+ This function takes an array of annotations and merges them into one annotation that contains all the text of the annotations and has a bounding box that contains all the annotations.
  The bounding box is calculated by making boolean operations on the rectangles of the annotations. The text is merged by concatenating the text of the annotations with a space in between.
  The function assumes that the annotations are of type TEXT_LINE and that they are on the same canvas and collection.
 */
